@@ -10,6 +10,18 @@ start() {  # start <name> <port> <cmd...>
   for i in $(seq 1 90); do curl -fsS 127.0.0.1:$port/ >/dev/null 2>&1 && { echo "envsrv_$name up on $port"; return; }; sleep 2; done
   echo "envsrv_$name FAILED to answer on $port"; tail -20 ~/env-$name.log
 }
-start sciworld 36001 ~/envs/sciworld/bin/sciworld
-start alfworld 36002 env ALFWORLD_DATA=$HOME/.cache/alfworld ~/envs/alfworld/bin/alfworld
-start babyai 36003 ~/envs/babyai/bin/babyai
+declare -A PORT=([sciworld]=36001 [alfworld]=36002 [babyai]=36003)
+declare -A CMD=([sciworld]="$HOME/envs/sciworld/bin/sciworld"
+                [alfworld]="env ALFWORLD_DATA=$HOME/.cache/alfworld $HOME/envs/alfworld/bin/alfworld"
+                [babyai]="$HOME/envs/babyai/bin/babyai")
+if [ "${1:-}" = restart ]; then
+  # restart <name>: kill whatever holds the port (the ALFWorld server has no /close, so
+  # its envs leak; the rollout engine calls this between chunks), then start fresh.
+  name=$2; port=${PORT[$name]}
+  pids=$(lsof -t -i TCP:$port -s TCP:LISTEN 2>/dev/null)
+  [ -n "$pids" ] && kill $pids && sleep 3
+  tmux kill-session -t envsrv_$name 2>/dev/null
+  start $name $port ${CMD[$name]}
+  exit
+fi
+for name in sciworld alfworld babyai; do start $name ${PORT[$name]} ${CMD[$name]}; done

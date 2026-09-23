@@ -229,5 +229,6 @@
  "pilot": {
   "tasks": 10
  },
- "source": "AgentEval test split (HF AgentGym/AgentEval alfworld_test.json); max_rounds 30 and context 16384 follow the AgentGym-protocol HF cards"
+ "source": "AgentEval test split (HF AgentGym/AgentEval alfworld_test.json); max_rounds 30 and context 16384 follow the AgentGym-protocol HF cards",
+ "restart_server_every_chunk": true
 }

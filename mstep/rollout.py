@@ -151,6 +151,16 @@ def select(tasks, cfg, pilot):
     return picked
 
 
+def restart_server(cfg):
+    """Between chunks, restart an env server that leaks envs (ALFWorld has no /close)."""
+    if cfg.get("restart_server_every_chunk"):
+        import subprocess
+        root = Path(__file__).resolve().parents[1]
+        out = subprocess.run(["bash", str(root / "scripts/env_servers.sh"), "restart", cfg["env"]],
+                             capture_output=True, text=True)
+        log(f"server restart {cfg['env']}: {out.stdout.strip().splitlines()[-1] if out.stdout.strip() else out.stderr[-200:]}")
+
+
 def episode_factory(cfg, manifest):
     if cfg["env"] == "textcraft":
         tc = tcmod.TextCraft()
@@ -227,6 +237,7 @@ def collect(cfg_path, run, pilot):
                                                   "seconds": round(time.time() - started, 1)})
 
         engine.run(states, keep_tokens=True, on_finish=done)
+        restart_server(cfg)
         log(f"chunk {c0 // chunk + 1}: {min(c0 + chunk, len(todo))}/{len(todo)} episodes, {time.time() - started:.0f}s")
     log("collect done")
 
@@ -250,8 +261,14 @@ def mc(run):
     make = episode_factory(cfg, manifest)
     tasks = {t["task_id"]: t for t in manifest["tasks"]}
     paths = sorted((run / "episodes").glob("*.json"))
+    # Optional scope restriction recorded next to the run (e.g. {"min_depth": 2}); written
+    # after launch so the running runner script never has to be edited.
+    scope = read_json(run / "mc_scope.json") if (run / "mc_scope.json").exists() else {}
+    if "min_depth" in scope:
+        keep = {t["task_id"] for t in manifest["tasks"] if t.get("recipe_depth", 0) >= scope["min_depth"]}
+        paths = [p for p in paths if p.stem.rsplit("_attempt_", 1)[0] in keep]
     todo = [p for p in paths if not (run / "mc" / p.name).exists()]
-    log(f"MC: {len(todo)} of {len(paths)} episodes need values (N={N})")
+    log(f"MC: {len(todo)} of {len(paths)} in-scope episodes need values (N={N}, scope={scope or 'all'})")
     engine = Engine(cfg)
     started = time.time()
     chunk = cfg["mc"].get("chunk_episodes", 256)
@@ -290,6 +307,7 @@ def mc(run):
                  "actions": [r["action"] for r in cont]})
 
         engine.run(states, keep_tokens=False, on_finish=done)
+        restart_server(cfg)
         for eid, res in results.items():
             for t, samples in res["samples"].items():
                 if len(samples) != N:
