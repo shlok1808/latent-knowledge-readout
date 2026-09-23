@@ -10,3 +10,13 @@ runs/
 writeup/*.aux
 writeup/*.log
 writeup/*.out
+.lambda_instance*
+results/multistep/**/acts/
+CLAUDE.md
+TASKS.md
+STATUS.md
+ASSUMPTIONS.md
+DATASET_CHOICE.md
+RESULTS.md
+logs/
+results/multistep/
