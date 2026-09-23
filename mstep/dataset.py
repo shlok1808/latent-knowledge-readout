@@ -19,6 +19,17 @@ from failure_probes.common import read_json
 from mstep import tc as tcmod
 
 ROUND_STAGES = [("early", 1, 2), ("mid", 3, 5), ("late", 6, 10**6)]
+# ALFWorld has no native progress signal; its own state-change messages mark sub-goals (A-21).
+ALFWORLD_PROGRESS = ("You pick up", "You put", "You clean", "You heat", "You cool", "You turn on", "You slice")
+
+
+def http_round_labels(env, r):
+    """Validity / progress / milestone event for AgentGym HTTP envs (A-21)."""
+    if env == "alfworld":
+        progress = r["observation"].startswith(ALFWORLD_PROGRESS)
+    else:  # sciworld score 0-100, babyai subgoal reward in [0,1]: native per-step progress
+        progress = (r.get("score_delta") or 0) > 0
+    return {"valid": int(r["validity"] == "executable"), "progress": int(progress), "crafted": int(progress)}
 
 
 def round_stage(r):
@@ -29,7 +40,8 @@ def build(run):
     run = Path(run)
     manifest = read_json(run / "manifest.json")
     tasks = {t["task_id"]: t for t in manifest["tasks"]}
-    tags = manifest["item_id_to_tag"]
+    env = manifest["config"].get("env", "textcraft")
+    tags = manifest.get("item_id_to_tag", {})
     index = read_json(run / "acts" / "index.json") if (run / "acts" / "index.json").exists() else None
     rows, cache = [], {}
     order = index or [{"episode_id": p.stem, "round": None} for p in sorted((run / "episodes").glob("*.json"))]
@@ -49,8 +61,9 @@ def build(run):
             crafts, texts, prior = 0, [], []
             per_round = {}
             task = tasks[e["task_id"]]
+            first_obs = task.get("initial_observation") or e.get("initial_observation", "")
             for r in e["rounds"]:
-                lab = tcmod.round_labels(task, r, tags)
+                lab = tcmod.round_labels(task, r, tags) if env == "textcraft" else http_round_labels(env, r)
                 terminal_goal = bool(r["done"] and r["reward"] == 1)
                 milestone = None
                 if lab["crafted"] and not terminal_goal:
@@ -59,10 +72,10 @@ def build(run):
                 # Observable text up to and including round t's RESPONSE, but not round t's
                 # observation: the activation has not seen it, and for IMMEDIATE labels it
                 # would leak the label (A-15).
-                text = "\n".join([task["initial_observation"]] + texts + [r["response"]])
+                text = "\n".join([first_obs] + texts + [r["response"]])
                 surface = [len(r["generated_token_ids"]), len(r["prompt_token_ids"]),
                            sum(p["validity"] != "executable" for p in prior),
-                           sum(p["validity"] == "impossible" for p in prior),
+                           sum(p["validity"] in ("impossible", "invalid") for p in prior),
                            len({p["action"] for p in prior})]
                 per_round[r["round"]] = {
                     "valid_bad": 1 - lab["valid"], "noprogress_bad": 1 - lab["progress"],

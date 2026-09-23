@@ -229,6 +229,7 @@ def collect(cfg_path, run, pilot):
             record = {"episode_id": eid, "task_id": s["task"]["task_id"], "task_hash": s["task"]["task_hash"],
                       "recipe_depth": s["task"]["recipe_depth"], "manifest_hash": manifest["manifest_hash"],
                       "attempt": s["attempt"], "rounds": s["rounds"], "success": s["success"],
+                      "initial_observation": s["episode"].initial_observation,
                       "termination": s["termination"],
                       "total_generated_tokens": sum(len(r["generated_token_ids"]) for r in s["rounds"])}
             write_json(run / "episodes" / f"{eid}.json", record)
