@@ -42,8 +42,16 @@ class Engine:
         from vllm import LLM
         self.cfg = cfg
         self.tok = AutoTokenizer.from_pretrained(cfg["model"], revision=cfg["model_revision"])
+        # Override lets two vLLM jobs share the A100 (e.g. TextCraft MC + a Phase 4 pilot):
+        # env MSTEP_GPU_UTIL, else logs/gpu_util (read at engine start), else config.
+        override = os.environ.get("MSTEP_GPU_UTIL")
+        util_file = Path(__file__).resolve().parents[1] / "logs" / "gpu_util"
+        if override is None and util_file.exists():
+            override = util_file.read_text().strip()
+        util = float(override) if override else cfg.get("gpu_memory_utilization", 0.88)
+        log(f"vLLM gpu_memory_utilization={util}")
         self.llm = LLM(cfg["model"], revision=cfg["model_revision"], dtype="bfloat16",
-                       gpu_memory_utilization=cfg.get("gpu_memory_utilization", 0.88),
+                       gpu_memory_utilization=util,
                        max_model_len=cfg["context_limit"], enable_prefix_caching=True, seed=0)
         self.special = set(self.tok.all_special_ids)
 

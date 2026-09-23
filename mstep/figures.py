@@ -55,11 +55,12 @@ def round_curves(out, layer, metric="within_auc", fname=None):
                 d = cur[(cur.population == pop) & (cur.label == lab) & (cur.strategy == key)].sort_values("t")
                 if d.empty:
                     continue
+                tt = d.t.to_numpy()
                 y = d[metric].to_numpy(dtype=float)
                 weak = d["underpowered"].to_numpy(dtype=bool)
                 ax.plot(d.t, y, color=SERIES[k], linestyle=ls, linewidth=2, label=name)
-                ax.scatter(d.t[~weak], y[~weak], color=SERIES[k], marker=mk, s=22, zorder=3, edgecolor=SURFACE, linewidth=0.8)
-                ax.scatter(d.t[weak], y[weak], facecolor=SURFACE, edgecolor=SERIES[k], marker=mk, s=22, zorder=3)
+                ax.scatter(tt[~weak], y[~weak], color=SERIES[k], marker=mk, s=22, zorder=3, edgecolor=SURFACE, linewidth=0.8)
+                ax.scatter(tt[weak], y[weak], facecolor=SURFACE if mk != "x" else SERIES[k], edgecolor=SERIES[k], marker=mk, s=22, zorder=3)
             if i == 0:
                 ax.set_title(LABEL_NAMES[lab], fontsize=9, color=INK)
             if j == 0:
