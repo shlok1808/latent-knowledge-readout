@@ -35,7 +35,7 @@ def conversation_start(env):
                                                 for t in node.targets):
             calls = [n for n in ast.walk(node.value) if isinstance(n, ast.Call)
                      and getattr(n.func, "id", None) == "ConversationMessage"]
-            msgs = [ast.literal_eval(c.args[0]) for c in calls][:2]  # REACT is listed first
+            msgs = [ast.literal_eval(c.args[0]) for c in calls[:2]]  # REACT is listed first; later ones may be f-strings
             break
     if len(msgs) != 2:
         raise ValueError(f"could not extract conversation start for {env}")
