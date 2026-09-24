@@ -8,7 +8,25 @@ Status: **Decision moved to the Qwen2.5-7B pilots** (Shlok 2026-09-24). The 1.7B
 3. Mixed outcomes (success and failure on the same task) for Qwen3-1.7B. **Hard gate**: ≥ 3/10 mixed in the pilot (≈ ≥ 15 on the full split).
 4. Text-only, runs in the existing AgentGym setup without heavy dependencies.
 
-## Scored comparison
+## Qwen2.5-7B pilots — THE DECIDING EVIDENCE (2026-09-24, 20 tasks × 8 each)
+
+| env | success | mixed tasks | gate (≥ 6/20) | native step reward | real milestones | success lengths |
+|---|---|---|---|---|---|---|
+| ScienceWorld | 7/160 (4.4%) | 4/20 | **fail** | yes | yes | 5–18 |
+| ALFWorld | 66/160 (41%) | **14/20** | pass | no (state-change proxy) | implicit (take → clean/heat/cool → put) | 4–29, spread out |
+| BabyAI | 124/160 (78%) | **16/20** | pass | no | weak (70/90 tasks single-goal) | mostly 1–5 |
+| TextCraft d2–3 (reference) | 49/320 | 14/40 | — | no (proxy) | yes (crafts) | d2: 5–20 |
+
+The first 7B summary listed ScienceWorld and BabyAI as 0/20. Those pilots had crashed on a keep-alive bug; the numbers above come from the resumed runs.
+
+**Recommendation: ALFWorld with Qwen2.5-7B for Phase 4.** ScienceWorld is the only env with a native step reward, but it fails the mixed-outcome gate even at 7B. Of the two that pass:
+- ALFWorld has real multi-step structure and successes spread across rounds 4–29, so late stages still contain successes and the same-episode control is well posed.
+- BabyAI successes mostly finish by round 5 (like depth-1 TextCraft), and 70/90 of its tasks are single-goal navigation.
+- Neither has a native step reward, so IMMEDIATE labels stay proxies either way.
+
+Note: ALFWorld fails at 1.7B (0/80), so Phase 4 on ALFWorld *is* a 7B run. Phase 4 and Phase 5 merge.
+
+## Scored comparison (1.7B pilots)
 
 | | ScienceWorld | ALFWorld | BabyAI |
 |---|---|---|---|

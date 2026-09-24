@@ -1,5 +1,20 @@
 # Status — multistep-gap run
 
+## 2026-09-24 18:25 UTC (2:25 PM ET) — All runs done; results written
+
+- Everything finished by 1:23 PM ET. The GH200 helper terminated itself (verified: only afp-multistep-2 remains). Box 1 has been idle on the MC hold since then. Box-hours 5.7.
+- **Corrected Phase 4 gate (7B):** ScienceWorld 4/20 (fail), ALFWorld 14/20, BabyAI 16/20, TextCraft d2–3 14/40. Recommendation: ALFWorld @ 7B (DATASET_CHOICE.md).
+- **Phase 3 (RESULTS §4):** the final-outcome probe is stage-specific at every layer, including the pre-specified L12 and L28, and with depth 1 excluded. The below-chance late → early reversal is layer-dependent (L15, L16), so it is not headlined. A pooled probe ≈ per-stage probes. The milestone scheme is underpowered (8 mixed tasks).
+
+### Blocked on me
+- MC release (box idling at $1.99/h); Phase 4 env (recommend ALFWorld @ 7B); held-out layer selection (only needed if the reversal is claimed); terminate box 1 if nothing else runs.
+
+### Changed
+- RESULTS §4 rewritten with L12 vs L16, depth ≥ 2, and the circularity caveat; DATASET_CHOICE 7B table.
+
+### Found
+- The stage-specific final-outcome probe holds at pre-specified layers; the reversal does not.
+
 ## 2026-09-24 16:57 UTC (12:57 PM ET) — CPU helper box running depth >= 2 analyses; Shlok away for lunch
 
 - **Helper box:** `afp-cpu-2` (GH200, 64 cores, ARM, us-east-3, 192.222.57.216, $2.29/h), id in `.lambda_instance_id_cpu2`. It runs `scripts/cpu2_run.sh`: depth ≥ 2 Phase 3 (range-averaged + milestone + per-round curves) and Phase 3X (layers 12, 13, 15, 16, 28 × all three schemes) in parallel, 30 workers each. Started 12:54 PM ET.

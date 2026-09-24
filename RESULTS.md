@@ -1,6 +1,6 @@
 # Results — does the single-step probe recipe transfer to multi-step agent tasks?
 
-Status: **interim (2026-09-24).** Phase 2 and the depth-1 stage-2 replication are complete for Qwen3-1.7B on TextCraft. Phase 3 last-step version done (§4); still to come: Phase 3 averaged-over-range version, depth ≥ 2 subset, the MC-value label, Phase 4 and the 7B model. Every number below is within-task AUC unless marked otherwise, with task-grouped 5-fold cross-fitting (no task in both train and test).
+Status: **interim (2026-09-24).** Phase 2 and the depth-1 stage-2 replication are complete for Qwen3-1.7B on TextCraft. Phase 3 done for all three schemes, all depths and depth ≥ 2, at layers 12/13/15/16/28 (§4); still to come: the MC-value label, Phase 4 and the 7B model. Every number below is within-task AUC unless marked otherwise, with task-grouped 5-fold cross-fitting (no task in both train and test).
 
 ## Headline finding for Prof. Lin
 
@@ -95,38 +95,53 @@ Depth-1 episodes only (1,000 episodes, 125 tasks), action-token site as in stage
 - **Why round 3 is plausible:** at depth 1 the round-3 population is exactly the episodes that did *not* succeed in their first two actions. Round 3 is where the model is recovering from, or repeating, a failed first attempt, which is where internal state could carry information the transcript doesn't yet show. This is an interpretation, not a tested claim.
 - **In the pooled depth-1–3 analysis (§1) the window disappears.** There, depth-2/3 episodes, which are mostly long failures, dominate every round.
 
-### 4. Stage transfer (Phase 3), last-step version: the final-outcome probe is stage-specific; the immediate-validity probe mostly transfers
+### 4. Stage transfer (Phase 3): the final-outcome probe does not transfer across stages; the immediate-validity probe does
 
-**Setup.** Each round range is represented by its last step: early 1–2 → round 2, mid 3–5 → round 5, late 6–10 → round 10. A probe is trained on one representative round and tested on the others (task-grouped folds shared across stages). The **same-episode** (cohort) version uses only episodes lasting ≥ 10 rounds (3,373 episodes, 82 mixed-outcome tasks), so every stage is scored on the same episodes. The naive version uses whoever is alive at each round. Layers {13, 15, 16, 28}: the top 3 from Phase 2 plus the last layer. All depths. The averaged-over-range version (every round in the range, episode-weighted) is still running and will be added alongside this.
+**Setup.** Train a probe on one stage, test it on the others. Task-grouped folds are shared across stages. Three stage schemes:
+- **Last step of each range** (early 1–2 → round 2, mid 3–5 → round 5, late 6–10 → round 10).
+- **Range-averaged** (every round in the range, each episode weighted equally).
+- **Milestones** (the round of the k-th non-terminal craft).
 
-**FINAL outcome, same-episode, layer 16** (within-task AUC [95% CI]; rows = trained on, columns = tested on):
+Two populations:
+- **Same-episode (primary):** only episodes lasting ≥ 10 rounds, so every stage is scored on the same episodes. That's 3,373 episodes, 114 successes, 82 mixed-outcome tasks: depth 1 = 252 episodes / 15 mixed tasks, depth 2 = 2,187 / 59, depth 3 = 934 / 8.
+- **Naive:** whoever is alive at each stage.
 
-| train ↓ / test → | early (r2) | mid (r5) | late (r10) |
+Layers: 12 is the stage-2 best layer (pre-specified, independent rollouts), 28 is Ruan's layer (pre-specified), and 13 / 15 / 16 were selected from Phase 2 on these data.
+
+**FINAL outcome, same-episode, last-step scheme: layer 12 vs layer 16** (within-task AUC; rows = trained on, columns = tested on):
+
+| train ↓ / test → | L12 early | L12 mid | L12 late | | L16 early | L16 mid | L16 late |
+|---|---|---|---|---|---|---|---|
+| early (r2) | 0.562 | 0.475 | 0.490 | | 0.537 | 0.479 | 0.480 |
+| mid (r5) | 0.510 | 0.576 | 0.623 | | 0.530 | 0.589 | 0.653 |
+| late (r10) | 0.508 | 0.547 | **0.775** | | **0.425** | 0.549 | **0.766** |
+| pooled | 0.534 | 0.552 | 0.729 | | 0.525 | 0.620 | 0.749 |
+
+**Late-trained probe, same-episode, last-step, every layer tested** (late → early [95% CI] / late → late):
+
+| layer | how chosen | all depths (82 mixed tasks) | depth ≥ 2 only (67 mixed tasks) |
 |---|---|---|---|
-| early (r2) | 0.537 [0.47, 0.60] | 0.479 [0.41, 0.55] | 0.480 [0.42, 0.55] |
-| mid (r5) | 0.530 | 0.589 [0.52, 0.66] | 0.653 [0.59, 0.72] |
-| late (r10) | **0.425 [0.37, 0.49]** | 0.549 | **0.766 [0.71, 0.82]** |
-| pooled (all 3) | 0.525 | 0.620 | 0.749 |
+| 12 | stage-2 best (independent) | 0.508 [0.44, 0.57] / 0.775 | 0.538 [0.46, 0.61] / 0.814 |
+| 13 | Phase 2 (same data) | 0.522 [0.45, 0.59] / 0.761 | 0.529 [0.45, 0.61] / 0.764 |
+| 15 | Phase 2 (same data) | **0.403 [0.34, 0.47]** / 0.776 | **0.398 [0.33, 0.47]** / 0.767 |
+| 16 | Phase 2 (same data) | **0.425 [0.37, 0.49]** / 0.766 | 0.447 [0.37, 0.52] / 0.762 |
+| 28 | Ruan's (pre-specified) | 0.435 [0.37, 0.51] / 0.802 | 0.451 [0.37, 0.53] / 0.801 |
 
-- **A late-stage probe is strong on its own stage (0.77–0.80 across the 4 layers) and fails on the same episodes' early states.** At layers 15 and 16 it scores significantly *below* chance there (0.403 [0.34, 0.47]; 0.425 [0.37, 0.49]). The failure direction it learned at round 10 is anti-aligned with how failing and succeeding episodes differ at round 2. That is a sign flip, not just a weaker signal.
-- **Early states carry little final-outcome signal of their own** (diagonal 0.54–0.55; lower CIs 0.47–0.48). So "early doesn't transfer forward" is partly "there is little to transfer".
-- **Mid → late degrades by ~0.1:** 0.63–0.71 vs late's own 0.76–0.80. The CIs overlap.
-- **A single probe pooled over all three stages roughly matches the per-stage probes on each stage** (L16: 0.525 / 0.620 / 0.749 vs diagonal 0.537 / 0.589 / 0.766). So this matrix does *not* show that per-stage probes beat one pooled probe. Both versions of Lin's hypothesis need stating separately: (a) a probe trained at one stage fails at another — **supported, strongly for late → early**; (b) a pooled probe can't cover all stages — **not supported here**.
-- **The naive matrix overstates transfer.** L16 naive early → mid 0.643 and early → late 0.619, vs 0.479 / 0.480 in the same-episode version. Without the cohort control, population shift (task difficulty carried across rounds) makes early probes look like they transfer.
-- **Calibration drifts only mildly:** ECE 0.03–0.04 on the diagonal, 0.05–0.08 off it (largest for early → mid/late and late → early).
+**What holds, and what doesn't:**
+- **Robust, at every layer, both populations, all schemes with enough power: the final-outcome probe is stage-specific.** A late-trained probe reads the late stage well (0.76–0.81) and is at chance or worse on the same episodes' early states (0.40–0.54). An early-trained probe is weak everywhere (~0.48–0.56). Mid → late is 0.62–0.79, below late's own diagonal at most layers. This is Lin's hypothesis (a), a probe trained at one stage fails at another, **supported at the two pre-specified layers (12 and 28), not only at the selected ones**.
+- **The below-chance reversal is layer-dependent.** It is significant at L15 in both populations and at L16 across all depths. It is borderline at L28 and absent at L12 and L13. **We should not headline it.** The robust claim is "no transfer", not "sign flip".
+- **Excluding depth 1 changes nothing qualitatively** (right-hand column). Depth 1 was 7.5% of the cohort's episodes and 18% of its mixed tasks.
+- **Range-averaged scheme** (same-episode, L12 / L16): late → late 0.893 / 0.884, early → late 0.472 / 0.632, late → early 0.505 / 0.500. Same shape, with a stronger late diagonal because it averages 5 late rounds.
+- **A single probe pooled over all stages ≈ the per-stage probes** in every scheme (e.g. range-averaged L12: pooled → late 0.897 vs late → late 0.893). Lin's hypothesis (b), that one probe can't cover all stages, is **not supported**.
+- **The naive matrix overstates transfer** (L16 last-step early → mid 0.64 vs 0.48 same-episode). Population shift makes early probes look transferable.
+- **The milestone scheme is underpowered:** only 8 mixed tasks survive to milestone 3 in the same-episode population, and the AUCs swing 0.14–0.71. No conclusion from it at 1.7B.
+- **IMMEDIATE validity/progress probes transfer:** ≤ 0.06 drop at mid layers, more at L28.
 
-**IMMEDIATE validity (action rejected), same-episode, layer 16:** diagonal 0.980 / 0.986 / 0.977; worst off-diagonal early → late 0.923 and late → early 0.933. **The probe that works mostly transfers:** a drop of ≤ 0.06 at mid-network. The last layer transfers worse (L28 early → late 0.832 vs 0.971 on its own stage). No-progress behaves the same way (L16 worst off-diagonal 0.857, late → early).
-
-**Reading.** Across stages, the recipe splits along the same line as in §1–2. The immediate-step probe is accurate *and* stage-robust at mid layers. The final-outcome probe is stage-specific: strongest late, weak early, and reversed when a late probe reads early states. That is the pattern Lin predicted, for the long-horizon label.
-
-**Caveats.**
-- The same-episode population is episodes lasting ≥ 10 rounds: mostly failures plus slow successes (82 mixed tasks).
-- The layers were chosen from Phase 2 on the same data. That can inflate absolute AUCs but not the matrix shape.
-- 4 layers × 3 labels × 2 populations × 12 cells were computed, so single cells should not be over-read. The late → early reversal holds at 3 of 4 layers (L13: 0.522, n.s.).
+**Circularity caveat (layer selection).** Layers 13 / 15 / 16 were selected by Phase 2 on the same 4,264 episodes that Phase 3 analyses. That inflates their absolute AUCs, and **the reversal appears mainly at those selected layers**. Layers 12 (from the independent stage-2 run) and 28 (fixed in advance) were not selected on these data, and both show the robust pattern (late → late 0.78–0.80, late → early 0.44–0.51). **Held-out layer selection before this goes to Lin:** not needed for the robust claim, which the two pre-specified layers already carry. It *would* be needed to claim the below-chance reversal. It's cheap (select layers on half the tasks, evaluate the matrix on the other half, ~10 min of CPU) and worth running if the reversal is going into the story. Otherwise, report the reversal as layer-dependent and exploratory.
 
 ## Open questions
 
-1. Does the IMMEDIATE-label probe, the one that works, stay stable across stages? This is the version of Lin's hypothesis that can still come out either way.
+1. Is the late → early below-chance reversal real? It's layer-dependent (L15/L16) and needs a held-out layer selection before it can be claimed.
 2. Why is the depth-1 advantage confined to round 3? Does it track the recover-or-repeat decision after a failed first attempt?
 3. Is "probe ≈ text for final outcome" specific to a 1.7B model that mostly fails on hard tasks, or does it hold at Qwen2.5-7B (Ruan's strongest TextCraft setting)?
 4. Does an MC-value label, which varies within an episode, recover a hidden-state advantage that the binary final label can't show?
