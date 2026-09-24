@@ -1,5 +1,22 @@
 # Status — multistep-gap run
 
+## 2026-09-24 16:57 UTC (12:57 PM ET) — CPU helper box running depth >= 2 analyses; Shlok away for lunch
+
+- **Helper box:** `afp-cpu-2` (GH200, 64 cores, ARM, us-east-3, 192.222.57.216, $2.29/h), id in `.lambda_instance_id_cpu2`. It runs `scripts/cpu2_run.sh`: depth ≥ 2 Phase 3 (range-averaged + milestone + per-round curves) and Phase 3X (layers 12, 13, 15, 16, 28 × all three schemes) in parallel, 30 workers each. Started 12:54 PM ET.
+- **Box 1 tmux `to2`** (`scripts/cpu2_orchestrate.sh`) stopped box 1's depth ≥ 2 jobs (`fast` lane B, `d2x`), holds depth_ge2's lock so tc2 won't redo them, and copied the data. When the helper finishes, it pulls the results back, writes DONE_all, draws the figures, then has the helper **terminate itself**. The Lambda key is stored only on the helper, mode 600, and dies with it.
+- **Still on box 1:** tc2 (all-depths Phase 3, averaged), `l12` (layers 12 vs 16), `p7b2` (resuming the crashed ScienceWorld/BabyAI 7B pilots → CORRECTED gate summary). MC on hold.
+- **ALFWorld 7B pilot:** 66/160 success, **14/20 mixed** → passes the Phase 4 gate (1.7B: 0/80).
+- ETA: everything by ~1:30–2:00 PM ET. Box 1 then idles on the MC hold and bills until Shlok terminates it or releases MC.
+
+### Blocked on me
+- MC release; Phase 4 env choice (ALFWorld passes at 7B; ScienceWorld/BabyAI pending the reruns); terminate box 1 when done.
+
+### Changed
+- `scripts/cpu2_run.sh`, `scripts/cpu2_orchestrate.sh`; box-1 key `~/.ssh/box2_ed25519` (box 1 → helper only).
+
+### Found
+- ALFWorld becomes viable at 7B (14/20 mixed).
+
 ## 2026-09-24 16:15 UTC (12:15 PM ET) — Phase 3 last-step results (all depths)
 
 `phase3_transfer_laststep.csv` (done 12:06 PM ET). Headline, same-episode, FINAL:
