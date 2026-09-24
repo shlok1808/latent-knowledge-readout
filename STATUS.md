@@ -1,5 +1,22 @@
 # Status — multistep-gap run
 
+## 2026-09-24 20:15 UTC (4:15 PM ET) — ALFWorld collected; τ² pilot running
+
+- **ALFWorld @ Qwen2.5-7B** (A100 `afp-alfworld`, 129.213.18.165): 1,600/1,600 episodes. **35.1% success, 132/200 mixed tasks**, successes spread over rounds 3–30. Extraction started 4:04 PM ET (~30 min), then Phases 2–3 + W&B automatically (`scripts/run_env.sh`, tmux `alf`). Speed fixes: 8 parallel servers; parallel env creation (serial creation cost ~12 min per 320-episode chunk).
+- **τ²-bench pilot** (A100 `afp-tau2`, us-west-2, 129.146.61.181): adapter `mstep/tau2env.py` + `ServerEngine`; smoke test passed (airline task solved, DB 1.0 / COMMUNICATE 1.0). Pilot 20 tasks × 8 launched 4:10 PM ET (`scripts/run_tau2.sh`, tmux `tau`). Decisions: ASSUMPTIONS A-24–A-26.
+- **H100:** SSH never came up, even after a restart; terminated by Shlok. A duplicate A100 I had launched was terminated immediately (empty).
+- **W&B:** private project https://wandb.ai/agentic-interp/agent-failure-probes-multistep (team `agentic-interp`, whose only member is Shlok). TextCraft results backfilled; new runs log automatically.
+
+### Blocked on me
+- Nothing now. After the τ² pilot: decide its full run (gate ≥ 6/20 mixed).
+
+### Changed
+- `mstep/tau2env.py`, `mstep/wb.py`, `mstep/rollout.py` (ServerEngine, parallel env creation, N-server sharding, W&B), `mstep/httpenv.py` (port override), `mstep/dataset.py` (τ² labels), `scripts/run_tau2.sh`, `scripts/run_env.sh`, `scripts/env_servers.sh`, configs.
+
+### Found
+- ALFWorld @ 7B is a much richer testbed for stages than TextCraft: 66% of tasks mixed vs 28%, with successes throughout the episode.
+- Qwen3-8B on τ² hallucinates tool names and arguments (e.g. `get_user_id_by_email` instead of `find_user_id_by_email`): a realistic failure mode.
+
 ## 2026-09-24 ~18:35 UTC (2:35 PM ET) — Box 1 terminated; everything pulled
 
 - **Pulled to the Mac and verified against the box before terminating:**

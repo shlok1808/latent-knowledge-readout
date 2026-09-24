@@ -33,6 +33,10 @@ def _babyai_state(obs):
 
 def http_round_labels(env, r, prev_obs=""):
     """Validity / progress / milestone event for AgentGym HTTP envs (A-21)."""
+    if env == "tau2":
+        # REAL step label: the tool call equals an action of τ²'s reference trajectory (A-24).
+        m = int(r.get("expected_action_match", 0))
+        return {"valid": int(r["validity"] == "executable"), "progress": m, "crafted": m}
     if env == "alfworld":
         progress = r["observation"].startswith(ALFWORLD_PROGRESS)
     elif env == "babyai":

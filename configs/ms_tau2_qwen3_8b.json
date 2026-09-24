@@ -1,0 +1,60 @@
+{
+ "name": "ms-tau2-qwen3-8b",
+ "env": "tau2",
+ "backend": "server",
+ "model": "Qwen/Qwen3-8B",
+ "model_revision": "b968826d9c46dd6066d109eabc6255188de91218",
+ "domains_splits": [
+  [
+   "retail",
+   "test"
+  ],
+  [
+   "airline",
+   "test"
+  ]
+ ],
+ "server": {
+  "url": "http://127.0.0.1:8000/v1",
+  "served_name": "Qwen/Qwen3-8B",
+  "concurrency": 96
+ },
+ "user_sim": {
+  "llm": "hosted_vllm/Qwen/Qwen3-8B",
+  "args": {
+   "temperature": 0.0,
+   "api_base": "http://127.0.0.1:8000/v1",
+   "extra_body": {
+    "chat_template_kwargs": {
+     "enable_thinking": false
+    }
+   }
+  }
+ },
+ "attempts": 8,
+ "environment_seed": 42,
+ "generation_seed": 20260925,
+ "temperature": 0.8,
+ "top_p": 0.95,
+ "max_new_tokens": 512,
+ "context_limit": 32768,
+ "max_rounds": 30,
+ "tau2_max_steps": 200,
+ "chunk_episodes": 160,
+ "mc": {
+  "n": 8,
+  "rounds": [
+   1,
+   2,
+   3,
+   5,
+   8
+  ],
+  "milestones": false,
+  "chunk_episodes": 64
+ },
+ "pilot": {
+  "tasks_per_domain": 10
+ },
+ "note": "\u03c4\u00b2-bench pilot (Shlok 2026-09-24): Qwen3-8B agent + Qwen3-8B user simulator on one local vLLM server (A100 40GB; the H100 plan for 14B fell through). User sim temperature 0 = \u03c4\u00b2 default; agent sampling matches the rest of the run."
+}

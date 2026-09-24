@@ -21,6 +21,7 @@ from failure_probes.common import ROOT
 
 CLIENTS = ROOT / "vendor/AgentGym/agentenv/agentenv/envs"
 PORTS = {"alfworld": 36002, "sciworld": 36001, "babyai": 36003}
+MULTI_BASE = {"alfworld": 36100}  # N parallel servers on MULTI_BASE+k (scripts/env_servers.sh start_n)
 # AgentEval test-split indices (HF AgentGym/AgentEval *_test.json).
 INVALID = {"alfworld": ("Nothing happens.",), "sciworld": ("No known action matches that input.",),
            "babyai": ("The action is not recognized",)}
@@ -59,8 +60,8 @@ def parse_babyai(text):
 
 
 class Episode:
-    def __init__(self, env, task, host="127.0.0.1"):
-        self.env, self.base = env, f"http://{host}:{PORTS[env]}"
+    def __init__(self, env, task, host="127.0.0.1", port=None):
+        self.env, self.base = env, f"http://{host}:{port or PORTS[env]}"
         self.session = requests.Session()
         self.id = self._post("create", {}, with_id=False)["id"]
         idx = task["data_idx"]
