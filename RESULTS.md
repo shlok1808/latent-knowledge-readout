@@ -173,6 +173,40 @@ Layers: 12 is the stage-2 best layer (pre-specified, independent rollouts), 28 i
 
 **Circularity caveat (layer selection).** Layers 13 / 15 / 16 were selected by Phase 2 on the same 4,264 episodes that Phase 3 analyses. That inflates their absolute AUCs, and **the reversal appears mainly at those selected layers**. Layers 12 (from the independent stage-2 run) and 28 (fixed in advance) were not selected on these data, and both show the robust pattern (late → late 0.78–0.80, late → early 0.44–0.51). **Held-out layer selection before this goes to Lin:** not needed for the robust claim, which the two pre-specified layers already carry. It *would* be needed to claim the below-chance reversal. It's cheap (select layers on half the tasks, evaluate the matrix on the other half, ~10 min of CPU) and worth running if the reversal is going into the story. Otherwise, report the reversal as layer-dependent and exploratory.
 
+### 5. ALFWorld × Qwen2.5-7B: pre-registered test (1,600 episodes, 200 games, 132 mixed tasks)
+
+Verdicts use only the pre-registered layers (12, 28), the same-episode population, the last-step scheme, and within-task AUC.
+
+| Prediction | Pre-registered criterion | Result | Verdict |
+|---|---|---|---|
+| **P1** final outcome is stage-specific | late → early < late → late by ≥ 0.10; late → early CI includes or lies below 0.5 | L12: 0.510 [0.46, 0.56] vs 0.619 (−0.109); L28: 0.486 [0.43, 0.54] vs 0.633 (−0.146) | **Supported** (not falsified at either layer) |
+| **P2** immediate-step probe transfers | falsified if the worst off-diagonal drop > 0.10 at both layers | action invalid: worst drop 0.32 (L12), 0.29 (L28). No progress: 0.05 (L12), 0.11 (L28) | **Falsified for action-validity**; not falsified for progress |
+| **P3** final-outcome probe ≈ text | falsified if probe beats text by > 0.05 at ≥ 2 rounds with > 50% of layers | 0% of layers beat text by > 0.05 at any round. Text is *higher* at t = 5 (0.606 vs best 0.571) and t = 8 (0.640 vs 0.622) | **Supported** |
+
+**Same-episode, last-step, FINAL outcome** (114 mixed tasks):
+
+| train ↓ / test → | L12 early | L12 mid | L12 late | | L28 early | L28 mid | L28 late |
+|---|---|---|---|---|---|---|---|
+| early (r2) | 0.545 | 0.525 | 0.471 | | 0.514 | 0.512 | 0.576 |
+| mid (r5) | 0.478 | 0.543 | 0.515 | | 0.464 | 0.544 | 0.544 |
+| late (r10) | 0.510 | 0.515 | **0.619** | | 0.486 | 0.499 | **0.633** |
+| pooled | 0.528 | 0.533 | 0.585 | | 0.499 | 0.540 | 0.612 |
+
+**Same-episode, last-step, ACTION INVALID** (mixed tasks per test stage: 14 / 69 / 104):
+
+| train ↓ / test → | L12 early | L12 mid | L12 late | | L28 early | L28 mid | L28 late |
+|---|---|---|---|---|---|---|---|
+| early (r2) | 0.923 | **0.635** | **0.589** | | 0.969 | **0.649** | **0.704** |
+| mid (r5) | 0.862 | 0.924 | 0.874 | | 0.900 | 0.934 | 0.865 |
+| late (r10) | 0.885 | 0.844 | 0.912 | | 0.885 | 0.863 | 0.917 |
+| pooled | 0.938 | 0.945 | 0.932 | | 0.900 | 0.952 | 0.917 |
+
+**Reading.**
+- **Final outcome, same shape as TextCraft.** It's only weakly decodable at all (diagonals 0.51–0.63), readable mainly late, and a late probe is at chance on the same episodes' early states. The probe never beats text.
+- **New in ALFWorld: the action-validity probe is stage-specific in one direction.** A probe trained on early turns fails on later ones (0.59–0.70 vs diagonals 0.91–0.93), while mid- and late-trained probes transfer back well (0.86–0.90). The failing cells are well-powered (69 and 104 mixed tasks at test).
+  - A likely cause, not yet tested: at round 2 few actions are invalid, so the early probe learns from few positives. The early *test* cell (14 mixed tasks) is itself underpowered.
+- **A single probe pooled over all stages matches or beats every per-stage probe** (valid-action 0.93–0.95; final 0.50–0.61). So "a pooled probe can't cover all stages" is again **not supported**.
+
 ## Open questions
 
 1. Is the late → early below-chance reversal real? It's layer-dependent (L15/L16) and needs a held-out layer selection before it can be claimed.
