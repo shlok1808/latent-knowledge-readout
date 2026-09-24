@@ -356,7 +356,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--phase", default="all", choices=["2", "3", "all"])
     ap.add_argument("--site", default="last", choices=["last", "action"])
-    ap.add_argument("--subset", default="all", help="'all' or 'depth>=2'")
+    ap.add_argument("--subset", default="all", help="'all', 'depth>=2' or 'depth==1' (stage-2 replication)")
     ap.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 2) - 2))
     ap.add_argument("--t-max", type=int, default=10)
     a = ap.parse_args()
@@ -369,10 +369,14 @@ def main():
     keep = np.ones(len(df), bool)
     if a.subset == "depth>=2":
         keep = df["depth"].to_numpy() >= 2
+    elif a.subset == "depth==1":
+        keep = df["depth"].to_numpy() == 1
+    elif a.subset != "all":
+        raise SystemExit(f"unknown subset {a.subset}")
     rows = np.where(keep)[0]
     if not keep.all():
         # Materialise subset layer files so workers read contiguous arrays.
-        sub = run / "acts" / "by_layer" / a.subset.replace(">=", "ge")
+        sub = run / "acts" / "by_layer" / a.subset.replace(">=", "ge").replace("==", "eq")
         sub.mkdir(exist_ok=True)
         new = []
         for l, p in enumerate(paths):
