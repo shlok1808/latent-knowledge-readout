@@ -10,6 +10,9 @@ Main threat, and why the **same-episode (cohort) control is a PRIMARY analysis**
 
 Prior baseline (stage-2, depth 1, round 1, layer 28): pooled AUC 0.791 (replicates Ruan et al. 2607.06503), within-task 0.547; a layer/round sweep found 0.801 at layer 12 / round 3. Lin called layer/round picking "heuristic tuning, not a contribution".
 
+## 0. LATEST (2026-09-24 6:42 PM ET)
+Read STATUS.md's newest entry first. ALFWorld is done (RESULTS §5). τ² full finishes on its own and self-terminates ~7:15 PM ET; its data goes to the W&B artifact `ms-tau2-qwen3-8b-data`. Next steps are listed in STATUS.
+
 ## 2. Box state right now
 
 **UPDATE 2026-09-24 2:35 PM ET: NO BOX IS RUNNING.** Both instances terminated; all data except the 39 GB of activations is on the Mac under `runs/`, `logs/`, `results/`. The table below describes the last box and is kept for reference. To resume, see STATUS (newest entry).
