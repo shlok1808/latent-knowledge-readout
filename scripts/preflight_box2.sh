@@ -27,8 +27,18 @@ print("PREFLIGHT OK   qwen3-8b fits (gen + 8k-token all-layer forward)")
 EOF
 
 echo "===== vLLM venv"
+# The box driver supports CUDA 12.8; vLLM 0.30's default wheel is cu130 and refuses it.
+# Use the cu129 build (CUDA minor-version compatibility), matching torchvision, no
+# torchcodec (cu130-only lib), and ninja for flashinfer's JIT. Found 2026-09-23.
 E=~/envs/vllm; [ -d $E ] || uv venv -q $E --python 3.12
-VIRTUAL_ENV=$E uv pip install -q vllm && $E/bin/python -c "import vllm, torch; print('vllm', vllm.__version__, 'torch', torch.__version__)" \
+VIRTUAL_ENV=$E uv pip install -q "vllm==0.30.0" --torch-backend=cu129 \
+  --extra-index-url https://wheels.vllm.ai/0.30.0/cu129 --index-strategy unsafe-best-match
+VIRTUAL_ENV=$E uv pip install -q --reinstall-package torchvision torchvision --torch-backend=cu129
+VIRTUAL_ENV=$E uv pip uninstall -q torchcodec 2>/dev/null
+VIRTUAL_ENV=$E uv pip install -q ninja gymnasium requests
+VIRTUAL_ENV=$E uv pip install -q --no-deps -e $REPO
+export PATH=$E/bin:$PATH
+$E/bin/python -c "import vllm, torch; print('vllm', vllm.__version__, 'torch', torch.__version__, torch.version.cuda)" \
   && echo "PREFLIGHT OK   vllm install" || echo "PREFLIGHT FAIL vllm install"
 
 echo "===== vLLM throughput (Qwen3-1.7B, seeded sampling, 512 prompts)"

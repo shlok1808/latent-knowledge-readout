@@ -8,8 +8,9 @@ scripts/env_servers.sh.
 
 Uniform per-round fields: action, observation, reward (1 iff this step completed
 the task), done, validity (executable / invalid), native_score (env's own
-progress signal: ScienceWorld score 0-100, BabyAI subgoal reward in [0,1];
-ALFWorld has none -> None), score_delta.
+progress signal: ScienceWorld score 0-100; BabyAI's is terminal-only (MiniGrid
+completion reward, 0 before success), so it is NOT a step signal; ALFWorld has none
+-> None), score_delta.
 """
 import ast
 import re
@@ -105,8 +106,12 @@ class Episode:
             native = float(r["score"])
             success = native >= 100
         else:
-            native = float(r["reward"])  # subgoal progress in [0,1]
-            success = done and native >= 1.0
+            # AgentGym's BabyAI server never passes obs_to_reward, so `reward` is plain MiniGrid:
+            # 0 on every step, 1 - 0.9*steps/max_steps on completion, and `done` is only set when
+            # that reward exceeds 0.5 (environment.py update()). So done == success, and there is
+            # NO per-step or subgoal reward (A-21).
+            native = float(r["reward"])
+            success = done and "The task is completed" in obs
         invalid = obs.strip().startswith(INVALID[env])
         return self._rec(action, obs, done, invalid, native, success)
 

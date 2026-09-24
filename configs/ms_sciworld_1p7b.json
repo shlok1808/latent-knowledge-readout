@@ -213,7 +213,7 @@
  "max_new_tokens": 256,
  "context_limit": 16384,
  "max_rounds": 30,
- "chunk_episodes": 256,
+ "chunk_episodes": 40,
  "mc": {
   "n": 8,
   "rounds": [
@@ -229,5 +229,6 @@
  "pilot": {
   "tasks": 10
  },
- "source": "AgentEval test split (HF AgentGym/AgentEval sciworld_test.json); max_rounds 30 and context 16384 follow the AgentGym-protocol HF cards"
+ "source": "AgentEval test split (HF AgentGym/AgentEval sciworld_test.json); max_rounds 30 and context 16384 follow the AgentGym-protocol HF cards",
+ "restart_server_every_chunk": true
 }
