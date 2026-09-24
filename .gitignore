@@ -7,3 +7,10 @@ runs/
 .env
 *.pt
 *.safetensors
+writeup/*.aux
+writeup/*.log
+writeup/*.out
+.lambda_instance*
+results/multistep/**/acts/
+logs/
+.lambda_ip*
