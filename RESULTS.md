@@ -47,6 +47,11 @@ Written after the TextCraft results (§1–§4), before extraction had finished 
 - **Population:** the same-episode cohort is primary (episodes present in every compared stage); naive reported beside it.
 - **Metric:** within-task pair-weighted AUC with task-cluster bootstrap CIs; pooled AUC and ECE secondary. Cells with < 15 mixed tasks are flagged and not used for the P1–P3 verdicts.
 
+### Deviations from the pre-registration (dated)
+- **2026-09-24 ~6:00 PM ET, before any ALFWorld/τ²-full probe result:**
+  - τ² phase scheme (d): the turn containing the first successful user-identification call is assigned to *identify* (the pre-registration said identify = turns *before* it). The call itself is part of identifying the user.
+  - Also: the automatic pipelines chose Phase 3 layers from Phase 2 and did not include the pre-registered layers or the last-step scheme. Fixed before results: ALFWorld runs a separate Phase 3X on layers 12 and 28 × all schemes; τ² adds layers 16 and 36 plus the last-step and phase schemes to its Phase 3. The P1–P3 verdicts use only the pre-registered layers.
+
 ## Hypothesis
 
 From the 2026-09-17 meeting (transcript 21:52–39:10): a probe trained on one stage of a trajectory performs well on that stage and degrades on others, like CEB's motivation figure (arXiv 2607.12397, Fig. 1). If so, stages carry different internal patterns, which would motivate a stage-robust method.

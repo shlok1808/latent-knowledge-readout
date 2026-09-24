@@ -87,7 +87,7 @@ def transfer_heatmaps(out, layer, scheme, metric="within_auc", src="phase3_trans
         for j, pop in enumerate(("naive", "cohort")):
             ax = axes[i, j]
             d = mat[(mat.label == lab) & (mat.population == pop)]
-            tests = [s for s in ("early", "mid", "late", "early@2", "mid@5", "late@10", "m1", "m2", "m3") if s in set(d.test)]
+            tests = [s for s in ("early", "mid", "late", "early@2", "mid@5", "late@10", "m1", "m2", "m3", "identify", "lookup", "act", "close") if s in set(d.test)]
             trains = tests + ["pooled"]
             grid = np.full((len(trains), len(tests)), np.nan)
             weak = np.zeros_like(grid, bool)
@@ -187,7 +187,7 @@ def main():
             if (out / "phase3_transfer_laststep.csv").exists():
                 transfer_heatmaps(out, layer, "laststep", src="phase3_transfer_laststep.csv")
                 transfer_heatmaps(out, layer, "laststep", metric="pooled_auc", src="phase3_transfer_laststep.csv")
-            for scheme in ("round", "milestone"):
+            for scheme in ("round", "milestone", "phase", "laststep"):
                 transfer_heatmaps(out, layer, scheme)
                 transfer_heatmaps(out, layer, scheme, metric="pooled_auc")
     print(f"figures written to {out}")

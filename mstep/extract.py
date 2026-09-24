@@ -45,6 +45,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True)
     ap.add_argument("--token-budget", type=int, default=32768)
+    ap.add_argument("--episode-pass", action="store_true",
+                    help="one forward pass per episode when each turn's prompt is an exact prefix of the next")
     a = ap.parse_args()
     run = Path(a.run)
     cfg = read_json(run / "manifest.json")["config"]
@@ -77,6 +79,63 @@ def main():
     handles = [model.model.embed_tokens.register_forward_hook(hook(0))]
     handles += [blk.register_forward_hook(hook(i + 1)) for i, blk in enumerate(model.model.layers)]
 
+    started, n_done = time.time(), 0
+    if a.episode_pass:
+        # Group pending rows by episode; an episode qualifies if every turn's prompt+generation
+        # is an exact prefix of the next turn's prompt (incremental prompts, rollout.py).
+        by_ep = {}
+        for i in range(N):
+            if not done[i]:
+                by_ep.setdefault(index[i]["episode_id"], []).append(i)
+        jobs, fallback = [], 0
+        for eid, rows in by_ep.items():
+            e = read_json(run / "episodes" / f"{eid}.json")
+            rr = [e["rounds"][index[i]["round"] - 1] for i in rows]
+            seqs = [r["prompt_token_ids"] + r["generated_token_ids"] for r in rr]
+            if all(b["prompt_token_ids"][:len(sa)] == sa for sa, b in zip(seqs, rr[1:])):
+                pos = []
+                for r in rr:
+                    base = len(r["prompt_token_ids"])
+                    pos.append((base + r["last_content_token"],
+                                base + (r["action_token_indices"][-1] if r["action_token_indices"] else r["last_content_token"])))
+                jobs.append((len(seqs[-1]), seqs[-1], rows, pos))
+            else:
+                fallback += len(rows)
+        log(f"episode-pass: {len(jobs)} episodes in one pass each; {fallback} rows fall back to per-turn replay")
+        jobs.sort(key=lambda j: j[0])
+        b0 = 0
+        while b0 < len(jobs):
+            b1 = b0 + 1
+            while b1 < len(jobs) and (b1 - b0 + 1) * jobs[b1][0] <= a.token_budget:
+                b1 += 1
+            batch = jobs[b0:b1]
+            L = max(j[0] for j in batch)
+            ids = torch.zeros((len(batch), L), dtype=torch.long); mask = torch.zeros((len(batch), L), dtype=torch.long)
+            bi, pi, rows_all = [], [], []
+            for k, (n, seq, rows, pos) in enumerate(batch):
+                ids[k, :n] = torch.tensor(seq); mask[k, :n] = 1
+                for row, (pl, pa) in zip(rows, pos):
+                    bi += [k, k]; pi += [pl, pa]; rows_all.append(row)
+            positions["b"] = torch.tensor(bi, device="cuda"); positions["p"] = torch.tensor(pi, device="cuda")
+            with torch.inference_mode():
+                model.model(input_ids=ids.cuda(), attention_mask=mask.cuda(), use_cache=False)
+            stacked = torch.stack([grab[l] for l in range(n_layers + 1)], dim=1)
+            if not torch.isfinite(stacked).all():
+                raise ValueError("non-finite hidden state")
+            stacked = stacked.to(torch.float16).numpy()
+            rows_np = np.array(rows_all)
+            arrays["last"][rows_np] = stacked[0::2]; arrays["action"][rows_np] = stacked[1::2]
+            done[rows_np] = True
+            n_done += len(rows_all); b0 = b1
+            if (b0 % 50) < len(batch):
+                for arr in arrays.values():
+                    arr.flush()
+                np.save(done_path, done)
+                log(f"episode-pass: {b0}/{len(jobs)} episodes, {int(done.sum())}/{N} rows, {n_done / (time.time() - started):.1f} rows/s")
+        for arr in arrays.values():
+            arr.flush()
+        np.save(done_path, done)
+
     # Length-sorted batches under a token budget; episodes are read lazily per batch.
     order = sorted((i for i in range(N) if not done[i]), key=lambda i: index[i]["len"])
     cache = {}
@@ -88,7 +147,7 @@ def main():
             cache[eid] = read_json(run / "episodes" / f"{eid}.json")
         return cache[eid]["rounds"][rnd - 1]
 
-    started, n_done, b0 = time.time(), 0, 0
+    b0 = 0
     while b0 < len(order):
         L = index[order[b0]]["len"]
         b1 = b0 + 1

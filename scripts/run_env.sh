@@ -23,7 +23,7 @@ soft summary $PY scripts/ms_summary.py "$RUN"
 [ "${WITH_MC:-0}" = 1 ] && step mc $VPY -m mstep.rollout mc --run "$RUN"
 step extract $PY -m mstep.extract --run "$RUN" --token-budget ${EXTRACT_BUDGET:-32768}
 soft dataset $PY -m mstep.dataset --run "$RUN"
-soft probes  $PY -m mstep.probes --run "$RUN" --out "$OUT" --jobs ${JOBS:-12}
+soft probes  $PY -m mstep.probes --run "$RUN" --out "$OUT" --jobs ${JOBS:-$(( $(nproc) - 2 ))}
 soft figures $PY -m mstep.figures --out "$OUT"
 soft wandb   $PY -m mstep.wb "$OUT" "$NAME"
 note "PIPELINE COMPLETE"

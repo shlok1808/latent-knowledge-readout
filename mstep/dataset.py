@@ -10,6 +10,7 @@ coding. AUC is symmetric, so this only fixes the sign of diff-of-means scores.
   python -m mstep.dataset --run runs/ms-tc-1p7b
 """
 import argparse
+import json
 from pathlib import Path
 
 import numpy as np
@@ -51,6 +52,40 @@ def http_round_labels(env, r, prev_obs=""):
     return {"valid": int(r["validity"] == "executable"), "progress": int(progress), "crafted": int(progress)}
 
 
+TAU2_IDENTIFY = ("find_user_id", "get_user_details")
+TAU2_WRITE = ("book_", "cancel_", "modify_", "update_", "return_", "exchange_", "send_")
+
+
+def _tool_name(action):
+    try:
+        return json.loads(action).get("name") or ""
+    except Exception:
+        return ""
+
+
+def tau2_phases(rounds):
+    """Pre-registered conversation phase per turn (RESULTS pre-registration, scheme d):
+    identify (up to the first successful user-identification call) -> lookup (read-only
+    calls after it) -> act (from the first successful write call on) -> close (final 2 turns)."""
+    n = len(rounds)
+    names = [_tool_name(r["action"]) for r in rounds]
+    ok = [r["validity"] == "executable" for r in rounds]
+    ident = next((r["round"] for r, nm, g in zip(rounds, names, ok) if g and nm.startswith(TAU2_IDENTIFY)), None)
+    write = next((r["round"] for r, nm, g in zip(rounds, names, ok) if g and nm.startswith(TAU2_WRITE)), None)
+    out = {}
+    for r in rounds:
+        t = r["round"]
+        if t > n - 2:
+            out[t] = "close"
+        elif write is not None and t >= write:
+            out[t] = "act"
+        elif ident is not None and t > ident:
+            out[t] = "lookup"
+        else:
+            out[t] = "identify"
+    return out
+
+
 def round_stage(r):
     return next(name for name, lo, hi in ROUND_STAGES if lo <= r <= hi)
 
@@ -81,6 +116,7 @@ def build(run):
             per_round = {}
             task = tasks[e["task_id"]]
             first_obs = task.get("initial_observation") or e.get("initial_observation", "")
+            phases = tau2_phases(e["rounds"]) if env == "tau2" else {}
             for r in e["rounds"]:
                 prev_obs = prior[-1]["observation"] if prior else first_obs
                 lab = tcmod.round_labels(task, r, tags) if env == "textcraft" else http_round_labels(env, r, prev_obs)
@@ -101,7 +137,8 @@ def build(run):
                     "valid_bad": 1 - lab["valid"], "noprogress_bad": 1 - lab["progress"],
                     "milestone": milestone, "text": text, "surface": surface,
                     "mc_value": mc.get(str(r["round"]), np.nan), "action": r["action"],
-                    "validity": r["validity"], "terminal_goal": terminal_goal}
+                    "validity": r["validity"], "terminal_goal": terminal_goal,
+                    "phase": phases.get(r["round"])}
                 texts += [r["response"], r["observation"]]
                 prior.append(r)
             cache[eid] = (e, per_round)
@@ -114,7 +151,7 @@ def build(run):
                      "mc_value": d["mc_value"],
                      "mc_bad": (np.nan if np.isnan(d["mc_value"]) else int(d["mc_value"] < 0.5)),
                      **{k: d[k] for k in ("valid_bad", "noprogress_bad", "milestone", "text", "surface",
-                                           "action", "validity", "terminal_goal")}})
+                                           "action", "validity", "terminal_goal", "phase")}})
     df = pd.DataFrame(rows)
     # Milestone of the episode's latest non-terminal craft at or before this round.
     df["milestones_reached"] = df.groupby("episode_id")["milestone"].transform(lambda s: s.ffill().fillna(0))

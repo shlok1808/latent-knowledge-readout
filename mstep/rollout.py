@@ -66,6 +66,23 @@ class Engine:
                                             enable_thinking=False)
         return self.tok(text, add_special_tokens=False).input_ids
 
+    def _incremental_ids(self, s):
+        """Next prompt = previous prompt + the exact generated tokens (+ <|im_end|> if the
+        generation was cut) + only the new messages rendered by the chat template. Keeps every
+        turn's prompt an exact prefix of the next, so extraction can read all turns from ONE
+        forward pass per episode (re-rendering drops Qwen3's empty think block from history,
+        which broke the prefix property; measured 14x less extraction compute on τ²)."""
+        end = self.tok.convert_tokens_to_ids("<|im_end|>")
+        prefix = s["_ids"] + s["_gen"] + ([] if s["_gen"] and s["_gen"][-1] == end else [end])
+        full = self.tok.apply_chat_template(s["messages"], tools=s.get("tools"), tokenize=False,
+                                            add_generation_prompt=True, enable_thinking=False)
+        marker = "<|im_end|>"
+        # the suffix starts right after the last assistant turn's <|im_end|>
+        gen_start = full.rfind("<|im_start|>assistant")            # the new generation prompt
+        last_asst = full.rfind("<|im_start|>assistant", 0, gen_start)  # the previous assistant turn
+        cut = full.find(marker, last_asst) + len(marker)
+        return prefix + self.tok(full[cut:], add_special_tokens=False).input_ids
+
     def generate_ids(self, id_lists, seeds):
         """Generated token ids per prompt (in-process vLLM)."""
         from vllm.inputs import TokensPrompt
@@ -80,7 +97,10 @@ class Engine:
         while active:
             prompts, seeds, live = [], [], []
             for s in active:
-                ids = self.prompt_ids(s["messages"], s.get("tools"))
+                if self.cfg.get("incremental_prompt") and s.get("_ids") is not None and s.get("_gen") is not None:
+                    ids = self._incremental_ids(s)
+                else:
+                    ids = self.prompt_ids(s["messages"], s.get("tools"))
                 if len(ids) + self.cfg["max_new_tokens"] > self.cfg["context_limit"]:
                     s["termination"] = "context_limit"
                     self._finish(s, on_finish)
@@ -107,7 +127,7 @@ class Engine:
             # Env steps: remote (HTTP) envs are stepped concurrently, in-process ones serially.
             ep0 = live[0]["episode"] if live else None
             if ep0 is not None and (getattr(ep0, "parallel_step", False) or getattr(ep0, "session", None) is not None):
-                with ThreadPoolExecutor(max_workers=64) as pool:
+                with ThreadPoolExecutor(max_workers=self.cfg.get("step_workers", 64)) as pool:
                     recs = list(pool.map(lambda d: d[0]["episode"].step(d[4]), decoded))
             else:
                 recs = [d[0]["episode"].step(d[4]) for d in decoded]
@@ -117,6 +137,7 @@ class Engine:
                             "raw_response": raw, "last_content_token": last,
                             "action_token_indices": positions,
                             "hit_token_limit": len(gen) == self.cfg["max_new_tokens"] and gen[-1] not in self.special})
+                s["_gen"] = gen
                 if keep_tokens:
                     rec["prompt_token_ids"] = s["_ids"]
                     rec["generated_token_ids"] = gen

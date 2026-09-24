@@ -1,5 +1,22 @@
 # Status — multistep-gap run
 
+## 2026-09-24 21:58 UTC (5:58 PM ET) — τ² full collected; pre-registration gaps fixed; boxes self-finishing
+
+- **τ² full** (H100 `afp-tau2-full`): 1,312 conversations. Retail 16.2% success, 47/114 mixed; airline 18.2%, 9/50 mixed (56 mixed total). Retail's full τ² reward incl. the local LLM judge is 13.6%, below our deterministic 16.2% (A-25). One-pass extraction ≈ 25 turns/s (incremental prompts, verified prefix 53/53). Analysis starts ~6:00 PM ET, with the phase scheme + prereg layers 16/36 + last-step added.
+- **ALFWorld** (A100): Phase 3 (auto layers 10/14/23/28) finishing; **pre-registered Phase 3X on layers 12 and 28** running in parallel (tmux `prereg`).
+- **τ² pilot** A100: pulled (160/160) and terminated at 5:16 PM ET. Pilot results are underpowered (8 mixed tasks). Valid-action probe 0.83–0.84 vs text 0.59 at the only powered cell.
+- **Self-finish on both boxes** (`scripts/finish_selfterm.sh`, tmux `finish`): when their pipeline (and, for ALFWorld, the prereg 3X marker) completes, they upload episodes/results/logs to the private W&B project, wait 15 min, then terminate themselves. The Mac watchers were stopped so they can't terminate a box before its pre-registered analysis finishes.
+- **Lessons recorded:** probes on GPU aren't faster at these sizes (validated equal, 3–9× slower); analysis jobs must default to all cores (fixed in the runners).
+
+### Blocked on me
+- Nothing. Results expected: ALFWorld ~6:15–6:30 PM ET; τ² full ~6:45–7:00 PM ET.
+
+### Changed
+- `mstep/dataset.py` (τ² phases), `mstep/probes.py` (phase + laststep in Phase 3, prereg layers, GPU path off by default), `mstep/figures.py`, `mstep/rollout.py` (incremental prompts, step_workers), `mstep/extract.py` (--episode-pass), `scripts/finish_selfterm.sh`, `scripts/pull_and_terminate.sh`, `scripts/setup_tau2_env.sh`, `scripts/tau2_summary.py`, runners.
+
+### Found
+- τ² full has enough mixed tasks (56) for within-task and stage analysis.
+
 ## 2026-09-24 20:15 UTC (4:15 PM ET) — ALFWorld collected; τ² pilot running
 
 - **ALFWorld @ Qwen2.5-7B** (A100 `afp-alfworld`, 129.213.18.165): 1,600/1,600 episodes. **35.1% success, 132/200 mixed tasks**, successes spread over rounds 3–30. Extraction started 4:04 PM ET (~30 min), then Phases 2–3 + W&B automatically (`scripts/run_env.sh`, tmux `alf`). Speed fixes: 8 parallel servers; parallel env creation (serial creation cost ~12 min per 320-episode chunk).
