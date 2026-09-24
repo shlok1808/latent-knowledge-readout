@@ -12,6 +12,9 @@ Prior baseline (stage-2, depth 1, round 1, layer 28): pooled AUC 0.791 (replicat
 
 ## 2. Box state right now
 
+**UPDATE 2026-09-24 2:35 PM ET: NO BOX IS RUNNING.** Both instances terminated; all data except the 39 GB of activations is on the Mac under `runs/`, `logs/`, `results/`. The table below describes the last box and is kept for reference. To resume, see STATUS (newest entry).
+
+
 Lambda instance **`afp-multistep-2`** (A100-SXM4-40GB, us-east-1, 129.213.24.153), id in `.lambda_instance_id`. Access: `scripts/lambda.sh {ip,ssh,sync,pull,status,terminate}` (keys in `~/.kyc-secrets`, SSH key `~/.ssh/lambda_key` = Lambda key `afp-lambda-key`). Repo on box: `~/agent-failure-probes`. **Box-hours used: 2.53 at 15:05 UTC** (this box ~0.3 + previous boxes 2.2). Watchdog cap 40.
 
 | tmux session | What it is | State at handoff |

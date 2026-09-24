@@ -69,6 +69,9 @@ Source of truth for what's next. `[x]` done, `[ ]` open, `[~]` in progress, `[-]
 
 - [x] HANDOFF.md written (2026-09-24 15:10)
 
+- [x] 2026-09-24 2:35 PM ET: box terminated after full pull (acts not pulled; rebuildable)
+- [ ] DECIDE: Phase 4 env (ALFWorld @ 7B recommended), MC depth 2, held-out layer selection
+
 ## Deliverables
 - [ ] results/ CSV + PNG by env/model
 - [~] RESULTS.md interim written (Phase 2 + headline framing for Lin); fill §3 replication, §4 Phase 3

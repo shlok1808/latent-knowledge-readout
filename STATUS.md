@@ -1,5 +1,24 @@
 # Status — multistep-gap run
 
+## 2026-09-24 ~18:35 UTC (2:35 PM ET) — Box 1 terminated; everything pulled
+
+- **Pulled to the Mac and verified against the box before terminating:**
+  - `runs/` for all 9 mstep runs (5,645 files; episode counts match: tc 4,264, tc pilot 320, 7B tc pilot 320, 7B sciworld/babyai/alfworld 160 each, 1.7B sciworld/babyai/alfworld 80 each), including `rounds.pkl` and `acts/{index,extraction}.json`.
+  - `logs/` (14 files) plus `logs/box_home/` (env-server and preflight logs).
+  - `results/multistep/` (94 files).
+- **Not pulled:** `runs/ms-tc-1p7b/acts/` (39 GB of activations). They are rebuildable from the saved tokens with `mstep.extract`, about 1 h on an A100.
+- `afp-multistep-2` terminated at Shlok's request; the GH200 helper had already terminated itself. **No Lambda instances running.** Total ≈ 5.8 box-hours this run (+2.2 earlier).
+- **To resume:** new box → `scripts/preflight_box.sh` + `preflight_box2.sh` → rsync `runs/` up → re-extract (`mstep.extract`) only if MC or new probes are needed.
+
+### Blocked on me
+- Phase 4 env (recommend ALFWorld @ 7B), MC on depth 2 (yes/no), held-out layer selection (only if the reversal is claimed).
+
+### Changed
+- Nothing in code.
+
+### Found
+- Nothing new.
+
 ## 2026-09-24 18:25 UTC (2:25 PM ET) — All runs done; results written
 
 - Everything finished by 1:23 PM ET. The GH200 helper terminated itself (verified: only afp-multistep-2 remains). Box 1 has been idle on the MC hold since then. Box-hours 5.7.
