@@ -1,5 +1,25 @@
 # Status — multistep-gap run
 
+## 2026-09-24 16:15 UTC (12:15 PM ET) — Phase 3 last-step results (all depths)
+
+`phase3_transfer_laststep.csv` (done 12:06 PM ET). Headline, same-episode, FINAL:
+- late → late 0.77–0.80; late → early 0.40–0.52, significantly below chance at L15/L16 (sign flip).
+- early states are weak on their own (0.54).
+- mid → late drops ~0.1.
+- a pooled probe ≈ per-stage probes.
+- the naive matrix overstates early → later transfer (0.64/0.62 vs 0.48/0.48 same-episode).
+
+Immediate validity/progress: ≤ 0.06 transfer drop at L16, larger at L28. Written into RESULTS §4.
+
+### Blocked on me
+- MC release; Phase 4 / 7B env choice after the corrected gate summary.
+
+### Changed
+- RESULTS §4 (last-step version).
+
+### Found
+- Lin's hypothesis (a) — a probe trained at one stage fails at another — is supported for the final-outcome label, strongest late → early, where it reverses sign. Hypothesis (b) — one pooled probe can't cover all stages — is not supported. The immediate-validity probe is stage-robust at mid layers.
+
 ## 2026-09-24 15:57 UTC — Last-step Phase 3 variant + parallel analysis lanes
 
 - **Last-step stage scheme (Shlok-approved boundaries):** early 1–2 → round 2, mid 3–5 → round 5, late 6–10 → round 10 (late capped at 10: an open-ended range has no last step, and an episode's final round leaks the outcome). Same-episode cohort = episodes with ≥ 10 rounds. `mstep/probes.py --phase 3L` → `phase3_transfer_laststep.csv`; same layers as Phase 3. Unit-checked on a toy table. **Both versions are kept:** the average-over-range version (tc2, running since 15:45) and the last-step version.
