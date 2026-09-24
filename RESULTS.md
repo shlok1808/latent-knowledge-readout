@@ -18,6 +18,35 @@ That round-specificity is itself early evidence for Lin's stage hypothesis. The 
 - **PAIR (2605.17877)** shows hidden-state probes degrade under an injected erroneous prefix, while attention features stay robust. They don't test cross-stage transfer either (their only transfer is cross-domain, GTA → HotpotQA), and they report pooled AUROC with no text baseline.
 - **Our contribution:** the within-task decomposition, and **the stage-transfer matrix**: train on stage A, test on stage B, with a same-episode control, on naturally occurring trajectories. Details in ASSUMPTIONS A-22, A-23.
 
+## Pre-registration for ALFWorld and τ²-bench (written 2026-09-24 ~4:55 PM ET, before any probe result for either env)
+
+Written after the TextCraft results (§1–§4), before extraction had finished for ALFWorld (Qwen2.5-7B, 1,600 episodes) or τ²-bench (Qwen3-8B; pilot 160 episodes, full 1,312). Nothing below may be edited after those results arrive. Deviations go in a dated "Deviations" note.
+
+**Questions** (from Lin's hypothesis, sharpened by TextCraft):
+- **Q1, final outcome, stage transfer:** does a probe trained at one stage fail at another, on the same episodes?
+- **Q2, immediate step, stage transfer:** does the step-level probe stay stable across stages? τ² is the first env with a real step label: the tool call matches a reference-trajectory action (A-24).
+- **Q3, probe vs text:** does the hidden state beat TF-IDF+surface on the final outcome anywhere?
+
+**Predictions** (from TextCraft):
+- **P1:** same-episode, last-step scheme: late → early < late → late by ≥ 0.10 within-task AUC. Late → early's CI includes 0.5 or lies below it.
+- **P2:** the IMMEDIATE-label probe transfers: worst off-diagonal within 0.07 of the diagonal at mid layers.
+- **P3:** final-outcome probe ≈ text: |probe − text| ≤ 0.03 within-task at most rounds; no advantage broad across layers.
+
+**What falsifies them** (each env separately):
+- **P1 is falsified** if late → early is within the late → late CI at *both* pre-specified layers. That would mean no stage gap for the final outcome in that env.
+- **P2 is falsified** if the worst off-diagonal drops > 0.10 below the diagonal at both pre-specified layers. That would mean the step-level probe is also stage-specific.
+- **P3 is falsified** if the probe beats text by > 0.05 at ≥ 2 rounds with > 50% of layers.
+
+**Fixed in advance:**
+- **Layers:** 12 and 28 of 28 (Qwen2.5-7B, ALFWorld: 12 = stage-2's layer, 28 = last, as Ruan used). Proportional depth for Qwen3-8B (36 layers): **16 and 36**. Selected layers get reported too, but only as exploratory.
+- **Stage schemes:**
+  - (a) last step of round ranges: early 1–2 → r2, mid 3–5 → r5, late 6–10 → r10
+  - (b) range-averaged
+  - (c) milestones: ALFWorld = k-th state change ("You pick up / put / clean / heat / cool …"); τ² = k-th tool call matching a reference action
+  - (d) τ² only, conversation phase: *identify* (before the first successful user-lookup tool call) → *lookup* (read-only tools) → *act* (first write tool call onward) → *close* (final 2 turns). Analysed alongside (a)–(c) per Shlok.
+- **Population:** the same-episode cohort is primary (episodes present in every compared stage); naive reported beside it.
+- **Metric:** within-task pair-weighted AUC with task-cluster bootstrap CIs; pooled AUC and ECE secondary. Cells with < 15 mixed tasks are flagged and not used for the P1–P3 verdicts.
+
 ## Hypothesis
 
 From the 2026-09-17 meeting (transcript 21:52–39:10): a probe trained on one stage of a trajectory performs well on that stage and degrades on others, like CEB's motivation figure (arXiv 2607.12397, Fig. 1). If so, stages carry different internal patterns, which would motivate a stage-robust method.
