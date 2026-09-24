@@ -12,6 +12,12 @@ We treat this as a finding, not a failure. It is the split Prof. Lin asked us to
 
 That round-specificity is itself early evidence for Lin's stage hypothesis. The Phase 3 transfer matrices test it directly.
 
+## What is new here vs prior work
+
+- **Ruan et al. (2607.06503), Fig. 3,** already shows round-by-round probe separability for TextCraft: round-1 AUC 0.86 for Qwen-2.5-7B and 0.81 for Qwen3-1.7B. They train one probe per round and never transfer across rounds. **Our round-by-round results confirm that baseline** (pooled round-1 0.791).
+- **PAIR (2605.17877)** shows hidden-state probes degrade under an injected erroneous prefix, while attention features stay robust. They don't test cross-stage transfer either (their only transfer is cross-domain, GTA → HotpotQA), and they report pooled AUROC with no text baseline.
+- **Our contribution:** the within-task decomposition, and **the stage-transfer matrix**: train on stage A, test on stage B, with a same-episode control, on naturally occurring trajectories. Details in ASSUMPTIONS A-22, A-23.
+
 ## Hypothesis
 
 From the 2026-09-17 meeting (transcript 21:52–39:10): a probe trained on one stage of a trajectory performs well on that stage and degrades on others, like CEB's motivation figure (arXiv 2607.12397, Fig. 1). If so, stages carry different internal patterns, which would motivate a stage-robust method.
