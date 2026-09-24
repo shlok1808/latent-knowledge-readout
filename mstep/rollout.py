@@ -264,9 +264,19 @@ def mc(run):
     paths = sorted((run / "episodes").glob("*.json"))
     # Optional scope restriction recorded next to the run (e.g. {"min_depth": 2}); written
     # after launch so the running runner script never has to be edited.
-    scope = read_json(run / "mc_scope.json") if (run / "mc_scope.json").exists() else {}
-    if "min_depth" in scope:
-        keep = {t["task_id"] for t in manifest["tasks"] if t.get("recipe_depth", 0) >= scope["min_depth"]}
+    scope_path = run / "mc_scope.json"
+    scope = read_json(scope_path) if scope_path.exists() else {}
+    # {"hold": true} parks MC here, BEFORE any model loads (no GPU memory held), until
+    # someone sets hold to false. Lets the unattended runner pause for a human decision.
+    if scope.get("hold"):
+        log(f"MC on HOLD per {scope_path}: {scope.get('reason', '')}. Waiting; set \"hold\": false to release.")
+        while scope.get("hold"):
+            time.sleep(60)
+            scope = read_json(scope_path)
+        log(f"MC hold released: scope={scope}")
+    if "min_depth" in scope or "max_depth" in scope:
+        lo, hi = scope.get("min_depth", 0), scope.get("max_depth", 10**6)
+        keep = {t["task_id"] for t in manifest["tasks"] if lo <= t.get("recipe_depth", 0) <= hi}
         paths = [p for p in paths if p.stem.rsplit("_attempt_", 1)[0] in keep]
     todo = [p for p in paths if not (run / "mc" / p.name).exists()]
     log(f"MC: {len(todo)} of {len(paths)} in-scope episodes need values (N={N}, scope={scope or 'all'})")
