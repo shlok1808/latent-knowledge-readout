@@ -23,11 +23,26 @@ ROUND_STAGES = [("early", 1, 2), ("mid", 3, 5), ("late", 6, 10**6)]
 ALFWORLD_PROGRESS = ("You pick up", "You put", "You clean", "You heat", "You cool", "You turn on", "You slice")
 
 
-def http_round_labels(env, r):
+def _babyai_state(obs):
+    """Carried object + door states mentioned in a BabyAI text observation."""
+    import re
+    carry = re.search(r"You are (not carrying anything|carrying [^.]*)", obs)
+    doors = tuple(sorted(re.findall(r"(open|closed|locked) [a-z]+ door", obs)))
+    return (carry.group(1) if carry else None), doors
+
+
+def http_round_labels(env, r, prev_obs=""):
     """Validity / progress / milestone event for AgentGym HTTP envs (A-21)."""
     if env == "alfworld":
         progress = r["observation"].startswith(ALFWORLD_PROGRESS)
-    else:  # sciworld score 0-100, babyai subgoal reward in [0,1]: native per-step progress
+    elif env == "babyai":
+        # No native step reward on the server path: proxy = the carried object changed, or
+        # the task completed. (Door states are listed only when visible, so a change in them
+        # can be a view change; only carrying counts.)
+        before, _ = _babyai_state(prev_obs)
+        after, _ = _babyai_state(r["observation"])
+        progress = (after is not None and after != before and after.startswith("carrying")) or r.get("reward") == 1
+    else:  # sciworld: native score 0-100
         progress = (r.get("score_delta") or 0) > 0
     return {"valid": int(r["validity"] == "executable"), "progress": int(progress), "crafted": int(progress)}
 
@@ -63,7 +78,8 @@ def build(run):
             task = tasks[e["task_id"]]
             first_obs = task.get("initial_observation") or e.get("initial_observation", "")
             for r in e["rounds"]:
-                lab = tcmod.round_labels(task, r, tags) if env == "textcraft" else http_round_labels(env, r)
+                prev_obs = prior[-1]["observation"] if prior else first_obs
+                lab = tcmod.round_labels(task, r, tags) if env == "textcraft" else http_round_labels(env, r, prev_obs)
                 terminal_goal = bool(r["done"] and r["reward"] == 1)
                 milestone = None
                 if lab["crafted"] and not terminal_goal:
