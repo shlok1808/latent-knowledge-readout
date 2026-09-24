@@ -29,7 +29,7 @@
   "chunk_episodes": 128
  },
  "pilot": {
-  "tasks_per_depth": 10
+  "tasks_per_depth": 20
  },
- "note": "Phase 5 model switched to Qwen2.5-7B-Instruct (Ruan et al.'s strongest TextCraft setting), per Shlok 2026-09-24. Pilot = 20 tasks (10 per depth) x 8."
+ "note": "Phase 5 model switched to Qwen2.5-7B-Instruct (Ruan et al.'s strongest TextCraft setting), per Shlok 2026-09-24. Pilot = 20 tasks per depth (depth 2 and 3) x 8."
 }
