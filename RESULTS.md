@@ -207,6 +207,36 @@ Verdicts use only the pre-registered layers (12, 28), the same-episode populatio
   - A likely cause, not yet tested: at round 2 few actions are invalid, so the early probe learns from few positives. The early *test* cell (14 mixed tasks) is itself underpowered.
 - **A single probe pooled over all stages matches or beats every per-stage probe** (valid-action 0.93–0.95; final 0.50–0.61). So "a pooled probe can't cover all stages" is again **not supported**.
 
+### 6. τ²-bench × Qwen3-8B: pre-registered test (1,312 conversations, 164 tasks, 56 mixed)
+
+Verdicts use only the pre-registered layers (16, 36), the same-episode population, the last-step scheme, and within-task AUC. The step label is **real** (the tool call matches a reference-trajectory action, A-24).
+
+| Prediction | Result | Verdict |
+|---|---|---|
+| **P1** final outcome is stage-specific | L16: late → early **0.373 [0.31, 0.43]** (significantly below chance) vs late → late 0.573 [0.49, 0.66]. L36: 0.465 vs 0.512 (no gap; everything ~0.5) | Not falsified: supported at L16, not at L36. **But the final outcome is barely decodable at all** (diagonals 0.44–0.57) |
+| **P2** immediate-step probe transfers | action-validity worst drop 0.22 (L16) / 0.13 (L36). **Real step label** (matches reference action): worst drop 0.45 / 0.23 | **Falsified for both step labels.** The big drops are in well-powered cells (below) |
+| **P3** final-outcome probe ≈ text | probe beats text by > 0.05 with > 50% of layers only at t = 1 (0.56 of layers); not at ≥ 2 rounds. Text itself is ~chance (0.45–0.58) | **Supported** |
+
+**Conversation-phase scheme (d), real step label, same-episode** (mixed tasks per test phase: 39 / 31 / 54 / 32):
+
+| train ↓ / test → | L16 identify | L16 lookup | L16 act | L16 close | | L36 identify | L36 lookup | L36 act | L36 close |
+|---|---|---|---|---|---|---|---|---|---|
+| identify | **0.915** | 0.677 | 0.510 | 0.616 | | **0.923** | 0.756 | 0.740 | 0.858 |
+| lookup | 0.549 | **0.976** | 0.750 | 0.737 | | **0.364** | **0.969** | 0.692 | 0.884 |
+| act | 0.579 | 0.858 | **0.744** | 0.901 | | 0.662 | 0.876 | **0.704** | 0.901 |
+| close | 0.549 | 0.869 | 0.690 | **0.970** | | 0.760 | 0.751 | 0.663 | **0.944** |
+| pooled | 0.844 | 0.980 | 0.811 | 0.944 | | 0.791 | 0.970 | 0.709 | 0.983 |
+
+**Reading.**
+- **The clearest stage effect yet, and it's on the *real* step label.** "Is this tool call the right action?" is decoded very well *within* a conversation phase (0.92–0.98), but a probe trained in one phase often fails in another:
+  - identify → act 0.51 (L16)
+  - lookup → identify **0.36 (L36, below chance)**
+  - These are well-powered cells (31–54 mixed tasks).
+  - The direction that marks a correct action while *identifying the customer* is different from the one that marks it while *acting on their order*.
+- **The final outcome is essentially not decodable within-task on τ²** (diagonals 0.44–0.57 at both layers). Text does no better. So the within-task question for the final outcome has little signal to transfer. The L16 late → early reversal (0.37) mirrors TextCraft, but it sits on a weak diagonal.
+- **Pooled probes again roughly match per-stage probes** (real step label, L16: 0.84 / 0.98 / 0.81 / 0.94 vs diagonals 0.92 / 0.98 / 0.74 / 0.97). Pooling costs ~0.07 on *identify* and gains on *act*. So "one probe can't cover all stages" is **still not supported**.
+- **Caveat on the last-step scheme's P2 drops:** its *early* test cells are underpowered (16 and 7 mixed tasks). The phase-scheme drops above don't have that problem.
+
 ## Open questions
 
 1. Is the late → early below-chance reversal real? It's layer-dependent (L15/L16) and needs a held-out layer selection before it can be claimed.
