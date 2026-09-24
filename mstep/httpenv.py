@@ -81,7 +81,11 @@ class Episode:
     def _post(self, path, data, with_id=True):
         if with_id:
             data = dict(data, id=self.id)
-        res = self.session.post(f"{self.base}/{path}", json=data, timeout=300)
+        # Fresh connection per request: the env servers (uvicorn) drop idle keep-alive
+        # connections after 5 s, and a 7B generation round is longer than that, so a reused
+        # socket gets "connection reset by peer" (7B ScienceWorld pilot, 2026-09-24). No retry:
+        # a retried /step could execute twice.
+        res = self.session.post(f"{self.base}/{path}", json=data, timeout=300, headers={"Connection": "close"})
         res.raise_for_status()
         out = res.json()
         if isinstance(out, dict) and "error" in out:

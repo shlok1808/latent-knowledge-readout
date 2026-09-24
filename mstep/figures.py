@@ -76,8 +76,8 @@ def round_curves(out, layer, metric="within_auc", fname=None):
     plt.close(fig)
 
 
-def transfer_heatmaps(out, layer, scheme, metric="within_auc"):
-    mat = pd.read_csv(out / "phase3_transfer.csv")
+def transfer_heatmaps(out, layer, scheme, metric="within_auc", src="phase3_transfer.csv"):
+    mat = pd.read_csv(out / src)
     mat = mat[(mat.layer == layer) & (mat.probe == "logreg") & (mat.scheme == scheme)]
     if mat.empty:
         return
@@ -87,7 +87,7 @@ def transfer_heatmaps(out, layer, scheme, metric="within_auc"):
         for j, pop in enumerate(("naive", "cohort")):
             ax = axes[i, j]
             d = mat[(mat.label == lab) & (mat.population == pop)]
-            tests = [s for s in ("early", "mid", "late", "m1", "m2", "m3") if s in set(d.test)]
+            tests = [s for s in ("early", "mid", "late", "early@2", "mid@5", "late@10", "m1", "m2", "m3") if s in set(d.test)]
             trains = tests + ["pooled"]
             grid = np.full((len(trains), len(tests)), np.nan)
             weak = np.zeros_like(grid, bool)
@@ -184,6 +184,9 @@ def main():
             round_curves(out, layer, metric="pooled_auc")
             round_curves(out, layer, metric="ece")
         if (out / "phase3_transfer.csv").exists():
+            if (out / "phase3_transfer_laststep.csv").exists():
+                transfer_heatmaps(out, layer, "laststep", src="phase3_transfer_laststep.csv")
+                transfer_heatmaps(out, layer, "laststep", metric="pooled_auc", src="phase3_transfer_laststep.csv")
             for scheme in ("round", "milestone"):
                 transfer_heatmaps(out, layer, scheme)
                 transfer_heatmaps(out, layer, scheme, metric="pooled_auc")

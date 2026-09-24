@@ -1,5 +1,23 @@
 # Status — multistep-gap run
 
+## 2026-09-24 15:57 UTC — Last-step Phase 3 variant + parallel analysis lanes
+
+- **Last-step stage scheme (Shlok-approved boundaries):** early 1–2 → round 2, mid 3–5 → round 5, late 6–10 → round 10 (late capped at 10: an open-ended range has no last step, and an episode's final round leaks the outcome). Same-episode cohort = episodes with ≥ 10 rounds. `mstep/probes.py --phase 3L` → `phase3_transfer_laststep.csv`; same layers as Phase 3. Unit-checked on a toy table. **Both versions are kept:** the average-over-range version (tc2, running since 15:45) and the last-step version.
+- **Speed-ups:**
+  - tmux `fast`: lane A runs 3L on all depths now, then 3L on depth ≥ 2. Lane B runs depth ≥ 2 Phase 2+3 now, instead of after tc2's all-depths Phase 3. All 30 cores are busy (load ~32).
+  - `probes.py` got a lock and a `DONE_<phase>` marker, so tc2 skips depth ≥ 2 when it reaches that step.
+  - `logs/gpu_util` = 0.85, so MC takes the whole GPU once released. Don't release it while a 7B pilot is running.
+- **7B pilots:** the ScienceWorld (1/160 episodes) and BabyAI (97/160) pilots crashed on a keep-alive bug: uvicorn drops idle connections after 5 s, and a 7B generation round takes longer. Fixed in `httpenv.py` with a fresh connection per request and no retry, since a retried step could run twice. ALFWorld started after the fix. `p7b2` resumes the crashed pilots and writes a CORRECTED PHASE 4 GATE SUMMARY. The first summary's "ScienceWorld 0/20 mixed" is invalid.
+
+### Blocked on me
+- MC release; Phase 4 env and 7B full-run env after the corrected gate summary.
+
+### Changed
+- `mstep/probes.py` (laststep scheme, `--phase 3L`, lock/DONE), `mstep/figures.py` (last-step heatmaps), `mstep/httpenv.py` (Connection: close), `scripts/run_fast.sh`, `scripts/pilots_7b_rerun.sh`.
+
+### Found
+- 7B TextCraft pilot: depth 2 has 27.5% success and 11/20 mixed tasks (1.7B: 9.7%); depth 3 has 3.1% and 3/20.
+
 ## 2026-09-24 15:45 UTC — Depth-1 replication: stage-2 result holds, but only at round 3
 
 `scripts/run_depth1_replication.sh` (tmux d1repl): depth 1 only, action-token site, Phase 2, full grid. Results in `results/multistep/textcraft_qwen3-1.7b/depth_eq1_action/`.

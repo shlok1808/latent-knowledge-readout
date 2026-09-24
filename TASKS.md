@@ -51,6 +51,7 @@ Source of truth for what's next. `[x]` done, `[ ]` open, `[~]` in progress, `[-]
 - [ ] Milestone stages (end of k-th successful craft; depth ≥2)
 - [ ] Pooled-over-stages probe vs per-stage probes
 - [ ] PRIMARY: same-episode cohort transfer matrix, side by side with naive (ASSUMPTIONS A-12)
+- [~] Last-step variant (early→r2, mid→r5, late→r10; cohort ≥10 rounds) running in tmux `fast` alongside the averaged version
 - [ ] Main figure: AUC vs test stage, FINAL vs IMMEDIATE panels
 
 ## Phase 4 — Second environment

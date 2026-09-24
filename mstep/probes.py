@@ -41,6 +41,7 @@ from mstep.metrics import summarize
 LABELS = ["final_bad", "mc_bad", "valid_bad", "noprogress_bad"]
 PHASE2_T = [1, 2, 3, 5, 8]
 STAGES = ["early", "mid", "late"]
+LASTSTEP = {"early": 2, "mid": 5, "late": 10}  # representative (last) round of each range
 SEED = 42
 FOLDS = 5
 
@@ -231,6 +232,13 @@ def stage_masks(df, scheme, subset):
         masks = {"early": (r >= 1) & (r <= 2), "mid": (r >= 3) & (r <= 5), "late": r >= 6}
         need = 6  # present in all three stages
         members = df["n_rounds"].to_numpy() >= need
+    elif scheme == "laststep":
+        # Shlok 2026-09-24: each range is represented by its LAST step, not an average over it.
+        # early 1-2 -> round 2, mid 3-5 -> round 5, late 6-10 -> round 10 (late capped at 10:
+        # an open-ended range has no last step, and an episode's final round leaks the outcome).
+        masks = {f"early@{LASTSTEP['early']}": r == LASTSTEP["early"], f"mid@{LASTSTEP['mid']}": r == LASTSTEP["mid"],
+                 f"late@{LASTSTEP['late']}": r == LASTSTEP["late"]}
+        members = df["n_rounds"].to_numpy() >= LASTSTEP["late"]
     else:  # milestone k = the round of the k-th non-terminal craft
         ms = pd.to_numeric(df["milestone"], errors="coerce").to_numpy()
         masks = {f"m{k}": np.nan_to_num(ms, nan=0) == k for k in (1, 2, 3)}
@@ -354,7 +362,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--phase", default="all", choices=["2", "3", "all"])
+    ap.add_argument("--phase", default="all", choices=["2", "3", "3L", "all"],
+                    help="3L = Phase 3 with each round range represented by its last step (rounds 2/5/10)")
     ap.add_argument("--site", default="last", choices=["last", "action"])
     ap.add_argument("--subset", default="all", help="'all', 'depth>=2' or 'depth==1' (stage-2 replication)")
     ap.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 2) - 2))
@@ -362,6 +371,29 @@ def main():
     a = ap.parse_args()
     run, out_dir = Path(a.run), Path(a.out)
     out_dir.mkdir(parents=True, exist_ok=True)
+    # Dedupe concurrent/duplicate runs (e.g. a runner that reaches this step after it was
+    # already launched by hand): wait for a live holder of the lock, then skip if done.
+    lock, done = out_dir / f"probes_{a.phase}.lock", out_dir / f"DONE_{a.phase}"
+    while lock.exists():
+        try:
+            os.kill(int(lock.read_text()), 0)
+        except (OSError, ValueError):
+            lock.unlink(missing_ok=True)
+            break
+        log(f"another probes --phase {a.phase} run holds {lock}; waiting")
+        time.sleep(60)
+    if done.exists():
+        log(f"{done} exists; phase {a.phase} already complete for {out_dir}, skipping")
+        return
+    lock.write_text(str(os.getpid()))
+    try:
+        _run(a, run, out_dir)
+        done.write_text(time.strftime("%F %T"))
+    finally:
+        lock.unlink(missing_ok=True)
+
+
+def _run(a, run, out_dir):
     df = pd.read_pickle(run / "rounds.pkl")
     meta = json.loads((run / "acts" / "extraction.json").read_text())
     n_layers = meta["n_layers"]
@@ -405,6 +437,13 @@ def main():
              "cells_searched_per_label": int(len(cells) / max(1, len(LABELS))),
              "ranking": {int(k): float(v) for k, v in rank.items()}}, indent=2))
         phase3(run, df, folds, paths, layers, out_dir, a.jobs, a.t_max)
+    if a.phase == "3L":
+        layers = json.loads((out_dir / "phase3_layers.json").read_text())["layers"]  # same layers as Phase 3
+        jobs = [delayed(phase3_layer)(paths[l], df, folds, l, "laststep", pop) for l in layers for pop in ("naive", "cohort")]
+        log(f"phase 3L (last step per range, rounds {LASTSTEP}): {len(jobs)} jobs on layers {layers}")
+        res = Parallel(n_jobs=a.jobs)(jobs)
+        pd.DataFrame([r for part in res for r in part]).to_csv(out_dir / "phase3_transfer_laststep.csv", index=False)
+        log("phase 3L done")
 
 
 if __name__ == "__main__":
