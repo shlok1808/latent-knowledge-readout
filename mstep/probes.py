@@ -362,18 +362,20 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--phase", default="all", choices=["2", "3", "3L", "all"],
+    ap.add_argument("--phase", default="all", choices=["2", "3", "3L", "3X", "all"],
                     help="3L = Phase 3 with each round range represented by its last step (rounds 2/5/10)")
     ap.add_argument("--site", default="last", choices=["last", "action"])
     ap.add_argument("--subset", default="all", help="'all', 'depth>=2' or 'depth==1' (stage-2 replication)")
     ap.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 2) - 2))
     ap.add_argument("--t-max", type=int, default=10)
+    ap.add_argument("--layers", default="", help="3X: comma-separated layers, e.g. 12,16 (all three stage schemes)")
     a = ap.parse_args()
     run, out_dir = Path(a.run), Path(a.out)
     out_dir.mkdir(parents=True, exist_ok=True)
     # Dedupe concurrent/duplicate runs (e.g. a runner that reaches this step after it was
     # already launched by hand): wait for a live holder of the lock, then skip if done.
-    lock, done = out_dir / f"probes_{a.phase}.lock", out_dir / f"DONE_{a.phase}"
+    tag = a.phase + (f"_L{a.layers.replace(',', '_')}" if a.phase == "3X" else "")
+    lock, done = out_dir / f"probes_{tag}.lock", out_dir / f"DONE_{tag}"
     while lock.exists():
         try:
             os.kill(int(lock.read_text()), 0)
@@ -437,6 +439,16 @@ def _run(a, run, out_dir):
              "cells_searched_per_label": int(len(cells) / max(1, len(LABELS))),
              "ranking": {int(k): float(v) for k, v in rank.items()}}, indent=2))
         phase3(run, df, folds, paths, layers, out_dir, a.jobs, a.t_max)
+    if a.phase == "3X":
+        # Explicit layers x all three stage schemes (range-averaged, milestone, last-step), both
+        # populations, in ONE job set with the same folds, so layers are directly comparable.
+        layers = [int(x) for x in a.layers.split(",") if x]
+        schemes = ["round", "laststep"] + (["milestone"] if df["milestone"].notna().any() else [])
+        jobs = [delayed(phase3_layer)(paths[l], df, folds, l, sc, pop) for l in layers for sc in schemes for pop in ("naive", "cohort")]
+        log(f"phase 3X: layers {layers} x schemes {schemes} x 2 populations = {len(jobs)} jobs")
+        res = Parallel(n_jobs=a.jobs)(jobs)
+        pd.DataFrame([r for part in res for r in part]).to_csv(out_dir / f"phase3_transfer_L{'_'.join(map(str, layers))}.csv", index=False)
+        log("phase 3X done")
     if a.phase == "3L":
         layers = json.loads((out_dir / "phase3_layers.json").read_text())["layers"]  # same layers as Phase 3
         jobs = [delayed(phase3_layer)(paths[l], df, folds, l, "laststep", pop) for l in layers for pop in ("naive", "cohort")]

@@ -13,3 +13,4 @@ writeup/*.out
 .lambda_instance*
 results/multistep/**/acts/
 logs/
+.lambda_ip*
