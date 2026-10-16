@@ -1,16 +1,25 @@
 # Results — does the single-step probe recipe transfer to multi-step agent tasks?
 
-Status: **interim (2026-09-24).** Phase 2 and the depth-1 stage-2 replication are complete for Qwen3-1.7B on TextCraft. Phase 3 done for all three schemes, all depths and depth ≥ 2, at layers 12/13/15/16/28 (§4); still to come: the MC-value label, Phase 4 and the 7B model. Every number below is within-task AUC unless marked otherwise, with task-grouped 5-fold cross-fitting (no task in both train and test).
+Status: **three environments done (2026-09-24 data; headline rewritten 2026-10-16).** TextCraft × Qwen3-1.7B (§1–§4), ALFWorld × Qwen2.5-7B (§5) and τ²-bench × Qwen3-8B (§6). ALFWorld and τ² verdicts were pre-registered before any probe result. Still open: the MC-value label and held-out layer selection (Open questions). Every number is within-task AUC unless marked otherwise, with task-grouped 5-fold cross-fitting (no task in both train and test).
 
 ## Headline finding for Prof. Lin
 
-**For predicting the final outcome of a multi-step episode, the standard single-step probe recipe adds almost nothing over surface text features. It works very well for predicting whether the immediate action is valid.** The one exception is a narrow window: depth-1 tasks at round 3, where the probe beats text by about 0.10. That window replicates the stage-2 result and holds across most layers, but the advantage is gone one or two rounds either side.
+**The hypothesis is half right.** A probe trained at one stage does fail at others, but only for some labels, and a single probe pooled over all stages fixes it.
 
-We treat this as a finding, not a failure. It is the split Prof. Lin asked us to characterise ("what's wrong if we directly treat it as a single-step task?"). The recipe is: train a linear probe on the residual state at the end of step t, with a label.
-- It succeeds when the label is a property of the step the model just wrote.
-- For the long-horizon outcome, it matches an outside observer reading the transcript, except in a one-round window.
+| Question | TextCraft (1.7B) | ALFWorld (7B) | τ² (8B) |
+|---|---|---|---|
+| Final-outcome probe vs text (P3) | ≈ text, except depth 1 / round 3 (+0.10) | ≈ text (**supported**) | ≈ text, both near chance (**supported**) |
+| Final-outcome probe stage-specific (P1) | late → early below chance at L15/L16 only | **supported** at L12 and L28 | supported at L16, not L36 |
+| Step-level probe transfers across stages (P2) | yes (drop ≤ 0.06 at L16) | **falsified** for action-validity (drop 0.29–0.32) | **falsified** on the real step label (drop 0.23–0.45) |
+| One pooled probe ≈ per-stage probes | yes | yes | yes |
 
-That round-specificity is itself early evidence for Lin's stage hypothesis. The Phase 3 transfer matrices test it directly.
+- **The recipe adds little for the long-horizon outcome.** In every env it matches reading the transcript. The final outcome is only weakly decodable within-task (diagonals 0.44–0.63), so there is little signal to transfer.
+- **The stage gap is real for step-level labels in the two richer envs.** On τ² the "is this tool call the right action" probe scores 0.92–0.98 inside a conversation phase and falls to 0.36–0.51 in some other phases, in well-powered cells (31–54 mixed tasks). On TextCraft the same kind of label does transfer.
+- **Pooling removes the gap in all three envs.** So "one probe can't cover all stages" is **not supported**. That weakens the case for a stage-robust *method*: a pooled probe is the baseline it has to beat.
+
+**Caveats.** Env, model and layer count all differ between columns, so cross-env differences are not attributable to the environment alone. Last-step early test cells are underpowered (7–16 mixed tasks on τ², 14 on ALFWorld), and the ALFWorld early-probe failure may just reflect few invalid actions at round 2 (untested). The late → early reversal is layer-dependent and is not claimed.
+
+TextCraft detail: the depth-1 round-3 window replicates the stage-2 result (0.815 vs 0.801), is broad across layers at that round, and is absent at rounds 1, 2, 5 and 8.
 
 ## What is new here vs prior work
 
