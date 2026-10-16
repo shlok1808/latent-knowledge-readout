@@ -101,9 +101,38 @@ def assign_folds(df):
 
 # ---------------------------------------------------------------- probes
 
+GPU_PROBES = os.environ.get("MSTEP_GPU_PROBES") == "1"
+
+
+def _torch_logreg(x, y, C=1.0):
+    """Same objective as sklearn LogisticRegression(C, lbfgs) on StandardScaler features:
+    sum log-loss + ||w||^2 / (2C), intercept unpenalised; solved with L-BFGS on the GPU."""
+    import torch
+    X = torch.as_tensor(x, device="cuda", dtype=torch.float32)
+    mu = X.mean(0)
+    sd = X.std(0, unbiased=False)
+    sd[sd == 0] = 1.0
+    Xs = (X - mu) / sd
+    yt = torch.as_tensor(y, device="cuda", dtype=torch.float32)
+    w = torch.zeros(X.shape[1], device="cuda", requires_grad=True)
+    b = torch.zeros(1, device="cuda", requires_grad=True)
+    opt = torch.optim.LBFGS([w, b], lr=1, max_iter=1000, tolerance_grad=1e-7, tolerance_change=1e-10,
+                            history_size=20, line_search_fn="strong_wolfe")
+
+    def closure():
+        opt.zero_grad()
+        loss = torch.nn.functional.binary_cross_entropy_with_logits(Xs @ w + b, yt, reduction="sum") + (w @ w) / (2 * C)
+        loss.backward()
+        return loss
+    opt.step(closure)
+    return ("torch", mu, sd, w.detach(), b.detach())
+
+
 def fit_probe(kind, x, y):
     if len(np.unique(y)) < 2:
         return None
+    if kind == "logreg" and GPU_PROBES:
+        return _torch_logreg(x, y)
     if kind == "logreg":
         scaler = StandardScaler().fit(x)
         with warnings.catch_warnings():
@@ -120,6 +149,11 @@ def score_probe(probe, x):
         return np.full(len(x), np.nan)
     if probe[0] == "logreg":
         return probe[2].predict_proba(probe[1].transform(x))[:, 1]
+    if probe[0] == "torch":
+        import torch
+        _, mu, sd, w, b = probe
+        X = torch.as_tensor(x, device="cuda", dtype=torch.float32)
+        return torch.sigmoid(((X - mu) / sd) @ w + b).cpu().numpy()
     return (x - probe[1]) @ probe[2]
 
 
@@ -232,6 +266,11 @@ def stage_masks(df, scheme, subset):
         masks = {"early": (r >= 1) & (r <= 2), "mid": (r >= 3) & (r <= 5), "late": r >= 6}
         need = 6  # present in all three stages
         members = df["n_rounds"].to_numpy() >= need
+    elif scheme == "phase":
+        ph = df["phase"].to_numpy()
+        masks = {k: ph == k for k in ("identify", "lookup", "act", "close")}
+        have = df.groupby("episode_id")["phase"].transform(lambda x: set(x) >= {"identify", "lookup", "act", "close"})
+        members = have.to_numpy(dtype=bool)
     elif scheme == "laststep":
         # Shlok 2026-09-24: each range is represented by its LAST step, not an average over it.
         # early 1-2 -> round 2, mid 3-5 -> round 5, late 6-10 -> round 10 (late capped at 10:
@@ -328,6 +367,9 @@ def phase3(run, df, folds, paths, layers, out_dir, n_jobs, t_max):
     for layer in layers:
         for population in ("naive", "cohort"):
             jobs.append(delayed(phase3_layer)(paths[layer], df, folds, layer, "round", population))
+            jobs.append(delayed(phase3_layer)(paths[layer], df, folds, layer, "laststep", population))
+            if "phase" in df.columns and df["phase"].notna().any():
+                jobs.append(delayed(phase3_layer)(paths[layer], df, folds, layer, "phase", population))
             if (df["milestone"].notna()).any():
                 jobs.append(delayed(phase3_layer)(paths[layer], df, folds, layer, "milestone", population))
             jobs.append(delayed(round_curve_layer)(paths[layer], df, folds, layer, population, t_max))
@@ -434,6 +476,9 @@ def _run(a, run, out_dir):
         cells = pd.read_csv(out_dir / "phase2_cells.csv")
     if a.phase in ("3", "all"):
         layers, rank = pick_layers(cells, n_layers, ruan_layer=n_layers)
+        pre = out_dir / "prereg_layers.json"   # pre-registered layers are always analysed
+        if pre.exists():
+            layers = sorted(set(layers) | set(json.loads(pre.read_text())["layers"]))
         (out_dir / "phase3_layers.json").write_text(json.dumps(
             {"layers": layers, "rule": "top-3 mean within-task AUC over t (final, S1, logreg) + last layer (Ruan's L28 on 1.7B)",
              "cells_searched_per_label": int(len(cells) / max(1, len(LABELS))),

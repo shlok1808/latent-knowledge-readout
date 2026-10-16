@@ -16,6 +16,21 @@ declare -A PORT=([sciworld]=36001 [alfworld]=36002 [babyai]=36003)
 declare -A CMD=([sciworld]="$HOME/envs/sciworld/bin/sciworld"
                 [alfworld]="env ALFWORLD_DATA=$HOME/.cache/alfworld $HOME/envs/alfworld/bin/alfworld"
                 [babyai]="$HOME/envs/babyai/bin/babyai")
+if [ "${1:-}" = start_n ] || [ "${1:-}" = restart_n ]; then
+  # start_n|restart_n <env> <N>: N parallel servers on ports 36100..36100+N-1 (alfworld).
+  name=$2; n=$3
+  for k in $(seq 0 $((n - 1))); do
+    port=$((36100 + k))
+    if [ "$1" = restart_n ]; then
+      pids=$(lsof -t -i TCP:$port -s TCP:LISTEN 2>/dev/null); [ -n "$pids" ] && kill $pids
+      tmux kill-session -t envsrv_${name}_$k 2>/dev/null
+    fi
+  done
+  [ "$1" = restart_n ] && sleep 3
+  for k in $(seq 0 $((n - 1))); do start ${name}_$k $((36100 + k)) ${CMD[$name]} & done
+  wait
+  exit
+fi
 if [ "${1:-}" = restart ]; then
   # restart <name>: kill whatever holds the port (the ALFWorld server has no /close, so
   # its envs leak; the rollout engine calls this between chunks), then start fresh.

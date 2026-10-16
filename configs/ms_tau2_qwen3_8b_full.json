@@ -1,0 +1,62 @@
+{
+ "name": "ms-tau2-qwen3-8b",
+ "env": "tau2",
+ "backend": "server",
+ "model": "Qwen/Qwen3-8B",
+ "model_revision": "b968826d9c46dd6066d109eabc6255188de91218",
+ "domains_splits": [
+  [
+   "retail",
+   "base"
+  ],
+  [
+   "airline",
+   "base"
+  ]
+ ],
+ "server": {
+  "url": "http://127.0.0.1:8000/v1",
+  "served_name": "Qwen/Qwen3-8B",
+  "concurrency": 256
+ },
+ "user_sim": {
+  "llm": "hosted_vllm/Qwen/Qwen3-8B",
+  "args": {
+   "temperature": 0.0,
+   "api_base": "http://127.0.0.1:8000/v1",
+   "extra_body": {
+    "chat_template_kwargs": {
+     "enable_thinking": false
+    }
+   }
+  }
+ },
+ "attempts": 8,
+ "environment_seed": 42,
+ "generation_seed": 20260925,
+ "temperature": 0.8,
+ "top_p": 0.95,
+ "max_new_tokens": 512,
+ "context_limit": 32768,
+ "max_rounds": 30,
+ "tau2_max_steps": 200,
+ "chunk_episodes": 1312,
+ "mc": {
+  "n": 8,
+  "rounds": [
+   1,
+   2,
+   3,
+   5,
+   8
+  ],
+  "milestones": false,
+  "chunk_episodes": 64
+ },
+ "pilot": {
+  "tasks_per_domain": 10
+ },
+ "note": "\u03c4\u00b2-bench FULL run (Shlok 2026-09-24): all retail (114) + airline (50) tasks x 8, Qwen3-8B agent + Qwen3-8B user sim, H100 80GB. Same settings as the pilot (which passed the gate: 8/20 mixed). Incremental prompts (exact prefix property) for one-pass-per-episode extraction.",
+ "step_workers": 256,
+ "incremental_prompt": true
+}
