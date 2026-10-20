@@ -14,3 +14,10 @@ writeup/*.out
 results/multistep/**/acts/
 logs/
 .lambda_ip*
+
+# local data and bookkeeping
+logs/
+wandb/
+writeup/
+.lambda_instance*
+.lambda_ip*
