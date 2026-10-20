@@ -143,7 +143,7 @@ remaining items, in order:
 
 ## Runbook
 
-Mac repo lives at `~/Documents/ChatGPT/interp psu/agent-failure-probes`.
+Mac repo lives at `~/agent-failure-probes`.
 
 ### 0. Lambda setup (Lambda, once)
 
