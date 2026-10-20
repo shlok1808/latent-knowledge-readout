@@ -12,7 +12,7 @@ set -euo pipefail
 [ -f "$HOME/.kyc-secrets" ] && source "$HOME/.kyc-secrets"
 API="https://cloud.lambda.ai/api/v1"
 KEY="$HOME/.ssh/lambda_key"   # unencrypted, registered as afp-lambda-key; lambda_final needs a passphrase
-ID_FILE=".lambda_instance_id"
+ID_FILE="${LAMBDA_ID_FILE:-.lambda_instance_id}"   # per-box: LAMBDA_ID_FILE=.lambda_instance_id_alf
 REMOTE_DIR="agent-failure-probes"
 api() { curl -fsS -u "${LAMBDA_API_KEY:?set LAMBDA_API_KEY}:" "$@"; }
 id() { cat "$ID_FILE"; }

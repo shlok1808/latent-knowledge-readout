@@ -14,12 +14,16 @@ note() { echo "- $(date -u +%F\ %H:%M) UTC [$NAME] $*" | tee -a logs/runner_stat
 step() { local n=$1; shift; note "start $n"; if "$@" >> "$LOG" 2>&1; then note "done $n"; else note "FAILED $n (see $LOG)"; exit 1; fi; }
 soft() { local n=$1; shift; note "start $n"; if "$@" >> "$LOG" 2>&1; then note "done $n"; else note "FAILED(soft) $n (see $LOG)"; fi; }
 VPY=~/envs/vllm/bin/python; PY=.venv/bin/python
-[ -x scripts/env_servers.sh ] && bash scripts/env_servers.sh >> "$LOG" 2>&1
+[ -f ~/.wandb_env ] && source ~/.wandb_env
+N=$($PY -c "import json;print(json.load(open('$CFG')).get('n_servers',1))")
+if [ "$N" -gt 1 ]; then bash scripts/env_servers.sh start_n $($PY -c "import json;print(json.load(open('$CFG'))['env'])") $N >> "$LOG" 2>&1
+else bash scripts/env_servers.sh >> "$LOG" 2>&1; fi
 step collect $VPY -m mstep.rollout collect --config "$CFG" --run "$RUN"
 soft summary $PY scripts/ms_summary.py "$RUN"
 [ "${WITH_MC:-0}" = 1 ] && step mc $VPY -m mstep.rollout mc --run "$RUN"
 step extract $PY -m mstep.extract --run "$RUN" --token-budget ${EXTRACT_BUDGET:-32768}
 soft dataset $PY -m mstep.dataset --run "$RUN"
-soft probes  $PY -m mstep.probes --run "$RUN" --out "$OUT" --jobs ${JOBS:-12}
+soft probes  $PY -m mstep.probes --run "$RUN" --out "$OUT" --jobs ${JOBS:-$(( $(nproc) - 2 ))}
 soft figures $PY -m mstep.figures --out "$OUT"
+soft wandb   $PY -m mstep.wb "$OUT" "$NAME"
 note "PIPELINE COMPLETE"

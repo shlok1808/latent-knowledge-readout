@@ -1,5 +1,58 @@
 # Status — multistep-gap run
 
+## 2026-09-24 22:42 UTC (6:42 PM ET) — Shlok leaving; τ² full finishing unattended
+
+- **ALFWorld:** DONE. Box self-terminated after its W&B upload. Data pulled from the W&B artifact `ms-alfworld-q25-7b-data` into `runs/ms-alfworld-q25-7b` (1,600 episodes) and `results/multistep/alfworld_qwen2.5-7b`. Pre-registered verdicts are in RESULTS §5: **P1 supported, P2 falsified for action-validity (early→later), P3 supported.**
+- **τ² full (H100 `afp-tau2-full`):** Phase 3 (52 jobs, layers 16/19/21/28/36; schemes round, laststep, milestone, phase) finishing ~6:50–6:55 PM ET. Then figures → W&B → PIPELINE COMPLETE → `finish` uploads artifact **`ms-tau2-qwen3-8b-data`** → 15-min grace → **self-terminates ~7:15 PM ET.** No Mac needed.
+- **NEXT SESSION, first steps:**
+  1. Confirm no Lambda instances remain (`scripts/lambda.sh` / API list). If `afp-tau2-full` is still up, check `logs/runner_status.md` on it, pull, then terminate.
+  2. Download the artifact `agentic-interp/agent-failure-probes-multistep/ms-tau2-qwen3-8b-data:latest` (wandb.Api().artifact(...).download) into `runs/ms-tau2-qwen3-8b` and `results/multistep/tau2_qwen3-8b/ms-tau2-qwen3-8b`, the same way as ALFWorld.
+  3. Score P1–P3 for τ² at the pre-registered layers **16 and 36** (same code as the ALFWorld verdicts), plus the conversation-phase scheme (d). Write RESULTS §6.
+  4. Update the RESULTS headline for Lin across all three envs.
+
+### Blocked on me
+- Nothing. (MC hold on TextCraft depth 2 is still undecided; the TextCraft box is long gone, so re-extraction would be needed.)
+
+### Changed
+- RESULTS §5 (ALFWorld verdicts); ALFWorld data + results on the Mac.
+
+### Found
+- P1 and P3 replicate on ALFWorld/Qwen2.5-7B. P2 breaks for action-validity (early-trained probes don't transfer forward; possibly few positives at round 2).
+
+## 2026-09-24 21:58 UTC (5:58 PM ET) — τ² full collected; pre-registration gaps fixed; boxes self-finishing
+
+- **τ² full** (H100 `afp-tau2-full`): 1,312 conversations. Retail 16.2% success, 47/114 mixed; airline 18.2%, 9/50 mixed (56 mixed total). Retail's full τ² reward incl. the local LLM judge is 13.6%, below our deterministic 16.2% (A-25). One-pass extraction ≈ 25 turns/s (incremental prompts, verified prefix 53/53). Analysis starts ~6:00 PM ET, with the phase scheme + prereg layers 16/36 + last-step added.
+- **ALFWorld** (A100): Phase 3 (auto layers 10/14/23/28) finishing; **pre-registered Phase 3X on layers 12 and 28** running in parallel (tmux `prereg`).
+- **τ² pilot** A100: pulled (160/160) and terminated at 5:16 PM ET. Pilot results are underpowered (8 mixed tasks). Valid-action probe 0.83–0.84 vs text 0.59 at the only powered cell.
+- **Self-finish on both boxes** (`scripts/finish_selfterm.sh`, tmux `finish`): when their pipeline (and, for ALFWorld, the prereg 3X marker) completes, they upload episodes/results/logs to the private W&B project, wait 15 min, then terminate themselves. The Mac watchers were stopped so they can't terminate a box before its pre-registered analysis finishes.
+- **Lessons recorded:** probes on GPU aren't faster at these sizes (validated equal, 3–9× slower); analysis jobs must default to all cores (fixed in the runners).
+
+### Blocked on me
+- Nothing. Results expected: ALFWorld ~6:15–6:30 PM ET; τ² full ~6:45–7:00 PM ET.
+
+### Changed
+- `mstep/dataset.py` (τ² phases), `mstep/probes.py` (phase + laststep in Phase 3, prereg layers, GPU path off by default), `mstep/figures.py`, `mstep/rollout.py` (incremental prompts, step_workers), `mstep/extract.py` (--episode-pass), `scripts/finish_selfterm.sh`, `scripts/pull_and_terminate.sh`, `scripts/setup_tau2_env.sh`, `scripts/tau2_summary.py`, runners.
+
+### Found
+- τ² full has enough mixed tasks (56) for within-task and stage analysis.
+
+## 2026-09-24 20:15 UTC (4:15 PM ET) — ALFWorld collected; τ² pilot running
+
+- **ALFWorld @ Qwen2.5-7B** (A100 `afp-alfworld`, 129.213.18.165): 1,600/1,600 episodes. **35.1% success, 132/200 mixed tasks**, successes spread over rounds 3–30. Extraction started 4:04 PM ET (~30 min), then Phases 2–3 + W&B automatically (`scripts/run_env.sh`, tmux `alf`). Speed fixes: 8 parallel servers; parallel env creation (serial creation cost ~12 min per 320-episode chunk).
+- **τ²-bench pilot** (A100 `afp-tau2`, us-west-2, 129.146.61.181): adapter `mstep/tau2env.py` + `ServerEngine`; smoke test passed (airline task solved, DB 1.0 / COMMUNICATE 1.0). Pilot 20 tasks × 8 launched 4:10 PM ET (`scripts/run_tau2.sh`, tmux `tau`). Decisions: ASSUMPTIONS A-24–A-26.
+- **H100:** SSH never came up, even after a restart; terminated by Shlok. A duplicate A100 I had launched was terminated immediately (empty).
+- **W&B:** private project https://wandb.ai/agentic-interp/agent-failure-probes-multistep (team `agentic-interp`, whose only member is Shlok). TextCraft results backfilled; new runs log automatically.
+
+### Blocked on me
+- Nothing now. After the τ² pilot: decide its full run (gate ≥ 6/20 mixed).
+
+### Changed
+- `mstep/tau2env.py`, `mstep/wb.py`, `mstep/rollout.py` (ServerEngine, parallel env creation, N-server sharding, W&B), `mstep/httpenv.py` (port override), `mstep/dataset.py` (τ² labels), `scripts/run_tau2.sh`, `scripts/run_env.sh`, `scripts/env_servers.sh`, configs.
+
+### Found
+- ALFWorld @ 7B is a much richer testbed for stages than TextCraft: 66% of tasks mixed vs 28%, with successes throughout the episode.
+- Qwen3-8B on τ² hallucinates tool names and arguments (e.g. `get_user_id_by_email` instead of `find_user_id_by_email`): a realistic failure mode.
+
 ## 2026-09-24 ~18:35 UTC (2:35 PM ET) — Box 1 terminated; everything pulled
 
 - **Pulled to the Mac and verified against the box before terminating:**

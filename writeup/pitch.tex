@@ -51,9 +51,12 @@ difficulty scores well on it while carrying no per-rollout information at all.
 We replicated the TextCraft/Qwen3-1.7B cell (1000 episodes; 125 depth-one tasks
 $\times$ 8 rollouts; 20-round cap; L2 logistic probe, $C{=}1$; task-grouped
 stratified cross-fitting) and obtained \textbf{pooled AUC 0.791} against their 0.81.
+A \emph{round} is one action plus the environment's response; Ruan probes at round 1,
+the agent's first action.
 We then added the control the paper does not report: \textbf{within-task AUC}, which
 compares failures against successes \emph{on the same task}, so task difficulty is
-held constant by construction.
+held constant by construction. Why? Because we wanted to know whether the probe can
+tell two attempts at the same task apart, not just which tasks are hard.
 
 \begin{center}\small
 \begin{tabular}{lcc}
@@ -78,9 +81,11 @@ surface baseline beats it.
 \includegraphics[width=0.45\textwidth]{fig2_layers.pdf}
 \caption{\small \textbf{Left:} for each mixed-outcome task, mean probe score on its
 failures against its successes. A probe carrying within-task information would sit
-above the dashed diagonal; only 24 of 57 tasks do. \textbf{Right:} within-task AUC by layer.
-The reported layer sits on the downslope; layer 12 wins at both rounds, and at round 1
-it wins on the paper's own selection criterion (pooled AUC 0.830 vs 0.781).}
+above the dashed diagonal; only 24 of 57 tasks do. \textbf{Right:} within-task AUC by layer, at
+round 1 (the reported configuration) and round 3 (after the agent has acted twice;
+Sec.~4). The reported layer sits on the downslope; layer 12 wins at both rounds, and
+at round 1 it wins on the paper's own selection criterion (pooled AUC 0.830 vs
+0.781).}
 \label{fig:one}\vspace{-6pt}
 \end{figure}
 

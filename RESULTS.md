@@ -18,6 +18,40 @@ That round-specificity is itself early evidence for Lin's stage hypothesis. The 
 - **PAIR (2605.17877)** shows hidden-state probes degrade under an injected erroneous prefix, while attention features stay robust. They don't test cross-stage transfer either (their only transfer is cross-domain, GTA → HotpotQA), and they report pooled AUROC with no text baseline.
 - **Our contribution:** the within-task decomposition, and **the stage-transfer matrix**: train on stage A, test on stage B, with a same-episode control, on naturally occurring trajectories. Details in ASSUMPTIONS A-22, A-23.
 
+## Pre-registration for ALFWorld and τ²-bench (written 2026-09-24 ~4:55 PM ET, before any probe result for either env)
+
+Written after the TextCraft results (§1–§4), before extraction had finished for ALFWorld (Qwen2.5-7B, 1,600 episodes) or τ²-bench (Qwen3-8B; pilot 160 episodes, full 1,312). Nothing below may be edited after those results arrive. Deviations go in a dated "Deviations" note.
+
+**Questions** (from Lin's hypothesis, sharpened by TextCraft):
+- **Q1, final outcome, stage transfer:** does a probe trained at one stage fail at another, on the same episodes?
+- **Q2, immediate step, stage transfer:** does the step-level probe stay stable across stages? τ² is the first env with a real step label: the tool call matches a reference-trajectory action (A-24).
+- **Q3, probe vs text:** does the hidden state beat TF-IDF+surface on the final outcome anywhere?
+
+**Predictions** (from TextCraft):
+- **P1:** same-episode, last-step scheme: late → early < late → late by ≥ 0.10 within-task AUC. Late → early's CI includes 0.5 or lies below it.
+- **P2:** the IMMEDIATE-label probe transfers: worst off-diagonal within 0.07 of the diagonal at mid layers.
+- **P3:** final-outcome probe ≈ text: |probe − text| ≤ 0.03 within-task at most rounds; no advantage broad across layers.
+
+**What falsifies them** (each env separately):
+- **P1 is falsified** if late → early is within the late → late CI at *both* pre-specified layers. That would mean no stage gap for the final outcome in that env.
+- **P2 is falsified** if the worst off-diagonal drops > 0.10 below the diagonal at both pre-specified layers. That would mean the step-level probe is also stage-specific.
+- **P3 is falsified** if the probe beats text by > 0.05 at ≥ 2 rounds with > 50% of layers.
+
+**Fixed in advance:**
+- **Layers:** 12 and 28 of 28 (Qwen2.5-7B, ALFWorld: 12 = stage-2's layer, 28 = last, as Ruan used). Proportional depth for Qwen3-8B (36 layers): **16 and 36**. Selected layers get reported too, but only as exploratory.
+- **Stage schemes:**
+  - (a) last step of round ranges: early 1–2 → r2, mid 3–5 → r5, late 6–10 → r10
+  - (b) range-averaged
+  - (c) milestones: ALFWorld = k-th state change ("You pick up / put / clean / heat / cool …"); τ² = k-th tool call matching a reference action
+  - (d) τ² only, conversation phase: *identify* (before the first successful user-lookup tool call) → *lookup* (read-only tools) → *act* (first write tool call onward) → *close* (final 2 turns). Analysed alongside (a)–(c) per Shlok.
+- **Population:** the same-episode cohort is primary (episodes present in every compared stage); naive reported beside it.
+- **Metric:** within-task pair-weighted AUC with task-cluster bootstrap CIs; pooled AUC and ECE secondary. Cells with < 15 mixed tasks are flagged and not used for the P1–P3 verdicts.
+
+### Deviations from the pre-registration (dated)
+- **2026-09-24 ~6:00 PM ET, before any ALFWorld/τ²-full probe result:**
+  - τ² phase scheme (d): the turn containing the first successful user-identification call is assigned to *identify* (the pre-registration said identify = turns *before* it). The call itself is part of identifying the user.
+  - Also: the automatic pipelines chose Phase 3 layers from Phase 2 and did not include the pre-registered layers or the last-step scheme. Fixed before results: ALFWorld runs a separate Phase 3X on layers 12 and 28 × all schemes; τ² adds layers 16 and 36 plus the last-step and phase schemes to its Phase 3. The P1–P3 verdicts use only the pre-registered layers.
+
 ## Hypothesis
 
 From the 2026-09-17 meeting (transcript 21:52–39:10): a probe trained on one stage of a trajectory performs well on that stage and degrades on others, like CEB's motivation figure (arXiv 2607.12397, Fig. 1). If so, stages carry different internal patterns, which would motivate a stage-robust method.
@@ -138,6 +172,70 @@ Layers: 12 is the stage-2 best layer (pre-specified, independent rollouts), 28 i
 - **IMMEDIATE validity/progress probes transfer:** ≤ 0.06 drop at mid layers, more at L28.
 
 **Circularity caveat (layer selection).** Layers 13 / 15 / 16 were selected by Phase 2 on the same 4,264 episodes that Phase 3 analyses. That inflates their absolute AUCs, and **the reversal appears mainly at those selected layers**. Layers 12 (from the independent stage-2 run) and 28 (fixed in advance) were not selected on these data, and both show the robust pattern (late → late 0.78–0.80, late → early 0.44–0.51). **Held-out layer selection before this goes to Lin:** not needed for the robust claim, which the two pre-specified layers already carry. It *would* be needed to claim the below-chance reversal. It's cheap (select layers on half the tasks, evaluate the matrix on the other half, ~10 min of CPU) and worth running if the reversal is going into the story. Otherwise, report the reversal as layer-dependent and exploratory.
+
+### 5. ALFWorld × Qwen2.5-7B: pre-registered test (1,600 episodes, 200 games, 132 mixed tasks)
+
+Verdicts use only the pre-registered layers (12, 28), the same-episode population, the last-step scheme, and within-task AUC.
+
+| Prediction | Pre-registered criterion | Result | Verdict |
+|---|---|---|---|
+| **P1** final outcome is stage-specific | late → early < late → late by ≥ 0.10; late → early CI includes or lies below 0.5 | L12: 0.510 [0.46, 0.56] vs 0.619 (−0.109); L28: 0.486 [0.43, 0.54] vs 0.633 (−0.146) | **Supported** (not falsified at either layer) |
+| **P2** immediate-step probe transfers | falsified if the worst off-diagonal drop > 0.10 at both layers | action invalid: worst drop 0.32 (L12), 0.29 (L28). No progress: 0.05 (L12), 0.11 (L28) | **Falsified for action-validity**; not falsified for progress |
+| **P3** final-outcome probe ≈ text | falsified if probe beats text by > 0.05 at ≥ 2 rounds with > 50% of layers | 0% of layers beat text by > 0.05 at any round. Text is *higher* at t = 5 (0.606 vs best 0.571) and t = 8 (0.640 vs 0.622) | **Supported** |
+
+**Same-episode, last-step, FINAL outcome** (114 mixed tasks):
+
+| train ↓ / test → | L12 early | L12 mid | L12 late | | L28 early | L28 mid | L28 late |
+|---|---|---|---|---|---|---|---|
+| early (r2) | 0.545 | 0.525 | 0.471 | | 0.514 | 0.512 | 0.576 |
+| mid (r5) | 0.478 | 0.543 | 0.515 | | 0.464 | 0.544 | 0.544 |
+| late (r10) | 0.510 | 0.515 | **0.619** | | 0.486 | 0.499 | **0.633** |
+| pooled | 0.528 | 0.533 | 0.585 | | 0.499 | 0.540 | 0.612 |
+
+**Same-episode, last-step, ACTION INVALID** (mixed tasks per test stage: 14 / 69 / 104):
+
+| train ↓ / test → | L12 early | L12 mid | L12 late | | L28 early | L28 mid | L28 late |
+|---|---|---|---|---|---|---|---|
+| early (r2) | 0.923 | **0.635** | **0.589** | | 0.969 | **0.649** | **0.704** |
+| mid (r5) | 0.862 | 0.924 | 0.874 | | 0.900 | 0.934 | 0.865 |
+| late (r10) | 0.885 | 0.844 | 0.912 | | 0.885 | 0.863 | 0.917 |
+| pooled | 0.938 | 0.945 | 0.932 | | 0.900 | 0.952 | 0.917 |
+
+**Reading.**
+- **Final outcome, same shape as TextCraft.** It's only weakly decodable at all (diagonals 0.51–0.63), readable mainly late, and a late probe is at chance on the same episodes' early states. The probe never beats text.
+- **New in ALFWorld: the action-validity probe is stage-specific in one direction.** A probe trained on early turns fails on later ones (0.59–0.70 vs diagonals 0.91–0.93), while mid- and late-trained probes transfer back well (0.86–0.90). The failing cells are well-powered (69 and 104 mixed tasks at test).
+  - A likely cause, not yet tested: at round 2 few actions are invalid, so the early probe learns from few positives. The early *test* cell (14 mixed tasks) is itself underpowered.
+- **A single probe pooled over all stages matches or beats every per-stage probe** (valid-action 0.93–0.95; final 0.50–0.61). So "a pooled probe can't cover all stages" is again **not supported**.
+
+### 6. τ²-bench × Qwen3-8B: pre-registered test (1,312 conversations, 164 tasks, 56 mixed)
+
+Verdicts use only the pre-registered layers (16, 36), the same-episode population, the last-step scheme, and within-task AUC. The step label is **real** (the tool call matches a reference-trajectory action, A-24).
+
+| Prediction | Result | Verdict |
+|---|---|---|
+| **P1** final outcome is stage-specific | L16: late → early **0.373 [0.31, 0.43]** (significantly below chance) vs late → late 0.573 [0.49, 0.66]. L36: 0.465 vs 0.512 (no gap; everything ~0.5) | Not falsified: supported at L16, not at L36. **But the final outcome is barely decodable at all** (diagonals 0.44–0.57) |
+| **P2** immediate-step probe transfers | action-validity worst drop 0.22 (L16) / 0.13 (L36). **Real step label** (matches reference action): worst drop 0.45 / 0.23 | **Falsified for both step labels.** The big drops are in well-powered cells (below) |
+| **P3** final-outcome probe ≈ text | probe beats text by > 0.05 with > 50% of layers only at t = 1 (0.56 of layers); not at ≥ 2 rounds. Text itself is ~chance (0.45–0.58) | **Supported** |
+
+**Conversation-phase scheme (d), real step label, same-episode** (mixed tasks per test phase: 39 / 31 / 54 / 32):
+
+| train ↓ / test → | L16 identify | L16 lookup | L16 act | L16 close | | L36 identify | L36 lookup | L36 act | L36 close |
+|---|---|---|---|---|---|---|---|---|---|
+| identify | **0.915** | 0.677 | 0.510 | 0.616 | | **0.923** | 0.756 | 0.740 | 0.858 |
+| lookup | 0.549 | **0.976** | 0.750 | 0.737 | | **0.364** | **0.969** | 0.692 | 0.884 |
+| act | 0.579 | 0.858 | **0.744** | 0.901 | | 0.662 | 0.876 | **0.704** | 0.901 |
+| close | 0.549 | 0.869 | 0.690 | **0.970** | | 0.760 | 0.751 | 0.663 | **0.944** |
+| pooled | 0.844 | 0.980 | 0.811 | 0.944 | | 0.791 | 0.970 | 0.709 | 0.983 |
+
+**Reading.**
+- **The clearest stage effect yet, and it's on the *real* step label.** "Is this tool call the right action?" is decoded very well *within* a conversation phase (0.92–0.98), but a probe trained in one phase often fails in another:
+  - identify → act 0.51 (L16)
+  - lookup → identify **0.36 (L36, below chance)**
+  - These are well-powered cells (31–54 mixed tasks).
+  - The direction that marks a correct action while *identifying the customer* is different from the one that marks it while *acting on their order*.
+- **The final outcome is essentially not decodable within-task on τ²** (diagonals 0.44–0.57 at both layers). Text does no better. So the within-task question for the final outcome has little signal to transfer. The L16 late → early reversal (0.37) mirrors TextCraft, but it sits on a weak diagonal.
+- **Pooled probes again roughly match per-stage probes** (real step label, L16: 0.84 / 0.98 / 0.81 / 0.94 vs diagonals 0.92 / 0.98 / 0.74 / 0.97). Pooling costs ~0.07 on *identify* and gains on *act*. So "one probe can't cover all stages" is **still not supported**.
+- **Caveat on the last-step scheme's P2 drops:** its *early* test cells are underpowered (16 and 7 mixed tasks). The phase-scheme drops above don't have that problem.
 
 ## Open questions
 

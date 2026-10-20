@@ -1,0 +1,27 @@
+{
+  "run": "runs/ms-tau2-qwen3-8b",
+  "site": "last",
+  "subset": "all",
+  "n_rows": 17560,
+  "n_episodes": 1312,
+  "n_tasks": 164,
+  "n_layers": 36,
+  "folds": 5,
+  "seed": 42,
+  "phase2_t": [
+    1,
+    2,
+    3,
+    5,
+    8
+  ],
+  "t_max": 10,
+  "labels": [
+    "final_bad",
+    "mc_bad",
+    "valid_bad",
+    "noprogress_bad"
+  ],
+  "label_polarity": "1 = bad outcome",
+  "probe_C": 1.0
+}

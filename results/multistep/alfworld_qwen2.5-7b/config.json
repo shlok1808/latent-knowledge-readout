@@ -1,0 +1,27 @@
+{
+  "run": "runs/ms-alfworld-q25-7b",
+  "site": "last",
+  "subset": "all",
+  "n_rows": 39116,
+  "n_episodes": 1600,
+  "n_tasks": 200,
+  "n_layers": 28,
+  "folds": 5,
+  "seed": 42,
+  "phase2_t": [
+    1,
+    2,
+    3,
+    5,
+    8
+  ],
+  "t_max": 10,
+  "labels": [
+    "final_bad",
+    "mc_bad",
+    "valid_bad",
+    "noprogress_bad"
+  ],
+  "label_polarity": "1 = bad outcome",
+  "probe_C": 1.0
+}
