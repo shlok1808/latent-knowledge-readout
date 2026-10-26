@@ -1,8 +1,8 @@
-# Speaker notes: Knowing Without Doing (Dr. Lin, 23 Oct 2026)
+# Speaker notes: Knowing Without Doing (Dr. Lin, 23 Oct 2026, updated 26 Oct)
 
 ## 1. Title
 - The question: when a model acts against what it knows, can we tell from its internals which fix will work?
-- "I'll go problem, what's known, what's new, the plan, why it's worth it, and a first step."
+- "I'll go problem, what's known, what's new, the plan, how we measure, why it's worth it, the first experiments, and my questions."
 
 ## 2. The model knows Canberra, then says Sydney
 - Walk the example: correct in turn 1, flips under pushback, while a probe still reads "Canberra" inside.
@@ -39,40 +39,68 @@
 
 ## 7. What's new: three predictions that can fail
 - **H1 (mechanism):** pushback and a tempting wrong option produce different fate mixes. If true, "sycophancy" isn't one thing and needs different fixes.
-- **H2 (fixes):** a fate-matched fix beats plain DPO on held-out items. If false, we learn diagnosis isn't needed, which is still useful.
+- **H2 (fixes):** a fate-matched fix beats plain DPO on held-out items. If false, we learn diagnosis isn't needed, which is still useful. We test it last (Stage B).
 - **H3 (monitors):** probes trained on normal behavior miss transformed and bypass failures. If true, lie detectors need in-context checks.
 - Key line: every outcome tells labs something they can act on.
+- If asked about H1: two papers disagree. 2601.11563 claims one shared compliance direction; 2607.20146 finds separable sycophancy modes in Gemma-2-9B. So H1 is open.
 
 ## 8. Our study: sort each failure, then test the fix
 - Same facts under four kinds of pressure, so differences come from the pressure, not the topic:
   1. tempting wrong option;
   2. user pushback;
   3. no single answer;
-  4. forced to answer.
+  4. forced to answer hard or impossible questions.
 
   Start with 1 and 2.
-- Stage A (six checks, cheapest first) answers H1 and H3. Stage B (fix, then recheck) answers H2.
-- Tools: probes plus SAE / ICA Lens features, so we can find signals we didn't guess.
-- Models 9B–27B; 70B only with her compute.
+- Stage A (sort into the six fates, cheapest check first) comes first and answers H1 and H3.
+- What changed since Friday: Stage B (fix, then recheck, vs DPO and CCA) moved to the end. Running DPO ourselves at 9–27B is expensive, so we start with public checkpoints: base vs instruct, and OLMo's SFT and DPO stages. We train our own only if those can't answer it.
+- Models 9B–27B: first Gemma-2-9B on TriviaQA pairs, then Qwen2.5-32B. 70B only with her compute.
 
-## 9. Why it's worth the time
+## 9. How we measure: start small, go bigger only if needed
+- Three levels: one probe direction, then a whole subspace, then paths through tokens and layers.
+- Analogy: check one wire first, then the whole cable, then trace the full circuit. Only open the wall if the wire check can't answer.
+- Vocabulary: "decodable by a probe" is not "the model knows". A patch that fixes the output shows we *can* steer it (causal controllability); it does not show the model uses that route by itself (endogenous mediation). Keep those separate.
+
+## 10. Lessons from Nikhil Prakash's binding papers
+- I read four of his papers on 26 Oct, after his thesis proposal talk.
+- Same-length pairs: our pushback twin changes the token count, so positions don't line up for patching. Template both versions to the same length.
+- One variable at a time: an early full-state patch copies everything and "fixes" trivially.
+- Before calling something bypass, patch pointer and address together; a mismatch between them can block the lookup even when the route is used.
+- Probe and patch beyond the answer token (earlier answer, pushback span, last token). In his VLM paper, patching only the object tokens did not flip the answer; adding the surrounding strips did. For text this is a hypothesis.
+- CCA is a Stage B baseline. Its no-mask version tied or beat the masked one, so we must run that control.
+- Fine-tuning tends to strengthen existing routes: a prior for what DPO does, not proof (his task had no pressure).
+
+## 11. Why it's worth the time
 - **Who uses it:** lie-detector builders (H3), auditors (if fixes only hide the problem), training teams (some fixes teach hiding: GRPO with a weak detector, over 85% evasion), and scale questions.
 - **Risks, each with an answer:**
-  - mostly readout failure → the pilot checks it first;
-  - scoop → 2610.21708 is about agents, so we stay on factual pressure and fixes;
+  - mostly readout failure → the output-score screen checks it first;
+  - scoop → 2610.21708 is about agents, and "decodability is not use" is crowded in ICLR 2027 submissions, so we stay on factual pressure, per-item fates and fixes;
   - H2 false → still a result.
-- **Cost:** about 1 GPU-day per model per condition.
+- **Cost:** Stage A about 1 GPU-day per model per condition. Our own DPO is about 40–70 GPU-h at 9B, which is why Stage B goes last.
 
-## 10. First step: a one-day pilot, and my questions
-- The pilot: about 200 pushback items on Gemma-2-9B. Measure the flip rate, then compare output-score AUC with probe AUC at the flip.
-- Go if the probe clearly beats the output scores (there's a hidden signal to sort); pivot if not.
-- Then ask the four questions, starting with compute.
+## 12. First experiments, ranked by importance
+- **1. Copy vs correctness:** after pushback, "the probe still reads Canberra" might only be the model's own earlier answer sitting in the chat. Cross "earlier answer right/wrong" with "fact true/false" and see if a truth probe still works where they disagree. Below 0.65 AUC, Stage A's probe premise fails.
+- **2. Plant fake fates:** write known fakes (bypass, rotation, sign flip, offset, erasure) into real 9B activations and see which tools call them right. Any tool that miscalls over 20% is barred.
+- **3. Output-score screen:** flip rate vs prior confidence, per pressure. Nearly free, so it can run first. It replaces Friday's "one-day pilot".
+- Analogy for 2: test the smoke detector with a match before trusting it in a real fire.
 
-## 11. Backup: a cheap geometry test
+## 13. Still open: datasets, and my questions
+- Datasets are NOT decided. "Templated pushback for mechanism work + TriviaQA for behavior" is a draft. I'd like a proper dataset discussion before anything runs.
+- Questions, starting with compute:
+  1. stay at 30B or below, or is 70B possible?
+  2. which pressures first (my plan: tempting wrong option + pushback)?
+  3. how fast to move, given 2610.21708 (15 Oct) and a crowded ICLR 2027 field?
+
+## 14. Backup: a cheap geometry test
 - Each signal is a direction. The angle between "knowing" and "acting" says how much knowledge can drive the answer.
 - KAPPA trains one probe on the true answer and one on the model's pick; they sit 60–80° apart. Nudging them together helps (TruthfulQA 56.7 → 67.8–73.5).
-- Open: is the angle wider on failing items? If not, we drop direction 2.
+- Open: is the angle wider on failing items? If not, we drop the geometry direction.
 
-## 12. Backup: how much to trust this review
-- It's a fast pass: 22 of 31 must-find papers found, headline numbers fact-checked.
+## 15. Backup: the eight ranked ideas
+- From the 25 Oct geometry report, section 5, after two skeptic passes. Ideas 1–3 are the first experiments.
+- Ideas 1–2 come before any fate call. Idea 5 (intervention ladder) has the highest scoop risk. Idea 8 (Stage B report card) is the costliest and runs last.
+
+## 16. Backup: how much to trust this review
+- It's a fast pass: 22 of 31 must-find papers found, headline numbers fact-checked. The search never met its stopping rule.
+- No citation chasing yet, several core papers unread, so no novelty claims.
 - Still to do: citation chasing, full reads, and 2505.11770.

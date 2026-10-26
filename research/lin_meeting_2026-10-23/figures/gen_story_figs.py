@@ -12,7 +12,7 @@ from matplotlib.patches import Arc, Circle, FancyArrowPatch, FancyBboxPatch, Wed
 OUT = os.path.dirname(os.path.abspath(__file__))
 plt.rcParams.update({
     "font.family": "sans-serif",
-    "font.sans-serif": ["Helvetica Neue", "DejaVu Sans"],
+    "font.sans-serif": ["Helvetica Neue", "Nimbus Sans", "Liberation Sans", "FreeSans", "DejaVu Sans"],
     "savefig.dpi": 220, "svg.fonttype": "path", "savefig.bbox": "tight", "savefig.pad_inches": 0.08,
 })
 
@@ -322,10 +322,10 @@ def fig_plan():
         if k < len(steps) - 1:
             ax.plot([70, 70], [y - 1.9, y - 4.7], color="#C9CED6", lw=1.4)
     rbox(ax, 67.5, 2.0, 81, 7.4, fc=PEACH, ec=PEACH_EC, r=1.4)
-    ax.text(69.5, 7.0, "Stage B: fix and recheck", fontsize=13.5, weight="bold", color="#9A4A12",
+    ax.text(69.5, 7.0, "Stage B, last: fix and recheck", fontsize=13.5, weight="bold", color="#9A4A12",
             va="center")
-    ax.text(69.5, 3.9, "apply the fix (and plain DPO), rerun Stage A: problem removed, or only hidden?",
-            fontsize=11.3, color=INK, va="center")
+    ax.text(69.5, 3.9, "public checkpoints first (base vs instruct, OLMo SFT → DPO); own DPO / CCA only if needed",
+            fontsize=10.8, color=INK, va="center")
     save(fig, "fig_plan")
 
 
