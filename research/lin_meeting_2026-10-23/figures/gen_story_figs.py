@@ -103,18 +103,16 @@ def fig_problem():
     fig, ax = canvas(12.5, 5.6, 125, 56)
 
     def row(y, label, user, mood, out, ok, inside=None):
-        ax.text(2, y + 8.5, label, fontsize=14, weight="bold", color=INK)
-        rbox(ax, 2, y - 3.5, 38, 9, fc=CYAN, ec=TEAL, ls=(0, (3, 2)))
-        ax.text(4, y + 1, user, fontsize=13, color=INK, va="center", linespacing=1.3)
-        arrow(ax, (41, y + 1), (47, y + 1), lw=2.2, ms=18)
+        ax.text(2, y + 8.5, label, fontsize=16, weight="bold", color=INK)
+        rbox(ax, 2, y - 3.5, 40.5, 9, fc=CYAN, ec=TEAL, ls=(0, (3, 2)))
+        ax.text(3.5, y + 1, user, fontsize=14, color=INK, va="center", linespacing=1.3)
+        arrow(ax, (43.2, y + 1), (47.5, y + 1), lw=2.2, ms=18)
         robot(ax, 54, y + 1, s=1.25, mood=mood)
         if inside:
-            pill(ax, 54, y - 6.6, inside, w=27, h=3.4, fs=12)
-            ax.text(54, y - 10.3, "read out of the model's internals", ha="center", fontsize=10.5,
-                    color=MUTED, style="italic")
+            pill(ax, 54, y - 6.6, inside, w=32, h=3.8, fs=14)
         ax.plot([62, 72], [y + 1, y + 1], color=MUTED, lw=1.6, ls=(0, (1.5, 2.5)))
         rbox(ax, 73, y - 2.2, 34, 6.4, fc=PEACH, ec=PEACH_EC)
-        ax.text(90, y + 1, out, ha="center", va="center", fontsize=13.5, color=INK)
+        ax.text(90, y + 1, out, ha="center", va="center", fontsize=15, color=INK)
         mark(ax, 112, y + 1, ok, r=2.0)
 
     ax.text(55, 54.5, "", fontsize=1)
@@ -124,7 +122,7 @@ def fig_problem():
         "sad", "“You're right, it's Sydney.”", False,
         inside="probe still reads: Canberra")
     ax.text(62.5, 1.2, "The right answer is still decodable inside. What stops it from reaching the output?",
-            ha="center", fontsize=14, style="italic", color=INK)
+            ha="center", fontsize=16, style="italic", color=INK)
     save(fig, "fig_problem")
 
 

@@ -16,7 +16,7 @@
 <!-- highlight.js for code syntax highlighting -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css">
 <script defer src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Inter:wght@400;600;700&display=swap">
+
 
 <style>
 /* Colloquium Default Theme */
@@ -486,25 +486,6 @@ html, body {
     text-transform: uppercase;
     color: var(--colloquium-accent);
     margin-bottom: 1.1em;
-}
-
-/* Per-slide eyebrow label above the heading (<!-- eyebrow: ... -->) */
-.slide-eyebrow {
-    font-size: 0.6em;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    line-height: 1.3;
-    text-transform: uppercase;
-    color: var(--colloquium-accent);
-    margin-bottom: 0.7em;
-}
-
-.slide--title-sidebar .slide-eyebrow {
-    grid-column: 1;
-}
-
-.slide--section-break .slide-eyebrow {
-    color: rgba(255, 255, 255, 0.85);
 }
 
 .colloquium-title-rule {
@@ -1271,19 +1252,12 @@ html, body {
     font-weight: 600;
 }
 
-/* Slide numbers and chapter ranges share one right-aligned column */
 .colloquium-picker-num {
-    flex: none;
+    min-width: 28px;
     color: var(--colloquium-muted);
     font-variant-numeric: tabular-nums;
     font-size: 13px;
-    font-weight: 400;
     text-align: right;
-}
-
-/* Rows align their titles with chapter titles: edge + caret column + gap */
-.colloquium-picker--chapters .colloquium-picker-item {
-    padding-left: 40px;
 }
 
 .colloquium-picker-item.current .colloquium-picker-num {
@@ -1299,7 +1273,7 @@ html, body {
 .colloquium-picker-chapter-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     width: 100%;
     padding: 10px 20px;
     border: none;
@@ -1321,9 +1295,8 @@ html, body {
 }
 
 .colloquium-picker-chapter-toggle {
-    flex: none;
-    width: 10px;
-    text-align: left;
+    min-width: 28px;
+    text-align: right;
     color: var(--colloquium-muted);
 }
 
@@ -1353,6 +1326,9 @@ html, body {
     display: block;
 }
 
+.colloquium-picker-chapter-slides .colloquium-picker-item {
+    padding-left: 32px;
+}
 
 /* ===== Chapter Bar (frontmatter chapter_bar, <!-- chapter-bar: ... -->) =====
    One labeled segment per chapter along the slide's bottom edge. Each
@@ -2265,85 +2241,154 @@ body:hover .colloquium-present {
     transition: none !important;
 }
 
-:root {
-    --colloquium-font-heading: "Inter", sans-serif;
-    --colloquium-font-body: "Inter", sans-serif;
-}
-:root { --colloquium-accent: #2B8A9E; --colloquium-heading: #1F2430; --colloquium-text: #1F2430; }
+
+:root { --colloquium-accent: #2B8A9E; --colloquium-heading: #1F2430; --colloquium-text: #1F2430;
+        --colloquium-font-heading: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --colloquium-font-body: "Helvetica Neue", Helvetica, Arial, sans-serif; }
 .slide h2 { font-weight: 700; letter-spacing: -0.01em; font-size: 44px; }
 .slide--title h2 { font-size: 30px; font-weight: 500; color: #4B5563; margin-top: 10px; }
-.slide .slide-content img { display: block; margin: 0 auto; max-height: 470px; object-fit: contain; }
+.slide .slide-content img { display: block; margin: 0 auto; width: 100%; height: auto; max-height: 470px; object-fit: contain; }
+.slide.img-big .slide-content img { width: 100%; max-width: 1150px; height: auto; max-height: 500px; }
+.slide.img-wide .slide-content img { width: 100%; max-width: 1050px; height: auto; max-height: 400px; }
 .slide.img-short .slide-content img { max-height: 380px; }
 .slide.img-mid .slide-content img { max-height: 330px; }
-.slide.img-tall .slide-content img { max-height: 490px; }
+.slide.img-tall .slide-content img { max-height: 540px; }
 .slide.img-pair .slide-content img { max-height: 330px; }
-.slide.img-map .slide-content img { max-height: 410px; }
-.slide .slide-content li { margin-bottom: 0.35em; }
+.slide.img-map .slide-content img { max-height: 440px; }
+.slide .slide-content li { margin-bottom: 0.45em; }
+.slide.roomy .slide-content, .slide.roomy .slide-content li { font-size: 29px !important; }
+.slide.roomy .slide-content li { margin-bottom: 0.7em; }
 .slide .lead { font-size: 22px; color: #4B5563; margin: -6px 0 10px; }
 .slide .so { font-size: 22px; color: #1F2430; margin-top: 14px; border-left: 4px solid #2B8A9E; padding: 6px 14px; background: #F1F8FA; border-radius: 4px; }
 .slide .cap { font-size: 18px; color: #374151; margin-top: 8px; line-height: 1.4; }
 .slide .q { background: #E3F4F8; border-left: 4px solid #2B8A9E; padding: 14px 18px; border-radius: 6px; }
+.slide .opt { border: 2px solid #D8DCE3; border-radius: 10px; padding: 12px 20px; }
 .slide table { font-size: 19px; border-collapse: collapse; width: 100%; }
 .slide th { text-align: left; color: #4B5563; font-weight: 600; border-bottom: 2px solid #D1D5DB; padding: 8px 10px; }
 .slide td { border-bottom: 1px solid #E5E7EB; padding: 10px; vertical-align: top; }
+.slide .colloquium-slide-meta { font-size: 16px; line-height: 1.4; max-width: 88%; bottom: 34px; left: 48px; color: #4B5563; }
 </style>
 </head>
 <body>
 <div class="colloquium-deck">
-<section class="slide slide--title active" data-index="0" data-colloquium-md="PCEtLSBsYXlvdXQ6IHRpdGxlIC0tPgoKIyBLbm93aW5nIFdpdGhvdXQgRG9pbmcKCiMjIFdoZW4gYSBtb2RlbCBhY3RzIGFnYWluc3Qgd2hhdCBpdCBrbm93cywgY2FuIHdlIHRlbGwgZnJvbSB0aGUgaW5zaWRlIHdoaWNoIGZpeCB3aWxsIHdvcms/CgpTaGxvayDCtyBtZWV0aW5nIHdpdGggRHIuIExpbiDCtyAyMyBPY3RvYmVyIDIwMjYgKHVwZGF0ZWQgMjYgT2N0b2Jlcik=">
+<section class="slide slide--title active" data-index="0" data-colloquium-md="PCEtLSBsYXlvdXQ6IHRpdGxlIC0tPgoKIyBLbm93aW5nIFdpdGhvdXQgRG9pbmcKCiMjIFdoZW4gYSBtb2RlbCBhY3RzIGFnYWluc3Qgd2hhdCBpdCBrbm93cywgY2FuIHdlIHRlbGwgZnJvbSB0aGUgaW5zaWRlIHdoaWNoIGZpeCB3aWxsIHdvcms/CgpTaGxvayDCtyB3ZWVrbHkgdXBkYXRlIGZvciBEci4gTGluIMK3IDI2IE9jdG9iZXIgMjAyNg==">
 <h1>Knowing Without Doing</h1>
 <div class="slide-content"><h2>When a model acts against what it knows, can we tell from the inside which fix will work?</h2>
-<p>Shlok · meeting with Dr. Lin · 23 October 2026 (updated 26 October)</p>
+<p>Shlok · weekly update for Dr. Lin · 26 October 2026</p>
 </div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">1 / 16</span></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">1 / 18</span></div></div>
 </section>
 
-<section class="slide slide--content img-short" data-index="1" data-colloquium-md="PCEtLSBjbGFzczogaW1nLXNob3J0IC0tPgoKIyMgVGhlIG1vZGVsIGtub3dzIENhbmJlcnJhLCB0aGVuIHNheXMgU3lkbmV5Cgo8cCBjbGFzcz0ibGVhZCI+R29hbDogZmluZCBvdXQgPGk+aG93PC9pPiB0aGUgcmlnaHQgYW5zd2VyIGZhaWxzIHRvIHJlYWNoIHRoZSBvdXRwdXQsIGFuZCB3aGljaCBmaXggZWFjaCBmYWlsdXJlIG5lZWRzLjwvcD4KCiFbXShmaWd1cmVzL2ZpZ19wcm9ibGVtLnN2Zyk=">
-<h2>The model knows Canberra, then says Sydney</h2>
-<div class="slide-content"><p class="lead">Goal: find out <i>how</i> the right answer fails to reach the output, and which fix each failure needs.</p>
-<p><img src="figures/fig_problem.svg" alt="" /></p>
+<section class="slide slide--content img-big" data-index="1" data-colloquium-md="PCEtLSBjbGFzczogaW1nLWJpZyAtLT4KCiMjIFJlY2FwOiB0aGUgbW9kZWwga25vd3MgQ2FuYmVycmEsIHRoZW4gc2F5cyBTeWRuZXkKCiFbXShmaWd1cmVzL2ZpZ19wcm9ibGVtLnN2Zyk=">
+<h2>Recap: the model knows Canberra, then says Sydney</h2>
+<div class="slide-content"><p><img src="figures/fig_problem.svg" alt="" /></p>
 </div>
-<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>This is sycophancy seen from the inside, and it is what white-box lie detectors try to catch. Not a toy effect: unanswerable questions are recognized internally (AUC 0.939, 11 models up to 70B) yet answered anyway [2608.29109].</p></div></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">2 / 16</span></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">2 / 18</span></div></div>
 </section>
 
-<section class="slide slide--content img-mid" data-index="2" data-colloquium-md="PCEtLSBjbGFzczogaW1nLW1pZCAtLT4KCiMjIFJlYWRhYmxlIGlzIG5vdCB0aGUgc2FtZSBhcyB1c2VkCgohW10oZmlndXJlcy9maWdfdXNlZC5zdmcpCgo8cCBjbGFzcz0ic28iPuKGkiBTbyB3ZSBuZXZlciBzdG9wIGF0ICJhIHByb2JlIGNhbiByZWFkIGl0Ii4gRXZlcnkgY2xhaW0gZ2V0cyBhIGNhdXNhbCB0ZXN0OiBwdXNoIHRoZSBzaWduYWwgYm90aCB3YXlzLCByZW1vdmUgaXQsIGFuZCBzd2FwIGlucHV0cyB0aGF0IGRpZmZlciBvbmx5IGluIHRoYXQgZmFjdC48L3A+">
-<h2>Readable is not the same as used</h2>
-<div class="slide-content"><p><img src="figures/fig_used.svg" alt="" /></p>
-<p class="so">→ So we never stop at "a probe can read it". Every claim gets a causal test: push the signal both ways, remove it, and swap inputs that differ only in that fact.</p></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">3 / 16</span></div></div>
+<section class="slide slide--content roomy" data-index="2" data-colloquium-md="PCEtLSBjbGFzczogcm9vbXkgLS0+CgojIyBTaW5jZSBsYXN0IHdlZWsKCi0gKipGb3VyIGtpbmRzIG9mIHByZXNzdXJlKiosIG5vdCBqdXN0IHB1c2hiYWNrLiBXZSBzdGFydCB3aXRoIHR3by4KLSAqKlNvcnQgZmFpbHVyZXMgZmlyc3QsIHRlc3QgZml4ZXMgbGFzdC4qKiBUcmFpbmluZyBvdXIgb3duIGZpeGVzIGlzIHRoZSBjb3N0bHkgcGFydC4KLSAqKlJldmlld2VkIGdlb21ldHJ5IG1ldGhvZHM6KiogOCByYW5rZWQgaWRlYXMuIFRoZSBmaXJzdCAzIGNvc3QgdW5kZXIgMyBHUFUtaG91cnMuCi0gKipEYXRhc2V0czoqKiBzdGlsbCBvcGVuLiBJJ2QgbGlrZSB0byBkZWNpZGUgdGhlbSB3aXRoIHlvdS4=">
+<h2>Since last week</h2>
+<div class="slide-content"><ul>
+<li><strong>Four kinds of pressure</strong>, not just pushback. We start with two.</li>
+<li><strong>Sort failures first, test fixes last.</strong> Training our own fixes is the costly part.</li>
+<li><strong>Reviewed geometry methods:</strong> 8 ranked ideas. The first 3 cost under 3 GPU-hours.</li>
+<li><strong>Datasets:</strong> still open. I’d like to decide them with you.</li>
+</ul>
+</div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">3 / 18</span></div></div>
 </section>
 
-<section class="slide slide--content img-tall" data-index="3" data-colloquium-md="PCEtLSBjbGFzczogaW1nLXRhbGwgLS0+CgojIyBTaXggZmF0ZXMsIGVhY2ggcG9pbnRpbmcgdG8gYSBkaWZmZXJlbnQgZml4CgohW10oZmlndXJlcy9maWdfZmF0ZXMuc3ZnKQ==">
-<h2>Six fates, each pointing to a different fix</h2>
+<section class="slide slide--content img-big" data-index="3" data-colloquium-md="PCEtLSBjbGFzczogaW1nLWJpZyAtLT4KCiMjIFRoZSBpZGVhOiBkb2VzIGtub3dpbmcgc3RvcCBzdGVlcmluZz8KCiFbXShmaWd1cmVzL2ZpZ19hbmdsZV9zdG9yeS5zdmcp">
+<h2>The idea: does knowing stop steering?</h2>
+<div class="slide-content"><p><img src="figures/fig_angle_story.svg" alt="" /></p>
+</div>
+<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Two probes per item, as in KAPPA: one on the true answer (“knowing”), one on the answer the model gives (“acting”). Papers find 60–80° on average. If θ is the same on held and flipped items, we drop this idea.</p></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">4 / 18</span></div></div>
+</section>
+
+<section class="slide slide--content img-big" data-index="4" data-colloquium-md="PCEtLSBjbGFzczogaW1nLWJpZyAtLT4KCiMjIFBsYW46IHNvcnQgZmlyc3QsIGZpeCBsYXN0CgohW10oZmlndXJlcy9maWdfcGxhbl9zaW1wbGUuc3ZnKQ==">
+<h2>Plan: sort first, fix last</h2>
+<div class="slide-content"><p><img src="figures/fig_plan_simple.svg" alt="" /></p>
+</div>
+<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Models: Gemma-2-9B first, then Qwen2.5-32B; 70B only if compute allows. Stage B starts from public checkpoint pairs (base vs instruct, OLMo SFT → DPO) because our own DPO is about 40–70 GPU-hours at 9B.</p></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">5 / 18</span></div></div>
+</section>
+
+<section class="slide slide--content img-wide" data-index="5" data-colloquium-md="PCEtLSBjbGFzczogaW1nLXdpZGUgLS0+CgojIyBGaXJzdCBydW46IGEgbmVhcmx5IGZyZWUgc2NyZWVuCgohW10oZmlndXJlcy9maWdfc2NyZWVuLnN2ZykKCjxwIGNsYXNzPSJzbyI+4oaSIE5leHQsIHR3byBxdWljayBjaGVja3MgYmVmb3JlIHdlIHRydXN0IGFueSBmYXRlIGxhYmVsOiBjb3B5IHZzIGNvcnJlY3RuZXNzLCBhbmQgcGxhbnRpbmcgZmFrZSBmYXRlcyAoZWFjaCB1bmRlciAyIEdQVS1ob3VycykuPC9wPg==">
+<h2>First run: a nearly free screen</h2>
+<div class="slide-content"><p><img src="figures/fig_screen.svg" alt="" /></p>
+<p class="so">→ Next, two quick checks before we trust any fate label: copy vs correctness, and planting fake fates (each under 2 GPU-hours).</p></div>
+<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>One curve per pressure. It needs only the model’s output scores, no internals.</p></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">6 / 18</span></div></div>
+</section>
+
+<section class="slide slide--content cols-2" style="--colloquium-columns: repeat(2, minmax(0, 1fr));" data-index="6" data-colloquium-md="PCEtLSBjbGFzczogY29scy0yIC0tPgoKIyMgU3RpbGwgb3Blbjogd2hpY2ggZGF0YT8KCjxkaXYgY2xhc3M9Im9wdCI+CgoqKlRlbXBsYXRlZCBwdXNoYmFjayoqCgoiSSdtIHN1cmUgaXQncyBTeWRuZXkiIHZzICJJJ20gc3VyZSBpdCdzIENhbmJlcnJhIgoKLSBcKyBzYW1lIGxlbmd0aCwgc28gcGF0Y2hpbmcgbGluZXMgdXAKLSDiiJIgYXJ0aWZpY2lhbAoKPC9kaXY+Cgp8fHwKCjxkaXYgY2xhc3M9Im9wdCI+CgoqKlRyaXZpYVFBIHF1ZXN0aW9ucyoqCgpyZWFsIHF1ZXN0aW9ucyB0aGUgbW9kZWwgbW9zdGx5IGdldHMgcmlnaHQKCi0gXCsgbmF0dXJhbCBiZWhhdmlvcgotIOKIkiB1bmV2ZW4gbGVuZ3RocywgaGFyZGVyIHRvIHBhdGNoCgo8L2Rpdj4=">
+<h2>Still open: which data?</h2>
+<div class="slide-content colloquium-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));"><div class="col"><div class="opt">
+<p><strong>Templated pushback</strong></p>
+<p>“I’m sure it’s Sydney” vs “I’m sure it’s Canberra”</p>
+<ul>
+<li>+ same length, so patching lines up</li>
+<li>− artificial</li>
+</ul>
+</div></div><div class="col"><div class="opt">
+<p><strong>TriviaQA questions</strong></p>
+<p>real questions the model mostly gets right</p>
+<ul>
+<li>+ natural behavior</li>
+<li>− uneven lengths, harder to patch</li>
+</ul>
+</div></div></div>
+<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>My draft: templates for the mechanism work, TriviaQA for behavior.</p></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">7 / 18</span></div></div>
+</section>
+
+<section class="slide slide--content roomy" data-index="7" data-colloquium-md="PCEtLSBjbGFzczogcm9vbXkgLS0+CgojIyBRdWVzdGlvbnMgZm9yIHlvdQoKPGRpdiBjbGFzcz0icSI+CgoxLiAqKkNvbXB1dGU6Kiogc3RheSBhdCAzMEIgb3IgYmVsb3csIG9yIGlzIDcwQiBwb3NzaWJsZT8KMi4gKipQcmVzc3VyZXM6Kiogc3RhcnQgd2l0aCBhIHRlbXB0aW5nIHdyb25nIG9wdGlvbiArIHB1c2hiYWNrPwozLiAqKlNwZWVkOioqIGhvdyBmYXN0IHNob3VsZCB3ZSBtb3ZlLCBnaXZlbiBhIHNpbWlsYXIgcGFwZXIgKDI2MTAuMjE3MDgpIGFuZCBhIGNyb3dkZWQgZmllbGQ/Cgo8L2Rpdj4=">
+<h2>Questions for you</h2>
+<div class="slide-content"><div class="q">
+<ol>
+<li><strong>Compute:</strong> stay at 30B or below, or is 70B possible?</li>
+<li><strong>Pressures:</strong> start with a tempting wrong option + pushback?</li>
+<li><strong>Speed:</strong> how fast should we move, given a similar paper (2610.21708) and a crowded field?</li>
+</ol>
+</div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">8 / 18</span></div></div>
+</section>
+
+<section class="slide slide--content img-tall" data-index="8" data-colloquium-md="PCEtLSBjbGFzczogaW1nLXRhbGwgLS0+CgojIyBCYWNrdXA6IHNpeCBmYXRlcywgZWFjaCBwb2ludGluZyB0byBhIGRpZmZlcmVudCBmaXgKCiFbXShmaWd1cmVzL2ZpZ19mYXRlcy5zdmcp">
+<h2>Backup: six fates, each pointing to a different fix</h2>
 <div class="slide-content"><p><img src="figures/fig_fates.svg" alt="" /></p>
 </div>
-<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Dark band = studied before; dashed = barely studied. → A fate label is only worth having if it predicts which fix works. That is what we test (prediction H2).</p></div></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">4 / 16</span></div></div>
+<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Dark band = studied before; dashed = barely studied. A fate label is only worth having if it predicts which fix works (prediction H2).</p></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">9 / 18</span></div></div>
 </section>
 
-<section class="slide slide--content img-map" data-index="4" data-colloquium-md="PCEtLSBjbGFzczogaW1nLW1hcCAtLT4KCiMjIFRvZGF5OiBlYWNoIHBhcGVyIHRlc3RzIG9uZSBmYXRlLCB3aXRoIG9uZSBtZXRob2QKCjxwIGNsYXNzPSJsZWFkIj5UaHJlZSBzeWNvcGhhbmN5IHBhcGVycyBkaXNhZ3JlZSAoImVyYXNlZCIsICJvdmVycmlkZSIsICJ0d28tc3RhZ2UiKSwgZWFjaCB3aXRoIGEgZGlmZmVyZW50IG1ldGhvZC48L3A+CgohW10oZmlndXJlcy9maWdfZXZpZGVuY2VfbWFwLnN2Zyk=">
-<h2>Today: each paper tests one fate, with one method</h2>
-<div class="slide-content"><p class="lead">Three sycophancy papers disagree ("erased", "override", "two-stage"), each with a different method.</p>
-<p><img src="figures/fig_evidence_map.svg" alt="" /></p>
+<section class="slide slide--content img-mid" data-index="9" data-colloquium-md="PCEtLSBjbGFzczogaW1nLW1pZCAtLT4KCiMjIEJhY2t1cDogcmVhZGFibGUgaXMgbm90IHRoZSBzYW1lIGFzIHVzZWQKCiFbXShmaWd1cmVzL2ZpZ191c2VkLnN2ZykKCjxwIGNsYXNzPSJzbyI+4oaSIFNvIHdlIG5ldmVyIHN0b3AgYXQgImEgcHJvYmUgY2FuIHJlYWQgaXQiLiBFdmVyeSBjbGFpbSBnZXRzIGEgY2F1c2FsIHRlc3Q6IHB1c2ggdGhlIHNpZ25hbCBib3RoIHdheXMsIHJlbW92ZSBpdCwgYW5kIHN3YXAgaW5wdXRzIHRoYXQgZGlmZmVyIG9ubHkgaW4gdGhhdCBmYWN0LjwvcD4=">
+<h2>Backup: readable is not the same as used</h2>
+<div class="slide-content"><p><img src="figures/fig_used.svg" alt="" /></p>
+<p class="so">→ So we never stop at "a probe can read it". Every claim gets a causal test: push the signal both ways, remove it, and swap inputs that differ only in that fact.</p></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">10 / 18</span></div></div>
+</section>
+
+<section class="slide slide--content img-map" data-index="10" data-colloquium-md="PCEtLSBjbGFzczogaW1nLW1hcCAtLT4KCiMjIEJhY2t1cDogZWFjaCBwYXBlciB0ZXN0cyBvbmUgZmF0ZSwgd2l0aCBvbmUgbWV0aG9kCgohW10oZmlndXJlcy9maWdfZXZpZGVuY2VfbWFwLnN2Zyk=">
+<h2>Backup: each paper tests one fate, with one method</h2>
+<div class="slide-content"><p><img src="figures/fig_evidence_map.svg" alt="" /></p>
 </div>
-<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>→ Running every check on the same items tells us who is right, or whether each is right about different items. “Natural route” = does the unmodified model actually use the signal?</p></div></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">5 / 16</span></div></div>
+<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Three sycophancy papers disagree (“erased”, “override”, “two-stage”), each with a different method. Running every check on the same items tells us who is right.</p></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">11 / 18</span></div></div>
 </section>
 
-<section class="slide slide--content size-small img-pair cols-2" style="--colloquium-columns: repeat(2, minmax(0, 1fr));" data-index="5" data-colloquium-md="PCEtLSBjbGFzczogc2l6ZS1zbWFsbCBpbWctcGFpciBjb2xzLTIgLS0+CgojIyBUd28gbGVzc29ucyBmcm9tIHRoYXQgd29yayBzaGFwZSBvdXIgZGVzaWduCgoqKjEuIFJ1bGUgb3V0IHRoZSBib3JpbmcgZXhwbGFuYXRpb24gZmlyc3QuKiogQXQgOEIsIG91dHB1dCBzY29yZXMgYWxvbmUgYWxtb3N0IG1hdGNoIGEgdHJhaW5lZCBwcm9iZS4KCiFbXShmaWd1cmVzL2ZpZ19tYXJnaW4uc3ZnKQoKPHAgY2xhc3M9ImNhcCI+4oaSIENoZWNrIDEgb2Ygb3VyIHN0dWR5IGlzIGFsd2F5cyB0aGUgb3V0cHV0IHNjb3Jlcy48L3A+Cgp8fHwKCioqMi4gQ2hlY2sgd2hldGhlciBhIGZpeCByZW1vdmVkIHRoZSBwcm9ibGVtLioqIFJMSEYgY3V0IHN5Y29waGFuY3kgfjEww5csIGJ1dCB0aGUgaGVhZHMgYmVoaW5kIGl0IG1hdHRlciBtb3JlLgoKIVtdKGZpZ3VyZXMvZmlnX21hc2tpbmcuc3ZnKQoKPHAgY2xhc3M9ImNhcCI+4oaSIFN0YWdlIEIgcmVydW5zIGV2ZXJ5IGNoZWNrIGFmdGVyIHRoZSBmaXguPC9wPg==">
-<h2>Two lessons from that work shape our design</h2>
+<section class="slide slide--content size-small img-pair cols-2" style="--colloquium-columns: repeat(2, minmax(0, 1fr));" data-index="11" data-colloquium-md="PCEtLSBjbGFzczogc2l6ZS1zbWFsbCBpbWctcGFpciBjb2xzLTIgLS0+CgojIyBCYWNrdXA6IHR3byBsZXNzb25zIGZyb20gdGhhdCB3b3JrCgoqKjEuIFJ1bGUgb3V0IHRoZSBib3JpbmcgZXhwbGFuYXRpb24gZmlyc3QuKiogQXQgOEIsIG91dHB1dCBzY29yZXMgYWxvbmUgYWxtb3N0IG1hdGNoIGEgdHJhaW5lZCBwcm9iZS4KCiFbXShmaWd1cmVzL2ZpZ19tYXJnaW4uc3ZnKQoKfHx8CgoqKjIuIENoZWNrIHdoZXRoZXIgYSBmaXggcmVtb3ZlZCB0aGUgcHJvYmxlbS4qKiBSTEhGIGN1dCBzeWNvcGhhbmN5IH4xMMOXLCBidXQgdGhlIGhlYWRzIGJlaGluZCBpdCBtYXR0ZXIgbW9yZS4KCiFbXShmaWd1cmVzL2ZpZ19tYXNraW5nLnN2Zyk=">
+<h2>Backup: two lessons from that work</h2>
 <div class="slide-content colloquium-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));"><div class="col"><p><strong>1. Rule out the boring explanation first.</strong> At 8B, output scores alone almost match a trained probe.</p>
-<p><img src="figures/fig_margin.svg" alt="" /></p>
-<p class="cap">→ Check 1 of our study is always the output scores.</p></div><div class="col"><p><strong>2. Check whether a fix removed the problem.</strong> RLHF cut sycophancy ~10×, but the heads behind it matter more.</p>
-<p><img src="figures/fig_masking.svg" alt="" /></p>
-<p class="cap">→ Stage B reruns every check after the fix.</p></div></div>
+<p><img src="figures/fig_margin.svg" alt="" /></p></div><div class="col"><p><strong>2. Check whether a fix removed the problem.</strong> RLHF cut sycophancy ~10×, but the heads behind it matter more.</p>
+<p><img src="figures/fig_masking.svg" alt="" /></p></div></div>
 <div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Left: 2609.04582 (synthetic logic task, up to 8B). Right: 2604.19117, one pair of public 70B checkpoints.</p></div></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">6 / 16</span></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">12 / 18</span></div></div>
 </section>
 
-<section class="slide slide--content" data-index="6" data-colloquium-md="IyMgV2hhdCdzIG5ldzogdGhyZWUgcHJlZGljdGlvbnMgdGhhdCBjYW4gZmFpbAoKfCB8IFByZWRpY3Rpb24gfCBJZiB0cnVlIHwgSWYgZmFsc2UgfAp8LS0tfC0tLXwtLS18LS0tfAp8ICoqSDEgwrcgTWVjaGFuaXNtKiogfCBQdXNoYmFjayBhbmQgYSB0ZW1wdGluZyB3cm9uZyBvcHRpb24gcHJvZHVjZSAqZGlmZmVyZW50KiBmYXRlIG1peGVzIHwgIlN5Y29waGFuY3kiIGlzIG5vdCBvbmUgdGhpbmc7IGVhY2ggcHJlc3N1cmUgbmVlZHMgaXRzIG93biBmaXggfCBPbmUgc2hhcmVkIG1lY2hhbmlzbTsgb25lIGZpeCBtYXkgY292ZXIgYm90aCB8CnwgKipIMiDCtyBGaXhlcyoqICh0ZXN0ZWQgbGFzdCkgfCBBIGZpeCBtYXRjaGVkIHRvIHRoZSBmYXRlIGJlYXRzIHBsYWluIERQTyBvbiBoZWxkLW91dCBpdGVtcywgd2l0aCBsZXNzIGRhbWFnZSB8IERpYWdub3NlIGZpcnN0LCB0aGVuIGZpeCB8IFNraXAgdGhlIGRpYWdub3NpczsgZ2VuZXJpYyBmaXhlcyBhcmUgZW5vdWdoIHwKfCAqKkgzIMK3IE1vbml0b3JzKiogfCBQcm9iZXMgdHJhaW5lZCBvbiBub3JtYWwgYmVoYXZpb3IgbWlzcyAidHJhbnNmb3JtZWQiIGFuZCAiYnlwYXNzIiBmYWlsdXJlcyB8IExpZSBkZXRlY3RvcnMgbmVlZCBpbi1jb250ZXh0IGNoZWNrcyB8IFRvZGF5J3MgbW9uaXRvcnMgYXJlIHNhZmVyIHRoYW4gZmVhcmVkIHw=">
-<h2>What’s new: three predictions that can fail</h2>
+<section class="slide slide--content" data-index="12" data-colloquium-md="IyMgQmFja3VwOiB0aHJlZSBwcmVkaWN0aW9ucyB0aGF0IGNhbiBmYWlsCgp8IHwgUHJlZGljdGlvbiB8IElmIHRydWUgfCBJZiBmYWxzZSB8CnwtLS18LS0tfC0tLXwtLS18CnwgKipIMSDCtyBNZWNoYW5pc20qKiB8IFB1c2hiYWNrIGFuZCBhIHRlbXB0aW5nIHdyb25nIG9wdGlvbiBwcm9kdWNlICpkaWZmZXJlbnQqIGZhdGUgbWl4ZXMgfCAiU3ljb3BoYW5jeSIgaXMgbm90IG9uZSB0aGluZzsgZWFjaCBwcmVzc3VyZSBuZWVkcyBpdHMgb3duIGZpeCB8IE9uZSBzaGFyZWQgbWVjaGFuaXNtOyBvbmUgZml4IG1heSBjb3ZlciBib3RoIHwKfCAqKkgyIMK3IEZpeGVzKiogKHRlc3RlZCBsYXN0KSB8IEEgZml4IG1hdGNoZWQgdG8gdGhlIGZhdGUgYmVhdHMgcGxhaW4gRFBPIG9uIGhlbGQtb3V0IGl0ZW1zLCB3aXRoIGxlc3MgZGFtYWdlIHwgRGlhZ25vc2UgZmlyc3QsIHRoZW4gZml4IHwgU2tpcCB0aGUgZGlhZ25vc2lzOyBnZW5lcmljIGZpeGVzIGFyZSBlbm91Z2ggfAp8ICoqSDMgwrcgTW9uaXRvcnMqKiB8IFByb2JlcyB0cmFpbmVkIG9uIG5vcm1hbCBiZWhhdmlvciBtaXNzICJ0cmFuc2Zvcm1lZCIgYW5kICJieXBhc3MiIGZhaWx1cmVzIHwgTGllIGRldGVjdG9ycyBuZWVkIGluLWNvbnRleHQgY2hlY2tzIHwgVG9kYXkncyBtb25pdG9ycyBhcmUgc2FmZXIgdGhhbiBmZWFyZWQgfA==">
+<h2>Backup: three predictions that can fail</h2>
 <div class="slide-content"><table>
 <thead>
 <tr>
@@ -2375,65 +2420,20 @@ body:hover .colloquium-present {
 </tbody>
 </table>
 </div>
-<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Every outcome tells labs something they can act on, including the “if false” column. H1 is contested: 2601.11563 says one shared compliance direction, 2607.20146 finds separable sycophancy modes.</p></div></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">7 / 16</span></div></div>
+<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>H1 is contested: 2601.11563 says one shared compliance direction, 2607.20146 finds separable sycophancy modes.</p></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">13 / 18</span></div></div>
 </section>
 
-<section class="slide slide--content img-tall" data-index="7" data-colloquium-md="PCEtLSBjbGFzczogaW1nLXRhbGwgLS0+CgojIyBPdXIgc3R1ZHk6IHNvcnQgZWFjaCBmYWlsdXJlLCB0aGVuIHRlc3QgdGhlIGZpeAoKIVtdKGZpZ3VyZXMvZmlnX3BsYW4uc3ZnKQ==">
-<h2>Our study: sort each failure, then test the fix</h2>
-<div class="slide-content"><p><img src="figures/fig_plan.svg" alt="" /></p>
+<section class="slide slide--content img-short" data-index="13" data-colloquium-md="PCEtLSBjbGFzczogaW1nLXNob3J0IC0tPgoKIyMgQmFja3VwOiB3aGF0IHBhcGVycyBtZWFzdXJlIGZvciB0aGUgYW5nbGUKCiFbXShmaWd1cmVzL2ZpZ19hbmdsZXMuc3ZnKQ==">
+<h2>Backup: what papers measure for the angle</h2>
+<div class="slide-content"><p><img src="figures/fig_angles.svg" alt="" /></p>
 </div>
-<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Stage A first (tests H1, H3). Stage B moved to the end (tests H2): our own DPO at 9–27B is expensive, so we start from public checkpoint pairs. Models 9B–27B, first Gemma-2-9B, then Qwen2.5-32B; 70B only if compute allows. Examples 3 and 4 are illustrations.</p></div></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">8 / 16</span></div></div>
+<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Nudging the “pick” direction toward the “true” one helps in KAPPA (TruthfulQA 56.7 → 67.8–73.5). Open: is the angle wider on the items where the model fails?</p></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">14 / 18</span></div></div>
 </section>
 
-<section class="slide slide--content size-small" data-index="8" data-colloquium-md="PCEtLSBjbGFzczogc2l6ZS1zbWFsbCAtLT4KCiMjIEhvdyB3ZSBtZWFzdXJlOiBzdGFydCBzbWFsbCwgZ28gYmlnZ2VyIG9ubHkgaWYgbmVlZGVkCgoxLiAqKk9uZSBkaXJlY3Rpb246KiogYSBzaW5nbGUgcHJvYmUgZGlyZWN0aW9uLiBFeGFtcGxlOiAiQ2FuYmVycmEgdnMgU3lkbmV5IiBhcyBvbmUgYXJyb3cgaW5zaWRlIHRoZSBtb2RlbC4KMi4gKipBIHdob2xlIHN1YnNwYWNlOioqIHNldmVyYWwgZGlyZWN0aW9ucyB0b2dldGhlciwgZm9yIHdoZW4gb25lIGFycm93IG1pc3NlcyB0aGUgc2lnbmFsLgozLiAqKlBhdGhzIHRocm91Z2ggdG9rZW5zIGFuZCBsYXllcnM6Kiogd2hpY2ggcG9zaXRpb25zIGFuZCBsYXllcnMgY2FycnkgaXQgdG8gdGhlIGFuc3dlciAocGF0Y2hpbmcpLgoKPHAgY2xhc3M9InNvIj7ihpIgTW92ZSB1cCBhIGxldmVsIG9ubHkgd2hlbiB0aGUgc21hbGxlciBvbmUgY2FuJ3QgYW5zd2VyIHRoZSBxdWVzdGlvbi4gRWFjaCBsZXZlbCBpcyBjb3N0bGllciBhbmQgZWFzaWVyIHRvIGZvb2wuPC9wPg==">
-<h2>How we measure: start small, go bigger only if needed</h2>
-<div class="slide-content"><ol>
-<li><strong>One direction:</strong> a single probe direction. Example: “Canberra vs Sydney” as one arrow inside the model.</li>
-<li><strong>A whole subspace:</strong> several directions together, for when one arrow misses the signal.</li>
-<li><strong>Paths through tokens and layers:</strong> which positions and layers carry it to the answer (patching).</li>
-</ol>
-<p class="so">→ Move up a level only when the smaller one can't answer the question. Each level is costlier and easier to fool.</p></div>
-<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Plus SAE / ICA Lens features, so we are not limited to signals we guessed. “Decodable by a probe” is not “the model knows”; a patch that fixes the output shows we <i>can</i> steer it (causal controllability), not that the model <i>does</i> use that route on its own (endogenous mediation).</p></div></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">9 / 16</span></div></div>
-</section>
-
-<section class="slide slide--content size-small" data-index="9" data-colloquium-md="PCEtLSBjbGFzczogc2l6ZS1zbWFsbCAtLT4KCiMjIExlc3NvbnMgZnJvbSBOaWtoaWwgUHJha2FzaCdzIGJpbmRpbmcgcGFwZXJzCgotICoqU2FtZS1sZW5ndGggcGFpcnM6KiogIkknbSBzdXJlIGl0J3MgU3lkbmV5IiB2cyAiSSdtIHN1cmUgaXQncyBDYW5iZXJyYSIsIHNvIHRva2VuIHBvc2l0aW9ucyBsaW5lIHVwIHdoZW4gd2UgcGF0Y2gKLSAqKk9uZSB2YXJpYWJsZSBhdCBhIHRpbWU6KiogYSBmdWxsLXN0YXRlIHBhdGNoICJmaXhlcyIgZXZlcnl0aGluZyBhbmQgdGVsbHMgdXMgbm90aGluZwotICoqQmVmb3JlIGNhbGxpbmcgaXQgYnlwYXNzOioqIHBhdGNoIHRoZSBwb2ludGVyIGFuZCB0aGUgYWRkcmVzcyB0b2dldGhlcjsgb25lIGFsb25lIGNhbiBmYWlsIGV2ZW4gd2hlbiB0aGUgcm91dGUgaXMgdXNlZAotICoqTG9vayBiZXlvbmQgdGhlIGFuc3dlciB0b2tlbjoqKiBwcm9iZSBhbmQgcGF0Y2ggdGhlIGVhcmxpZXIgYW5zd2VyLCB0aGUgcHVzaGJhY2sgc3BhbiBhbmQgdGhlIGxhc3QgdG9rZW4gdG9vCi0gKipGaXhlczoqKiBDQ0EgKGNpcmN1aXQtdGFyZ2V0ZWQgZmluZS10dW5pbmcpIGpvaW5zIFN0YWdlIEIgYXMgYSBiYXNlbGluZSwgd2l0aCBpdHMgbm8tbWFzayBjb250cm9sCi0gKipQcmlvcjoqKiBmaW5lLXR1bmluZyB0ZW5kcyB0byBzdHJlbmd0aGVuIGV4aXN0aW5nIHJvdXRlcy4gQSBoaW50IGZvciB3aGF0IERQTyBkb2VzLCBub3QgcHJvb2Yu">
-<h2>Lessons from Nikhil Prakash’s binding papers</h2>
-<div class="slide-content"><ul>
-<li><strong>Same-length pairs:</strong> “I’m sure it’s Sydney” vs “I’m sure it’s Canberra”, so token positions line up when we patch</li>
-<li><strong>One variable at a time:</strong> a full-state patch “fixes” everything and tells us nothing</li>
-<li><strong>Before calling it bypass:</strong> patch the pointer and the address together; one alone can fail even when the route is used</li>
-<li><strong>Look beyond the answer token:</strong> probe and patch the earlier answer, the pushback span and the last token too</li>
-<li><strong>Fixes:</strong> CCA (circuit-targeted fine-tuning) joins Stage B as a baseline, with its no-mask control</li>
-<li><strong>Prior:</strong> fine-tuning tends to strengthen existing routes. A hint for what DPO does, not proof.</li>
-</ul>
-</div>
-<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>From 2505.14685 (lookbacks), 2603.22278 (spatial binding), 2512.16914 (CCA; the mask barely mattered), 2402.14811 (fine-tuning enhances existing mechanisms).</p></div></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">10 / 16</span></div></div>
-</section>
-
-<section class="slide slide--content size-small cols-2" style="--colloquium-columns: repeat(2, minmax(0, 1fr));" data-index="10" data-colloquium-md="PCEtLSBjbGFzczogc2l6ZS1zbWFsbCBjb2xzLTIgLS0+CgojIyBXaHkgaXQncyB3b3J0aCB0aGUgdGltZQoKKipJZiBpdCB3b3Jrcywgd2hvIHVzZXMgaXQqKgoKLSAqKkxpZSBkZXRlY3RvcnM6Kiogc2hvd3MgKndoZW4qIHdoaXRlLWJveCBtb25pdG9ycyBtaXNzIHRoZSBmYWlsdXJlIChIMykKLSAqKkF1ZGl0czoqKiBpZiBmaXhlcyBvbmx5IGhpZGUgdGhlIHByb2JsZW0sIGJlaGF2aW9yIHRlc3RzIGNhbid0IGNlcnRpZnkgYSBtb2RlbCAoU3RhZ2UgQikKLSAqKlRyYWluaW5nOioqIGZsYWdzIGZpeGVzIHRoYXQgdGVhY2ggaGlkaW5nICh3ZWFrIGRldGVjdG9yICsgR1JQTzogPjg1JSBldmFzaW9uOyBEUE86IDwyNSUpCi0gKipTY2FsZToqKiB0ZXN0cyB3aGV0aGVyIHNtYWxsLW1vZGVsIG1lY2hhbmlzbXMgaG9sZCBpbiBsYXJnZXIgbW9kZWxzCgp8fHwKCioqUmlza3MsIGFuZCB3aGF0IHdlIGRvIGFib3V0IHRoZW0qKgoKLSAqKk1vc3QgZmxpcHMgYXJlIHBsYWluIHJlYWRvdXQgZmFpbHVyZXMqKiDihpIgdGhlIHByb2plY3Qgc2hyaW5rcyB0byBjYWxpYnJhdGlvbi4gVGhlIG91dHB1dC1zY29yZSBzY3JlZW4gY2hlY2tzIHRoaXMgZmlyc3QuCi0gKipTY29vcDoqKiAyNjEwLjIxNzA4ICgxNSBPY3QpIGNvdmVycyBhZ2VudCBhc2stdnMtYWN0LCBhbmQgImRlY29kYWJpbGl0eSBpcyBub3QgdXNlIiBpcyBjcm93ZGVkIGluIElDTFIgMjAyNyBzdWJtaXNzaW9ucyDihpIgd2Ugc3RheSBvbiBmYWN0dWFsIHByZXNzdXJlLCBwZXItaXRlbSBmYXRlcyBhbmQgZml4ZXMuCi0gKipObyBkaWZmZXJlbmNlIGJldHdlZW4gZml4ZXMgKEgyIGZhbHNlKSoqIOKGkiBzdGlsbCBhIHJlc3VsdDogZGlhZ25vc2lzIGlzbid0IG5lZWRlZC4KCioqQ29zdDoqKiBTdGFnZSBBIGFib3V0IDEgR1BVLWRheSBwZXIgbW9kZWwgcGVyIGNvbmRpdGlvbiBhdCA5QuKAkzI3Qi4gT3VyIG93biBEUE8gaXMgZmFyIG1vcmUgKGFib3V0IDQw4oCTNzAgR1BVLWggYXQgOUIpLCBzbyBTdGFnZSBCIGdvZXMgbGFzdC4=">
-<h2>Why it’s worth the time</h2>
-<div class="slide-content colloquium-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));"><div class="col"><p><strong>If it works, who uses it</strong></p>
-<ul>
-<li><strong>Lie detectors:</strong> shows <em>when</em> white-box monitors miss the failure (H3)</li>
-<li><strong>Audits:</strong> if fixes only hide the problem, behavior tests can’t certify a model (Stage B)</li>
-<li><strong>Training:</strong> flags fixes that teach hiding (weak detector + GRPO: &gt;85% evasion; DPO: &lt;25%)</li>
-<li><strong>Scale:</strong> tests whether small-model mechanisms hold in larger models</li>
-</ul></div><div class="col"><p><strong>Risks, and what we do about them</strong></p>
-<ul>
-<li><strong>Most flips are plain readout failures</strong> → the project shrinks to calibration. The output-score screen checks this first.</li>
-<li><strong>Scoop:</strong> 2610.21708 (15 Oct) covers agent ask-vs-act, and “decodability is not use” is crowded in ICLR 2027 submissions → we stay on factual pressure, per-item fates and fixes.</li>
-<li><strong>No difference between fixes (H2 false)</strong> → still a result: diagnosis isn’t needed.</li>
-</ul>
-<p><strong>Cost:</strong> Stage A about 1 GPU-day per model per condition at 9B–27B. Our own DPO is far more (about 40–70 GPU-h at 9B), so Stage B goes last.</p></div></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">11 / 16</span></div></div>
-</section>
-
-<section class="slide slide--content size-small" data-index="11" data-colloquium-md="PCEtLSBjbGFzczogc2l6ZS1zbWFsbCAtLT4KCiMjIEZpcnN0IGV4cGVyaW1lbnRzLCByYW5rZWQgYnkgaW1wb3J0YW5jZQoKfCAjIHwgRXhwZXJpbWVudCB8IFF1ZXN0aW9uIGl0IGFuc3dlcnMgfCBDb3N0IHwKfC0tLXwtLS18LS0tfC0tLXwKfCAqKjEqKiB8ICoqQ29weSB2cyBjb3JyZWN0bmVzcyoqIHwgQWZ0ZXIgcHVzaGJhY2ssIGRvZXMgdGhlIHByb2JlIHJlYWQgdGhlIDxpPmZhY3Q8L2k+LCBvciBqdXN0IHRoZSBtb2RlbCdzIG93biBlYXJsaWVyIGFuc3dlciBzaXR0aW5nIGluIHRoZSBjaGF0PyB8IDxzcGFuIHN0eWxlPSJ3aGl0ZS1zcGFjZTpub3dyYXAiPjHigJMyIGg8L3NwYW4+IHwKfCAqKjIqKiB8ICoqUGxhbnQgZmFrZSBmYXRlcyoqIHwgV3JpdGUga25vd24gZmFrZXMgKGJ5cGFzcywgcm90YXRpb24sIGVyYXN1cmXigKYpIGludG8gcmVhbCBhY3RpdmF0aW9ucy4gV2hpY2ggdG9vbHMgbGFiZWwgdGhlbSByaWdodD8gfCA8c3BhbiBzdHlsZT0id2hpdGUtc3BhY2U6bm93cmFwIj4mbHQ7IDEgaDwvc3Bhbj4gfAp8ICoqMyoqIHwgKipPdXRwdXQtc2NvcmUgc2NyZWVuKiogfCBGbGlwIHJhdGUgdnMgcHJpb3IgY29uZmlkZW5jZSwgcGVyIHByZXNzdXJlLiBEbyB0aGUgb3V0cHV0IHNjb3JlcyBhbG9uZSBhbHJlYWR5IGV4cGxhaW4gdGhlIGZsaXBzPyB8IDxzcGFuIHN0eWxlPSJ3aGl0ZS1zcGFjZTpub3dyYXAiPuKJiCAwIGg8L3NwYW4+IHwKCjxwIGNsYXNzPSJzbyI+4oaSICMzIGlzIG5lYXJseSBmcmVlLCBzbyBpdCBjYW4gcnVuIGZpcnN0LiAjMSBhbmQgIzIgbXVzdCBwYXNzIGJlZm9yZSB3ZSB0cnVzdCBhbnkgZmF0ZSBsYWJlbC48L3A+">
-<h2>First experiments, ranked by importance</h2>
+<section class="slide slide--content size-small" data-index="14" data-colloquium-md="PCEtLSBjbGFzczogc2l6ZS1zbWFsbCAtLT4KCiMjIEJhY2t1cDogZmlyc3QgZXhwZXJpbWVudHMsIHJhbmtlZAoKfCAjIHwgRXhwZXJpbWVudCB8IFF1ZXN0aW9uIGl0IGFuc3dlcnMgfCBDb3N0IHwKfC0tLXwtLS18LS0tfC0tLXwKfCAqKjEqKiB8ICoqQ29weSB2cyBjb3JyZWN0bmVzcyoqIHwgQWZ0ZXIgcHVzaGJhY2ssIGRvZXMgdGhlIHByb2JlIHJlYWQgdGhlIDxpPmZhY3Q8L2k+LCBvciBqdXN0IHRoZSBtb2RlbCdzIG93biBlYXJsaWVyIGFuc3dlciBzaXR0aW5nIGluIHRoZSBjaGF0PyB8IDxzcGFuIHN0eWxlPSJ3aGl0ZS1zcGFjZTpub3dyYXAiPjHigJMyIGg8L3NwYW4+IHwKfCAqKjIqKiB8ICoqUGxhbnQgZmFrZSBmYXRlcyoqIHwgV3JpdGUga25vd24gZmFrZXMgKGJ5cGFzcywgcm90YXRpb24sIGVyYXN1cmXigKYpIGludG8gcmVhbCBhY3RpdmF0aW9ucy4gV2hpY2ggdG9vbHMgbGFiZWwgdGhlbSByaWdodD8gfCA8c3BhbiBzdHlsZT0id2hpdGUtc3BhY2U6bm93cmFwIj4mbHQ7IDEgaDwvc3Bhbj4gfAp8ICoqMyoqIHwgKipPdXRwdXQtc2NvcmUgc2NyZWVuKiogfCBGbGlwIHJhdGUgdnMgcHJpb3IgY29uZmlkZW5jZSwgcGVyIHByZXNzdXJlLiBEbyB0aGUgb3V0cHV0IHNjb3JlcyBhbG9uZSBhbHJlYWR5IGV4cGxhaW4gdGhlIGZsaXBzPyB8IDxzcGFuIHN0eWxlPSJ3aGl0ZS1zcGFjZTpub3dyYXAiPuKJiCAwIGg8L3NwYW4+IHw=">
+<h2>Backup: first experiments, ranked</h2>
 <div class="slide-content"><table>
 <thead>
 <tr>
@@ -2464,42 +2464,12 @@ body:hover .colloquium-present {
 </tr>
 </tbody>
 </table>
-<p class="so">→ #3 is nearly free, so it can run first. #1 and #2 must pass before we trust any fate label.</p></div>
-<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Kill rules: #1 fails Stage A’s probe premise if AUC on the disagreeing cells is below 0.65; #2 bars any tool that miscalls more than 20% of plants. Cost = GPU-hours on Gemma-2-9B. Source: reports/Group geometry methods for fates.md, section 5 (ideas 1–3).</p></div></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">12 / 16</span></div></div>
+</div>
+<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Kill rules: #1 fails Stage A’s probe premise if AUC on the disagreeing cells is below 0.65; #2 bars any tool that miscalls more than 20% of plants. Cost = GPU-hours on Gemma-2-9B. Source: reports/Group geometry methods for fates.md, section 5.</p></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">15 / 18</span></div></div>
 </section>
 
-<section class="slide slide--content cols-3-2" style="--colloquium-columns: minmax(0, 3fr) minmax(0, 2fr);" data-index="12" data-colloquium-md="PCEtLSBjbGFzczogY29scy0zLTIgLS0+CgojIyBTdGlsbCBvcGVuOiBkYXRhc2V0cywgYW5kIG15IHF1ZXN0aW9ucwoKKipEYXRhc2V0cyBhcmUgbm90IGRlY2lkZWQgeWV0KioKCi0gRHJhZnQgb25seTogdGVtcGxhdGVkIHB1c2hiYWNrIGZvciB0aGUgbWVjaGFuaXNtIHdvcmssIFRyaXZpYVFBIGZvciBiZWhhdmlvcgotIFRlbXBsYXRlcyBnaXZlIHNhbWUtbGVuZ3RoIHBhaXJzOyBUcml2aWFRQSBnaXZlcyBuYXR1cmFsIGl0ZW1zCi0gSSdkIGxpa2UgYSBwcm9wZXIgZGF0YXNldCBkaXNjdXNzaW9uIGJlZm9yZSBhbnl0aGluZyBydW5zCgp8fHwKCjxkaXYgY2xhc3M9InEiPgoKKipRdWVzdGlvbnMgZm9yIHlvdSoqCgoxLiBDb21wdXRlOiBzdGF5IGF0IDMwQiBvciBiZWxvdywgb3IgaXMgNzBCIHBvc3NpYmxlPwoyLiBXaGljaCBwcmVzc3VyZXMgZmlyc3Q/IChteSBwbGFuOiB0ZW1wdGluZyB3cm9uZyBvcHRpb24gKyBwdXNoYmFjaykKMy4gSG93IGZhc3Qgc2hvdWxkIHdlIG1vdmUsIGdpdmVuIDI2MTAuMjE3MDggYW5kIGEgY3Jvd2RlZCBJQ0xSIDIwMjcgZmllbGQ/Cgo8L2Rpdj4=">
-<h2>Still open: datasets, and my questions</h2>
-<div class="slide-content colloquium-grid" style="grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);"><div class="col"><p><strong>Datasets are not decided yet</strong></p>
-<ul>
-<li>Draft only: templated pushback for the mechanism work, TriviaQA for behavior</li>
-<li>Templates give same-length pairs; TriviaQA gives natural items</li>
-<li>I’d like a proper dataset discussion before anything runs</li>
-</ul></div><div class="col"><div class="q">
-<p><strong>Questions for you</strong></p>
-<ol>
-<li>Compute: stay at 30B or below, or is 70B possible?</li>
-<li>Which pressures first? (my plan: tempting wrong option + pushback)</li>
-<li>How fast should we move, given 2610.21708 and a crowded ICLR 2027 field?</li>
-</ol>
-</div></div></div>
-<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>In one line: find how the right answer fails to reach the action, then test whether monitors catch it and whether fixes remove it or only hide it.</p></div></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">13 / 16</span></div></div>
-</section>
-
-<section class="slide slide--content size-small img-pair cols-2" style="--colloquium-columns: repeat(2, minmax(0, 1fr));" data-index="13" data-colloquium-md="PCEtLSBjbGFzczogc2l6ZS1zbWFsbCBpbWctcGFpciBjb2xzLTIgLS0+CgojIyBCYWNrdXA6IGEgY2hlYXAgZ2VvbWV0cnkgdGVzdAoKKipXaGF0IHRoZSBhbmdsZSBtZWFucyoqCgohW10oZmlndXJlcy9maWdfYW5nbGVfZXhwbGFpbmVyLnN2ZykKCjxwIGNsYXNzPSJjYXAiPktBUFBBIChQYXJrIGV0IGFsLik6IGluIG11bHRpcGxlLWNob2ljZSBRQSwgdHJhaW4gb25lIHByb2JlIG9uIHRoZSB0cnVlIGFuc3dlciBhbmQgb25lIG9uIHRoZSBhbnN3ZXIgdGhlIG1vZGVsIHBpY2tzLCB0aGVuIG1lYXN1cmUgdGhlIGFuZ2xlIGJldHdlZW4gdGhlbS48L3A+Cgp8fHwKCioqV2hhdCBwYXBlcnMgbWVhc3VyZSoqCgohW10oZmlndXJlcy9maWdfYW5nbGVzLnN2ZykKCjxwIGNsYXNzPSJjYXAiPk51ZGdpbmcgdGhlICJwaWNrIiBkaXJlY3Rpb24gdG93YXJkIHRoZSAidHJ1ZSIgb25lIGhlbHBzIChUcnV0aGZ1bFFBIDU2Ljcg4oaSIDY3LjjigJM3My41KS4gPGI+T3Blbjo8L2I+IGlzIHRoZSBhbmdsZSB3aWRlciBvbiB0aGUgaXRlbXMgd2hlcmUgdGhlIG1vZGVsIGZhaWxzPzwvcD4=">
-<h2>Backup: a cheap geometry test</h2>
-<div class="slide-content colloquium-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));"><div class="col"><p><strong>What the angle means</strong></p>
-<p><img src="figures/fig_angle_explainer.svg" alt="" /></p>
-<p class="cap">KAPPA (Park et al.): in multiple-choice QA, train one probe on the true answer and one on the answer the model picks, then measure the angle between them.</p></div><div class="col"><p><strong>What papers measure</strong></p>
-<p><img src="figures/fig_angles.svg" alt="" /></p>
-<p class="cap">Nudging the "pick" direction toward the "true" one helps (TruthfulQA 56.7 → 67.8–73.5). <b>Open:</b> is the angle wider on the items where the model fails?</p></div></div>
-<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>If the angle does not change on failing items, we drop the geometry direction.</p></div></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">14 / 16</span></div></div>
-</section>
-
-<section class="slide slide--content size-small" data-index="14" data-colloquium-md="PCEtLSBjbGFzczogc2l6ZS1zbWFsbCAtLT4KCiMjIEJhY2t1cDogdGhlIGVpZ2h0IHJhbmtlZCBpZGVhcwoKfCAjIHwgSWRlYSAoZ2VvbWV0cnkgcmVwb3J0LCAyNSBPY3QpIHwgR1BVLWhvdXJzIGF0IDlCIHwgU2Nvb3AgfAp8LS0tfC0tLXwtLS18LS0tfAp8IDEgfCBDb3B5IHZzIGNvcnJlY3RuZXNzIDLDlzIgfCAx4oCTMiB8IGxvdyB8CnwgMiB8IFBsYW50IGtub3duIGZhdGVzLCB0ZXN0IHRoZSB0b29scyB8IDwgMSB8IG5vbmUgfAp8IDMgfCBPdXRwdXQtc2NvcmUgc2NyZWVuICsgdGhyZXNob2xkIHB1c2ggfCDiiYggMCwgdGhlbiA8IDMgfCBsb3cgfAp8IDQgfCBEbyBtb25pdG9ycyBzdXJ2aXZlPyAoZnJvemVuIHZzIHJlZml0IHByb2JlcykgfCB+MiArIGEgRFBPIHJ1biB8IG1lZGl1bSB8CnwgNSB8IEludGVydmVudGlvbiBsYWRkZXIgKyByZXNjdWUgYmFuZCBieSBkZXB0aCB8IDXigJMxMCB8IGhpZ2ggfAp8IDYgfCBPbmUgZml4LCBvciBvbmUgcGVyIHByZXNzdXJlPyB8IDwgMyB8IG1lZGl1bSB8CnwgNyB8IE92ZXJyaWRlIHZzIG5vdC1yb3V0ZWQgaGVhZCBjbGFzc2VzIHwgMTDigJMyMCB8IGxvd+KAk21lZGl1bSB8CnwgOCB8IFN0YWdlIEI6IHJlbW92ZWQgb3Igb25seSBoaWRkZW4/IHwgNDDigJM3MCB8IG1vZGVyYXRlIHw=">
+<section class="slide slide--content size-small" data-index="15" data-colloquium-md="PCEtLSBjbGFzczogc2l6ZS1zbWFsbCAtLT4KCiMjIEJhY2t1cDogdGhlIGVpZ2h0IHJhbmtlZCBpZGVhcwoKfCAjIHwgSWRlYSAoZ2VvbWV0cnkgcmVwb3J0LCAyNSBPY3QpIHwgR1BVLWhvdXJzIGF0IDlCIHwgU2Nvb3AgfAp8LS0tfC0tLXwtLS18LS0tfAp8IDEgfCBDb3B5IHZzIGNvcnJlY3RuZXNzIDLDlzIgfCAx4oCTMiB8IGxvdyB8CnwgMiB8IFBsYW50IGtub3duIGZhdGVzLCB0ZXN0IHRoZSB0b29scyB8IDwgMSB8IG5vbmUgfAp8IDMgfCBPdXRwdXQtc2NvcmUgc2NyZWVuICsgdGhyZXNob2xkIHB1c2ggfCDiiYggMCwgdGhlbiA8IDMgfCBsb3cgfAp8IDQgfCBEbyBtb25pdG9ycyBzdXJ2aXZlPyAoZnJvemVuIHZzIHJlZml0IHByb2JlcykgfCB+MiArIGEgRFBPIHJ1biB8IG1lZGl1bSB8CnwgNSB8IEludGVydmVudGlvbiBsYWRkZXIgKyByZXNjdWUgYmFuZCBieSBkZXB0aCB8IDXigJMxMCB8IGhpZ2ggfAp8IDYgfCBPbmUgZml4LCBvciBvbmUgcGVyIHByZXNzdXJlPyB8IDwgMyB8IG1lZGl1bSB8CnwgNyB8IE92ZXJyaWRlIHZzIG5vdC1yb3V0ZWQgaGVhZCBjbGFzc2VzIHwgMTDigJMyMCB8IGxvd+KAk21lZGl1bSB8CnwgOCB8IFN0YWdlIEI6IHJlbW92ZWQgb3Igb25seSBoaWRkZW4/IHwgNDDigJM3MCB8IG1vZGVyYXRlIHw=">
 <h2>Backup: the eight ranked ideas</h2>
 <div class="slide-content"><table>
 <thead>
@@ -2562,22 +2532,36 @@ body:hover .colloquium-present {
 </tbody>
 </table>
 </div>
-<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Ideas 1–2 come before any fate call; idea 8 is the costliest and runs last. Every idea is a hypothesis with a kill rule. Source: reports/Group geometry methods for fates.md, section 5.</p></div></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">15 / 16</span></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">16 / 18</span></div></div>
 </section>
 
-<section class="slide slide--content" data-index="15" data-colloquium-md="IyMgQmFja3VwOiBob3cgbXVjaCB0byB0cnVzdCB0aGlzIHJldmlldwoKLSBGYXN0IGxpdGVyYXR1cmUgcGFzczogYWJvdXQgNzAgcGFwZXJzLCBtYW55IHJlYWQgZnJvbSBhYnN0cmFjdHMgb25seTsgdGhlIHNlYXJjaCBuZXZlciBtZXQgaXRzIHN0b3BwaW5nIHJ1bGUKLSBGb3VuZCAyMiBvZiAzMSBwYXBlcnMgd2Uga25ldyB3ZSBoYWQgdG8gZmluZDsgdGhlIG1pc3NlcyB3ZXJlIG1vc3RseSBPcGVuUmV2aWV3LW9ubHkgd29ya3Nob3AgcGFwZXJzCi0gSGVhZGxpbmUgbnVtYmVycyBmYWN0LWNoZWNrZWQgYWdhaW5zdCB0aGUgcGFwZXJzOyB0aGUgcmVzdCBzdGlsbCBtYXJrZWQgInRvIHZlcmlmeSIKLSBObyBjaXRhdGlvbiBjaGFzaW5nIHlldCwgYW5kIHNldmVyYWwgY29yZSBwYXBlcnMgc3RpbGwgdW5yZWFkLCBzbyB3ZSBjbGFpbSBubyBub3ZlbHR5Ci0gTmV4dDogY2hhc2UgY2l0YXRpb25zIGJvdGggd2F5cyBhbmQgZnVsbHkgcmVhZCB0aGUgYWJzdHJhY3Qtb25seSBjb3JlIHBhcGVycywgaW5jbHVkaW5nIDI1MDUuMTE3NzAgKGNsb3Nlc3QgcHJpb3Igb24gdGhlIG5hdHVyYWwtcm91dGUgZ2FwKQ==">
-<h2>Backup: how much to trust this review</h2>
+<section class="slide slide--content size-small cols-2" style="--colloquium-columns: repeat(2, minmax(0, 1fr));" data-index="16" data-colloquium-md="PCEtLSBjbGFzczogc2l6ZS1zbWFsbCBjb2xzLTIgLS0+CgojIyBCYWNrdXA6IHdoeSBpdCdzIHdvcnRoIHRoZSB0aW1lCgoqKklmIGl0IHdvcmtzLCB3aG8gdXNlcyBpdCoqCgotICoqTGllIGRldGVjdG9yczoqKiBzaG93cyAqd2hlbiogd2hpdGUtYm94IG1vbml0b3JzIG1pc3MgdGhlIGZhaWx1cmUgKEgzKQotICoqQXVkaXRzOioqIGlmIGZpeGVzIG9ubHkgaGlkZSB0aGUgcHJvYmxlbSwgYmVoYXZpb3IgdGVzdHMgY2FuJ3QgY2VydGlmeSBhIG1vZGVsCi0gKipUcmFpbmluZzoqKiBmbGFncyBmaXhlcyB0aGF0IHRlYWNoIGhpZGluZyAod2VhayBkZXRlY3RvciArIEdSUE86ID44NSUgZXZhc2lvbjsgRFBPOiA8MjUlKQoKfHx8CgoqKlJpc2tzLCBhbmQgd2hhdCB3ZSBkbyBhYm91dCB0aGVtKioKCi0gKipNb3N0IGZsaXBzIGFyZSBwbGFpbiByZWFkb3V0IGZhaWx1cmVzKiog4oaSIHRoZSBwcm9qZWN0IHNocmlua3MgdG8gY2FsaWJyYXRpb24uIFRoZSBmcmVlIHNjcmVlbiBjaGVja3MgdGhpcyBmaXJzdC4KLSAqKlNjb29wOioqIDI2MTAuMjE3MDggKDE1IE9jdCkgY292ZXJzIGFnZW50IGFzay12cy1hY3Qg4oaSIHdlIHN0YXkgb24gZmFjdHVhbCBwcmVzc3VyZSwgcGVyLWl0ZW0gZmF0ZXMgYW5kIGZpeGVzLgotICoqTm8gZGlmZmVyZW5jZSBiZXR3ZWVuIGZpeGVzKiog4oaSIHN0aWxsIGEgcmVzdWx0OiBkaWFnbm9zaXMgaXNuJ3QgbmVlZGVkLg==">
+<h2>Backup: why it’s worth the time</h2>
+<div class="slide-content colloquium-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));"><div class="col"><p><strong>If it works, who uses it</strong></p>
+<ul>
+<li><strong>Lie detectors:</strong> shows <em>when</em> white-box monitors miss the failure (H3)</li>
+<li><strong>Audits:</strong> if fixes only hide the problem, behavior tests can’t certify a model</li>
+<li><strong>Training:</strong> flags fixes that teach hiding (weak detector + GRPO: &gt;85% evasion; DPO: &lt;25%)</li>
+</ul></div><div class="col"><p><strong>Risks, and what we do about them</strong></p>
+<ul>
+<li><strong>Most flips are plain readout failures</strong> → the project shrinks to calibration. The free screen checks this first.</li>
+<li><strong>Scoop:</strong> 2610.21708 (15 Oct) covers agent ask-vs-act → we stay on factual pressure, per-item fates and fixes.</li>
+<li><strong>No difference between fixes</strong> → still a result: diagnosis isn’t needed.</li>
+</ul></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">17 / 18</span></div></div>
+</section>
+
+<section class="slide slide--content" data-index="17" data-colloquium-md="IyMgQmFja3VwOiBob3cgbXVjaCB0byB0cnVzdCB0aGUgbGl0ZXJhdHVyZSByZXZpZXcKCi0gRmFzdCBwYXNzOiBhYm91dCA3MCBwYXBlcnMsIG1hbnkgcmVhZCBmcm9tIGFic3RyYWN0cyBvbmx5OyB0aGUgc2VhcmNoIG5ldmVyIG1ldCBpdHMgc3RvcHBpbmcgcnVsZQotIEZvdW5kIDIyIG9mIDMxIHBhcGVycyB3ZSBrbmV3IHdlIGhhZCB0byBmaW5kCi0gSGVhZGxpbmUgbnVtYmVycyBmYWN0LWNoZWNrZWQ7IHRoZSByZXN0IHN0aWxsIG1hcmtlZCAidG8gdmVyaWZ5IgotIE5vIGNpdGF0aW9uIGNoYXNpbmcgeWV0LCBhbmQgc2V2ZXJhbCBjb3JlIHBhcGVycyB1bnJlYWQsIHNvIHdlIGNsYWltIG5vIG5vdmVsdHk=">
+<h2>Backup: how much to trust the literature review</h2>
 <div class="slide-content"><ul>
-<li>Fast literature pass: about 70 papers, many read from abstracts only; the search never met its stopping rule</li>
-<li>Found 22 of 31 papers we knew we had to find; the misses were mostly OpenReview-only workshop papers</li>
-<li>Headline numbers fact-checked against the papers; the rest still marked “to verify”</li>
-<li>No citation chasing yet, and several core papers still unread, so we claim no novelty</li>
-<li>Next: chase citations both ways and fully read the abstract-only core papers, including 2505.11770 (closest prior on the natural-route gap)</li>
+<li>Fast pass: about 70 papers, many read from abstracts only; the search never met its stopping rule</li>
+<li>Found 22 of 31 papers we knew we had to find</li>
+<li>Headline numbers fact-checked; the rest still marked “to verify”</li>
+<li>No citation chasing yet, and several core papers unread, so we claim no novelty</li>
 </ul>
 </div>
-<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Full report with every source: reports/Knowledge action divergence internals round 2.md</p></div></div>
-<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">16 / 16</span></div></div>
+<div class="colloquium-slide-meta colloquium-slide-meta--left"><div class="colloquium-slide-footnote"><p>Full report: reports/Knowledge action divergence internals round 2.md</p></div></div>
+<div class="colloquium-footer"><div class="colloquium-footer-left"></div><div class="colloquium-footer-center"></div><div class="colloquium-footer-right colloquium-footer-nav"><span class="colloquium-counter">18 / 18</span></div></div>
 </section>
 </div>
 
@@ -2585,7 +2569,7 @@ body:hover .colloquium-present {
 
 <button class="colloquium-picker-trigger" title="Open slide picker">
     <span class="colloquium-picker-trigger-label">Slides</span>
-    <span class="colloquium-picker-trigger-count">1 / 16</span>
+    <span class="colloquium-picker-trigger-count">1 / 18</span>
 </button>
 
 <div class="colloquium-progress">
@@ -2949,8 +2933,6 @@ class ColloquiumPresentation {
 
         const picker = document.createElement('div');
         picker.className = 'colloquium-picker';
-        // With chapters, slide rows keep the caret column empty so every title aligns.
-        if (this.chapters.length) picker.classList.add('colloquium-picker--chapters');
 
         this.pickerItems = [];
         this.pickerChapters = [];
@@ -2959,8 +2941,8 @@ class ColloquiumPresentation {
             const btn = document.createElement('button');
             btn.className = 'colloquium-picker-item';
             btn.innerHTML =
-                '<span class="colloquium-picker-title">' + this._getSlideTitle(slide, i) + '</span>' +
-                '<span class="colloquium-picker-num">' + (i + 1) + '</span>';
+                '<span class="colloquium-picker-num">' + (i + 1) + '</span>' +
+                '<span class="colloquium-picker-title">' + this._getSlideTitle(slide, i) + '</span>';
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.goTo(i, true);
