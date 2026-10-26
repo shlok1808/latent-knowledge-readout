@@ -1,0 +1,1562 @@
+Discovering the Compositional Structure of Vector Representations with
+Role Learning Networks
+Paul Soulos,1 R. Thomas McCoy,1 Tal Linzen,2 and Paul Smolensky3,1
+1
+Department of Cognitive Science, Johns Hopkins University
+2
+Department of Linguistics and Center for Data Science, New York University
+3
+Microsoft Research
+psoulos1@jhu.edu,tom.mccoy@jhu.edu, linzen@nyu.edu, psmo@microsoft.com
+
+arXiv:1910.09113v3 [cs.LG] 16 Nov 2020
+
+Abstract
+How can neural networks perform so well
+on compositional tasks even though they lack
+explicit compositional representations? We
+use a novel analysis technique called ROLE
+to show that recurrent neural networks perform well on such tasks by converging to solutions which implicitly represent symbolic
+structure. This method uncovers a symbolic
+structure which, when properly embedded in
+vector space, closely approximates the encodings of a standard seq2seq network trained to
+perform the compositional SCAN task. We
+verify the causal importance of the discovered
+symbolic structure by showing that, when we
+systematically manipulate hidden embeddings
+based on this symbolic structure, the model’s
+output is changed in the way predicted by our
+analysis.
+
+1
+
+Introduction
+
+Traditional models of cognition, and language in
+particular, have relied heavily on symbol structures
+and symbol manipulation. However, in the current
+era, deep learning research has shown that Neural
+Networks (NNs) can display remarkable degrees
+of generalization on tasks traditionally viewed as
+depending on symbolic structure (Wu et al., 2016;
+McCoy et al., 2019a), albeit with some important
+limits to their generalization (Lake and Baroni,
+2018). Given that standard NNs have no obvious
+mechanisms for representing symbolic structures,
+parsing inputs into such structures, nor applying
+compositional symbol-manipulating rules to them,
+this success raises the question that we address
+in this paper: How do NNs achieve such strong
+performance on compositional tasks?
+Could it be that NNs do learn symbolic
+representations—covertly embedded as vectors in
+their state spaces? McCoy et al. (2019a) showed
+that when trained on highly compositional tasks,
+
+Goal: Interpret neural network encodings
+
+jump and run twice
+
+RNN
+Encoder
+
+Encoding
+
+RNN
+Decoder
+
+jump and run left twice
+
+JUMP RUN RUN
+JUMP LTURN RUN LTURN RUN
+
+Method: Approximate the encodings of a neural network with a more
+interpretable compositional model (§4)
+Step 1: Assign structural roles to words using a
+learned role assigner.
+
+Step 2: Combine word and role vectors using a
+closed-form equation with learned parameters.
+Df: filler embedding dictionary
+Key
+
+Dr: role embedding dictionary
+Key
+
+Value
+
+run
+
+Value
+
+Role 3
+
+jump
+
+Role 11
+
+…
+
+…
+
+Closed-form equation for compositional encoding
+COMPOSITION(words) = W
+
+!n
+
+i=1 Df [wordi ] ⊗ Dr [rolei ] + b =
+
+Results:
+The compositional encodings are functionally
+equivalent to the RNN encodings. (§5.1)
+words = jump and run twice
+RNN
+Decoder
+
+RNN
+Decoder
+
+JUMP RUN RUN
+
+RNN(words)
+
+JUMP RUN RUN
+
+COMPOSITION(words)
+
+The RNN encodings can be manipulated in symbolic ways to alter the output. (§5.3)
+RNN(jump and run twice)
+−W(Df [twice] ⊗ Dr [36]) + W(Df [thrice] ⊗ Dr [36])
+
+=
+
+JUMP RUN RUN RUN
+RNN Decoder
+
+Figure 1: Summary of our approach.
+
+standard NNs learned representations that are functionally equivalent to compositional vector embeddings of symbolic structures (Sec. 3). Processing
+in these NNs assigns structural representations to
+inputs and generates outputs that are governed by
+compositional rules stated over those representations. We refer to the networks we will analyze as
+target NNs, because we will propose a new type
+of NN (in Sec. 4)—the Role Learner (ROLE)—
+which is used to analyze the target network. In
+contrast with the analysis model of McCoy et al.
+(2019a), which relies on a hand-specified hypothesis about the structure underlying the learned representations of the target NN, ROLE automatically
+learns a symbolic structure that best approximates
+the internal representation of the target network.
+This yields two advantages. First, ROLE achieves
+success at analyzing networks for which the underlying structure is unclear. We show this in Sec. 5,
+where ROLE successfully uncovers the symbolic
+structures learned by a seq2seq RNN trained on
+the SCAN synthetic semantic parsing task (Lake
+and Baroni, 2018). Second, removing the need for
+hand-specified structural hypotheses reduces the
+burden on the analyst, who only needs to provide
+input sequences and their target NN encodings. Discovering symbolic structure within a model enables
+us to perform precise alterations to the internal representations in order to produce desired alterations
+in the output (Sec. 5.3). Then, in Sec. 6, we turn
+briefly to partially-compositional tasks in NLP.
+The novel contributions of this research are:
+• ROLE, a NN module that learns to assign symbolic structures to input sequences (Sec. 4).
+• Demonstration that RNNs converge to compositional solutions on the synthetic SCAN task
+(Sec. 5).
+• A precise closed-form expression for the distributed encoding learned by an RNN trained
+on SCAN, exhibiting its latent symbolic structure (Sec. 5.2).
+• Demonstration of the causal relevance of this
+symbolic structure by using the equation for
+its vector encoding to control RNN output
+through precise alteration of the RNN’s internal encoding (Sec. 5.3).
+• Additional evidence showing that sentence
+embedding models do not capture compositional structure (Sec. 6).
+
+2
+
+Background Related work
+
+2.1
+
+Compositionality
+
+Certain cognitive tasks consist in computing a function ϕ that is governed by strict rules: e.g., if ϕ is
+the function mapping a mathematical expression
+to its value (e.g., mapping ‘19 − 2 ∗ 7’ to 5), then
+ϕ obeys the rule that ϕ(x + y) = sum(ϕ(x), ϕ(y))
+for any expressions x and y. This rule is compositional: the output of a structure (here, x + y)
+is a function of the outputs of the structure’s constituents (here, x and y). The rule can be stated
+with full generality once the input is assigned a
+symbolic structure giving its decomposition into
+constituents. For a fully-compositional task, completely determined by compositional rules, a system that can assign appropriate symbolic structures to inputs and apply appropriate compositional
+rules to these structures will display full systematic
+generalization: it will correctly process arbitrary
+novel combinations of familiar constituents. This
+is a core capability of symbolic AI systems.
+Other tasks, including most natural language
+tasks such as machine translation, are only partially characterizable by compositional rules: natural language is only partially compositional
+in nature. For example, if ϕ is the function that assigns meanings to English adjectives, it generally obeys the rule that ϕ(in- +
+x) = not ϕ(x), (e.g., ϕ(inoffensive) =
+not ϕ(offensive)), yet there are exceptions:
+ϕ(inflammable) = ϕ(flammable). On these
+“partially-compositional” tasks, this strategy of
+compositional analysis has demonstrated considerable, but limited, generalization capabilities.
+2.2
+
+Analysis of NNs
+
+Many past works in the rich body of literature about
+analyzing NNs focus on compositional structure
+(Hupkes et al., 2020, 2018; Hewitt and Manning,
+2019; Li et al., 2019) and systematicity (Lake and
+Baroni, 2018; Goodwin et al., 2020). Two of the
+most popular analysis techniques are the behavioral and probing approaches. In the behavioral
+approach, a model is evaluated on a set of examples carefully chosen to require competence in particular linguistic phenomena (Marvin and Linzen,
+2018; Wang et al., 2018; Dasgupta et al., 2019; Poliak et al., 2018; Linzen et al., 2016; McCoy et al.,
+2019b; Warstadt et al., 2020). This technique can
+illuminate behavioral shortcomings but says little
+about how the internal representations are struc-
+
+tured, treating the model as a black box.
+In the probing approach, an auxiliary classifier
+is trained to classify the model’s internal representations based on some linguistically-relevant distinction (Adi et al., 2017; Giulianelli et al., 2018;
+Conneau et al., 2018; Conneau and Kiela, 2018;
+Belinkov et al., 2017; Blevins et al., 2018; Peters et al., 2018; Tenney et al., 2019). In contrast
+with the behavioral approach, the probing approach
+tests whether some particular information is present
+in the model’s encodings, but it says little about
+whether this information is actually used by the
+model. Indeed, in some cases models fail despite
+having the necessary information to succeed in
+their representations, showing that the ability of a
+classifier to extract that information does not mean
+that the model is using it (Voita and Titov, 2020;
+Ravichander et al., 2020; Vanmassenhove et al.,
+2017).
+We build on McCoy et al. (2019a), which introduced the analysis task DISCOVER (DISsecting
+COmpositionality in VEctor Representations):
+take a NN and, to the extent possible, find an
+explicitly-compositional approximation to its internal distributed representations. DISCOVER allows us to bridge the gap between representation
+and behavior: It reveals not only what information is encoded in the representation, but also reveals this information in a way that we can manipulate to show that the information is causally
+implicated in the model’s behavior (Section 5.3).
+Moreover, it provides a much more comprehensive
+window into the representation than the probing
+approach does; while probing extracts particular
+types of information from a representation (e.g.,
+“does this representation distinguish between active
+and passive sentences?”), DISCOVER exhaustively
+decomposes the model’s representational space. In
+this regard, DISCOVER is most closely related
+to the approaches of Andreas (2019), Chrupała
+and Alishahi (2019), and Abnar et al. (2019), who
+also propose methods for discovering a complete
+symbolic characterization of a set of vector representations, and Omlin and Giles (1996) and Weiss
+et al. (2018), which also seek to extract more interpretable symbolic models that approximate neural network behavior. Like Andreas (2019) and
+Chrupała and Alishahi (2019), we seek to find the
+structure encoded in neural networks, rather than
+seeking structure directly from the data as is the
+goal in grammar induction work such as Shen et al.
+
+(2019) and Bowman et al. (2016).
+
+3
+
+NN embedding of symbol structures
+
+McCoy et al. showed that, in GRU (Cho et al.,
+2014) encoder-decoder networks performing
+simple, fully-compositional string manipulations,
+the medial encoding (between encoder and
+decoder) could be extremely well approximated,
+up to an affine transformation, by Tensor Product
+Representations (TPRs) (Smolensky, 1990),
+which are explicitly-compositional vector embeddings of symbolic structures. To represent a
+string of symbols as a TPR, the symbols in the
+string 337 might be parsed into three constituents
+{3 : pos1, 7 : pos3, 3 : pos2}, where posn is the
+role of nth position from the left edge of the
+string; other role schemes are also possible,
+such as roles denoting right-to-left position:
+{3 : third-to-last, 3 : second-to-last, 7 : last}.
+The embedding of a constituent 7 : pos3 is
+e(7 : pos3) = eF (7) ⊗ eR (pos3), where ⊗ is
+the tensor product (outer product), eR , eF are
+respectively a vector embedding of the roles and
+a vector embedding of the fillers of those roles:
+the digits. The embedding of the whole string
+is the sum of the embeddings of its constituents.
+In general, for a symbol structure S with roles
+{rk } that are respectively
+filled by the symbols
+P
+{fk }, eTPR (S) =
+e
+k F (fk ) ⊗ eR (rk ). The
+DISCOVER task including the TPR equations is
+depicted in Figure 2.
+At a high level, these role embeddings serve
+a similar purpose as positional embeddings in a
+Transformer (Vaswani et al., 2017), in that they
+are vector embeddings of a token’s position in a
+sequence. The roles discussed above—and the positional embeddings used in Transformers—illustrate
+role schemes based on sequential position; nonsequential role schemes such as positions in a tree
+are also possible. McCoy et al. (2019a) showed
+that,for a given seq2seq architecture learning a
+given string-mapping task, there exists a highly
+accurate TPR approximation of the medial encoding, given an appropriate pre-defined role scheme.
+The main technical contribution of the present paper is the Role Learner (ROLE) model, an RNN
+that learns its own role scheme to optimize the fit
+of a TPR approximation to a given set of internal
+representations in a pre-trained target NN. This
+makes the DISCOVER framework more general by
+removing the need for human-generated hypothe-
+
+Figure 2: The DISCOVER task and functions. At the
+top is the target network and question we pose: is the
+internal embedding a TPR? The middle row is the TPE
+which follows the provided equation. We train the TPE
+to minimize the MSE between Ê and E. In the bottom
+row, we evaluate our model by passing the approximations Ê through the decoder and checking the substitution accuracy — the proportion of examples for which
+the approximated encoding Ê yields the correct output
+when provided to the decoder .
+
+ses about the role schemes the network might be
+implementing. Learned role schemes, we will see
+in Sec. 5.1, can enable good TPR approximation of
+networks for which human-generated role schemes
+fail.
+
+4
+
+The Role Learner (ROLE) Model
+
+ROLE1 produces a vector-space embedding of an
+input string of T symbols S = s1 s2 . . . sT by producing a TPR T(S) and then passing it through an
+affine transformation. ROLE is trained to approximate a pre-trained target string-encoder E. Given a
+set of N training strings {S(1) , . . . , S(N ) }, ROLE
+minimizes the total mean-squared error (MSE) between its output W T(S(i) ) + b and E(S(i) ).
+ROLE is an extension of the Tensor-Product Encoder (TPE) introduced in McCoy et al. (2019a)
+(as the “Tensor Product Decomposition Network”)
+and depicted in Figure 3. Crucially, ROLE is
+not given role labels for the input symbols, but
+learns to compute them. More precisely, it learns a
+dictionary of nR dR -dimensional role-embedding
+vectors, R ∈ RdR ×nR , and, for each input symbol st , computes a soft-attention vector at over
+these role vectors: the role vector assigned to st
+is then the attention-weighted linear combination
+1
+Code
+available
+at
+https://github.com/
+psoulos/role-decomposition.
+
+Figure 3: The Tensor Product Encoder architecture.
+The fillers (yellow circles) and roles (blue circles) are
+first vectorized with an embedding layer. These two
+vector embeddings are combined by an outer product
+to produce the green matrix representing the TPR of
+the constituent. All of the constituents are summed together to produce the TPR of the sequence, and then
+a linear transformation is applied to resize the TPR to
+the target encoder’s dimensionality. ROLE replaces the
+role embedding layer and directly produces the blue
+role vector.
+
+of role vectors, rt = R at . ROLE simultaneously
+learns a dictionary of nF dF -dimensional symbolembedding filler vectors F ∈ RdF ×nF , the φth
+column of which is fφ , the embedding of symbol
+type φ; φ ∈ 1, . . . , nF where nF is the size of the
+vocabulary of symbol types.
+P The TPR generated
+by ROLE is thus T(S) = Tt=1 fτ (st ) ⊗ rt , where
+τ (st ) is symbol st ’s type. Finally, ROLE learns
+an affine transformation to map this TPR into Rd ,
+where d is the dimension of the representations of
+the encoder E.
+ROLE uses an LSTM (Hochreiter and Schmidhuber, 1997) to compute the role-assigning attentionvectors at from its learned embedding F of the
+input symbols st : at each t, the hidden state
+of the LSTM passes through a linear layer and
+then a softmax to produce at (depicted in Figure 4). Let the tth LSTM hidden state be qt ∈
+RH ; let the output-layer weight-matrix have rows
+kρ> ∈ RH and let the columns of R be vρ ∈
+dR
+R
+PnR, with ρ = 1, . .>. , nR . Then rt = R at =
+ρ=1 vρ softmax(kρ qt ): the result of query-key
+attention (e.g., Vaswani et al., 2017) with query qt
+to a fixed external memory containing key-value
+R
+pairs {(kρ , vρ )}nρ=1
+.
+Since a TPR for a discrete symbol structure deploys a discrete set of roles specifying discrete
+structural positions, ideally a single role would be
+
+jump opposite left, is mapped to a sequence
+of primitive actions, e.g., TL TL JUMP (see Sec. 5.3
+for a complex example). We use TL to abbreviate
+TURN LEFT, sometimes written LTURN; similarly,
+we use TR for TURN RIGHT. The SCAN mapping
+is defined by a complete set of compositional rules
+(Lake and Baroni, 2018, Supplementary Fig. 7).
+5.1
+Figure 4: The role learning module. The role attention
+vector at is encouraged to be one-hot through regularization; if at were one-hot, the produced role embedding rt would correspond directly to one of the roles
+defined in the role matrix R. The LSTM can be unidirectional or bidirectional.
+
+selected for each st : at would be one-hot. ROLE
+training therefore deploys regularization to bias
+learning towards one-hot at vectors (based on the
+regularization proposed in Palangi et al. (2017), developed for the same purpose). See Appendix A.2
+for the precise regularization terms that we used.
+It is essential to note that, while we impose this
+regularization on ROLE, there is no explicit bias
+favoring discrete compositional representations in
+the target encoder E: any such structure that ROLE
+finds hidden in the representations learned by E
+must result from biases implicit in the vanilla RNNarchitecture of E when applied to its target task.
+
+5
+
+The SCAN task
+
+Returning to our central question from Sec. 1, how
+can neural networks without explicit compositional
+structure perform well on fully-compositional
+tasks? Our hypothesis is that, though these models
+have no constraint forcing them to be compositional, they still have the ability to implicitly learn
+compositional structure. To test this hypothesis,
+we apply ROLE to a standard RNN-based seq2seq
+model (Sutskever et al., 2014) trained on a fully
+compositional task. Because the RNN has no constraint forcing it to use TPRs, we do not know a
+priori whether there exists any solution that ROLE
+could learn; thus, if ROLE does learn anything it
+will be a significant empirical finding about how
+these RNNs operate.
+We consider the SCAN task (Lake and Baroni, 2018), which was designed to test compositional generalization and systematicity. SCAN
+is a synthetic semantic parsing task: an input sequence describing an action plan, e.g.,
+
+The compositional structure of SCAN
+encoder representations
+
+For our target SCAN encoder E, we trained a standard GRU with one hidden layer of dimension 100
+for 100,000 steps (batch-size 1) with a dropout of
+0.1 on the simple train-test split (hyperparameters
+determined by a limited search; see Appendix A.3).
+E achieves 98.47% (full-string) accuracy on the
+test set. Thus E provides what we want: a standard RNN achieving near-perfect accuracy on a
+non-trivial fully compositional task.
+After training, we extract the final hidden embedding from the encoder for each example in the
+training and test sets. These are the encodings
+we attempt to approximate as explicitly compositional TPRs. We provide ROLE with 50 roles
+to use as it wants (hyperparameters described in
+Appendix A.4). We evaluate the substitution accuracy that this learned role scheme provides in
+three ways. The continuous method tests ROLE in
+the same way as it was trained, with input symbol
+st assigned role vector rt = R at . The continuous method does not produce a discrete set of role
+vectors because the linear layer that generates at allows for continuously-valued weights. The remaining two methods test the efficacy of a truly discrete
+set of role vectors. First, in the snapped method,
+at is replaced at evaluation time by the one-hot
+vector mt singling out role mt = arg max(at ):
+rt = R mt . This method serves the goal of enforcing the discreteness of roles, but it is expected to
+decrease performance because it tests ROLE in a
+different way than it was trained. Our final evaluation method, the discrete method, uses discrete
+roles without having such a train/test discrepancy
+by using a two-stage process. In the first stage, the
+snapped method is used to output one-hot vector
+roles mt for every symbol in the dataset. In the
+second stage, we train a TPE which does not learn
+roles but rather uses the one-hot vector mt as input
+during training. In this case, ROLE acts as an automatic data labeler, assigning a role to every input
+word.
+
+Continuous
+
+Snapped
+
+Discrete
+
+LTR
+
+RTL
+
+Bi
+
+Tree
+
+Wickel
+
+BOW
+
+94.83%
+
+81.71% ± 7.28
+
+92.44%
+
+6.68%
+
+6.96%
+
+10.72%
+
+4.31%
+
+44.00%
+
+4.52%
+
+Table 1: Mean substitution accuracy for learned (bold) and hand-defined role schemes on SCAN across three
+random initializations. Standard deviation was below 1% for all schemes except for snapped. Substitution accuracy
+is measured by feeding ROLE’s approximation to the target decoder. (Sec. 5.1)
+
+For comparison, we also train TPEs using a variety of discrete hand-crafted role schemes: left-toright (LTR), right-to-left (RTL), bidirectional (Bi),
+tree position, neighbor-based Wickelrole (Wickel),
+and bag-of-words (BOW) (descriptions of these
+role schemes are in Appendix A.1).
+The mean substitution accuracy from these different methods is shown in Table 1. All of the
+predefined role schemes provide poor approximations, none surpassing 44.00% accuracy. The role
+scheme learned by ROLE does significantly better
+than any of the predefined role schemes: when
+tested with the basic, continuous role-attention
+method, the accuracy is 94.83%.
+The success of ROLE tells us two things. First,
+it shows that the target model’s compositional behavior relies on compositional internal representations: it was by no means guaranteed to be the
+case that ROLE would be successful here, so the
+fact that it is successful tells us that the encoder
+has learned compositional representations. Second, it adds further validation to the efficacy of
+ROLE, because it shows that it can be a useful
+analysis tool in cases of significantly greater complexity than the simple string manipulation tasks
+studied in McCoy et al. (2019a). In fact, it allows
+us to write in closed form the embedding e(S)
+of an input S = s1 . . . sT that is learned by the
+SCAN encoder, to an excellent degree of approximation (asPmeasured by substitution accuracy):
+e(S) = W Tt=1 fτ (st ) ⊗ rρ(st ) + b, where τ (st )
+is symbol st ’s type, ρ(st ) is the role assigned to
+st by the algorithm discussed next, and the matrices W, F = [f1 . . . fnF ], and R = [r1 . . . rnR ]
+and bias vector b are learned by ROLE. Note that
+this expression is bilinear, even though the GRU
+encoder that generates it includes nonlinearities.
+5.2
+
+Interpreting the learned role scheme
+
+By analyzing the roles assigned by ROLE to the
+sequences in the SCAN training set, we created
+a symbolic algorithm for predicting which role
+will be assigned to each filler. This section covers the primary factors of the algorithm, while the
+
+entire algorithm is described in Appendix A.5 and
+discussed at additional length in Appendix A.6.
+Though the algorithm was created based only on sequences in the SCAN training set, it is equally successful at predicting which roles will be assigned to
+test sequences, exactly matching ROLE’s predicted
+roles for 98.7% of sequences.
+The algorithm illuminates how the filler-role
+scheme encodes information relevant to the task.
+First, one of the initial facts that the decoder must
+determine is whether the sequence is a single command, a pair of subcommands connected by and, or
+a pair of subcommands connected by after; such
+a determination is crucial for knowing the basic
+structure of the output (how many actions to perform and in what order). We have found that role
+30 is used for, and only for, the filler and, while
+role 17 is used in and only in sequences containing
+after (usually with after as the filler bound to
+role 17). Thus, the decoder can use these roles to
+tell which basic structure is in play: if role 30 is
+present, it is an and sequence; if role 17 is present,
+it is an after sequence; otherwise it is a single
+command.
+Once the decoder has established the basic syntactic structure of the output, it must then fill in the
+particular actions. This can be accomplished using
+the remaining roles, which mainly encode absolute
+position within a subcommand. For example, the
+last word of a subcommand before after (e.g.,
+jump left after walk twice) is always assigned
+role 8, while the last word of a subcommand after
+after (e.g., jump left after walk twice) is always assigned role 46. Therefore, once the decoder
+knows (based on the presence of role 17) that it
+is dealing with an after sequence, it can check
+for the fillers bound to roles 8 and 46 to begin to
+figure out what the two subcommands surrounding
+after look like. The identity of the last word in a
+subcommand is informative because that is where a
+cardinality (i.e., twice or thrice) appears if there
+is one. Thus, by checking what filler is at the end of
+a subcommand, the model can determine whether
+there is a cardinality present and, if so, which one.
+
+ROLE itself does not provide an interpretation
+for the symbolic structure it generates, but we have
+shown that this structure can be successfully interpreted by humans. By contrast, it is very difficult
+to interpret the continuous neuron values of RNN
+representations; even the rare successful cases of
+doing so, such as Lakretz et al. (2019) and Mu
+and Andreas (2020), only interpret a few isolated
+units, while we were able to exhaustively explain
+the entire symbolic structure discovered by ROLE.
+5.3
+
+Precision constituent-surgery on internal
+representations produces desired outputs
+
+The substitution-accuracy results above show that
+if the entire learned representation is replaced by
+ROLE’s approximation, the output remains correct.
+But do the individual word embeddings in this TPR
+have the appropriate causal consequences when
+processed by the decoder?
+To address this causal question (Pearl, 2000),
+we actively intervene on the constituent structure of the internal representations by replacing one constituent with another syntactically
+equivalent one,2 and see whether this produces
+the expected change in the output of the decoder. We take the encoding generated by
+the RNN encoder E for an input such as
+jump opposite left, subtract the vector embedding of the opposite constituent, add the embedding of the around constituent, and see whether
+this causes the output to change from the correct
+output for jump opposite left (TL TL JUMP)
+to the correct output for jump around left
+(TL JUMP TL JUMP TL JUMP TL JUMP). The roles
+in these constituents are determined by the algorithm of Appendix A.5. If changing a word leads
+other roles in the sequence to change (according to
+the algorithm), we update the encoding with those
+new roles as well. Such surgery can be viewed as
+a more general extension of the analogy approach
+used by Mikolov et al. (2013) for analysis of word
+embeddings. An example of applying a sequence
+of five such constituent surgeries to a sequence is
+shown in Figure 5 (left). Even long sequences of
+such replacements produce the expected change in
+the decoder’s output with high accuracy (Figure 5,
+2
+
+We extract syntactic categories from the SCAN grammar
+(Lake and Baroni, 2018, Supplementary Fig. 6) by saying that
+two words belong to the same category if every occurrence of
+one could be grammatically replaced by the other. We do not
+replace occurrences of and and after since the presence of
+either of these words causes substantial changes in the roles
+assigned within the sequence (Appendix A.5).
+
+right), indicating that the compositional structure
+discovered by ROLE does play a central causal role
+in the model’s behavior.
+
+6
+
+Partially-compositional NLP tasks
+
+The previous sections explored fully-compositional
+tasks where there is a strong signal for compositionality. In this section, we explore whether the
+representations of NNs trained on tasks that are
+only partially-compositional also capture compositional structure. Partially-compositional tasks are
+especially challenging to model because a fullycompositional model may enforce compositionality
+too strictly to handle the non-compositional aspects
+of the task, while a model without a compositional
+bias may not learn any sort of compositionality
+from the weak cues in the training set.
+We test four sentence encoding models for compositionality: InferSent (Conneau et al., 2017),
+Skip-thought (Kiros et al., 2015), Stanford Sentiment Model (SST) (Socher et al., 2013), and
+SPINN (Bowman et al., 2016). For each of these
+models, we extract the encodings for the SNLI
+premise sentences (Bowman et al., 2015). We use
+the extracted embeddings to train ROLE with 50
+roles available (additional training information provided in Appendix A.8).
+As a baseline, we also train TPEs that use predefined role schemes (hyperparameters described
+in Appendix A.7). For all of the sentence embedding models except Skip-thought, ROLE with continuous attention provides the lowest mean squared
+error at approximating the encoding (Table 2). The
+BOW (bag-of-words) role scheme represents a TPE
+that uses a degenerate ‘compositional’ structure
+which assigns the same role to every filler; for each
+of the sentence embedding models tested except for
+SST, performance is within the same order of magnitude as structure-free BOW. Parikh et al. (2016)
+found that a bag-of-words model scores extremely
+well on Natural Language Inference despite having
+no knowledge of word order, showing that structure is not necessary to perform well on the sorts
+of tasks commonly used to train sentence encoders.
+Although not definitive, the ROLE results provide
+no evidence that these models’ sentence embeddings possess compositional structure.
+In future work, it would be interesting to perform a similar analysis on Transformer architectures (Vaswani et al., 2017). Such models have
+displayed impressive syntactic generalization (Hu
+
+run : 11 left : 36 twice : 8 after : 43 jump : 10 opposite : 17 right : 4 thrice : 46 →
+TR TR JUMP TR TR JUMP TR TR JUMP TL RUN TL RUN
+− run : 11 + look : 11 →
+TR TR JUMP TR TR JUMP TR TR JUMP TL LOOK TL LOOK
+− jump : 10 + walk : 10 →
+TR TR WALK TR TR WALK TR TR WALK TL LOOK TL LOOK
+− left : 36 + right : 36 →
+TR TR WALK TR TR WALK TR TR WALK TR LOOK TR LOOK
+− twice : 8 + thrice : 8 →
+TR TR WALK TR TR WALK TR TR WALK TR LOOK
+TR LOOK TR LOOK
+− opposite : 17 + around : 17 →
+TR WALK TR WALK TR WALK TR WALK TR WALK TR WALK
+TR WALK TR WALK TR WALK TR WALK TR WALK TR WALK
+TR LOOK TR LOOK TR LOOK
+
+Figure 5: Left: Example of successive constituent surgeries. The roles assigned to the input symbols are indicated
+in the first line (e.g., run was assigned role 11). Altered output symbols are in blue. The model produces the
+correct outputs for all cases shown here. Right: Mean constituent-surgery accuracy across three runs. Standard
+deviation is below 1% for each number of substitutions. (Sec. 5.3)
+
+InferSent
+Skip-thought
+SST
+SPINN
+
+Continuous
+
+Snapped
+
+Discrete
+
+LTR
+
+RTL
+
+Bi
+
+Tree
+
+BOW
+
+4.05e-4
+9.30e-5
+5.58e-3
+.139
+
+4.15e-4
+9.32e-5
+6.72e-3
+.151
+
+5.76e-4
+9.85e-5
+6.48e-3
+.147
+
+8.21e-4
+9.91e-5
+8.35e-3
+.184
+
+9.70e-4
+1.78e-3
+9.29e-3
+.189
+
+9.16e-4
+3.95e-4
+8.55e-3
+.181
+
+7.78e-4
+9.64e-5
+5.99e-3
+.178
+
+4.34e-4
+8.87e-5
+9.38e-3
+.176
+
+Table 2: MSE loss for learned (bold) and hand-crafted role schemes on sentence embedding models. (Sec. 6)
+
+et al., 2020) and few-shot learning of compositional
+tasks (Brown et al., 2020), both of which suggest
+that they learn substantial degrees of compositional
+structure; thus, ROLE may be more likely to discover meaningful structure in Transformers than
+in the sentence-embedding models in Table 2. Further work has found impressive degrees of syntactic structure in Transformer encodings (Hewitt
+and Manning, 2019), suggesting that there may
+well be compositional structure for ROLE to pick
+up on. The main difficulty in applying ROLE to
+Transformers—and the reason we did not include
+Transformers in our study—is that the sentence
+representation used by a Transformer is typically
+viewed as a variable-sized collection of vectors,
+whereas ROLE requires single-vector representations; this discrepancy must be overcome if ROLE
+is to be applied to Transformers.
+One past work (Jawahar et al., 2019) has applied ROLE’s precursor (the TPDN of McCoy et al.
+(2019a)) to Transformer representations by choosing the [CLS] token of BERT (Devlin et al., 2019)
+as the single-vector sentence encoding to decompose. Jawahar et al. found that these encodings
+were approximated better by human-specified treeposition roles than by other human-specified candidates (e.g., left-to-right and right-to-left roles).
+By removing the constraint of requiring human-
+
+designed role schemes, ROLE may be able to discover other role schemes that approximate BERT’s
+encodings even more closely.
+
+7
+
+Conclusion
+
+We have introduced ROLE, a neural network that
+learns to approximate the representations of an existing target neural network E using an explicit
+symbolic structure. ROLE successfully discovers
+symbolic structure in a standard RNN trained on
+the fully-compositional SCAN semantic parsing
+task, even though the RNN has no such structure
+explicitly present in its architecture. This yields a
+closed-form equation for the RNN’s encoding of
+any input string. When applied to sentence embedding models trained on partially-compositional
+tasks, ROLE performs better than hand-specified
+hypothesized structures but still provides little evidence that the sentence encodings represent compositional structure.
+While this work has shown that NNs can converge to TPRs to solve compositional tasks, it is
+still unknown how the weights in the NN actually convert the raw input into a TPR. To investigate this process, in future work we plan to apply our technique to representations of partial sequences. For instance, when the complete input
+is jump right twice, the target RNN must first
+
+represent jump right as a well-formed TPR at the
+point when only those two words have been encountered. The representation then needs to be
+updated when the next word, twice, is encountered. By studying the nature of that update, we
+can gain insight into how the target model builds
+up a TPR from the input elements.
+Uncovering the latent symbolic structure of
+NN representations learned for fully-compositional
+tasks is a significant step towards explaining how
+NNs achieve the level of compositional generalization that they do. In addition, by illuminating shortcomings in the representations learned for standard
+tasks that are not fully-compositional, ROLE can
+help suggest types of inductive bias for improving models’ generalization with standard, partiallycompositional datasets.
+
+Acknowledgments
+This material is based upon work supported
+by the National Science Foundation Graduate
+Research Fellowship Program under Grant No.
+1746891, and work partially supported by NSF
+grant BCS1344269. Any opinions, findings, and
+conclusions or recommendations expressed in this
+material are those of the authors and do not necessarily reflect the views of the National Science
+Foundation.
+For helpful comments we are grateful to the
+members of the Johns Hopkins Neurosymbolic
+Computation group and the Microsoft Research
+AI Deep Learning Group. Any errors remain our
+own.
+
+References
+Samira Abnar, Lisa Beinborn, Rochelle Choenni, and
+Willem Zuidema. 2019. Blackbox meets blackbox:
+Representational similarity & stability analysis of
+neural language models and brains. In Proceedings
+of the 2019 ACL Workshop BlackboxNLP: Analyzing
+and Interpreting Neural Networks for NLP, pages
+191–203, Florence, Italy. Association for Computational Linguistics.
+Yossi Adi, Einat Kermany, Yonatan Belinkov, Ofer
+Lavi, and Yoav Goldberg. 2017. Fine-grained analysis of sentence embeddings using auxiliary prediction tasks. In International Conference on Learning
+Representations.
+Jacob Andreas. 2019. Measuring compositionality in
+representation learning. In International Conference on Learning Representations.
+
+Yonatan Belinkov, Lluı́s Màrquez, Hassan Sajjad,
+Nadir Durrani, Fahim Dalvi, and James Glass. 2017.
+Evaluating layers of representation in neural machine translation on part-of-speech and semantic
+tagging tasks. In Proceedings of the Eighth International Joint Conference on Natural Language
+Processing (Volume 1: Long Papers), pages 1–10,
+Taipei, Taiwan. Asian Federation of Natural Language Processing.
+Terra Blevins, Omer Levy, and Luke Zettlemoyer. 2018.
+Deep RNNs encode soft hierarchical syntax. In Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 2: Short
+Papers), pages 14–19, Melbourne, Australia. Association for Computational Linguistics.
+Samuel R. Bowman, Gabor Angeli, Christopher Potts,
+and Christopher D. Manning. 2015. A large annotated corpus for learning natural language inference.
+In Proceedings of the 2015 Conference on Empirical Methods in Natural Language Processing, pages
+632–642, Lisbon, Portugal. Association for Computational Linguistics.
+Samuel R. Bowman, Jon Gauthier, Abhinav Rastogi, Raghav Gupta, Christopher D. Manning, and
+Christopher Potts. 2016. A fast unified model for
+parsing and sentence understanding. In Proceedings of the 54th Annual Meeting of the Association
+for Computational Linguistics (Volume 1: Long Papers), pages 1466–1477. Association for Computational Linguistics.
+Tom B Brown, Benjamin Mann, Nick Ryder, Melanie
+Subbiah, Jared Kaplan, Prafulla Dhariwal, Arvind
+Neelakantan, Pranav Shyam, Girish Sastry, Amanda
+Askell, et al. 2020. Language models are few-shot
+learners. arXiv preprint arXiv:2005.14165.
+Kyunghyun Cho, Bart van Merriënboer, Caglar Gulcehre, Dzmitry Bahdanau, Fethi Bougares, Holger
+Schwenk, and Yoshua Bengio. 2014. Learning
+phrase representations using RNN encoder–decoder
+for statistical machine translation. In Proceedings of
+the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP), pages 1724–
+1734, Doha, Qatar. Association for Computational
+Linguistics.
+Grzegorz Chrupała and Afra Alishahi. 2019. Correlating neural and symbolic representations of language. In Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics, pages 2952–2962, Florence, Italy. Association
+for Computational Linguistics.
+Alexis Conneau and Douwe Kiela. 2018. SentEval: An
+evaluation toolkit for universal sentence representations. In Proceedings of the Eleventh International
+Conference on Language Resources and Evaluation
+(LREC 2018), Miyazaki, Japan. European Language
+Resources Association (ELRA).
+Alexis Conneau, Douwe Kiela, Holger Schwenk, Loı̈c
+Barrault, and Antoine Bordes. 2017. Supervised
+
+learning of universal sentence representations from
+natural language inference data. In Proceedings of
+the 2017 Conference on Empirical Methods in Natural Language Processing, pages 670–680. Association for Computational Linguistics.
+Alexis Conneau, German Kruszewski, Guillaume Lample, Loı̈c Barrault, and Marco Baroni. 2018. What
+you can cram into a single $&!#* vector: Probing
+sentence embeddings for linguistic properties. In
+Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 1:
+Long Papers), pages 2126–2136, Melbourne, Australia. Association for Computational Linguistics.
+Ishita Dasgupta, Demi Guo, Samuel J Gershman, and
+Noah D Goodman. 2019. Analyzing machinelearned representations: A natural language case
+study. arXiv preprint arXiv:1909.05885.
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and
+Kristina Toutanova. 2019. BERT: Pre-training of
+deep bidirectional transformers for language understanding. In Proceedings of the 2019 Conference
+of the North American Chapter of the Association
+for Computational Linguistics: Human Language
+Technologies, Volume 1 (Long and Short Papers),
+pages 4171–4186, Minneapolis, Minnesota. Association for Computational Linguistics.
+Mario Giulianelli, Jack Harding, Florian Mohnert,
+Dieuwke Hupkes, and Willem Zuidema. 2018. Under the hood: Using diagnostic classifiers to investigate and improve how language models track
+agreement information. In Proceedings of the 2018
+EMNLP Workshop BlackboxNLP: Analyzing and Interpreting Neural Networks for NLP, pages 240–248,
+Brussels, Belgium. Association for Computational
+Linguistics.
+Emily Goodwin, Koustuv Sinha, and Timothy J.
+O’Donnell. 2020. Probing linguistic systematicity.
+In Proceedings of the 58th Annual Meeting of the
+Association for Computational Linguistics, pages
+1958–1969, Online. Association for Computational
+Linguistics.
+John Hewitt and Christopher D Manning. 2019. A
+structural probe for finding syntax in word representations. In Proceedings of the 2019 Conference of
+the North American Chapter of the Association for
+Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers), pages
+4129–4138.
+Sepp Hochreiter and Jürgen Schmidhuber. 1997.
+Long short-term memory. Neural Computation,
+9(8):1735–1780.
+Jennifer Hu, Jon Gauthier, Peng Qian, Ethan Wilcox,
+and Roger P Levy. 2020. A systematic assessment
+of syntactic generalization in neural language models. In Proceedings of the 58th Annual Meeting of
+the Association for Computational Linguistics, Seattle, Washington. Association for Computational Linguistics.
+
+Dieuwke Hupkes, Verna Dankers, Mathijs Mul, and
+Elia Bruni. 2020. Compositionality decomposed:
+How do neural networks generalise? Journal of Artificial Intelligence Research, 67:757–795.
+Dieuwke Hupkes, Sara Veldhoen, and Willem Zuidema.
+2018. Visualisation and ‘diagnostic classifiers’ reveal how recurrent and recursive neural networks
+process hierarchical structure. Journal of Artificial
+Intelligence Research, 61:907–926.
+Ganesh Jawahar, Benoı̂t Sagot, and Djamé Seddah.
+2019. What does BERT learn about the structure
+of language? In Proceedings of the 57th Annual
+Meeting of the Association for Computational Linguistics, pages 3651–3657, Florence, Italy. Association for Computational Linguistics.
+Diederik Kingma and Jimmy Ba. 2015. Adam: A
+method for stochastic optimization. In International
+Conference for Learning Representations.
+Ryan Kiros, Yukun Zhu, Ruslan R Salakhutdinov,
+Richard Zemel, Raquel Urtasun, Antonio Torralba,
+and Sanja Fidler. 2015. Skip-thought vectors. In
+Advances in Neural Information Processing Systems,
+pages 3294–3302.
+Dan Klein and Christopher D Manning. 2003. Accurate unlexicalized parsing. In Proceedings of the
+41st Annual Meeting on Association for Computational Linguistics-Volume 1, pages 423–430. Association for Computational Linguistics.
+Brenden M. Lake and Marco Baroni. 2018. Generalization without systematicity: On the compositional
+skills of sequence-to-sequence recurrent networks.
+In International Conference on Machine Learning.
+Yair Lakretz, German Kruszewski, Theo Desbordes,
+Dieuwke Hupkes, Stanislas Dehaene, and Marco Baroni. 2019. The emergence of number and syntax units in LSTM language models. In Proceedings of the 2019 Conference of the North American
+Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1
+(Long and Short Papers), pages 11–20, Minneapolis,
+Minnesota. Association for Computational Linguistics.
+Yuanpeng Li, Liang Zhao, Jianyu Wang, and Joel Hestness. 2019. Compositional generalization for primitive substitutions. In Proceedings of the 2019 Conference on Empirical Methods in Natural Language
+Processing and the 9th International Joint Conference on Natural Language Processing (EMNLPIJCNLP), pages 4293–4302, Hong Kong, China. Association for Computational Linguistics.
+Tal Linzen, Emmanuel Dupoux, and Yoav Goldberg.
+2016. Assessing the ability of LSTMs to learn
+syntax-sensitive dependencies. Transactions of the
+ACL.
+
+Rebecca Marvin and Tal Linzen. 2018. Targeted syntactic evaluation of language models. In Proceedings of the 2018 Conference on Empirical Methods
+in Natural Language Processing, pages 1192–1202,
+Brussels, Belgium. Association for Computational
+Linguistics.
+R. Thomas McCoy, Tal Linzen, Ewan Dunbar, and
+Paul Smolensky. 2019a. RNNs implicitly implement tensor-product representations. In International Conference on Learning Representations.
+R. Thomas McCoy, Ellie Pavlick, and Tal Linzen.
+2019b. Right for the wrong reasons: Diagnosing
+syntactic heuristics in natural language inference.
+In Proceedings of the 57th Annual Meeting of the
+Association for Computational Linguistics, pages
+3428–3448, Florence, Italy. Association for Computational Linguistics.
+Tomas Mikolov, Wen-tau Yih, and Geoffrey Zweig.
+2013. Linguistic regularities in continuous space
+word representations. In Proceedings of the 2013
+Conference of the North American Chapter of the
+Association for Computational Linguistics: Human
+Language Technologies, pages 746–751, Atlanta,
+Georgia. Association for Computational Linguistics.
+Jesse Mu and Jacob Andreas. 2020. Compositional explanations of neurons. In Advances in Neural Information Processing Systems 33.
+Christian W Omlin and C Lee Giles. 1996. Extraction of rules from discrete-time recurrent neural networks. Neural networks, 9(1):41–52.
+Hamid Palangi, Paul Smolensky, Xiaodong He,
+and Li Deng. 2017.
+Question-answering with
+grammatically-interpretable representations. In Proceedings of the Association for the Advancement of
+Artificial Intelligence.
+Ankur Parikh, Oscar Täckström, Dipanjan Das, and
+Jakob Uszkoreit. 2016. A decomposable attention
+model for natural language inference. In Proceedings of the 2016 Conference on Empirical Methods
+in Natural Language Processing, pages 2249–2255,
+Austin, Texas. Association for Computational Linguistics.
+Judea Pearl. 2000. Causality. MIT Press, Cambridge,
+MA.
+Matthew Peters, Mark Neumann, Luke Zettlemoyer,
+and Wen-tau Yih. 2018. Dissecting contextual
+word embeddings: Architecture and representation.
+In Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing,
+pages 1499–1509, Brussels, Belgium. Association
+for Computational Linguistics.
+Adam Poliak, Aparajita Haldar, Rachel Rudinger, J. Edward Hu, Ellie Pavlick, Aaron Steven White, and
+Benjamin Van Durme. 2018. Collecting diverse natural language inference problems for sentence representation evaluation. In Proceedings of the 2018
+
+Conference on Empirical Methods in Natural Language Processing, pages 67–81, Brussels, Belgium.
+Association for Computational Linguistics.
+Abhilasha Ravichander, Yonatan Belinkov, and Eduard
+Hovy. 2020. Probing the probing paradigm: Does
+probing accuracy entail task relevance?
+arXiv
+preprint arXiv:2005.00719.
+Yikang Shen, Shawn Tan, Alessandro Sordoni, and
+Aaron Courville. 2019. Ordered neurons: Integrating tree structures into recurrent neural networks. In
+International Conference on Learning Representations.
+Paul Smolensky. 1990. Tensor product variable binding and the representation of symbolic structures in
+connectionist systems. Artif. Intell., 46(1-2):159–
+216.
+Richard Socher, Alex Perelygin, Jean Wu, Jason
+Chuang, Christopher D. Manning, Andrew Ng, and
+Christopher Potts. 2013. Recursive deep models
+for semantic compositionality over a sentiment treebank. In Proceedings of the 2013 Conference on
+Empirical Methods in Natural Language Processing,
+pages 1631–1642, Seattle, Washington, USA. Association for Computational Linguistics.
+Ilya Sutskever, Oriol Vinyals, and Quoc V. Le. 2014.
+Sequence to sequence learning with neural networks.
+In Advances in Neural Information Processing Systems, pages 3104–3112.
+Ian Tenney, Patrick Xia, Berlin Chen, Alex Wang,
+Adam Poliak, R. Thomas McCoy, Najoung Kim,
+Benjamin Van Durme, Sam Bowman, Dipanjan Das,
+and Ellie Pavlick. 2019. What do you learn from
+context? probing for sentence structure in contextualized word representations. In International Conference on Learning Representations.
+Eva Vanmassenhove, Jinhua Du, and Andy Way. 2017.
+Investigating ‘aspect’ in NMT and SMT: Translating
+the English simple past and present perfect. Computational Linguistics in the Netherlands Journal,
+7:109–128.
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob
+Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz
+Kaiser, and Illia Polosukhin. 2017. Attention is all
+you need. In Advances in Neural Information Processing Systems, pages 5998–6008.
+Elena Voita and Ivan Titov. 2020.
+Informationtheoretic probing with minimum description length.
+arXiv preprint arXiv:2003.12298.
+Alex Wang, Amanpreet Singh, Julian Michael, Felix Hill, Omer Levy, and Samuel Bowman. 2018.
+GLUE: A multi-task benchmark and analysis platform for natural language understanding. In Proceedings of the 2018 EMNLP Workshop BlackboxNLP: Analyzing and Interpreting Neural Networks for NLP, pages 353–355, Brussels, Belgium.
+Association for Computational Linguistics.
+
+Alex Warstadt, Alicia Parrish, Haokun Liu, Anhad Mohananey, Wei Peng, Sheng-Fu Wang, and Samuel R
+Bowman. 2020. BLiMP: A benchmark of linguistic
+minimal pairs for english. Proceedings of the Society for Computation in Linguistics.
+Gail Weiss, Yoav Goldberg, and Eran Yahav. 2018. Extracting automata from recurrent neural networks using queries and counterexamples. In International
+Conference on Machine Learning, pages 5244–
+5253.
+Wayne A. Wickelgren. 1969. Context-sensitive coding,
+associative memory, and serial order in (speech) behavior. Psychological Review, 76(1):1–15.
+Yonghui Wu, Mike Schuster, Zhifeng Chen, Quoc V.
+Le, Mohammad Norouzi, Wolfgang Macherey,
+Maxim Krikun, Yuan Cao, Qin Gao, Klaus
+Macherey, Jeff Klingner, Apurva Shah, Melvin Johnson, Xiaobing Liu, Lukasz Kaiser, Stephan Gouws,
+Yoshikiyo Kato, Taku Kudo, Hideto Kazawa, Keith
+Stevens, George Kurian, Nishant Patil, Wei Wang,
+Cliff Young, Jason Smith, Jason Riesa, Alex Rudnick, Oriol Vinyals, Greg Corrado, Macduff Hughes,
+and Jeffrey Dean. 2016. Google’s neural machine translation system: Bridging the gap between
+human and machine translation. arXiv preprint
+arXiv:1609.08144.
+
+A
+
+Appendix
+
+A.1
+
+Designed role schemes
+
+We use six hand-specified role schemes as a baseline to compare the learned role schemes against.
+Examples of each role scheme are shown in Table
+3.
+1. Left-to-right (LTR): Each filler’s role is its
+index in the sequence, counting from left to
+right.
+2. Right-to-left (RTL): Each filler’s role is its
+index in the sequence, counting from right to
+left.
+3. Bidirectional (Bi): Each filler’s role is a pair
+of indices, where the first index counts from
+left to right, and the second index counts from
+right to left.
+4. Tree: Each filler’s role is given by its position in a tree. This depends on a tree parsing
+algorithm.
+5. Wickelroles (Wickel): Each filler’s role is a
+2-tuple containing the filler before it and the
+filler after it. (Wickelgren, 1969)
+6. Bag-of-words (BOW): Each filler is assigned
+the same role. The position and context of the
+filler is ignored.
+A.2
+
+ROLE regularization
+
+Letting A = {at }Tt=1 , the regularization term applied during ROLE training is R = λ(R1 + R2 +
+R3 ), where λ is a regularization hyperparameter
+and:
+R1 (A) =
+
+nR
+T X
+X
+t=1 ρ=1
+
+R2 (A) = −
+R3 (A) =
+
+[at ]ρ (1 − [at ]ρ );
+
+nR
+T X
+X
+
+[at ]2ρ ;
+
+t=1 ρ=1
+
+nR
+X
+ρ=1
+
+([sA ]ρ (1 − [sA ]ρ ))2
+
+Since each at results from a softmax, its elements
+are positive and sum to 1. Thus the factors in
+R1 (A) are all non-negative, so R1 assumes its
+minimal value of 0 when each at has binary elements; since these elements must sum to 1, such
+an at must be one-hot. R2 (A) is also minimized
+
+when each at is one-hot because when a vector’s
+L1 norm is 1, its L2 norm is maximized when it
+is one-hot. Although each of these terms individually favor one-hot vectors, empirically we find
+that using both terms helps the training process.
+In a discrete symbolic structure, each position can
+hold at most one symbol, and the final term R3
+in ROLE’s regularizer RP
+is designed to encourage
+this. In the vector sA = Tt=1 at , the ρth element
+is the total attention weight, over all symbols in
+the string, assigned to the ρth role: in the discrete
+case, this must be 0 (if no symbol is assigned this
+role) or 1 (if a single symbol is assigned this role).
+Thus R3 is minimized when all elements of s are
+0 or 1 (R3 is similar to R1 , but with squared terms
+since we are no longer assured each element is at
+most 1). It is important to normalize each role embedding in the role matrix R so that small attention
+weights have correspondingly small impacts on the
+weighted-sum role embedding.
+A.3
+
+RNN trained on SCAN
+
+To train the standard RNN on SCAN, we ran a limited hyperparameter search similar to the procedure
+in Lake and Baroni (2018). Since our goal was to
+produce a single embedding that captured the entire
+input sequence, we fixed the architecture as a GRU
+with a single hidden layer. We did not train models
+with attention, to investigate whether a standard
+RNN could capture compositionality in its single
+bottleneck encoding. The remaining hyperparameters were hidden dimension and dropout. We ran
+a search over the hidden dimension sizes of 50,
+100, 200, and 400 as well as dropout with a value
+of 0, .1, and .5 applied to the word embeddings
+and recurrent layer. Each network was trained with
+the Adam optimizer (Kingma and Ba, 2015) and
+a learning rate of .001 for 100,000 steps with a
+batch-size of 1. The best performing network had
+a hidden dimension or 100 and dropout of .1.
+A.4
+
+ROLE trained on SCAN
+
+For the ROLE models trained to approximate the
+GRU encoder trained on SCAN, we used a filler
+dimension of 100, and a role dimension of 50 with
+50 roles available. For training, we used the Adam
+(Kingma and Ba, 2015) optimizer with a learning rate of .001, batch size 32, and an early stopping patience of 10. The role assignment module
+used a bidirectional 2-layer LSTM (Hochreiter and
+Schmidhuber, 1997). We performed a hyperparameter search over the regularization coefficient λ
+
+Left-to-right
+Right-to-left
+Bidirectional
+Wickelroles
+Tree
+Bag of words
+
+3
+
+1
+
+1
+
+6
+
+5
+
+2
+
+3
+
+1
+
+9
+
+7
+
+0
+3
+(0, 3)
+#1
+L
+r0
+
+1
+2
+(1, 2)
+31
+RLL
+r0
+
+2
+1
+(2, 1)
+16
+RLR
+r0
+
+3
+0
+(3, 0)
+1#
+RR
+r0
+
+0
+5
+(0, 5)
+#2
+LL
+r0
+
+1
+4
+(1, 4)
+53
+LRLL
+r0
+
+2
+3
+(2, 3)
+21
+LRLR
+r0
+
+3
+2
+(3, 2)
+39
+LRRL
+r0
+
+4
+1
+(4, 1)
+17
+LRRR
+r0
+
+5
+0
+(5, 0)
+9#
+R
+r0
+
+Table 3: The assigned roles for two sequences, 3116 and 523197. Table reproduced from McCoy et al. (2019a).
+
+using the values in the set [.1, .02, .01]. The best
+performing value was .02, and we used this model
+in our analysis.
+The algorithm below characterizes our post-hoc
+interpretation of which roles the Role Learner will
+assign to elements of the input to the SCAN model.
+This algorithm was created by hand based on an
+analysis of the Role Learner’s outputs for the elements of the SCAN training set. The algorithm
+works equally well on examples in the training set
+and the test set; on both datasets, it exactly matches
+the roles chosen by the Role Learner for 98.7% of
+sequences (20,642 out of 20,910).
+A.5
+
+A role-assignment algorithm implicitly
+learned by the SCAN seq2seq encoder
+
+The input sequences have three basic types that
+are relevant to determining the role assignment:
+sequences that contain and (e.g., jump around
+left and walk thrice), sequences that contain after (e.g., jump around left after walk thrice), and
+sequences without and or after (e.g., turn opposite
+right thrice). Within commands containing and or
+after, it is convenient to break the command down
+into the command before the connecting word and
+the command after it; for example, in the command
+jump around left after walk thrice, these two components would be jump around left and walk thrice.
+• Sequence with and:
+– Elements of the command before and:
+* Last word: 28
+* First word (if not also last word): 46
+* opposite if the command ends with
+thrice: 22
+* Direction word between opposite and
+thrice: 2
+* opposite if the command does not
+end with thrice: 2
+
+* Direction word after opposite but not
+before thrice: 4
+* around: 22
+* Direction word after around: 2
+* Direction word between an action
+word and twice or thrice: 2
+– Elements of the command before and:
+* First word: 11
+* Last word (if not also the first word):
+36
+* Second-to-last word (if not also the
+first word): 3
+* Second of four words: 24
+– and: 30
+• Sequence with after:
+– Elements of the command before after:
+* Last word: 8
+* Second-to-last word: 36
+* First word (if not the last or secondto-last word): 11
+* Second word (if not the last or
+second-to-last word): 3
+– Elements of the command after after:
+* Last word: 46
+* Second-to-last word: 4
+* First word if the command ends with
+around right: 4
+* First word if the command ends with
+thrice and contains a rotation: 10
+* First word if the command does not
+end with around right and does not
+contain both thrice and a rotation: 17
+* Second word if the command ends
+with thrice: 17
+* Second word if the command does
+not end with thrice: 10
+
+– after: 17 if no other word has role 17
+or if the command after after ends with
+around left; 43 otherwise
+• Sequence without and or after:
+– Action word directly before a cardinality:
+4
+– Action word before, but not directly before, a cardinality: 34
+– thrice directly after an action word: 2
+– twice directly after an action word: 2
+– opposite in a sequence ending with twice:
+8
+– opposite in a sequence ending with
+thrice: 34
+– around in a sequence ending with a cardinality: 22
+– Direction word directly before a cardinality: 2
+– Action word in a sequence without a cardinality: 46
+– opposite in a sequence without a cardinality: 2
+– Direction after opposite in a sequence
+without a cardinality: 26
+– around in a sequence without a cardinality: 3
+– Direction after around in a sequence
+without a cardinality: 22
+– Direction directly after an action in a sequence without a cardinality: 22
+To show how this works with an example, consider
+the input jump around left after walk thrice. The
+command before after is jump around left. left, as
+the last word, is given role 8. around, as the secondto-last word, gets role 36. jump, as a first word that
+is not also the last or second-to-last word gets role
+11. The command after after is walk thrice. thrice,
+as the last word, gets role 46. walk, as the secondto-last word, gets role 4. Finally, after gets role 17
+because no other elements have been assigned role
+17 yet. These predicted outputs match those given
+by the Role Learner.
+A.6
+
+Discussion of the algorithm
+
+We offer several observations about this algorithm.
+1. This algorithm may seem convoluted, but a
+few observations can illuminate how the roles
+
+assigned by such an algorithm support success on the SCAN task. First, a sequence will
+contain role 30 if and only if it contains and,
+and it will contain role 17 if and only if it
+contains after. Thus, by implicitly checking
+for the presence of these two roles (regardless
+of the fillers bound to them), the decoder can
+tell whether the output involves one or two
+basic commands, where the presence of and
+or after leads to two basic commands and the
+absence of both leads to one basic command.
+Moreover, if there are two basic commands,
+whether it is role 17 or role 30 that is present
+can tell the decoder whether the input order
+of these commands also corresponds to their
+output order (when it is and in play, i.e., role
+30), or if the input order is reversed (when it
+is after in play, i.e., role 17).
+With these basic structural facts established,
+the decoder can begin to decode the specific
+commands. For example, if the input is a
+sequence with after, it can begin with the
+command after after, which it can decode by
+checking which fillers are bound to the relevant roles for that type of command.
+It may seem odd that so many of the roles
+are based on position (e.g., “first word”
+and “second-to-last word”), rather than more
+functionally-relevant categories such as “direction word.” However, this approach may actually be more efficient: Each command consists of a single mandatory element (namely,
+an action word such as walk or jump) followed
+by several optional modifiers (namely, rotation words, direction words, and cardinalities).
+Because most of the word categories are optional, it might be inefficient to check for the
+presence of, e.g., a cardinality, since many sequences will not have one. By contrast, every
+sequence will have a last word, and checking
+the identity of the last word provides much
+functionally-relevant information: if that word
+is not a cardinality, then the decoder knows
+that there is no cardinality present in the command (because if there were, it would be the
+last word); and if it is a cardinality, then that
+is important to know, because the presence
+of twice or thrice can dramatically affect the
+shape of the output sequence. In this light,
+it is unsurprising that the SCAN encoder has
+implicitly learned several different roles that
+
+essentially mean the last element of a particular subcommand.
+
+the SCAN grammar generates 20,910 input sequences, containing a total of 151,688 words
+(an average of 7.25 words per input). This
+means that, if one were to generate a series
+of conditional statements to determine which
+role is assigned to each word in every context,
+this could in theory require up to 151,688 conditionals (e.g., “if the filler is ‘jump’ in the
+context ‘walk thrice after
+opposite left’,
+then assign role 17”). However, our algorithm
+involves just 47 conditionals. This reduction
+helps explain how the model performs so well
+on the test set: If it used many more of the
+151,688 possible conditional rules, it would
+completely overfit the training examples in a
+way that would be unlikely to generalize. The
+47-conditional algorithm we found is more
+likely to generalize by abstracting over many
+details of the context.
+
+2. The algorithm does not constitute a simple,
+transparent role scheme. But its job is to describe the representations that the original network produces, and we have no a priori expectation about how complex that process may
+be. The role-assignment algorithm implicitly
+learned by ROLE is interpretable locally (each
+line is readily expressible in simple English),
+but not intuitively transparent globally. We
+see this as a positive result, in two respects.
+First, it shows why ROLE is crucial: no
+human-generated role scheme would provide
+a good approximation to this algorithm. Such
+an algorithm can only be identified because
+ROLE is able to use gradient descent to find
+role schemes far more complex than any we
+would hypothesize intuitively. This enables us
+to analyze networks far more complex than we
+could analyze previously, being necessarily
+limited to hand-designed role schemes based
+on human intuitions about how to perform the
+task.
+Second, when future work illuminates the
+computation in the original SCAN GRU
+seq2seq decoder, the baroqueness of the roleassignment algorithm that ROLE has shown
+to be implicit in the seq2seq encoder can potentially explain certain limitations in the original model, which is known to suffer from
+severe failures of systematic generalization
+outside the training distribution (Lake and Baroni, 2018). It is reasonable to hypothesize
+that systematic generalization requires that the
+encoder learn an implicit role scheme that is
+relatively simple and highly compositional.
+Future proposals for improving the systematic generalization of models on SCAN can
+be examined using ROLE to test the hypothesis that greater systematicity requires greater
+compositional simplicity in the role scheme
+implicitly learned by the encoder.
+3. While the role-assignment algorithm of A.8.1
+may not be simple, from a certain perspective,
+it is quite surprising that it is not far more complex. Although ROLE is provided 50 roles to
+learn to deploy as it likes, it only chooses to
+use 16 of them (only 16 are ever selected as
+the arg max(at ); see Sec. 6.1). Furthermore,
+
+4. Were it not for ROLE’s ability to characterize the representations generated by the original encoder in terms of implicit roles, providing an equally complete and accurate interpretation of those representations would
+necessarily require identifying the conditions
+determining the activation level of each of the
+100 neurons hosting those representations. It
+seems to us grossly overly optimistic to estimate that each neuron’s activation level in the
+representation of a given input could be characterized by a property of the input statable in,
+say, two lines of roughly 20 words/symbols;
+yet even then, the algorithm would require 200
+lines, whereas the algorithm in A.8.1 requires
+47 lines of that scale. Thus, by even such a
+crude estimate of the degree of complexity
+expected for an algorithm describing the representations in terms of neuron activities, the
+algorithm we find, stated over roles, is 4 times
+simpler.
+A.7
+
+TPEs trained on sentence embedding
+models
+
+For each sentence embedding model, we trained
+three randomly initialized TPEs for each role
+scheme and selected the best performing one as
+measured by the lowest MSE. For each TPE, we
+used the original filler embedding from the sentence embedding model. This filler dimensionality is 25 for SST, 300 for SPINN and InferSent,
+and 620 for Skipthought. We applied a linear
+
+transformation to the pre-trained filler embedding
+where the input size is the dimensionality of the
+pre-trained embedding and the output size is also
+the dimensionality of the pre-trained embedding.
+This linearly transformed embedding is used as the
+filler vector in the filler-role binding in the TPE. For
+each TPE, we use a role dimension of 50. Training
+was done with a batch size of 32 using the Adam
+optimizer with a learning rate of .001.
+To generate tree roles from the English sentences,
+we used the constituency parser released in version
+3.9.1 of Stanford CoreNLP (Klein and Manning,
+2003).
+A.8
+
+ROLE trained on sentence embedding
+models
+
+For each sentence embedding model, we trained
+three randomly initialized ROLE models and selected the best performing one as measured by the
+lowest MSE. We used the original filler embedding from the sentence embedding model (25 for
+SST, 300 for SPINN and InferSent, and 620 for
+Skipthought). We applied a linear transformation
+to the pre-trained filler embedding where the input
+size is the dimensionality of the pre-trained embedding and the output size is also the dimensionality of the pre-trained embedding. This linearly
+transformed embedding is used as the filler vector in the filler-role binding in the TPE. We also
+applied a similar linear transformation to the pretrained filler embedding before input to the role
+learner LSTM. For each ROLE model, we provide
+up to 50 roles with a role dimension of 50. Training was done with a batch size of 32 using the
+ADAM optimizer with a learning rate of .001. We
+performed a hyperparameter search over the regularization coefficient λ using the values in the set
+{1, 0.1, 0.01, 0.001, 0.0001}. For SST, SPINN, InferSent and SST, respectively, the best performing
+network used λ = 0.001, 0.01, 0.001, 0.1.
+
+

@@ -1,0 +1,265 @@
+{
+ "slug": "c7-readout-mediator-angle-2605.29126",
+ "url": "https://arxiv.org/pdf/2605.29126",
+ "pdf_ok": true,
+ "pages": 55,
+ "chars": 190411,
+ "title_guess": "When and How Long? The Readout-Mediator Angle in Temporal Reasoning ",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 2,
+   "caption_start": " Figure 1: The readout-mediator dissociation on a duration query (schematic). Given \u201cHow many days between March 15th and June 22nd ?\u201d, the model deploys two functionally orthogonal subspaces. Spy P: "
+  },
+  {
+   "id": "Figure 2",
+   "page": 5,
+   "caption_start": " Figure 2: The readout-mediator dissociation, quantified. (A) Accuracy on G EMMA 2 2B under four ablations at L\u22c6 =1: DAS collapses accuracy to 0%; probe and random ablations produce drops within 1 pp "
+  },
+  {
+   "id": "Figure 3",
+   "page": 6,
+   "caption_start": " Figure 3: A distributed, offset-structured, cross-family circuit. (A) Per-head QK-twist |z| on G EMMA 2 2B (26 layers \u00d78 heads); 24 BH-significant boundary heads at |z|\u22653. (B) Detected QK offsets: Ge"
+  },
+  {
+   "id": "Figure 4",
+   "page": 7,
+   "caption_start": " Figure 4: DAS energy, MLP contribution, and TFA subspace geometry. (A) DAS subspace energy fraction through all 26 residual-stream layers: peaks at 26.4\u00d7 Haar null at L\u22c6 =1 and exceeds null at every "
+  },
+  {
+   "id": "Figure 5",
+   "page": 7,
+   "caption_start": " Figure 5: Circuit wiring and feature-level dissociation: probe reads when; DAS computes how long. (A) Circuit graph: L\u22c6 =1 DAS mediator (26.4\u00d7 null) \u2192 boundary heads L11H4/L12H6 (\u2206NLL=0.45) \u2192 MLP L18"
+  },
+  {
+   "id": "Table 1",
+   "page": 8,
+   "caption_start": "Table 1: Cross-task diagnostic at k=4 on G EMMA 2 2B.  The circuit traced above is specific to calendar- Drops in pp; \u03c1k is DAS/random drop. date reasoning, but the dissociation itself\u2014the Type Angle "
+  },
+  {
+   "id": "Table 2",
+   "page": 13,
+   "caption_start": "Table 2: Cross-scale DAS at k=4. Drops in pp; ratio is DAS-drop/random-drop. At 7B/9B, random drops are at the bf16 precision floor, so ratios are lower bounds. Model  Params  Clean  DAS ablation  Ran"
+  },
+  {
+   "id": "Table 3",
+   "page": 14,
+   "caption_start": "Table 3: Principal angles (\u25e6 ) between the gradient subspace UG , the DAS mediator UM , the circular probe UP , and the Haar-random null, on G EMMA 2 2B at L\u22c6 =1. For UG vs. UP the reference dimension"
+  },
+  {
+   "id": "Table 4",
+   "page": 14,
+   "caption_start": "Table 4: Three-way comparison at k=4. All angles in degrees; null is arccos( k/d)=87.6\u25e6 . Pair UG vs. UM (DAS) UG vs. UP (probe) UP vs. UM  \u03b8\u0304 \u2212 null  \u03b8\u0304 \u25e6  85.3 88.9\u25e6 87.9\u25e6  \u25e6  \u22122.3 (below null) +1.3"
+  },
+  {
+   "id": "Table 5",
+   "page": 15,
+   "caption_start": "Table 5: Gradient probe ablation results on G EMMA 2 2B. Clean accuracy = 42%. \u03c1\u2207 =(grad drop)/(rand mean drop). k  Grad acc.  Drop  Rand mean  Rand 5\u201395%  \u03c1\u2207  2 4 6  41% 36% 30%  1 pp 6 pp 12 pp  0.2"
+  },
+  {
+   "id": "Figure 7",
+   "page": 17,
+   "caption_start": " Figure 7: Emergence in P YTHIA 1.4B. Three diagnostics on a shared log-training-step x-axis; gold band spans the geometric emergence window [103 , 5\u00d7104 ]. (A) Probe R2 is already > 0.95 at step 0 an"
+  },
+  {
+   "id": "Figure 8",
+   "page": 19,
+   "caption_start": " Figure 8: The readout-to-mediator spectrum. (A) Accuracy under four ablation conditions at L\u22c6 =1 on G EMMA 2 2B: clean baseline, linear probe, top-50 GemmaScope SAE features, and the causal DAS subsp"
+  },
+  {
+   "id": "Figure 9",
+   "page": 21,
+   "caption_start": " Figure 9: Calibration of \u03b4(x) for flagging wrong clinical answers (G EMMA 2 2B, k=12, n=75). (a) Reliability diagram (5 equal-count \u03b4 bins). (b) ROC with Youden-J optimal threshold marked. (c) Precis"
+  },
+  {
+   "id": "Figure 10",
+   "page": 22,
+   "caption_start": " Figure 10: Manifold deviation \u03b4(x) predicts clinical duration error (open 979-query three-tier benchmark). (A) Per-query absolute duration error (symlog, days) versus \u03b4(x) at k\u22c6 =12; correct (\u00b120%, g"
+  },
+  {
+   "id": "Figure 11",
+   "page": 23,
+   "caption_start": " Figure 11: Manifold deviation on the 979-query three-tier clinical benchmark \u2014 detailed view. (A) ROC per tier for \u03b4(x) flagging wrong answers. (B) Pooled reliability: fraction-wrong in 5 equal-count"
+  },
+  {
+   "id": "Figure 12",
+   "page": 28,
+   "caption_start": " Figure 12: Empirical cos \u03b8i in raw (a) and whitened (b) coordinates. Gray points and \u00b12\u03c3 bars: 104 -draw Haar random k-subspace null; red squares: observed probe vs DAS; blue triangles: analytic k2 /"
+  },
+  {
+   "id": "Figure 13",
+   "page": 29,
+   "caption_start": " Figure 13: Probe\u2013DAS mean principal angle across all 26 layers of G EMMA 2 2B at k \u2208 {2, 4, 6}. The dashed line is the Haar-random null. The angle is within 1.5\u25e6 of null at every layer; no layer alig"
+  },
+  {
+   "id": "Figure 14",
+   "page": 30,
+   "caption_start": " Figure 14: Effective mediator dimension on Q WEN 2.5 1.5B. (a) Ablation drop saturates at k=4; higher k admits multiple spanning bases and ablation is noisier to optimize. (b) Mean cos \u03b8i between bas"
+  },
+  {
+   "id": "Table 6",
+   "page": 34,
+   "caption_start": "Table 6: Principal-angle alignment of TFA components with the DAS mediator and probe subspace. cos2 \u03b8i normalized by the Haar null (kcomp \u00b7 r/d). Both the zero-shot (ZS) and learned (L) implementation"
+  },
+  {
+   "id": "Figure 15",
+   "page": 35,
+   "caption_start": " Figure 15: TFA components on the Grassmannian. (A) MDS embedding of subspaces on Gr(4, 2304) using mean principal angle as the distance metric. Gray dots: 100 Haar-random k-frames (convex hull shaded"
+  },
+  {
+   "id": "Figure 16",
+   "page": 35,
+   "caption_start": " Figure 16: Extended alignment of TFA predictable novel components with the DAS mediator (left, k=4) P and and probe subspace (right, k=2), measured as cos2 \u03b8i normalized by the Haar null. Both zero-s"
+  },
+  {
+   "id": "Figure 17",
+   "page": 36,
+   "caption_start": " Figure 17: Feature-level detectors and causal specificity. (A) Month-tiling: 11 of 12 months have dedicated SAE features at Layer 3, each firing selectively on its month token. (B) Causal specificity"
+  },
+  {
+   "id": "Figure 18",
+   "page": 37,
+   "caption_start": " Figure 18: Temporal dynamics of mediator energy (emed , gold bars) across token positions for three Set-F duration prompts. The k/d random baseline is shown as a dashed line. Left: per-token mediator"
+  },
+  {
+   "id": "Figure 19",
+   "page": 38,
+   "caption_start": " Figure 19: Monte Carlo null distribution of offset-mode coincidences (\u03c4 =5 d tolerance, 105 draws from Uniform({1, . . . , 182})). The observed 2-mode match (gold line) falls in the far right tail (p"
+  },
+  {
+   "id": "Figure 20",
+   "page": 40,
+   "caption_start": "Figure 20: DAS mediator energy through 26 layers. DAS subspace energy (blue) vs. probe subspace energy (orange) vs. Haar random null (dashed). Boundary-head layers shaded. DAS energy exceeds random nu"
+  },
+  {
+   "id": "Figure 21",
+   "page": 41,
+   "caption_start": " Figure 21: Per-direction DAS ablation. (A) Individual direction \u2206NLL (dashed: full k=4 ablation). (B) Pairwise observed vs. expected (sum of singles). Super-additive pairs lie above the diagonal.  S4"
+  },
+  {
+   "id": "Figure 22",
+   "page": 41,
+   "caption_start": " Figure 22: MLP vs. attention attribution at layers 18\u201325. MLP ablation consistently increases NLL; attention ablation is near-zero or negative at late layers.  41  "
+  },
+  {
+   "id": "Figure 23",
+   "page": 42,
+   "caption_start": " Figure 23: Cascading ablation. (A) \u2206NLL by head group. (B) Observed combined drop vs. sum of group drops (weakly super-additive).  S47  Supplement: MLP SAE computation analysis  We use GemmaScope MLP"
+  },
+  {
+   "id": "Table 7",
+   "page": 44,
+   "caption_start": "Table 7: Error-node analysis. \u2206NLL for DAS full ablation vs. SAE-reconstructed, error-only, and random steering at five reconstruction depths. n=50 Set-F prompts, \u03b1=3.0, G EMMA 2 2B. k  DAS full  SAE "
+  },
+  {
+   "id": "Table 8",
+   "page": 44,
+   "caption_start": "Table 8: Weight-space DAS alignment: transcoder (TC) vs MLP SAE at circuit layers. Top-50 span coverage = fraction of DAS subspace variance spanned by the top-50 decoder directions; Jaccard is over to"
+  },
+  {
+   "id": "Figure 24",
+   "page": 45,
+   "caption_start": "Figure 24: GemmaScope transcoder features along the MLP pipeline. (a) Feature #14897 at L20 marks the read\u2192write transition where probe alignment peaks and DAS alignment begins rising. (b) Feature #72"
+  },
+  {
+   "id": "Figure 25",
+   "page": 46,
+   "caption_start": " Figure 25: Error-node analysis. (A) Reconstruction gap G(k) vs. top-k SAE features per DAS direction. G=1.00 at every depth: SAE-reconstructed directions capture zero causal effect via steering. (B) "
+  },
+  {
+   "id": "Figure 26",
+   "page": 46,
+   "caption_start": " Figure 26: Transcoder vs MLP SAE. (A) DAS subspace span coverage (top-50 features) across MLP layers: 0.000 both0.00 dictionariesL19achieve (B)L24L1 L25 residual-stream comparison. L1 (C) Steering\u22120."
+  },
+  {
+   "id": "Figure 27",
+   "page": 46,
+   "caption_start": " Figure 27: Group decoder steering. (A) \u2206NLL by group size k: DAS-aligned and random feature groups are indistinguishable at every k. (B) Super-additivity ratio SA(k): no super-additive cooperation em"
+  },
+  {
+   "id": "Figure 28",
+   "page": 47,
+   "caption_start": "Figure 28: Frozen-attention steering. (A) \u2206NLL across seven conditions; all values |\u2206NLL|<0.1, three orders -0.004 of magnitude below DAS ablation. (B) Pathway decomposition pie chart (uninterpretable"
+  },
+  {
+   "id": "Figure 29",
+   "page": 48,
+   "caption_start": "Figure 29: NeuronPedia feature audit. Probe-aligned feature #12499 (a) activates on calendar months and promotes month/Month in its logits. DAS-aligned features encode syntactic structure: #14703 (b) "
+  },
+  {
+   "id": "Figure 30",
+   "page": 49,
+   "caption_start": "Figure 30: NeuronPedia steering demonstrations. (a) Amplifying probe feature #12499 at high strength floods the output with calendar-month vocabulary\u2014pure month fixation. (b) Amplifying DAS duration f"
+  },
+  {
+   "id": "Figure 31",
+   "page": 50,
+   "caption_start": "Figure 31: Temporal-specialist SAE features at L=12. (a) Feature #3087 from the Lubana et al. temporal SAE (canrager/temporalSAEs, 9,216 features) is DAS-aligned and matches GemmaScope relay feature #"
+  },
+  {
+   "id": "Figure 32",
+   "page": 51,
+   "caption_start": "Figure 32: OV circuit decomposition. (A) Heatmap of WOV DAS-alignment per head; boundary heads (gold squares) show only a modest 1.17\u00d7 enrichment. (B) Violin comparison; the effect is statistically si"
+  },
+  {
+   "id": "Figure 33",
+   "page": 52,
+   "caption_start": " Figure 33: Attribution flow graph. Directed edges show information flow from the DAS mediator (L\u22c6 =1, green) through intermediate hubs to boundary heads (gold). Gold arrows: flow to boundary heads. C"
+  },
+  {
+   "id": "Table 9",
+   "page": 52,
+   "caption_start": "Table 9: Probe-based monitoring stress tests. All experiments use G EMMA 2 2B at L\u22c6 =1, k=4 (DAS). Experiment  Key metric  Cross-probe universality (116) Adversarial injection (112) Mutual information"
+  },
+  {
+   "id": "Table 10",
+   "page": 52,
+   "caption_start": "Table 10: Principal angles between seven probe bases and the DAS subspace (kDAS =4, d=2304). Probe target  k  Mean angle (\u25e6 )  Haar null (\u25e6 )  Dev.  Circular DOY Month (12-class) Season (4-class) Day-"
+  },
+  {
+   "id": "Figure 34",
+   "page": 53,
+   "caption_start": " Figure 34: Cross-probe universality. (A) Measured angle P vs. Haar null for seven probe architectures; all fall within the \u00b12\u03c3 null band (gray). (B) Subspace overlap ( cos2 \u03b8i / min(k1 , k2 )) betwee"
+  },
+  {
+   "id": "Figure 35",
+   "page": 54,
+   "caption_start": " Figure 35: Mutual information. (A) MI bar chart: I(probe; DAS) and I(DAS; DOY) are at the null floor; only I(probe; DOY) is non-trivial. (B) Phase-shuffle null distribution with observed MI (red line"
+  },
+  {
+   "id": "Figure 36",
+   "page": 54,
+   "caption_start": " Figure 36: Specificity battery. (A) \u03c1 per subspace; DAS is off the chart at 2650\u00d7. (B) Null \u03c1 distribution with named subspaces marked. (C) \u2206NLL per subspace with random \u00b12\u03c3 band.  Mock deception pro"
+  },
+  {
+   "id": "Figure 37",
+   "page": 55,
+   "caption_start": " Figure 37: Mock deception probe. (A) NLL distribution split at median into confident/uncertain labels. (B) \u03c1 comparison: DAS (2650\u00d7) vs. temporal probe (\u22126.5\u00d7) vs. safety monitor (\u22642.0\u00d7). (C) Princip"
+  },
+  {
+   "id": "Figure 38",
+   "page": 55,
+   "caption_start": " Figure 38: Ablation invisibility. (A) Probe-shift histogram for 50 random ablations (gray) vs. DAS ablation (red). (B) Per-DOY probe shift under DAS ablation; most are below the 3-day threshold. (C) "
+  }
+ ],
+ "n_figures_tables": 47,
+ "section_heading_candidates": [
+  "A Ablation at L \u22c6 = 1, Gemma 2 2B",
+  "P Prop.",
+  "G EMMA 2 2B: arithmetic (single-digit addi\u2014",
+  "Q WEN 2.5 1.5B",
+  "G EMMA 2 2B",
+  "Q WEN 2.5 7B",
+  "G EMMA 2 9B",
+  "Q WEN 2.5 1.5B",
+  "G EMMA 2 2B",
+  "Q WEN 2.5 7B",
+  "G EMMA 2 9B",
+  "Q WEN 2.5 1.5B",
+  "G EMMA 2 2B",
+  "Q WEN 2.5 7B",
+  "G EMMA 2 9B"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

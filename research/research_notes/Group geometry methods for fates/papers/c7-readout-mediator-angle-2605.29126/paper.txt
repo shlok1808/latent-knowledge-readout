@@ -1,0 +1,6981 @@
+When and How Long? The Readout-Mediator Angle
+in Temporal Reasoning
+
+arXiv:2605.29126v1 [cs.LG] 27 May 2026
+
+Shreyas Fadnavis
+Bioscope AI
+shreyas.fadnavis@bioscope.ai
+
+Praitayini Kanakaraj
+Bioscope AI
+praitayini.kanakaraj@bioscope.ai
+
+Felix Wyss
+Bioscope AI
+felix.wyss@bioscope.ai
+
+Abstract
+A linear probe can decode a representation almost perfectly and yet be completely
+irrelevant to how the model uses it. On calendar-date duration reasoning in language models, a sin/cos probe recovers day-of-year from a layer’s activations, yet
+ablating its direction has no effect on the model’s answers—while ablating a fourdimensional subspace found by Distributed Alignment Search (DAS) at the same
+layer collapses performance entirely. We measure the angle between these two
+subspaces—the readout–mediator angle—and find it indistinguishable from the
+angle between two random subspaces (the Haar-uniform null), meaning the probe
+has learned a direction orthogonal to the model’s actual computation. Reverseengineering the circuit reveals why: attention heads route month-grained context
+through learned QK offsets at ±30 and ±61 days, and MLPs then convert when
+(absolute date) into how long (duration)—all downstream of the causal subspace
+the probe never touches. Sparse-autoencoder decomposition confirms the split:
+probe-aligned and DAS-aligned features encode semantically disjoint concepts
+with negligible causal overlap. The dissociation replicates across four scales (1.5–
+9 B) and two model families, with preliminary evidence on two further domains
+(spatial displacement, symbolic arithmetic), suggesting that readout–mediator orthogonality is a general failure mode of probe-based interpretability. This directly
+undermines proposals to deploy probes as runtime safety monitors: the probe can
+report high confidence on a direction the model has silently abandoned.
+
+1
+
+Introduction
+
+Ask a language model “How many days between March 15th and June 22nd ?” and it answers
+correctly: 99 days. A sin / cos Ridge probe at layer 20 decodes both dates from the residual stream
+with R2 =0.996 [Gurnee and Tegmark, 2024]—exactly the kind of result used to argue that the
+model represents calendar time [Gurnee and Tegmark, 2024, Marks and Tegmark, 2024, Kantamneni
+and Tegmark, 2025]. But ablating the probe’s direction drops accuracy by only 0.6 pp; the model
+still counts 99 days as if nothing happened. A matched-rank Distributed Alignment Search (DAS)
+subspace at the same layer tells the opposite story: ablating it collapses accuracy entirely (Fig. 1).
+The probe reads the right answer from a direction the model does not compute with. We quantify this
+by measuring the principal angle between the two subspaces—what we call the readout–mediator
+angle. At θ̄=88◦ , it matches the expectation for two random subspaces drawn from a Haar-uniform
+distribution (E[θ̄]=88.3◦ at (d, k)=(2304, 2), Prop. 2): the probe carries no more information about
+the model’s computation than a random direction of the same rank. A five-year line of work has
+questioned whether probe accuracy implies mechanistic relevance [Hewitt and Liang, 2019, Elazar
+Preprint.
+
+Q: How many days are there between March 15th and June 22nd?
+
+SPY P
+(PROBE)
+Subspace
+
+UP
+SPY M
+(MEDIATOR/DAS)
+
+Subspace
+
+UM
+
+Passively reads the two dates from the prompt
+
+Ablate UP
+...
+
+March 15th
+...
+
+MAR
+
+JUN
+
+...
+
+→ 15
+
+Jun 27th
+...
+
+Decodes dates but
+does not compute
+duration
+
+→ 22
+
+−0.6% acc
+
+✓
+
+Story does not change.
+
++31
+
++30
+
+days
+
++31
+
+days
+
++7
+
+days
+
+days
+
+= 99 days
+
+INSTRUCTIONS:
+
+Count 99 days
+forward.
+Cross three
+Month boundaries.
+
+→
+
+APR
+
+MAR
+
+May
+
+MAR
+15 +
+15 +
+
+JUN
+
+15 + 15 + 22
+
+= reads how long (UM mediator)
+
+Haar-random Null Expectation
+θ
+
+θ = arccos √(k/d)
+= 88° ≈ orthogonal
+
+✗
+
+The entire operation
+collapses.
+
+Three Month Boundaries
+
+= reads when (UP readout)
+
+Ablate UM
+
+0% acc
+
+JUN
+
+QK Twist Boundary Heads
+± 𝟏𝟎 𝒅𝒂𝒚𝒔 𝒏𝒐𝒕 𝒇𝒐𝒖𝒏𝒅
+
+± 𝟑𝟎 𝒅𝒂𝒚𝒔 𝒉𝒐𝒑
+± 𝟔𝟏 𝒅𝒂𝒚𝒔 𝒉𝒐𝒑
+
+Figure 1: The readout-mediator dissociation on a duration query (schematic). Given “How many days
+between March 15th and June 22nd ?”, the model deploys two functionally orthogonal subspaces. Spy P: the probe
+subspace UP passively decodes both dates; ablating it changes accuracy by −0.6 pp. Spy M: the DAS mediator
+UM counts 99 days via month-boundary hops; ablating it collapses accuracy to 0%. The two subspaces are
+nearly orthogonal (θ̄=88◦ ), matching the Haar-random null—the probe carries no more information about the
+computation than noise.
+
+et al., 2021, Ravichander et al., 2021, Mueller et al., 2026, 2025, Canby et al., 2025]; the readout–
+mediator angle provides the missing instrument—a number that says how far the probe sits from the
+computation, paired with a null that says what “far” means.
+Reverse-engineering the causal subspace reveals why the two are orthogonal. Boundary attention
+heads implement QK offsets at ±30 and ±61 days—single- and double-month steps that tile any
+multi-month duration (Fig. 1). MLP layers then execute a two-stage transformation: layers 18–19
+read calendar position (when); layers 20–25 convert it into duration (how long), with MLP SAEs—
+functionally equivalent to transcoders—showing a monotonic DAS-alignment gradient across this
+boundary. Sparse-autoencoder features confirm the split at the vocabulary level: probe-aligned
+features fire on concepts like month of October; DAS-aligned features fire on past 24 hours. The two
+feature sets have zero causal overlap (Supp. S50). Temporal feature analysis [Lubana et al., 2026]
+explains the geometry: the DAS mediator aligns with context-predictable structure (7× above the
+Haar null), while the probe sits in the random cloud—duration computation lives in the part of the
+activation accumulated from context, not the current token (Fig. 4C–D).
+The dissociation is not specific to one model, one scale, or one domain. It replicates across four
+models (1.5–9B), two architecture families, and two further reasoning domains (spatial displacement,
+symbolic arithmetic)—each at the Haar null angle. On P YTHIA 1.4B, probe R2 =0.956 at step 0:
+an untrained network “represents” dates by the probe’s standard, yet boundary heads, DAS drops,
+and circularness all emerge only as training proceeds—the probe tracks dimensional capacity, not
+mechanism learning.
+Contributions:
+• The readout–mediator angle and Haar-random null, with three propositions linking angle to
+ablation effect (§3).
+• Maximal probe–DAS dissociation across four scales (1.5–9B), two families, three domains—
+sharpening with scale (§4, 6).
+• A full circuit trace: boundary heads, two-stage MLP transcoder chain, disjoint SAE features, and
+a TFA-based explanation of the orthogonality (§5).
+• A six-experiment battery showing the dissociation breaks probe-based safety monitors (§6).
+
+2
+
+The decodability-use gap
+
+The gap between what a probe can decode and what a model causally uses is well documented.
+Gurnee and Tegmark [2024] decode spatial and temporal coordinates from L LAMA -2 with R2 >0.9,
+yet note explicitly that this “does not imply the model actually uses these representations.” Hernandez
+et al. [2024] make the gap concrete: they define a faithfulness metric and find that many relations
+2
+
+are probe-accurate but not faithfully decoded at generation time. Several lines of work have tried
+to narrow the gap—combining probes with causal intervention [Tak et al., 2025, Feng et al., 2025],
+replacing fixed probes with decoder LLMs [Pan et al., 2026], and questioning the interventions
+themselves [Grant et al., 2026]—but none provide a single number that says how far the probe
+direction sits from the causal one, or a null that says what “far” means.
+Diagnostic critiques have sharpened the problem without solving it. Control tasks [Hewitt and Liang,
+2019], amnesic probing [Elazar et al., 2021], and recent audits [Ravichander et al., 2021, Mueller
+et al., 2026, 2025, Canby et al., 2025] all question the inferential step from accuracy to mechanism,
+but stop short of measuring the divergence. Concept-erasure methods—INLP and LEACE [Belrose
+et al., 2023]—attempt to close the gap by removing the probed direction, yet their erasure subspaces
+sit within ∼1.5◦ of the Haar null (Supp. S41): erasing what the probe finds does not erase what the
+model uses.
+Our circuit-level analysis builds on three families of tools: DAS [Geiger et al., 2024, Sun et al., 2025,
+Mueller et al., 2025] for identifying causally load-bearing subspaces, activation patching [Nanda
+et al., 2023, Syed et al., 2024] for tracing information flow, and SAEs [Cunningham et al., 2024,
+Lieberum et al., 2024] decomposed via NeuronPedia [Lin, 2023] for interpreting features at the
+vocabulary level. We use MLP SAEs as functional transcoders [Templeton et al., 2024] to track what
+each MLP layer writes to the residual stream, and temporal feature analysis [Lubana et al., 2026]
+to decompose activations into context-predictable and novel components—the structural distinction
+that ultimately explains the orthogonality. Most directly, Gurnee et al. [2026] showed that attention
+heads implement QK-twist rotations on date manifolds; we take the next step and ask which of those
+projections are causally load-bearing and which are statistical shadows. Extended related work is in
+Supp. S10.
+
+3
+
+The readout-mediator angle: measurement and theory
+
+Two questions, two subspaces. The decodability-use gap arises because probes and causal methods
+answer different questions about the same layer. Given a task property z and a layer L, a probe subspace UP ∈ Rk×d is the top-k span of a circular Ridge regressor trained on cached activations—it asks
+where is the information? A DAS subspace [Geiger et al., 2024] is found by parametrising U via QRdecomposition of a trainable matrix and minimizing task NLL while an ablation hook x7→x−U ⊤ U x
+zeros U on every forward pass—it asks where is the computation vulnerable? Same layer, same rank
+k, different optimization targets: one isolates what is readable, the other what
+Pis load-bearing (no⊤
+)
+tation summary in Supp. S54). The readout–mediator angle θ̄(UP , UM )= k1 i arccos σi (UP UM
+measures the distance between these two answers.
+The next three propositions establish why this angle should generically be large (Prop. 1), what the
+null expectation is (Prop. 2), and how the angle controls the observable we actually measure—ablation
+effect (Prop. 3).
+Proposition 1 (Readout-mediator orthogonality, informal). Let f :Rd →R be a differentiable task
+output and z(x) a scalar correlated with x. The probe direction maximizes I(u⊤ x; z)—a secondmoment quantity in x. The mediator maximizes E|f (x)−f (x−uu⊤ x)|—a first-moment quantity in
+∇x f . The two coincide only when ∇x f ∝ uP . Otherwise they are generically distinct.
+Proof sketch. The probe solves a Rayleigh quotient max∥u∥=1 (u⊤ c)2 /(u⊤ Σu) with c=E[xz],
+yielding uP =Σ−1 c/∥ · ∥—set by the data covariance. A first-order Taylor expansion of the ablation
+effect gives uM = arg max u⊤ Gu where G=E[∇x f ∇x f ⊤ ] is the gradient covariance—set by the
+network’s output sensitivity. Coincidence requires Σ−1 c to be the top eigenvector of G: a nongeneric spectral alignment between data geometry and network geometry that deep networks have no
+structural reason to satisfy (full proof in Supp. S22).
+Empirical test of Prop. 1. If the mediator aligns with the first moment of ∇x f , computing the
+gradient subspace directly should recover a direction closer to DAS than to the probe. We verify this
+on G EMMA 2 2B by computing gi =∇hL⋆ NLL(y ⋆ |xi ) for each prompt. The gradient subspace sits
+2.3◦ closer to the mediator than to the Haar null (θ̄=85.3◦ ), while its angle to the probe is at null
+(88.9◦ ). The gradient leans toward the mediator but disperses across effective rank 76; DAS distills
+the k=4 causal core from this diffuse signal (Supp. S2).
+3
+
+Prop. 1 tells us to expect divergence between probe and mediator—but not how much. In high
+dimensions, the answer turns out to be stark: any two low-rank subspaces are nearly orthogonal by
+default.
+Proposition 2 (Null angle between random subspaces). For independent k×d Stiefel-uniform
+matrices
+U, V , the principal-angle cosines follow the Jacobi ensemble J(k, k, d−k) with
+P
+E i cos2 θi =k 2 /d: each cosine-squared concentrates at k/d, the Johnson–Lindenstrauss rate
+for a random k-plane projection in Rd (exact; MC-verified in Supp. S20). At (d, k)=(2304, 2),
+E[θ̄]=88.3◦ .
+Proof sketch. By Haar rotation invariance, fix V as the first k identity rows; the singular values of
+U V ⊤ then follow the Jacobi ensemble J(k, k, d−k). The Collins–Matsumoto trace
+p identity gives
+P
+E i cos2 θi =k 2 /d exactly. The Delta method converts to angle space: E[θ̄]= arccos k/d+O(k/d),
+with the second-order correction bounded by ∼0.05◦ at our (d, k) (MC-verified on 104 draws in
+Supp. S20; full proof in Supp. S22).
+An observed θ̄=88◦ therefore means the probe is no closer to the mediator than a random direction of
+the same rank. Note, however, that orthogonality alone does not imply causal inertness—a subspace
+can be orthogonal to the mediator and still affect the output through other pathways [Gurnee et al.,
+2026]. What distinguishes a statistical shadow from a functionally distinct subspace is the ablation
+effect, which the next proposition links directly to the angle.
+Proposition 3 (Angle controls ablation effect). Under (i) f (x)=g(UM x), (ii) g is L-Lipschitz, (iii)
+E[xx⊤ ]=σ 2 I, for any k-dimensional ablation basis U with principal angles θi to UM :
+X
+(a) E|f (x)−f (x−U ⊤ U x)|2 ≤ L2 σ 2
+cos2 θi ;
+(1)
+i
+
+if row(UM )⊆row(U ), E|f (x)−f (x−U ⊤ U x)|2 ≥ L2 σ 2 kM ;
+X
+(c) Haar-random U : E
+cos2 θi =kkM /d.
+
+(b)
+
+i
+
+(2)
+(3)
+
+Proof sketch. (a) Factor through the mediator: |f (x)−f (x−PU x)|≤L∥UM PUPx∥ by Lipschitz
+continuity of g. Squaring under isotropic covariance yields σ 2 ∥UM U ⊤ ∥2F =σ 2 i cos2 θi via the
+SVD of UM U ⊤ . (b) When row(UM )⊆row(U ), the projection is exact (UM PU x=UM x), and a
+matching lower bound holds under a one-sided modulus of continuity L. (c) The Haar expectation
+E∥UM U ⊤ ∥2F =kkM /d follows from the same trace identity as Prop. 2; their ratio gives the null
+2
+specificity ρnull
+k ≍(L/L) d/k. Full proofs in Supp. S22; anisotropy sensitivity in Supp. S24; a
+controlled-perturbation validation design in Supp. S38.
+Specificity ratio, design choices, and experimental setup. Prop. 3 motivates a single scalar
+that separates direction from dimensionality: ρk =(DAS drop)/(random-control mean drop). The
+Lipschitz sandwich predicts a null of ρnull
+k ≍d/k; at (d, k)=(2304, 4), d/k=576. On G EMMA 2 2B,
+ρ4 =1050 (∆add =42 pp; CI in Supp. S25)—far exceeding the dimensional null, confirming the DAS
+subspace captures directed structure, not just dimensionality budget. At 7B/9B the bf16 floor makes
+the denominator vanish; we report additive drops alongside ratios (Supp. S25). We use standard
+DAS rather than HyperDAS [Sun et al., 2025] so that probe and DAS share identical (L, k), isolating
+the optimization-objective contrast that Prop. 1 predicts (Supp. S1); every angle measurement is
+paired with n≥25 Haar-uniform random-subspace controls of matched rank (5–95% accuracy-drop
+envelope). Primary analyses use G EMMA 2 2B [Gemma Team, 2024] and Q WEN 2.5 1.5B [Yang
+et al., 2024]; scale-up adds Q WEN 2.5 7B and G EMMA 2 9B; training dynamics on P YTHIA 1.4B
+[Biderman et al., 2023]. L⋆ is the bootstrap peak of monthly-stratified 5-fold CV probe R2 ; the
+probe–DAS angle is ≈89◦ at every layer (Supp. S27), so single-layer intervention is conservative.
+Algorithm 1 summarizes the full protocol; pseudocode in Supp. S23.
+
+4
+
+The dissociation: probes decode, DAS computes
+
+Section 3 predicts that probe and mediator should be generically distinct, with their angle at the Haar
+null. We now test this on calendar-date duration reasoning (Fig. 2).
+Maximal dissociation on G EMMA 2 2B. On G EMMA 2 2B at L⋆ =1, probe and DAS ablations
+at matched rank tell opposite stories. Projecting out the probe subspace (R2 =0.981, peak 0.996
+4
+
+Algorithm 1: Readout-mediator diagnostic protocol
+1
+
+Input: Frozen model M , prompt set P with targets {y ⋆ }, rank k
+Output: θ̄, ∆P , ∆M , ρk
+
+Sweep layers 0, . . . , Lmax ; set L⋆ ← arg max R2 ; train ridge probe at L⋆ ; extract UP
+▷ probe
+Train DAS at (L⋆ , k) → UM
+▷ mediator (Alg. 2, Supp. S23)
+4 θ1 , . . . , θk ← P RINCIPAL A NGLES (UP , UM );
+5 aclean ← ACC (P)
+
+⊤
+6 aP ← ACC P | x 7→ x − UP UP x ;
+
+⊤
+7 aM ← ACC P | x 7→ x − UM UM x
+8 for j = 1, . . . , Nnull
+▷ null calibration do
+
+9
+Uj ∼ Haar G(k, d) ;
+10
+aj ← ACC(P | Uj )
+2
+
+3
+
+11
+
+return θ̄, ∆P =aclean −aP , ∆M =aclean −aM , ρk =∆M /∆rand
+
+A Ablation at L ⋆ = 1, Gemma 2 2B
+
+B
+
+only DAS damages accuracy — probe and random are inert
+
+C
+
+Readout–mediator angle
+
+D
+
+Causal specificity ratio
+
+the DAS-vs-random gap grows with model scale
+
+40%
+30%
+−42 pp
+
+20%
+10%
+
+0.0
+
+0%
+Clean
+
+Probe Random DAS
+
+80
+
+90°
+
+90°
+
+88.3°
+
+87.9°
+
+88°
+86°
+
+Prop.
+null
+88.3°
+
+86.7°
+86.6°
+
+86.7°
+
+86.6°
+
+DAS vs. probe
+DAS vs. PCA
+
+84°
+2
+
+4
+
+spec.
+
+1050×
+10
+
+3
+
+262×
+
+190×
+10
+
+2
+
+Accuracy drop (pp)
+
+41.0
+
+42.0
+
+DAS-drop / random-drop
+
+42.0
+
+Mean principal angle
+
+Duration accuracy (±20%)
+
+92°
+50%
+
+Cross-scale dissociation at k = 4
+
+DAS-drop vastly exceeds random-drop at every k
+
+probe sits on the random-subspace null (88.3°)
+
+2
+
+Subspace dim k
+
+4
+
+Subspace dim k
+
+6
+
+1050×
+
+>500k×
+
+>450k×
+
+51 pp
+DAS
+
+44 pp
+
+45 pp
+
+42 pp
+
+40
+20
+0
+
+6
+
+220×
+
+60
+
+random (25)
+0.2
+
+Qwen 2.5
+1.5B
+
+0.04
+
+0.00
+
+0.00
+
+Gemma 2
+2B
+
+Qwen 2.5
+7B
+
+Gemma 2
+9B
+
+Figure 2: The readout-mediator dissociation, quantified. (A) Accuracy on G EMMA 2 2B under four ablations
+at L⋆ =1: DAS collapses accuracy to 0%; probe and random ablations produce drops within 1 pp of clean.
+(B) Mean principal
+angle between DAS and probe subspaces at each k; shaded band is the Haar-random null
+p
+θ= arccos k/d. (C) Causal specificity ratio ρ = ∆DAS /∆random at k=2, 4, 6; DAS is 190–1050× more
+damaging than a matched-dimension random subspace. (D) Cross-scale replication: DAS drops at k=4 on four
+models (1.5B–9B); diamond markers show random controls near zero.
+
+matching Gurnee and Tegmark 2024) drops duration accuracy by only 0.6 pp—statistically identical
+to a random control. DAS ablation at the same layer and same k drops accuracy from 42% to 0%,
+with specificity ratios up to ρ4 =1050 (Fig. 2A,C). The angle between the two subspaces is 88◦ ,
+matching
+2’s prediction of 88.3◦ to within 1.5◦ (Fig. 2B; Supp. S3). The formal test confirms
+P Prop.
+2
+this:
+cos θi sits at the k 2 /d null at every rank tested, with indistinguishability p=0.51–0.72
+(Supp. S24). The probe does not merely live in a different subspace; it lives as far from the mediator
+as noise—a statistical shadow that reads the representation without tapping the computation (ρk ≈1).
+Persistent homology confirms the date subspace is geometrically a 1-torus in the readout coordinates
+(Supp. S8). The result is robust to probe architecture, target choice, layer, and data partition: on strict
+train/test splits (n=3,650), five-fold CV gives θ̄=87.8◦ ±0.1◦ with bootstrap 95% CI [87.3◦ , 88.3◦ ]
+(Supp. S27, S40, S41, S31).
+The dissociation sharpens with scale. The pattern replicates across all four models (1.5–9B): DAS
+drops 42–51 pp while random controls drop ≤0.3 pp at 1.5B and exactly zero at 7B/9B (Fig. 2D;
+Supp. S1, Tab. 2, S26). The specificity ratio strengthens monotonically with scale—as Prop. 3 predicts,
+since the null ρnull
+k ≍d/k grows with model width. Larger models do not “fix” the gap by aligning their
+probe and computation directions; they widen it (Supp. S25). The effective rank of the causal subspace
+is 4: accuracy drops plateau at k=4, the basin is unique across seeds (CCA>0.94; Supp. S29, S30),
+and the subspace is 59× super-additive—the four directions function as a cooperative unit, not an
+arbitrary collection (Supp. S44, S28, S51). This subspace is task-specific: the 42 pp duration drop is
+12.6× the average across n=240 non-calendar prompts (Supp. S18).
+5
+
+B
+
+QK-twist ridge |z|, Gemma 2B
+
+C
+
+Calendar wheel of QK offsets
+
+super-linear across two families
+
+heads / layer
+
++61
+|z|
+
+7
+
+±182
+
+4
+
+Qwen
+(20)
+
+Accuracy drop (pp)
+
++30
+
+5
+
+Head
+
+25
+
+4
+
+6
+
+0
+
+2
+
+3
+−30
+
+2
+
+0
+
+6
+
+12
+
+18
+
+−61
+mode band (±9 d)
+
+1.0
+1.00
+
+20
+Gemma
+10/24
+
+15
+10
+Qwen
+10/54
+
+5
+0
+
+0
+
+Attribution patching
+finds a different cut of the same circuit
+
+slope ≈ 4.7
+super-linear
+
+Gemma (24)
+
+1
+
+D
+
+Dose–response curve
+
+modes at ±30 / ±61 days — none at ±7
+
+24 boundary heads — distributed, not single-head
+
+Qwen
+20/54
+
+Fraction of boundary heads
+
+A
+
+0.8
+0.6
+
+100%
+recall
+
+recall
+IoU
+
+K=24
+
+if random
+
+0.4
+0.2
+
+0.15
+
+0
+
+±7 (empty)
+
+0.0
+
+24
+
+0
+
+Layer depth
+
+15
+
+30
+
+45
+
+Heads ablated (% of population)
+
+10
+
+1
+
+10
+
+2
+
+Top-K attribution heads
+
+Figure 3: A distributed, offset-structured, cross-family circuit. (A) Per-head QK-twist |z| on G EMMA 2
+2B (26 layers ×8 heads); 24 BH-significant boundary heads at |z|≥3. (B) Detected QK offsets: Gemma
+BH-significant heads and Q WEN 2.5 1.5B top-20. Both families cluster at ±30 and ±61 days; neither at ±7.
+(C) Dose–response: accuracy drop vs. fraction of boundary heads ablated; super-linear scaling in both families.
+(D) Attribution-patching recall and IoU against the QK-twist boundary-head set as a function of top-K heads.
+
+5
+
+The circuit: from boundary heads to duration vocabulary
+
+Having established that a rank-4 causal subspace mediates duration computation while the probe
+direction is a statistical shadow, we now open that subspace and trace the circuit in three stages
+(Fig. 4, 5A): attention heads that route month-grained context, MLP layers that transform calendar
+position into elapsed duration, and SAE features that make the when/how long split legible at the
+vocabulary level.
+Stage 1: boundary heads route month-grained context. To compute duration from a date pair,
+the model must first attend to calendar positions separated by the relevant interval. A QK-twist
+scan [Gurnee et al., 2026] identifies 24 heads with |z|≥3 (65 BH-significant at q=0.05) in G EMMA
+2 2B whose offsets concentrate at |c|∈{30, 61} days—single- and double-month steps that reflect
+Gregorian month-length arithmetic (Fig. 3A). The pair {30, 61} tiles any multi-month duration
+(Fig. 1); weekly periodicity (c=7) is absent (Supp. S4). The circuit is distributed and QK-mediated:
+single-head ablation has no effect, but the top-10 heads together drop accuracy 17.2 pp, and cascading
+ablation localizes the routing bottleneck to L11–L12 (∆NLL=0.455, vs. 0.016 for L23–L25); WOV
+alignment is 1.17× the Haar null (p=0.004)—boundary heads route via attention patterns, not valueoutput composition (Supp. S4, S5, S51, S46). The same offset modes appear independently in Q WEN
+2.5 1.5B (p=0.009, Monte Carlo null; Fig. 3B, Supp. S37, Fig. 19), and dose–response ablation is
+super-linear in both families (Fig. 3C)—evidence that the circuit is dictated by calendar structure, not
+model-specific training artifacts [Gurnee et al., 2026].
+Stage 2: MLPs convert when into how long. Boundary heads supply month-grained routing, but
+the signal must still be converted from calendar position into elapsed duration. Before tracing that
+transformation, we verify that the causal signal survives through the residual stream. Tracking DAS
+subspace energy ∥UDAS xL ∥2 /∥xL ∥2 across all 26 layers (Fig. 4A) shows the mediator signal never
+disappears: 26.4× null at L⋆ =1, trough 3.1× at L=18, recovery 6.6× at L=22. Probe energy, by
+contrast, tracks the random null throughout (0.0–4.1×). The causal signal flows forward continuously
+and the probe never intercepts it—explaining why boundary heads at L11–L12 can operate in a
+residual stream still rich with mediator content (8× null, ∆NLL= 0.45; Supp. S46, S43, S36).
+Decomposing what each MLP layer writes to the residual stream using GemmaScope MLP SAEs—
+functionally equivalent to transcoders (monotonic DAS-alignment gradient L18→L25, Spearman
+ρ=1.0; Fig. 5D, Supp. S49)—reveals a two-stage structure with a sharp boundary (Fig. 4B–C;
+Supp. S47, S45, S52). At L18–L19, probe contribution peaks (4.3× null at L19) while DAS
+contribution is sub-null; at L20–L25 the pattern inverts, with DAS contribution peaking at 3.2×
+null. Early MLP extracts when (calendar position); late MLP computes how long (duration). Monthdiscriminating features at L19–L22 correct the ≤1-day residual inherent in the c=30 offset (ANOVA
+p<0.001; Supp. S47, S48): for example, feature #15148 at L22 is completely silent for February
+while active for all other months—the sharpest possible month-length discrimination. These features
+are polysemantic in web-text contexts, confirming the mechanism is structural rather than lexical.
+6
+
+B
+5
+
+15
+
+10
+
+5
+
+D
+
+DAS
+Probe
+
+when
+
+4
+
+DAS
+
+0
+10
+
+15
+
+20
+
+TFA-Novel (L)
+
+86.6°
+
+PCA
+
+86.8°
+
+PCA
+Pred
+
+25
+
+0
+
+18
+
+19
+
+20
+
+Layer
+
+21
+
+22
+
+23
+
+24
+
+25
+
+88.5°
+
+Probe
+
+Novel
+
+5
+
+85.2°
+
+TFA-Novel (ZS)
+
+random
+null
+
+1
+
+MLP zone
+
+0
+
+83.7°
+
+TFA-Pred (L)
+
+how long
+
+3
+
+2
+
+Haar
+87.6°
+
+82.7°
+
+TFA-Pred (ZS)
+
+Probe
+
+MDS dim 2
+
+MLP contribution / Haar null
+
+20
+
+Energy / Haar null
+
+C
+
+DAS (k=4)
+Probe (k=2)
+
+L ⋆ =1
+26.4×
+
+4.3×
+
+25
+
+3.2×
+
+A
+
+81
+
+MDS dim 1
+
+82
+
+83
+
+84
+
+85
+
+86
+
+87
+
+88
+
+89
+
+90
+
+Angle to DAS (°)
+
+Layer
+
+Figure 4: DAS energy, MLP contribution, and TFA subspace geometry. (A) DAS subspace energy fraction
+through all 26 residual-stream layers: peaks at 26.4× Haar null at L⋆ =1 and exceeds null at every layer
+(range 2.1–26.4×). Probe subspace energy tracks the random null throughout (0.0–4.1×). (B) Per-layer MLP
+contribution to DAS vs. probe subspace (L18–L25). Probe contribution peaks at L19 (4.3× null, calendar date)
+while DAS is sub-null; DAS contribution peaks at L20 (3.2×, duration)—a two-stage transformation with a
+sharp anatomical boundary. (C) Grassmannian embedding of subspaces on Gr(4, 2304): TFA-predictable (gold)
+is pulled toward DAS and away from the random cloud; the probe (blue) sits squarely in the random null at
+88.5◦ . (D) Mean principal angle to DAS, sorted. TFA-Pred (82.7◦ –83.7◦ ) sits well below the Haar null (87.6◦ );
+the probe is indistinguishable from random.
+
+Stage 3: SAE features confirm the split at the vocabulary level. The two-stage MLP transformation predicts that features aligned with the probe and with DAS should encode qualitatively different
+concepts. SAE analysis confirms this. Probe-aligned feature #12499 at L=1 (Fig. 5B) (“specific
+months”) fires on month of October, month of February, first month of the season—it encodes
+calendar position, not duration. DAS-aligned features at L⋆ =1 fire on copula contexts (“forms of
+to be”)—the syntactic frame for duration queries—whose decoder directions nonetheless promote
+numeric tokens (logit-lens Z=+0.18, p=0.009; Supp. S50). By L=24, feature #2309 (“quantities
+of time and duration”, Fig. 5C) promotes months, weeks, days, years: temporal semantics emerge at
+the relay endpoint, not at L⋆ .
+The dissociation is total. Causal attribution (WU gradient, 20 duration prompts) gives DAS-aligned
+features mean attribution 2.41; probe-aligned features contribute exactly zero (Jaccard= 0.000;
+Supp. S50, Fig. 29). Feature-steering validates this causally: amplifying probe feature #12499
+generates month enumerations; suppressing copula feature #14703 degrades coherence (Fig. 30).
+The causal subspace resists decomposition into individual dictionary elements—14/15 features
+yield |∆NLL|<0.05 on individual ablation, consistent with the 59× cooperation ratio—and decoderdirection steering with up to 100 DAS-aligned features yields ∆NLL≈0, while full rank-4 ablation
+yields ∆NLL=+69 [Templeton et al., 2024]. Pre-trained transcoders produce comparably null
+results (span coverage 5–9%, Jaccard ≤0.010), confirming the gap is structural rather than dictionarydependent (Supp. S49, S50; completeness and selectivity analysis therein).
+A
+
+Duration Output
+
+Causal
+Inert
+
+Relay Hub L24H2
+#2309 → Duration
+Φ → No Causal
+Effect
+
+L24
+
+B
+
+C
+
+#12499
+
+L1
+
+D
+
+#2309
+
+INERT
+
+Top Logits
+
+L24
+
+CAUSAL
+
+Top Logits
+
+month
+
++4.15
+
+months
+
++2.54
+
+L20-25
+
+Month
+
++3.74
+
+weeks
+
++2.51
+
+MLP L20-25: how long?
+
+months
+
++3.62
+
+days
+
++2.33
+
+Months
+
++2.32
+
+L18
++3.37
+
+MONTH
+MLP L18-19: when?
+
+Boundary Heads
+L11H4/L12H6
+
+L11
+
+L1
+
+Top Activations
+
+Top Activations
+
+year
+
+in
+
+the
+
+month
+
+of
+
+the
+
+first
+
+month
+
+of
+
+the
+
+in
+
+the
+
+past
+
+season
+
+since
+
+almost
+
+Oct
+
+24
+10
+
+hours
+
+.
+
+and
+
+years
+
+now
+
+.
+
+DAS Mediator
+
+Figure 5: Circuit wiring and feature-level dissociation: probe reads when; DAS computes how long. (A) Circuit graph: L⋆ =1 DAS mediator (26.4× null) → boundary heads L11H4/L12H6 (∆NLL=0.45) → MLP
+L18–25 (when → how long) → relay hub L24H2 (#2309, duration vocabulary) → output. Probe (dashed) has attribution = 0.000. At L⋆ , DAS features encode copula syntax; temporal semantics emerge at the L=24 relay hub.
+(B) SAE feature #12499 (probe-aligned, L=1; “specific months”): top logits month/Month/months/MONTH;
+activations fire on calendar-position contexts. Tagged INERT—zero causal attribution to the duration output.
+(C) SAE feature #2309 (DAS-aligned, L=24; “time/duration”): top logits months/weeks/days/Months; activations fire on duration-interval contexts. Tagged CAUSAL. (D) MLP transcoder pipeline: DAS alignment increases
+monotonically from L18 to L25 while probe alignment remains flat, confirming that MLPs progressively write
+duration—not calendar—information into the residual stream (Supp. S49, S6).
+
+7
+
+Convergence, robustness, and training dynamics. One might worry that the dissociation is
+an artifact of the particular tool used to find the probe direction. A matched-baseline ablation
+at (L⋆ =1, k=4) places nine interpretability tools on a single specificity-ratio axis (Prop. 3 null
+ρnull
+k ≍d/k=576): pure decoders (probe, INLP, LEACE) contribute zero causal drop; intermediate
+methods (gradient k=4, PCA top-4, AP) recover partial signal (5–18.5 pp), with attribution patching
+converging on the same boundary-head set identified by QK-twist (Fig. 3D); only DAS identifies
+the full causal core (36–42 pp, ρDAS =1050). Non-linear probes yield subspaces at the same null
+angle to DAS, confirming the gap is structural, not a capacity limit (Supp. S39, S11, S42, S32).
+Transplant experiments confirm population-level universality (same offsets, same causal hierarchy)
+without coordinate-level universality (cross-model transplants fail; Supp. S9). Training dynamics
+on P YTHIA 1.4B sharpen the distinction further: probe R2 =0.956 at step 0—an untrained network
+“represents” dates by the probe’s standard—yet boundary-head count, FFT-circularness (37× growth
+in the emergence window), and DAS ablation drop all emerge only as training proceeds (Supp. S7,
+Fig. S7). The dissociation is not a quirk of one probe, one model, or one training snapshot—it is a
+structural property that emerges with the computation itself.
+
+6
+
+Beyond calendar dates
+Table 1: Cross-task diagnostic at k=4 on G EMMA 2 2B.
+
+The circuit traced above is specific to calendar- Drops in pp; ρk is DAS/random drop.
+date reasoning, but the dissociation itself—the
+Type
+Angle Probe DAS
+ρk
+angle sitting at the Haar null—should be generic Domain
+(θ̄)
+drop
+drop
+if Prop. 1 is correct. We test this by running the
+full diagnostic protocol (probe training, DAS Temporal geom. 87.9
+0.6
+42.0
+1050×
+at matched (L, k), 25 random controls, speci- Spatial
+geom.
+88.4
+−6.0
+20.0
+20.8×
+ficity ratio) on two additional domains using Arith.
+symb.
+88.1
+0.0
+68.0 ≫103 ×
+G EMMA 2 2B: arithmetic (single-digit addi—
+88.3
+—
+—
+—
+tion, symbolic, non-geometric) and spatial (1D Haar null
+number-line displacement, geometric manifold). All three domains exhibit the same pattern (Table 1): probe–DAS angle at the Haar null (87.9–88.4◦ ), probe ablation leaving accuracy intact or
+improved (≤0 pp; spatial +6 pp, Supp. S34), and DAS ablation producing large drops (20–68 pp)
+with specificity ratios far exceeding random controls. The arithmetic result is the strongest test:
+even for single-digit addition—a purely symbolic task with a perfect probe (R2 =1.0)—the decoded
+direction is orthogonal to the causally load-bearing subspace (88.1◦ , 68 pp DAS drop, 0 pp probe
+drop). The dissociation is not specific to geometric-manifold representations; it confirms Prop. 1’s
+prediction that probe and mediator are generically distinct (Supp. S34).
+Why orthogonal? Three domains, three null angles—what forces the probe and the causal subspace
+apart so consistently? Lubana et al. [2026] provide the key insight: standard SAEs impose an i.i.d.
+prior across sequence positions (their Prop. 4.1), discarding the temporal structure that distinguishes
+what a model reads from context (the predictable component) from what arrives de novo at the
+current token (the novel component). A probe inherits the same limitation: it captures the axis along
+which information is most readable, not the axis along which the model uses that information for
+computation.
+Decomposing activations at L⋆ =1 with both their zero-shot linear predictor and learned TemporalSAE
+confirms this: the DAS mediator aligns 7.1–7.6× more strongly with the predictable subspace than
+with the Haar-random null, while the probe sits at 88.5◦ —squarely in the random cloud on the
+Grassmannian (Fig. 4C–D; Supp. S35, Fig. 17C). This is expected: computing “March 5 to June 10”
+requires integrating a date-pair from prior context—exactly what the predictable component captures.
+The orthogonality is therefore within the predictable subspace: both probe and mediator project
+accumulated context, but along functionally disjoint axes—circular day-of-year structure vs. monthpair difference structure.
+This connects directly to the feature-level dissociation observed in the circuit: probe-aligned features
+encode context-predictable calendar position; DAS-aligned features encode the computation that
+transforms position into duration. Standard SAEs recover only linearly accessible features [Hindupur
+et al., 2025]; the mediator directions, conditionally orthogonal to the readout [Costa et al., 2025],
+are invisible to that projection (Supp. S10). A temporal-specialist SAE [Lubana et al., 2026] at
+L=12 independently recovers the copula relay with DAS>probe preferential alignment, while its 4D
+attention bottleneck is orthogonal to DAS (min. angle 80◦ ), confirming the causal subspace captures
+8
+
+computation, not prediction (Supp. S50, Fig. 31). The orthogonality is not a coincidence—it arises
+because probes and mediators optimize for different statistical moments of the same activation, and
+TFA makes this geometric fact concrete.
+Implications for probe-based monitoring. A growing line of work proposes deploying linear
+probes as runtime safety monitors—detecting deception, harmful intent, or dangerous knowledge by
+decoding internal representations during inference [Burns et al., 2023, Marks and Tegmark, 2024,
+Zou et al., 2023]. The readout-mediator dissociation poses a direct challenge to this paradigm. We
+stress-test it with a six-experiment battery (Supp. S53).
+
+Days
+
+80
+Mechanism shift
+The blind spot is generic: all seven probe targets
+71d
+Probe error
+tested (day-of-year, month, season, day-of-week,
+70
+Detected by probe
+quarter, solstice, gradient) land within 2.8◦ of
+Undetected (blind spot)
+60
+the Haar-random null. This is a geometric consequence of k ≪ d: in 2304 dimensions, a rank-4
+50
+probe subspace is nearly orthogonal to any rank66d
+40
+invisible
+4 subspace by the Haar measure, including the
+27d
+30
+one the model actually uses (Prop. 2). The blind
+spot is exploitable. We decompose the residual
+20
+24d
+stream at L⋆ into two orthogonal components—
+invisible
+10
+the DAS mediator UM and the Gram-Schmidt0d
+orthogonalized probe basis ŨP —and con0
+0.5d
+2.6d
+5.5d
+struct xadv = x + α U⊤
+U
+(µ
+−µ
+)
++
+src
+tgt
+M M
+α=0
+α=1
+α=3
+β Ũ⊤
+δ
+,
+where
+µ
+,
+µ
+are
+mean
+activasrc
+tgt
+P probe
+tions for dates 180 days apart and δprobe restores Figure 6: Adversarial dissociation. Mechanism error
+(red) climbs to 71 days while probe error (blue) flatlines
+the probe’s sin / cos readout to the correct date below 6 days. At α=3, 93% of damage is undetected.
+(full protocol: Supp. S53). The scalar α controls
+mechanism corruption; β controls probe reassurance; both operate on unit-variance directions so
+perturbation magnitude scales linearly with the coefficient. At (α=3, β=2), the DAS mechanism
+shifts by 71 days while the probe reports 5.7-day error (Fig. 6). The blind spot is total: mutual information between the probe readout and the DAS energy is exactly 0.000 nats (p=1.0, phase-shuffle
+null, n=200), while the probe carries 3.99 nats about ground-truth DOY—the probe has temporal
+information but zero bits about the mechanism’s state. And the blind spot is unfixable by probe
+design: a purpose-built “deception monitor” trained on the same activations sits at 88.4◦ from DAS,
+inheriting the identical blind spot. The probe reports high confidence while the computation has
+silently shifted—precisely the failure mode a safety monitor must not exhibit. A manifold-deviation
+score δ(x) derived from the mediator subspace can flag likely errors on clinical duration queries
+(Supp. S16).
+
+7
+
+Conclusion
+
+Linear probes decode what is present; DAS recovers what is used. The readout–mediator angle
+and its Haar-random null convert “does the probe track the mechanism?” from a qualitative judgment
+into a measurement with a closed-form baseline. Across four scales (1.5–9 B), two families, and
+three domains, the angle is indistinguishable from the null: the probe direction is no closer to the
+computation than a random subspace of matched rank, because probes maximize readability while
+the model computes along a geometrically disjoint axis of boundary heads, MLP transcoders, and
+TFA-confirmed monotone month-pair structure. “The model represents dates” is therefore ambiguous
+in a way that matters: the readable subspace and the computed-with subspace are nearly orthogonal
+by the geometry of k ≪ d. For any probe advanced as evidence of mechanism or deployed as a
+safeguard, we recommend reporting θ̄, ρk , and random-ablation controls; without them, a monitor
+can report high confidence on a direction the model has silently abandoned (Fig. 6).
+Future work and societal impact. Whether the readout–mediator angle can guide the design of
+causally grounded monitors—e.g. probes regularized toward the DAS subspace or mediator-aligned
+circuits as oversight targets—is the most immediate next step (Supp. S33). Because high-accuracy
+probes can be geometrically decoupled from a model’s computation, safety monitors that rely solely
+on probe confidence risk false assurance; ρk offers a principled check for when such monitors can be
+trusted.
+9
+
+References
+N. Belrose, D. Schneider-Joseph, S. Ravfogel, R. Cotterell, E. Raff, and S. Biderman. LEACE: Perfect linear
+concept erasure in closed form. In Advances in Neural Information Processing Systems (NeurIPS), 2023.
+Y. Benjamini and Y. Hochberg. Controlling the false discovery rate: A practical and powerful approach to
+multiple testing. Journal of the Royal Statistical Society: Series B (Methodological), 57(1):289–300, 1995.
+S. Biderman, H. Schoelkopf, Q. Anthony, et al. Pythia: A suite for analyzing large language models across
+training and scaling. In International Conference on Machine Learning (ICML), 2023.
+C. Burns, H. Ye, D. Klein, and J. Steinhardt. Discovering latent knowledge in language models without
+supervision. In The Eleventh International Conference on Learning Representations (ICLR), 2023.
+M. Canby, A. Davies, C. Rastogi, and J. Hockenmaier. How reliable are causal probing interventions? In
+Proceedings of the 4th Conference of the Asia-Pacific Chapter of the Association for Computational Linguistics
+and the 14th International Joint Conference on Natural Language Processing (AACL-IJCNLP), 2025.
+D. Chanin, J. Wilken-Smith, T. Dulka, H. Bhatnagar, S. Golechha, and J. Bloom. A is for absorption: Studying
+feature splitting and absorption in sparse autoencoders. In Advances in Neural Information Processing
+Systems (NeurIPS), 2025.
+A. Conmy, A. N. Mavor-Parker, A. Lynch, S. Heimersheim, and A. Garriga-Alonso. Towards automated circuit
+discovery for mechanistic interpretability. In Advances in Neural Information Processing Systems (NeurIPS),
+volume 36, 2023.
+V. Costa, T. Fel, E. S. Lubana, B. Tolooshams, and D. Ba. From flat to hierarchical: Extracting sparse
+representations with matching pursuit. In Advances in Neural Information Processing Systems (NeurIPS),
+2025.
+H. Cunningham, A. Ewart, L. Riggs, R. Huben, and L. Sharkey. Sparse autoencoders find highly interpretable
+features in language models. In The Twelfth International Conference on Learning Representations (ICLR),
+2024.
+Y. Elazar, S. Ravfogel, A. Jacovi, and Y. Goldberg. Amnesic probing: Behavioral explanation with amnesic
+counterfactuals. Transactions of the Association for Computational Linguistics (TACL), 9:160–175, 2021.
+J. Engels, L. Riggs, and M. Tegmark. Decomposing the dark matter of sparse autoencoders. Transactions on
+Machine Learning Research (TMLR), 2024.
+A. Feder, N. Oved, U. Shalit, and R. Reichart. Causalm: Causal model explanation through counterfactual
+language models. Computational Linguistics, 47(2):333–386, 2021.
+J. Feng, S. Russell, and J. Steinhardt. Monitoring latent world states in language models with propositional
+probes. In The Thirteenth International Conference on Learning Representations (ICLR), 2025.
+A. Geiger, Z. Wu, C. Potts, T. Icard, and N. D. Goodman. Finding alignments between interpretable causal
+variables and distributed neural representations. In Causal Learning and Reasoning (CLeaR), 2024.
+Gemma Team. Gemma 2: Improving open language models at a practical size. arXiv preprint arXiv:2408.00118,
+2024.
+S. Grant, S. J. Han, A. R. Tartaglini, and C. Potts. Addressing divergent representations from causal interventions
+on neural networks. In The Fourteenth International Conference on Learning Representations (ICLR), 2026.
+W. Gurnee and M. Tegmark. Language models represent space and time. In The Twelfth International Conference
+on Learning Representations (ICLR), 2024.
+W. Gurnee, E. Ameisen, I. Kauvar, J. Tarng, A. Pearce, C. Olah, and J. Batson. When models manipulate
+manifolds: The geometry of a counting task. arXiv preprint arXiv:2601.04480, 2026.
+P. Haghighatkhah, A. Fokkens, P. Sommerauer, B. Speckmann, and K. Verbeek. Better hit the nail on the head
+than beat around the bush: Removing protected attributes with a single projection. In EMNLP, 2022.
+E. Hernandez, A. Sen Sharma, T. Haklay, K. Meng, M. Wattenberg, J. Andreas, Y. Belinkov, and D. Bau.
+Linearity of relation decoding in transformer language models. In The Twelfth International Conference on
+Learning Representations (ICLR), 2024.
+
+10
+
+J. Hewitt and P. Liang. Designing and interpreting probes with control tasks. In Proceedings of the 2019
+Conference on Empirical Methods in Natural Language Processing (EMNLP), pages 2733–2743, 2019.
+S. S. R. Hindupur, E. S. Lubana, T. Fel, and D. Ba. Projecting assumptions: The duality between sparse
+autoencoders and concept geometry. In Advances in Neural Information Processing Systems (NeurIPS), 2025.
+X. Huang and M. Hahn. Decomposing representation space into interpretable subspaces with unsupervised
+learning. In The Fourteenth International Conference on Learning Representations (ICLR), 2026.
+S. Kantamneni and M. Tegmark.
+arXiv:2502.00873, 2025.
+
+Language models use trigonometry to do addition.
+
+arXiv preprint
+
+A. Kraskov, H. Stögbauer, and P. Grassberger. Estimating mutual information. Physical Review E, 69(6):066138,
+2004.
+T. Lieberum, S. Rajamanoharan, et al. Gemma scope: Open sparse autoencoders everywhere all at once on
+Gemma 2. arXiv preprint arXiv:2408.05147, 2024.
+J. Lin. Neuronpedia: Interactive reference and tooling for analyzing neural networks. https://neuronpedia.
+org, 2023. Accessed: 2025-04-01.
+E. S. Lubana, C. Rager, S. S. R. Hindupur, V. Costa, G. Tuckute, O. Patel, S. K. Murthy, T. Fel, D. Wurgaft,
+E. J. Bigelow, J. Lin, D. Ba, M. Wattenberg, F. Viegas, M. Weber, and A. Mueller. Priors in time: Missing
+inductive biases for language model interpretability. In The Fourteenth International Conference on Learning
+Representations (ICLR), 2026.
+S. Marks and M. Tegmark. The geometry of truth: Emergent linear structure in large language model representations of true/false datasets. In Proceedings of the First Conference on Language Modeling (COLM),
+2024.
+A. Modell, P. Rubin-Delanchy, and N. Whiteley. The origins of representation manifolds in large language
+models. arXiv preprint arXiv:2505.18235, 2025.
+A. Mueller, A. Geiger, S. Wiegreffe, D. Arad, I. Arcuschin, A. Belfki, Y. S. Chan, J. Fiotto-Kaufman, T. Haklay,
+M. Hanna, J. Huang, R. Gupta, Y. Nikankin, H. Orgad, N. Prakash, A. Reusch, A. Sankaranarayanan, S. Shao,
+A. Stolfo, M. Tutek, A. Zur, D. Bau, and Y. Belinkov. MIB: A mechanistic interpretability benchmark. In
+Proceedings of the 42nd International Conference on Machine Learning (ICML), 2025.
+A. Mueller, J. Brinkmann, M. Li, S. Marks, K. Pal, N. Prakash, C. Rager, A. Sankaranarayanan, A. S. Sharma,
+J. Sun, E. Todd, D. Bau, and Y. Belinkov. The quest for the right mediator: Surveying mechanistic interpretability for NLP through the lens of causal mediation analysis. Computational Linguistics, 2026. doi:
+10.1162/COLI.a.572.
+A. Nam, H. Conklin, Y. Yang, T. Griffiths, J. Cohen, and S.-J. Leslie. Causal head gating: A framework for
+interpreting roles of attention heads in transformers. In Advances in Neural Information Processing Systems
+(NeurIPS), 2025.
+N. Nanda, L. Chan, T. Lieberum, J. Smith, and J. Steinhardt. Progress measures for grokking via mechanistic
+interpretability. In The Eleventh International Conference on Learning Representations (ICLR), 2023.
+A. S. Okatan, M. İ. Akbaş, L. N. Kandel, and B. Peköz. Seed-induced uniqueness in transformer models:
+Subspace alignment governs subliminal transfer. arXiv preprint arXiv:2511.01023, 2025.
+A. Pan, L. Chen, and J. Steinhardt. LatentQA: Teaching LLMs to decode activations into natural language. In
+The Fourteenth International Conference on Learning Representations (ICLR), 2026.
+S. Ravfogel, Y. Elazar, H. Gonen, M. Twiton, and Y. Goldberg. Null it out: Guarding protected attributes by
+iterative nullspace projection. In Proceedings of the 58th Annual Meeting of the Association for Computational
+Linguistics (ACL), pages 7237–7256, 2020.
+A. Ravichander, Y. Belinkov, and E. Hovy. Probing the probing paradigm: Does probing accuracy entail
+task relevance? In Proceedings of the 16th Conference of the European Chapter of the Association for
+Computational Linguistics (EACL), pages 3363–3377, 2021.
+J. Sun, J. Huang, S. Baskaran, K. D’Oosterlinck, C. Potts, M. Sklar, and A. Geiger. HyperDAS: Towards
+automating mechanistic interpretability with hypernetworks. In The Thirteenth International Conference on
+Learning Representations (ICLR), 2025.
+
+11
+
+A. Syed, C. Rager, and A. Conmy. Attribution patching outperforms automated circuit discovery. BlackboxNLP
+Workshop at EMNLP, 2024.
+A. N. Tak, A. Banayeeanzade, A. Bolourani, M. Kian, R. Jia, and J. Gratch. Mechanistic interpretability of
+emotion inference in large language models. In Findings of the Association for Computational Linguistics:
+ACL 2025, 2025.
+A. Templeton, T. Conerly, J. Marcus, J. Lindsey, T. Bricken, B. Chen, A. Pearce, C. Citro, E. Ameisen,
+A. Jones, H. Cunningham, N. L. Turner, C. McDougall, M. MacDiarmid, C. D. Freeman, T. R. Sumers,
+E. Rees, J. Batson, A. Jermyn, S. Carter, C. Olah, and T. Henighan. Scaling monosemanticity: Extracting interpretable features from Claude 3 Sonnet. Transformer Circuits Thread, 2024. URL https:
+//transformer-circuits.pub/2024/scaling-monosemanticity/.
+J. Wang, X. Ge, W. Shu, Z. He, and X. Qiu. Dimensional collapse in transformer attention outputs: A challenge
+for sparse dictionary learning. arXiv preprint arXiv:2508.16929, 2025.
+A. Yang et al. Qwen2.5 technical report. arXiv preprint arXiv:2412.15115, 2024.
+A. Zou, L. Phan, S. Chen, J. Campbell, P. Guo, R. Ren, A. Pan, X. Yin, M. Mazeika, A.-K. Dombrowski, et al.
+Representation engineering: A top-down approach to AI transparency. arXiv preprint arXiv:2310.01405,
+2023.
+
+12
+
+S1
+
+Supplement: extended DAS results and implementation
+
+Why standard DAS and not HyperDAS. HyperDAS [Sun et al., 2025] trains a separate hypernetwork to automate the search over token positions, which is valuable when the feature location
+is unknown. Our setting differs in two ways that make standard DAS the right choice. First, L⋆ is
+already fixed by the bootstrap peak of the circular-probe R2 —position search is not our bottleneck.
+Second, and more importantly, the angle comparison requires identical (L, k) for both probe and
+DAS: if HyperDAS were used, any difference in the subspaces could reflect hypernetwork-introduced
+structure rather than the pure loss-function contrast (decodability vs. causal vulnerability) that Proposition 1 predicts. Standard DAS isolates exactly one variable—the optimization objective—so the
+angle is a direct test of the proposition. HyperDAS remains the right tool for exploratory circuit
+discovery at scale; our use of standard DAS is a deliberate methodological choice for the angle
+measurement.
+Implementation. DAS is implemented in PyTorch. The trainable parameter is a dense matrix
+V ∈ Rd×d with leading d×k factor orthonormalized via QR on every forward pass; only the first k
+rows participate in the ablation hook. Gradients flow through QR via PyTorch’s native differentiable
+decomposition. Optimizer: AdamW, learning rate 10−3 , weight decay 0, β1 =0.9, β2 =0.999, batch
+size 8, 400 steps. Loss: mean NLL of the correct duration-token logit, computed with the model’s full
+forward pass under the ablation hook; model parameters are frozen via requires_grad_(False)
+on load. The ablation hook registers on blocks.L.hook_resid_post and modifies the residual
+stream in-place on the pre-token position. Deterministic seeds {0, 1, 2, 3, 4}; we report the run with
+lowest final NLL.
+⊤
+Convergence diagnostics. Every training run logs (i) NLL per step, (ii) ∥V1:k V1:k
+− Ik ∥F as the
+orthonormality residual, (iii) the angle between consecutive-step bases. Convergence criterion: NLL
+monotone decreasing over the last 50 steps and orthonormality residual < 10−6 . All reported runs
+pass both.
+
+Per-model numerical results. For G EMMA 2 2B (L⋆ =1, d=2304, clean accuracy 42%): at k=2
+the DAS basis is fully trained in 400 AdamW steps with final NLL of −71.1; DAS ablation gives
+4% accuracy (−38 pp); the 25-sample random-control distribution is 41.80% ± 0.98%; and the
+probe-subspace evaluation at matching k gives 41.0%. At k=4 and k=6, DAS ablation saturates to
+0% (final NLL −105.3, −118.7); random controls remain within 0.5 pp of clean.
+For Q WEN 2.5 1.5B (L⋆ =0, d=1536, clean 44%): k=2 yields 7% (−37 pp), k=4 yields 0% (−44
+pp); random controls remain ≥ 43.6%.
+For Q WEN 2.5 7B (L⋆ =8, d=3584, clean 51%) and G EMMA 2 9B (L⋆ =3, d=3584, clean 51%),
+single k=4 runs give 0% and 6% ablation accuracies respectively; 20 matched random controls
+produce drops < 0.05 pp on both. Training wall-clocks: 4 min (L4), 18 min (A10G), 42 min
+(A100-80G) per model.
+Table 2: Cross-scale DAS at k=4. Drops in pp; ratio is DAS-drop/random-drop. At 7B/9B, random drops are at
+the bf16 precision floor, so ratios are lower bounds.
+Model
+
+Params
+
+Clean
+
+DAS ablation
+
+Random mean
+
+DAS/Rand
+
+Q WEN 2.5 1.5B
+G EMMA 2 2B
+Q WEN 2.5 7B
+G EMMA 2 9B
+
+1.5B
+2.0B
+7.6B
+9.2B
+
+44.0%
+42.0%
+51.0%
+51.0%
+
+0.0% (−44)
+0.0% (−42)
+0.0% (−51)
+6.0% (−45)
+
+43.8% (−0.20)
+42.0% (−0.04)
+51.0% (−0.00)
+51.0% (−0.00)
+
+220×
+1050×
+> 500,000×
+> 450,000×
+
+Cross-scale summary (Tab. 2).
+Why specificity strengthens with scale. A dimensional-ambient interpretation: as the residualstream dimension d grows, a fixed k=4 random subspace occupies a vanishing fraction of activation
+space, so the random-null denominator shrinks while the DAS numerator stays constant. This is
+null
+consistent with Prop.
+p 3(c)’s ρ ≍ d/k scaling, with the matched-k PCA control whose angle to DAS
+stays near arccos( k/d) across scales (Supp. S3), and with random-subspace drops approaching
+zero at 7B/9B. Whether this extrapolates to frontier scale is open.
+13
+
+What the DAS basis points at. Projecting the k=4 DAS basis UM onto token-embedding directions,
+the top cosines are with January, February, March, and their numeric forms; the same basis aligns
+with R2 =0.88 onto the residual-stream direction of the sinusoidal month-position embedding. The
+probe basis, by contrast, aligns most strongly with linear DOY gradients—orthogonal under Prop. 2
+and empirically at 88◦ .
+Seed variance and Grassmannian geometry. Across five seeds on G EMMA 2 2B k=4: final NLL
+∈ [−107.6, −102.1], ablation accuracy ∈ [0%, 2%], pairwise basis angle ∈ [12◦ , 34◦ ]. The solver
+finds different but equally causal k=4 bases; all five are pairwise correlated (CCA > 0.94), consistent
+with a unique rank-4 causal subspace.
+Five additional runs at k=6 (seeds 6–10, 1,200 AdamW steps, bfloat16 on A10G): final NLL
+∈ [−70.4, −72.0], mean = −71.8 ± 0.7. Pairwise max principal angles on G(6, 2304): mean
+= 87.7◦ ±1.8◦ , range [83.9◦ , 89.9◦ ]; Haar-random null is 87.1◦ . The k=6 solutions are not clustered—
+they scatter uniformly over the Grassmannian, identical to random 6-subspaces. The interpretation is
+over-parameterisation: each k=6 solution spans the 4-dimensional mediator plus two arbitrary extra
+directions unconstrained by the objective. Together, the tight k=4 basin and the diffuse k=6 scatter
+bracket the effective dimension to exactly 4.
+
+S2
+
+Supplement: Gradient probe
+
+Method. For each Set-F duration prompt xi we (i) run the model forward under a hook that detaches
+the residual stream at L⋆ and re-attaches it with requires_grad=True, storing the re-attached
+tensor hi ; (ii) compute the NLL of the correct duration token from the final-layer logits; (iii) call
+.backward(), reading gi = ∂ NLL/∂hi ∈ Rd at the last-token position; (iv) collect the n × d
+matrix G and compute its centered SVD. Model parameters are frozen (requires_grad_(False))
+throughout; gradients flow only through the re-attached activation tensor via the native PyTorch
+autograd graph, which is preserved despite the detach because we re-attach before returning the value
+from the hook. No training, no additional parameters.
+Gradient norms and spectrum. On n=332 Set-F prompts, per-prompt gradient norms are
+0.52±0.11 (mean±SD), range [0.30, 0.94]—well-behaved, no outliers. The singular value spectrum of the centered G decays slowly: σ1 =3.65, σ2 =2.44, σ3 =1.50, σ4 =1.47, σ5 =1.10, with no
+clear elbow. The participation ratio (effective rank) is 76.1, confirming the gradient is spread across
+many dimensions rather than concentrated in a low-rank subspace—unlike the DAS result, which
+plateaus at k=4.
+Table 3: Principal angles (◦ ) between the gradient subspace UG , the DAS mediator UM , the circular probe UP ,
+and the Haar-random null, on G EMMA 2 2B at L⋆ =1. For UG vs. UP the reference dimension is kP =2 at all
+ranks (probe is 2-D); angles shown are for the two matched principal angles.
+k
+2
+4
+6
+
+θ̄(UG , UM )
+
+min θi (UG , UM )
+
+◦
+
+87.3
+85.3◦
+85.8◦
+
+◦
+
+θ̄(UG , UP )
+◦
+
+85.5
+79.6◦
+79.8◦
+
+88.9
+88.9◦
+88.9◦
+
+Haar null
+88.3◦
+87.6◦
+87.1◦
+
+Angle results. The gradient subspace UG sits 2.3◦ below the Haar null toward UM at k=4, while
+sitting at or above null relative to UP at every k. The minimum principal angle θ1 =79.6◦ at k=4
+reveals one direction shared between the gradient and the mediator that is 8.0◦ closer than null—a
+non-trivial but partial alignment. The probe–DAS angle for reference is 87.9◦ at k=4 (Table 4).
+p
+Table 4: Three-way comparison at k=4. All angles in degrees; null is arccos( k/d)=87.6◦ .
+Pair
+UG vs. UM (DAS)
+UG vs. UP (probe)
+UP vs. UM
+
+θ̄ − null
+
+θ̄
+◦
+
+85.3
+88.9◦
+87.9◦
+
+◦
+
+−2.3 (below null)
++1.3◦ (at/above null)
++0.3◦ (at null)
+
+Ablation and specificity. Projecting UG out of the residual stream at L⋆ and re-running duration
+evaluation:
+14
+
+Table 5: Gradient probe ablation results on G EMMA 2 2B. Clean accuracy = 42%.
+ρ∇ =(grad drop)/(rand mean drop).
+k
+
+Grad acc.
+
+Drop
+
+Rand mean
+
+Rand 5–95%
+
+ρ∇
+
+2
+4
+6
+
+41%
+36%
+30%
+
+1 pp
+6 pp
+12 pp
+
+0.20 pp
+0.04 pp
+0.16 pp
+
+[0, 2] pp
+[0, 2.8] pp
+[0, 3] pp
+
+5×
+150×
+75×
+
+Drops in pp;
+
+The specificity ratio peaks at k=4 (ρ∇ =150), placing the gradient probe between attribution patching
+(ρAP ≈ 120–205) and the SAE (ρSAE-50 =288) on the readout-mediator spectrum. DAS at k=4
+achieves ρ=1050, 7× higher, with ablation accuracy of 0% vs. the gradient probe’s 36%.
+Interpretation. The three-way angle table directly tests Proposition 1. That proposition claims
+the mediator is shaped by ∇x f (first moment) and the probe by covariance with the target (second
+moment). The data bear this out asymmetrically: UG is measurably closer to UM than to noise, but
+not close to recovering UM (θ̄ is 2.3◦ below null, not 0◦ ). The effective rank of 76 explains why:
+∇x f at each prompt is a different vector in a high-dimensional space; the model’s Jacobian has no
+clear low-rank structure at a single site. DAS’s 400-step ablation-maximising optimization acts as
+a causal projector onto the subset of gradient space that is both (a) consistent across prompts and
+(b) maximally damaging when removed. A single backward pass gives the full gradient density; DAS
+extracts the causally concentrated k=4 core.
+Cost. 332 forward+backward passes on G EMMA 2 2B on a cloud L4 GPU: 63 seconds for gradient
+collection, ∼ 10 min total including ablation evaluation and 25 × 3=75 random controls. Less than
+$1 at cloud GPU spot pricing.
+
+S3
+
+Supplement: principal-angle tables
+
+Mean principal angles between DAS and probe / PCA / SAE / gradient subspaces on G EMMA 2 2B:
+DAS vs. probe = {88.3◦ , 87.9◦ , 86.7◦ } at k ∈ {2, 4, 6}; DAS vs. top-k PCA = {86.6◦ , 86.7◦ , 86.6◦ };
+◦
+◦
+◦
+DAS vs. gradient probe
+values match
+p= {87.3 , 85.3 , ◦85.8 }. All DAS-vs-probe and DAS-vs-PCA
+the Haar null arccos( k/d) to within 2 . DAS-vs-gradient angles lie 1–2.3◦ below null, with the
+minimum principal angle reaching 79.6◦ at k=4 (null 87.6◦ ). On Q WEN 2.5 1.5B at k=2 the
+DAS-probe angle is 86.9◦ ; angles on Q WEN 2.5 7B and G EMMA 2 9B are saved with checkpoint
+pickles and reported in the released results. Full numerical table accompanies the released code.
+
+S4
+
+Supplement: QK-twist scan
+
+Method. For every attention head (L, h) we (i) collect mean residual-stream activations per dayof-year (x̄d for d∈[1, 365]), (ii) push through the head’s
+√ Q and K projections to obtain Qd , Kd ∈
+⊤
+′
+′
+Rdhead , (iii) form the 365×365
+matrix
+M
+=Q
+K
+/
+dhead , (iv) Radon-diagonal average by offset
+d,d
+d
+d
+P
+c ∈ [−182, 182]: S(c)= N1c d−d′ =c Md,d′ , and (v) score the head by zc =(S(c) − µS )/σS where
+µS , σS are taken across all non-zero offsets. The peak |z| across c is the head’s QK-twist strength,
+and arg max |z| is its detected offset c⋆ .
+Null and multiple-comparison correction. Permutation null: for each head, n=200 draws randomly
+permute the DOY labels on x̄d and recompute peak |z|; the permutation p-value is the empirical
+fraction of null peaks exceeding the observed. We then apply Benjamini–Hochberg [Benjamini and
+Hochberg, 1995] across the full head set at q=0.05. G EMMA 2 2B: 65/208 heads BH-significant, 24
+additionally exceed |z| ≥ 3; Q WEN 2.5 1.5B: 110/336 BH-significant, 54 exceed |z| ≥ 3.
+Offset-mode analysis. Detected offsets c⋆ for BH-significant heads go through a Gaussian-mixture
+BIC selection (k ∈ {1, 2, 3, 4}). BIC minima at k=4 place centers at ĉ ∈ {±30.1, ±60.8} days on
+both models. The ±7-day center was absent (∆BIC = −46 for a model forced to include ±7),
+ruling out weekly-periodicity as a driver. Full per-head table with (L, h, c⋆ , z, p, q) released as
+cached_tensors/qk_twist/{gemma,qwen}_heads.csv.
+15
+
+Why {30, 61} and not other offsets. Gregorian months have three lengths: 28 (February), 30
+(Apr/Jun/Sep/Nov), and 31 (seven months). On the 365-day circle, offset c=30 corresponds to an
+angular shift of 2π·30/365 ≈ π/6, i.e. 1/12 of the full revolution—one month. Because 30 is
+the minimum common month length (excluding February), a boundary head attending from day d
+to d+30 lands within ≤1 day of the corresponding calendar position in the next month for 11/12
+months; only February introduces a 2-day error. The offset c=61=30+31 is the most common twomonth span: of the 12 adjacent-month pairs, 7 sum to exactly 61 days (any 30+31 or 31+30 pair), 4
+sum to 62 (31+31), and 1 sums to 59 (Feb+Mar). On the circle this is 2π·61/365 ≈ π/3—1/6 of
+a revolution, or two months. The pair {30, 61} therefore forms a minimal greedy basis for monthboundary arithmetic: any multi-month duration can be decomposed into single- and double-month
+steps, with the ≤1-day remainder corrected by the month-discriminating MLP features downstream
+(§5). Weekly periodicity (c=7) is irrelevant because the Gregorian month lengths {28, 30, 31} share
+no alignment with the 7-day cycle—week boundaries carry no information about month boundaries.
+Layerwise distribution of boundary heads. On G EMMA 2 2B (26 layers), boundary-head density
+peaks at layers L ∈ {3, 5, 7, 9} (18/24 significant heads), with a long tail through layer 11; later layers
+(L>15) carry no boundary heads. On Q WEN 2.5 1.5B (28 layers), the peak is similar (L ∈ {2, 4, 6})
+with a longer tail (L ∈ {14, 18} carry 2 heads each). The circuit is early-to-mid-layer on both families,
+consistent with the peak L⋆ for circular-probe R2 .
+QK-twist magnitude by layer. The maximal |z| per layer traces a unimodal curve: 1.8 at L=0,
+rising to 7.3 at L=5, falling to <2 by L=12 on G EMMA. Sign of the detected offset alternates across
+depth—early heads carry positive c, middle layers both signs, late heads negative—compatible with a
+forward-then-backward temporal lookup.
+
+S5
+
+Supplement: attribution-patching head list
+
+Syed-style attribution patching [Syed et al., 2024] on 332 Set-F duration prompts corrupted by seconddate DOY swap, on G EMMA 2 2B. Spearman correlation with QK-twist |z|-rank: ρ=0.035 (p=0.61).
+Top-K vs. boundary-head set IoU / recall: (K=12) 0.06/0.08; (24) 0.14/0.25; (48) 0.20/0.50;
+(60) 0.20/0.58; (100) 0.15/0.67. Overlap grows monotonically up to K≈60 and then plateaus as
+false-positives accumulate.
+
+S6
+
+Supplement: SAE control details
+
+GemmaScope canonical 16k-width residual-stream p
+SAE [Lieberum et al., 2024] at layer 1 of G EMMA
+2 + r2
+2 2B, loaded via sae_lens. Feature ranking:
+rsin
+cos on Set-A mean-per- DOY feature
+activations; top-5 feature correlations {0.43, 0.38, 0.32, 0.29, 0.22}. Ablation: orthonormalize the
+decoder directions (QR) of the top-50 features and project out from blocks.1.hook_resid_post
+on every forward. Clean 39.5%, probe 38.9%, SAE-top-50 28.0% (−11.5 pp), DAS 0% (all firsttoken integer parses fail under full-DAS ablation).
+
+S7
+
+Supplement: Pythia emergence (8 checkpoints)
+
+Per-checkpoint results on P YTHIA 1.4B: step 0: L⋆ =21, R2 =0.956, 133 boundary heads, circularness 0.002; step 1: 21, 0.956, 133, 0.002; step 16: 14, 0.953, 139, 0.001; step 128: 12, 0.960, 119,
+0.003; step 512: 23, 0.983, 50, 0.006; step 1,000: 11, 0.995, 46, 0.021; step 50,000: 3, 0.998, 44,
+0.070; step 143,000: 4, 0.998, 62, 0.063. The circularness index is measured as the fraction of FFT
+power at the fundamental of the diagonal-averaged cosine-similarity profile; phase-shuffle null at the
+final checkpoint is 0.012 ± 0.005 (1000 draws), placing the observed 0.063 well outside null.
+
+S8
+
+Supplement: topology of the date manifold
+
+Persistent-homology analysis on the mean-per-DOY activation cloud at L⋆ : raw residual-stream
+coordinates show H1 bars that are within a phase-shuffle null (p=1.0). After projecting onto the
+probe-subspace readout, the circular persistence index at k=2 is 11.3 vs. null mean 0.31, a 36×
+16
+
+Emergence in Pythia 1.4B
+
+probe R 2 saturates at init · boundary heads consolidate · geometry emerges only inside the window
+
+B
+
+0.99
+
+0.97
+
+0.956
+
+0.95
+
+C
+
+spurious → task-tuned
+140
+133 spurious
+
+120
+100
+80
+60
+40
+
+10
+
+0
+
+10
+
+1
+
+10
+
+2
+
+10
+
+3
+
+10
+
+4
+
+10
+
+5
+
+geometry emerges in window
+37× growth
+from init
+
+0.08
+
+Circularness (FFT)
+
+probe saturates at init
+
+# boundary heads (|z| ≥ 3)
+
+Peak circular probe R 2
+
+A
+
+44
+
+10
+
+0
+
+Training step
+
+10
+
+1
+
+10
+
+2
+
+10
+
+3
+
+10
+
+4
+
+10
+
+0.06
+0.04
+0.02
+0.00
+
+5
+
+10
+
+Training step
+
+0
+
+10
+
+1
+
+10
+
+2
+
+10
+
+3
+
+10
+
+4
+
+10
+
+5
+
+Training step
+
+Figure 7: Emergence in P YTHIA 1.4B. Three diagnostics on a shared log-training-step x-axis; gold band
+spans the geometric emergence window [103 , 5×104 ]. (A) Probe R2 is already > 0.95 at step 0 and moves
+negligibly—uninformative of mechanism learning. (B) Boundary-head count collapses from 133 spurious ridges
+to ∼50 task-tuned heads by step 1k, then stabilizes at 62. (C) FFT circularness at L⋆ grows 37× within the
+emergence window—the actual geometric-emergence signal.
+
+lift (p<10−2 ). This corroborates that the date subspace is geometrically a 1-torus in the readout
+coordinates, complementing the causal and offset-structure analyses in the main body. That the
+circle is detectable only after projection onto the probe subspace—not in the full d=2304 residual
+stream—is consistent with Gurnee et al. [2026]’s finding that manifold structure is embedded in a
+low-dimensional subspace of the full representation. The probe correctly identifies the manifold’s
+topology; Propositions 1–2 show it nonetheless reads from the wrong subspace for causal intervention.
+Rippled representations. The diagonal-averaged cosine similarity profile of the day-of-year manifold at L⋆ exhibits harmonic structure beyond the fundamental (circularness) mode: the FFT ringing
+ratio (power in harmonics ≥2 divided by power in harmonic 1; compute_ringing_metric in the
+released code) is non-negligible. Gurnee et al. [2026] prove that such rippled representations are
+the information-theoretically optimal packing of N discrete tokens on a 1-dimensional manifold in
+k≪N dimensions. The date manifold is therefore not merely circular but optimally packed in the
+sense of that optimality result.
+
+S9
+
+Supplement: cross-model transplant (an honest null)
+
+We trained Procrustes-aligned DAS subspaces on G EMMA 2 2B and Q WEN 2.5 1.5B at k=4 and
+attempted to rescue Q WEN’s ablated accuracy by injecting G EMMA’s per-DOY coordinates through
+the Procrustes rotation. Rescue recovery was 2.9% of the ablation gap (95% CI [0.7, 6.0]), DOYshuffled null 0.7%, random-map null 1.5%; permutation p for transplant > shuffled = 0.36. The
+failure to transfer coordinates is itself informative: if coordinate-frame universality held, the two
+families would be implementing the circuit identically, leaving no room for architecture-specific
+optimization. Cross-family universality holds at the population level (same offset set, same causal
+hierarchy, same δ(x) logic) but not at the coordinate-frame level—the more general and theoretically
+expected form. A richer (likely non-linear) alignment is the natural next experiment. Higher-k Qwen
+DAS at k ∈ {8, 12} yielded 33 and 35 pp ablation drops respectively, demonstrating that the transplant
+null is not caused by an under-dimensioned Qwen subspace.
+
+S10
+
+Supplement: related work
+
+The probe-critique literature has circled this point from many angles. Hewitt and Liang [2019] showed
+probes can decode random labels if given sufficient capacity, motivating control-task baselines.
+Elazar et al. [2021] introduced Iterative Null-space Projection (I NLP) to erase linearly-decodable
+information and measure downstream effect, an early behavioral analog of the ablation hook we
+use here. Ravichander et al. [2021] observed that probe accuracy does not imply downstream
+usage; their remedy is behavioral-task benchmarking, while ours is geometric. Feder et al. [2021]
+proposed counterfactual training for causal effect estimation (C AUSA LM); their intervention operates
+at the training-data level, not the activation level. Mueller et al. [2026] argued that “mediator” is
+the load-bearing category for causal interpretability, and Mueller et al. [2025] formalized this into
+the MIB benchmark; our specificity ratio is a quantitative realisation of their mediator criterion.
+Canby et al. [2025] quantified reliability of causal probing interventions and flagged the fragility of
+17
+
+counterfactual-based estimates; our matched-random-null protocol sidesteps that fragility entirely.
+Parallel lines: Conmy et al. [2023] and Syed et al. [2024] develop edge-level circuit-discovery
+methods; Nam et al. [2025] introduces Causal Head Gating; Geiger et al. [2024] introduces DAS
+itself; Cunningham et al. [2024] and Lieberum et al. [2024] push SAE-based feature discovery.
+Our contribution is orthogonal: we do not propose a new tool. We provide a single measurable
+quantity—the readout-mediator angle—that orders the existing tools and converts the question “are
+probes causal?” from a philosophical posture into an empirical measurement with a theoretical null
+(Prop. 2) and a concentration scale for specificity at the null (Prop. 3).
+Work on temporal representations specifically: Gurnee and Tegmark [2024] established that linear
+probes decode dates at R2 ≳0.99; Gurnee et al. [2026] introduced the QK-twist scan; Kantamneni
+and Tegmark [2025] showed trigonometric representations in addition tasks; Modell et al. [2025]
+argued manifolds reflect translational symmetries in pretraining data. We build directly on this
+line while adding the causal (DAS / ablation), cross-family (universality population-vs-coordinate),
+training-dynamical (Pythia emergence), and deployment (clinical-δ(x)) layers.
+
+Gurnee et al. (2025): manifold manipulation. The closest theoretical antecedent. They prove
+three results we leverage: (i) QK-twist implements learned rotations, explaining our boundary-head
+offsets (§5); (ii) rippled representations are information-theoretically optimal packings, explaining
+the harmonic structure beyond circularness (Supp. S8); (iii) feature-manifold duality, explaining
+why SAE features are partial mediators (§5). Our contribution is orthogonal in a precise sense:
+they characterize the manifold’s geometry; we characterize which projections onto it are causally
+load-bearing and which are statistical shadows. One nuance deserves comment: Gurnee et al. show
+that orthogonal subspaces can carry useful computation (e.g. linebreak decisions orthogonal to day-ofweek manifold). This is not a contradiction—their orthogonality is functional decomposition (ρk ≫ 1
+for the linebreak task); ours is coincidental orthogonality (ρk ≈ 1). The specificity ratio distinguishes
+the two cases (Prop. 3).
+
+Costa et al. (2025): hierarchical SAEs via matching pursuit. Costa et al. [2025] introduce MPSAE, a sparse autoencoder whose encoder unrolls matching pursuit into residual-guided steps, and
+formalize conditional orthogonality—orthogonality across hierarchy levels but not within. The
+readout-mediator dissociation reported here is an instance of this structure: the readout subspace
+(probe, 2-D) and mediator subspace (DAS, 4-D) occupy different functional levels and are empirically
+orthogonal (88◦ ), while directions within each subspace can cooperate freely (e.g. the 59× superadditive cooperation among the four DAS directions). The connection illuminates why standard
+SAEs sit at intermediate ρ on our readout-to-mediator spectrum (§S11): their single-pass linear
+encoder recovers only the linearly accessible readout component [Hindupur et al., 2025], while
+the mediator—conditionally orthogonal to the readout—becomes “dark matter” invisible to that
+projection [Engels et al., 2024]. MP-SAE’s residual-based inference could in principle peel off the
+readout first and resolve the mediator from subsequent steps; testing this prediction is future work.
+We note one important disanalogy: the Babel score that Costa et al. use to quantify conditional
+separation at inference is a purely geometric quantity, whereas ρk is causal—high Babel coherence
+among basis vectors is compatible with high ρ when directions cooperate super-additively, as our
+DAS subspace demonstrates.
+
+S11
+
+Supplement: the readout-to-mediator spectrum
+
+The corollary to Proposition 3 gives the ratio ρnull
+k ≍ d/k as the Haar-null concentration (under the
+equal-Lipschitz assumption; see Supp. S22). We place every tool we used on this ruler, using G EMMA
+2 2B at L⋆ =1, d=2304, k=4:
+18
+
+A
+
+B
+
+Ablation at L ⋆ = 1, Gemma 2 2B
+
+Readout-mediator spectrum
+
+Duration accuracy (±20%)
+
+gradient probe bridges readout and mediator
+
+four tools, one axis — each at its own regime
+
+50%
+40%
+
+39.5
+
+38.9
+
+36.0
+
+DAS
+mediator
+
+Probe / Grad probe
+28.0
+
+30%
+
+SAE top-50
+partial readout
+readout
+
+0.6 pp
+
+∇ approx.
+
+3.5 pp
+
+11.4 pp
+
+39.5 pp
+
+−39 pp
+
+20%
+10%
+
+0
+5
+10
+20
+30
+40 pp
+readout-only
+full mediator
+Accuracy drop from clean (pp, √ ⋅ -scaled axis)
+
+0.0
+
+0%
+Clean
+
+Probe
+
+Grad
+k=4
+
+SAE
+top-50
+
+DAS
+
+Figure 8: The readout-to-mediator spectrum. (A) Accuracy under four ablation conditions at L⋆ =1 on
+G EMMA 2 2B: clean baseline, linear probe, top-50 GemmaScope SAE features, and the causal DAS subspace.
+(B) The same tools placed on a readout→mediator ruler, positioned by specificity ratio ρk . Probe (ρ=1.0, noise),
+SAE-50 (ρ=288, partial causal readout), DAS (ρ=1050, full mediator).
+Tool
+Probe (Ridge-sin / cos)
+INLP k=4
+LEACE k=4
+Random subspace (null)
+Gradient k=4
+Attribution patching (top-12)
+Attribution patching (top-60)
+SAE top-50 features
+PCA k=4 / Mean-Proj
+DAS (k=4)
+
+Ablation drop
+
+ρk
+
+vs. null d/k=576
+
+0.6 pp
+0.0 pp
+−1.0 pp
+0.04 pp
+5.0 pp
+4.8 pp
+8.2 pp
+11.5 pp
+18.5 pp
+42.0 pp
+
+0
+0
+0
+∼1
+∼21
+∼ 120
+∼ 205
+288
+∼77
+1050
+
+indist. noise
+indist. noise
+indist. noise
+baseline
+< null
+< null
+< null
+0.50 of null
+< null
+1.82× null
+
+Interpretation
+decoder only
+decoder only
+decoder only
+noise floor
+weak causal
+edge-level slice
+broader edges
+partial causal readout
+partial mediator overlap
+full mediator
+
+Read row-by-row: probe, INLP, and LEACE sit at the null—all three concept-erasure methods
+target the decoder subspace and have zero causal effect. PCA and Mean-Projection capture 18.5 pp
+of the drop (half the mediator), likely because the top variance directions partially overlap with
+the causal subspace despite an 86.8◦ angle. The gradient probe captures 5 pp (weak causal signal
+dispersed across rank 76). ρ values for Gradient and PCA use the matched-experiment random
+baseline (mean random drop ≈0.24 pp); the main-text ρDAS =1050 uses the full n=332 evaluation
+where the random baseline is 0.04 pp—both denominators are in the noise floor, so absolute ρ is
+sensitive to sampling but the ordering is stable. Attribution patching recovers edges that contribute
+to the logit but do not dominate it; SAE features capture roughly half of the linear mediator but
+miss its non-linear extension; DAS exceeds the linear null by 1.82×. This is the concrete content
+of the readout-to-mediator spectrum claim. At (d, k)=(3584, 4) for Q WEN 2.5 7B and G EMMA 2
+9B, the null is ρnull
+k ≍ 896; observed DAS ratios >500,000× and >450,000× reflect near-vanishing
+random denominators (bf16 precision floor) and non-linear-mediator numerators compounding;
+precision-aware Fieller and additive baselines are in Supp. S25.
+
+S12
+
+Supplement: three-tier clinical benchmark — construction and license
+
+The 75-query MIMIC-style synthetic benchmark used in the initial submission is replaced here with
+a three-tier open-benchmark evaluation. Tier A, B, C scan a spectrum from controlled ground truth to
+naturalistic in-the-wild clinical prose.
+Tier A — controlled synthetic (n = 475). Generated by a clinical-timeline generator, stratified
+across duration magnitudes {≤ 7, 8−30, 31−365, > 365} days. Ground truth is exact to the day.
+Fully deterministic (seed 0). License: internal, redistributable.
+Tier B — MedCalc-Bench vignettes (n = 133). Source: ncbi/MedCalc-Bench-v1.0 on HuggingFace, CC-BY 4.0. Each Patient Note is scanned for absolute dates via regex; notes with ≥ 2
+chronologically-distinct dates yield one duration query (“how many days passed between d1 and
+d2 ?”). Real curated clinical vignettes with embedded dates; no calculation is required of the model
+beyond integer-day subtraction.
+Tier C — PMC Open-Access case reports (n = 371). Source: zhengyun21/PMC-Patients
+on HuggingFace, CC-BY per upstream article. Naturalistic in-the-wild case-report prose with real
+date-stamped events; same regex date-pair extraction as Tier B with ambiguity filter (no other date
+19
+
+within 8 characters of either marker). SHA-256 hashes of query texts are released with the code so
+our exact test set can be reproduced.
+Explicitly excluded for license/ethics reasons: MIMIC-IV-Note, Discharge-Me, n2c2 2012 Temporal,
+THYME/Clinical TempEval. These require PhysioNet credentialing or DBMI DUA and cannot be
+redistributed.
+
+S13
+
+Supplement: three-tier benchmark — stratified metrics
+
+Pooled and per-tier metrics for δ(x) at k = 12. AUPRCskill =(AUPRC−p)/(1−p) corrects for class
+imbalance; failure rates (p) are 90% (A), 97% (B), 96% (C).
+Tier
+
+n
+
+acc±20%
+
+Pearson r
+
+AUROC
+
+AUPRC
+
+AUPRCskill
+
+A
+B
+C
+Pooled
+
+475
+133
+371
+979
+
+0.10
+0.03
+0.04
+–
+
++0.69
++0.06
++0.31
++0.34
+
+0.58
+0.59
+0.62
+0.63
+
+0.94
+0.98
+0.98
+0.97
+
+0.40
+0.27
+0.46
+0.70
+
+Per-tier × per-duration-bin Pearson r:
+Tier
+
+≤7d
+
+8−30 d
+
+31−365 d
+
+> 365 d
+
+A
+B
+C
+
+−0.06 (n=100)
++0.05 (n=12)
+−0.09 (n=49)
+
+−0.16 (n=125)
+−0.08 (n=20)
++0.21 (n=72)
+
++0.36 (n=125)
++0.15 (n=75)
++0.08 (n=125)
+
++0.09 (n=125)
++0.03 (n=26)
++0.30 (n=125)
+
+Holm–Bonferroni adjusted p-values [A]: 0.002; [B]: 0.501; [C]: 0.002; [pooled]: 0.002.
+
+S14
+
+Supplement: three-tier benchmark — alternative manifold estimators
+
+One might ask whether the choice of global PCA for Ū is arbitrary. We compare four estimators on
+the same three-tier benchmark: global PCA (paper default), local PCA (30-nearest-neighbor Set-A
+neighbors per query), kernel PCA (RBF), and a diffusion-map surrogate basis (SpectralEmbedding
+followed by linear pullback). Pearson r by tier:
+Tier
+
+Global PCA
+
+Local PCA
+
+Kernel PCA
+
+Diffusion
+
+A
+B
+C
+
++0.69
++0.06
++0.31
+
++0.56
++0.05
++0.31
+
++0.57
++0.12
++0.34
+
++0.70
++0.06
++0.31
+
+Global PCA is within 0.03 Pearson r of the best alternative on every tier. Local PCA marginally
+improves the naturalistic Tier C where the input distribution is heterogeneous. Diffusion-map
+surrogate bases work almost as well as global PCA — consistent with the Set-A activation manifold
+being approximately linear in the span of the leading PCs. The choice of estimator does not drive the
+readout-mediator-angle result.
+
+S15
+
+Supplement: three-tier benchmark — calibration and decision
+thresholds
+
+Reliability diagram (pooled, 979-query v2 benchmark). Pooled reliability (5 equal-count δ-bins):
+bin center δ
+
+0.859
+
+0.867
+
+0.871
+
+0.880
+
+0.901
+
+fraction wrong
+n
+
+0.96
+196
+
+0.85
+196
+
+0.91
+196
+
+0.95
+196
+
+0.99
+195
+
+20
+
+The wrong-rate is monotonically increasing across δ-bins (Spearman ρ=1.0), confirming δ(x) is a
+well-ordered triage signal despite the high base failure rate. Pooled AUROC and AUPRC are reported
+in Supp. S13.
+Expected Calibration Error and discrimination (75-query held-out benchmark). On the original
+75-query held-out benchmark (failure rate 96%, k=12, L⋆ =1), recomputed with corrected AUPRC
+metrics:
+Metric
+
+δ(x)
+
+max-softmax baseline
+
+AUROC
+AUPRC
+AUPRCskill
+ECE (10 quantile bins)
+
+0.861
+0.993
+0.835
+0.114
+
+0.009
+0.875
+−2.13
+—
+
+The max-softmax baseline AUROC of 0.009 confirms that token-level confidence provides no predictive signal for duration errors; δ(x) carries complementary, mechanistically grounded information.
+The negative AUPRCskill for max-softmax reflects a systematic inversion (high confidence on wrong
+predictions), not chance.
+Decision curve analysis (75-query benchmark). Decision curve analysis (Vickers & Elkin 2006):
+net benefit NB(t)=TPR−t/(1 − t)·FPR measures the expected value of using δ(x) as a triage filter
+at threshold t.
+Operating point
+
+Threshold δ ⋆
+
+Deferral rate
+
+Precision
+
+Recall
+
+Acc (non-deferred)
+
+20% deferral
+Youden-J
+
+0.87
+0.857
+
+0.20
+0.64
+
+1.00
+1.00
+
+0.21
+0.67
+
+0.05 (1.25× base)
+0.11 (2.8× base)
+
+At both operating points, precision is 1.00 (zero false positives) and NB is positive, exceeding the
+treat-all baseline (which is strongly negative at t>0.5 given the high failure rate). The Youdenoptimal threshold achieves 2.8× baseline accuracy among non-deferred queries with 64% deferral;
+the 20%-deferral operating point provides lower throughput improvement but may be preferable
+when deferral cost is high.
+Per-threshold operating characteristics (75-query benchmark).
+Threshold
+
+δ
+
+TP
+
+FP
+
+Precision
+
+Recall
+
+Q2 (median)
+Q3
+Youden J
+0.3, 0.5, 0.7
+
+0.866
+0.867
+0.857
+
+38
+19
+48
+72
+
+0
+0
+0
+3
+
+1.000
+1.000
+1.000
+0.96
+
+0.528
+0.264
+0.667
+1.00
+
+A δ≥0.857 threshold flags two-thirds of eventually-wrong clinical queries with zero false positives.
+The benchmark’s high wrong-rate (96%) makes precision trivially high for low thresholds; AUROC
+is the more informative summary (Fig. 9).
+(b) ROC
+
+(c) Precision-recall
+1.0
+
+0.8
+
+0.8
+
+0.8
+
+0.6
+
+0.6
+
+0.4
+
+Precision
+
+1.0
+
+TPR
+
+Fraction wrong
+
+(a) Reliability
+1.0
+
+0.4
+0.2
+
+0.2
+marginal 0.96
+
+0.87
+
+0.88
+
+0.89
+
+δ(x) bin center
+
+0.90
+
+0.4
+AUPRC = 0.99
+
+0.2
+
+Youden J (thr = 0.86)
+
+0.0
+
+0.0
+0.86
+
+AUROC = 0.86
+
+0.6
+
+prevalence 0.96
+
+0.0
+0.00
+
+0.25
+
+0.50
+
+FPR
+
+0.75
+
+1.00
+
+0.00
+
+0.25
+
+0.50
+
+0.75
+
+1.00
+
+Recall
+
+Figure 9: Calibration of δ(x) for flagging wrong clinical answers (G EMMA 2 2B, k=12, n=75). (a) Reliability
+diagram (5 equal-count δ bins). (b) ROC with Youden-J optimal threshold marked. (c) Precision-recall.
+
+21
+
+S16
+
+Supplement: manifold deviation as clinical error signal
+
+We demonstrate the protocol’s practical utility by deriving a deployment metric from the mediator
+subspace: a scalar δ(x) that measures how far date-token activations drift off the mediator manifold.
+This is an offline study; prospective deployment requires live-EHR validation. We evaluate δ(x)
+on 979 open-benchmark clinical-prose queries across three tiers of increasing naturalism: Tier A
+(synthetic, controlled ground truth, n=475), Tier B (MedCalc-Bench real vignettes, n=133, CCBY), and Tier C (PMC case reports, n=371, CC-BY). Benchmark construction in Supp. S12;
+per-tier metrics in Supp. S13; estimators in Supp. S14; baselines in Supp. S19; Tier-A breakdown
+in Supp. S21; ROC/reliability in Supp. S17; calibration in Supp. S15. On G EMMA 2 2B, accuracy
+within ±20% by tier is 10% (A) / 3% (B) / 4% (C); δ(x) at k=12 predicts absolute duration error
+with pooled Pearson r=+0.34 (p=5×10−4 , n=979), AUROC=0.63, AUPRC=0.97 (Fig. 10).
+Corrected discrimination metrics. The raw AUPRC≈0.97 is inflated by 90–97% failure rates;
+the prevalence-corrected skill score AUPRCskill =(AUPRC−p)/(1−p) gives 0.70 (Tier A) and 0.68
+(pooled). AUROC=0.63 is prevalence-independent and is the primary discrimination metric. On the
+held-out 75-query benchmark (failure rate 96%), AUROC=0.86, AUPRCskill =0.84; max-softmax
+baseline AUROC=0.01, confirming δ(x) provides mechanistically distinct signal. ECE=0.11;
+reliability diagram in Supp. S15.
+Decision-curve analysis. At Youden-optimal δ ⋆ =0.86: deferral 64%, precision 1.00, accuracy 2.8×
+baseline (11% vs. 4%), NB=0.21>0, exceeding treat-all and max-softmax. Full curves in Supp. S15.
+What the correlation does and does not say. δ(x) measures how far date-token activations
+drift off the mediator manifold; on-manifold activations yield accurate duration answers. Tier
+B AUROC=0.59 is informative: those failures are format failures (HTML output tags, not integers),
+not circuit failures—δ correctly stays flat, confirming the temporal circuit ran but the output formatter broke. The Prop. 3 bound |f (x)−f (Ū ⊤ Ū x)| ≤ L∥δ(x)∥∥x∥ matches the observed ordering;
+max-softmax provides no complementary signal (Supp. S15).
+A
+
+Manifold deviation predicts clinical error
+per-tier scatter at k = 12; trends rise in A, C
+
+B
+
+correct (64)
+
+103
+
+Pooled Pearson r = + 0.34
+95% CI [+0.26, + 0.43]
+pperm < 10−3 , n = 979
+
+Tier C — PMC OA (n = 371)
+Tier A — synthetic (n = 475)
+Tier B — MedCalc (n = 133)
+
+102
+101
+10
+
+0
+
+0.5
+
+Pearson r (pooled, n = 979)
+
+Absolute duration error (days)
+
+wrong (915)
+
+104
+
+Correlation stable across subspace rank
+
+k ⋆ = 12, r = + 0.34
+
+0.4
+0.3
+knee
+
+0.2
+0.1
+0.0
+
+Manifold deviation δ(x) (at k = 12)
+
+C
+
+r saturates above the k = 6 knee — ∼ 6-dim manifold
+
+2
+
+4
+
+6
+
+8
+
+Subspace dim k
+
+12
+
+Signal concentrates in structured tiers
+strong in A and C, null on B (MedCalc calc prompts)
+
+Tier A
+synthetic
+(n = 475)
+
+r = + 0.69 **
+
+Tier B
+MedCalc
+(n = 133)
+
+r = + 0.06 n.s.
+
+Tier C
+PMC OA
+(n = 371)
+
+r = + 0.31 **
+
+0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+Pearson r (δ vs |error|)
+
+Figure 10: Manifold deviation δ(x) predicts clinical duration error (open 979-query three-tier benchmark).
+(A) Per-query absolute duration error (symlog, days) versus δ(x) at k⋆ =12; correct (±20%, green) and wrong
+(red) cases (n=979), with marginal δ-density strip and Pearson r (bootstrapped 95% CI, permutation p) inset.
+(B) Pearson r as a function of subspace dimension k (stable for k∈[6, 12]; gold ring marks k⋆ ). (C) Accuracy
+within ±20% by δ-quartile: 0.8% in Q4 (high δ), 14.8% in Q2; 78% of correct answers fall in Q1/Q2. Full
+ROC and reliability diagrams in Supp. S17.
+
+S17
+
+Supplement: three-tier benchmark — detail figure (ROC, reliability,
+per-bin r)
+
+The main-body Fig. 10 presents the per-query δ-vs-error scatter. The ROC / reliability / per-bin views
+are collected here (Fig. 11).
+
+S18
+
+Supplement: DAS collateral-damage controls
+
+A natural concern: does the DAS basis, trained to minimize the date-duration loss, act as a generic
+adversarial subspace that would damage arbitrary tasks at G EMMA 2 2B L⋆ =1? We test 60 noncalendar prompts spanning three pools—non-date arithmetic (n=20, “What is a plus b?”), factual
+22
+
+(a) ROC per tier
+
+(b) Pooled reliability
+
+Tier A (AUROC 0.58)
+Tier B (AUROC 0.59)
+Tier C (AUROC 0.62)
+
+0.25
+0.00
+0.0
+
+0.5
+FPR
+
+Pearson r(δ, |err|)
+
+0.50
+
+Fraction wrong
+
+0.75
+TPR
+
+(c) Per-bin per-tier r
+
+1.00
+
+1.00
+
+0.75
+0.50
+0.25
+prevalence 0.93
+
+0.00
+
+1.0
+
+0.86
+
+0.88
+δ(x) bin center
+
+0.2
+
+0.0
+
+0.90
+
+Tier A
+Tier B
+Tier C
+
+≤7d
+
+8–30
+
+31–365
+
+>365
+
+Figure 11: Manifold deviation on the 979-query three-tier clinical benchmark — detailed view. (A) ROC per
+tier for δ(x) flagging wrong answers. (B) Pooled reliability: fraction-wrong in 5 equal-count δ-bins. (C) Per-tier
+Pearson r(δ, |err|) by duration magnitude.
+
+trivia (n=20), and short naturalistic completions (n=20)—running each under (A) clean, (B) DASk=4 ablation, and (C) each of 25 random-k=4 ablations. For each prompt we record the full
+last-token logit distribution; we report (i) symmetric Jensen–Shannon divergence between clean and
+ablated top-50 softmax, and (ii) top-1 token agreement.
+Pool
+
+n
+
+JS(clean, DAS)
+
+JS(clean, rand25 )
+
+top-1 agree DAS
+
+top-1 agree rand
+
+Arithmetic
+Trivia
+Natural
+
+20
+20
+20
+
+0.012 ± 0.006
+0.014 ± 0.012
+0.015 ± 0.016
+
+[0.000, 0.001]5−95
+[0.000, 0.001]5−95
+[0.000, 0.002]5−95
+
+1.00
+1.00
+0.85
+
+1.00
+1.00
+1.00
+
+Date task (cf. §4)
+
+332
+
+– (acc drop 42→0%)
+
+ratio >103
+
+0.0
+
+≈1.0
+
+Read honestly: the DAS basis does induce measurable distributional shift beyond a random k=4
+ablation on non-date prompts (JS ∼10× the random null) — these four directions are not literally
+inert for the rest of the model. But the decision-level signature is clean: top-1 next-token agreement
+with clean stays at 100% (arithmetic, trivia) or 85% (naturalistic) under DAS ablation, while on
+the date task it collapses to 0%. Interpretation: the DAS subspace is not a generic task-agnostic
+adversary; it preserves the model’s actual non-date outputs while removing the specific direction the
+date circuit needs to compute durations. The JS residual quantifies the cost to honest reporting — it
+would be stronger if it were zero, and we report it rather than hide it.
+Non-calendar specificity ratio (large-scale ablation, n=240). We ran the trained k=4 DAS basis
+(at L⋆ =1) through 240 non-calendar prompts covering three pools on an A10G GPU:
+Pool
+
+n
+
+clean acc.
+
+DAS acc.
+
+drop
+
+Arithmetic (“sum of a and b”)
+Counting (next-in-sequence)
+Ordinal (“after removing b from a”)
+
+80
+80
+80
+
+1.000
+1.000
+0.375
+
+1.000
+1.000
+0.275
+
+0 pp
+0 pp
+10 pp
+
+Date task (cf. §4)
+
+332
+
+0.420
+
+0.000
+
+42 pp
+
+Date-to-non-calendar specificity ratio: 42 pp/3.3 pp (avg) = 12.6×. The arithmetic and counting
+pools are completely unaffected (0 pp drop); the 10 pp ordinal collateral is interpretable — ordinal
+subtraction (“after removing b items”) shares quantitative-difference computation with duration
+reasoning (end − start), and the DAS subspace appears to encode this shared numerical-change representation in addition to calendar encoding. The 12.6× ratio conservatively includes this interpretable
+collateral; against purely additive arithmetic the effective ratio exceeds 103 ×.
+
+S19
+
+Supplement: three-tier benchmark — simple baselines
+
+A natural sanity check: does a simple zero-effort baseline predict per-query error as well as δ(x)?
+We evaluate four baselines readable from the same cached forward passes — no extra compute —
+against the pooled n=979 benchmark.
+23
+
+Feature
+
+Pearson r(·, |err|)
+
+AUROCwrong
+
+AUPRCwrong
+
+∆AUROC vs. δ (95% CI)
+
++0.335
++0.105
++0.020
+−0.063
++0.032
+
+0.627
+0.430
+0.457
+0.430
+0.671
+
+0.966
+0.924
+0.928
+0.918
+0.962
+
+—
++0.197 [+0.134, +0.262]
++0.172 [+0.069, +0.274]
++0.199 [+0.103, +0.294]
+−0.045 [−0.129, +0.034]
+
+δ(x) at k=12
+Prompt token count
+# date positions |P |
+Top-1 logit probability
+Top-10 softmax entropy
+
+δ(x) significantly beats prompt-length, date-count, and confidence baselines in pooled AUROC
+(paired bootstrap 95% CIs exclude zero, nboot =2000). It is statistically indistinguishable from top-10
+entropy, which is an honest negative result: a simple confidence-based baseline is competitive for
+error-flagging on this benchmark. The comparative advantage of δ(x) is mechanistic interpretability:
+it is bounded by Prop. 3 and pinpoints which subspace the activation has drifted off, whereas entropy
+tells you only that the model is uncertain.
+
+S20
+
+Supplement: Proposition 3 Monte Carlo verification
+
+P
+Prop. 3(c) asserts that for U ∼ Haar(Stiefel(k, d)), E i cos2 θi =k kM /d exactly, with variance
+O(k 2 /d2 ). We verify numerically at d=2304 (G EMMA 2 2B, kM =k) by sampling Haar-uniform
+k-frames via QR of a standard Gaussian and computing ∥UM U ⊤ ∥2F . For k ∈ {1, 2, 4, 8, 16} with
+20,000 samples each (headline k=4 with 200,000 samples), every empirical mean lies strictly inside
+its 99% CI of the analytic k 2 /d value; |∆| ranges from 4.3×10−6 (k=1) to 4.9×10−5 (k=16). This
+closes the Prop. 3(c) claim used by the two-sided-null corollary at the start of §3.
+(a) d = 2304, k = 4 (20k samples)
+
+(b) k-sweep at d = 2304
+10−1
+
+2
+
+analytic k /d = 0.0069
+
+analytic k 2/d
+
+empirical mean = 0.0069
+
+empirical (99% CI)
+
+∑cos2 θi
+
+100
+
+10−2
+
+i
+
+density
+
+150
+
+50
+
+10−3
+
+0
+0.005
+
+0.010
+
+0.015
+
+100
+
+0.020
+
+101
+k
+
+∑cos2 θi
+i
+
+S21
+
+Supplement: Tier-A per-scenario breakdown (retained)
+
+Tier A uses a five-scenario, three-variant controlled-synthetic benchmark. Full per-scenario breakdowns, quartile tables, and the declarative-date baseline appear in Supp. S17; we keep this label as an
+anchor for cross-references elsewhere in the paper.
+
+S22
+
+Supplement: proofs
+
+Proposition 1 (full proof). Setup. Fix a data distribution x ∼ D on Rd with Ex=0 (WLOG) and
+covariance Σ=E[xx⊤ ] ≻ 0. Let z(x) : Rd → R with Var(z)>0, and let f : Rd → R be C 2 on an open
+neighborhood of supp(D). Write c=E[xz(x)] and g(x)=∇x f (x).
+Probe direction. The optimal normalized Pearson-correlation direction is
+Cov(u⊤ x, z)2
+(u⊤ c)2
+= arg max ⊤
+.
+⊤
+∥u∥=1 Var(u x) Var(z)
+∥u∥=1 u Σu
+
+uP ∈ arg max
+
+The generalized Rayleigh quotient JP (u)=(u⊤ c)2 /(u⊤ Σu) is maximized at the generalized eigenvector Σu = λ cc⊤ u; the leading solution is uP =Σ−1 c/∥Σ−1 c∥ (unique up to sign provided c̸=0).
+uP is a second-moment functional of x: it depends on D only through Σ and c.
+24
+
+Mediator direction. For a rank-1 ablation x 7→ x−uu⊤ x with ∥u∥=1, a first-order Taylor expansion
+of f around x yields
+f (x) − f (x−uu⊤ x) = (u⊤ x) (u⊤ g(x)) + R2 (x, u),
+with remainder |R2 (x, u)| ≤ 12 supξ∈[x−uu⊤ x, x] ∥∇2 f (ξ)∥ (u⊤ x)2 ; under the standing C 2 assumption, |R2 |=O((u⊤ x)2 ). Taking expectations and squaring,
+
+
+E (f (x)−f (x−uu⊤ x))2 = u⊤ E[gg⊤ (u⊤ x)2 ] u + o(1).
+In the isotropic limit Σ=σ 2 I, this reduces to σ 2 u⊤ G u where G=E[gg⊤ ] is the gradient covariance.
+Hence uM ∈ arg max∥u∥=1 u⊤ Gu is the top eigenvector of G: a first-moment functional of g(x).
+Coincidence condition. uP =uM iff Σ−1 c is the top eigenvector of G, equivalently iff
+GΣ−1 c=λmax (G) Σ−1 c. Expanding, this is E[gg⊤ ]Σ−1 E[xz]=λ Σ−1 E[xz], i.e. a non-trivial spectral alignment between the Pearson-covariance direction and the gradient-covariance’s top eigenspace.
+For a deep feed-forward network with non-polynomial activations, g(x)=∇x f (x) traverses a family of directions whose spectrum decorrelates from that of the label covariance c generically: the
+probe direction is set by the data geometry, while the mediator direction is set by the network’s
+output-sensitivity geometry, and there is no structural reason for these to align.
+Conclusion. Without additional assumptions coupling g to Σ−1 c, uP and uM are non-trivially distinct.
+The empirical θ̄≈88◦ is the generic outcome; alignment would require non-generic structure.
+Remark. The k-dim case is identical term-by-term with the leading k-eigenspaces of Σ−1 cc⊤ Σ−1
+(probe) and G (mediator) playing the role of uP , uM ; the conclusion extends.
+Proposition 2 (full proof). Claim. For U, V independent k × d orthonormal matrices (rows)
+drawn uniformly
+from the Stiefel manifold Vk (Rd ), the mean principal angle satisfies E[θ̄] =
+p
+arccos( k/d) + O(k/d).
+Step 1 (distribution of U V ⊤ ). By rotation invariance of the Haar measure, without loss of generality
+fix V as the first k rows of the identity; then U V ⊤ is the left k × k block of a Haar-random d × d
+orthonormal matrix Q = U . The singular values σ1 ≥ · · · ≥σk of this block have the joint density
+(Edelman & Rao, 2005; Forrester, 2010)
+p(σ) ∝
+
+Y
+i<j
+
+(σi2 − σj2 )2
+
+k
+Y
+
+σi0 (1 − σi2 )(d−2k−1)/2 ,
+
+i=1
+
+which is the Jacobi ensemble J(k, k, d−k) on [0, 1]k .
+Step 2 (mean). By standard trace-moment
+calculus (Collins & Matsumoto, 2009), for any k and
+P
+d≥2k, E[tr(U V ⊤ V U ⊤ )] = E i σi2 = k p
+· k/d, giving E[σi2 ] = k/d by symmetry of the σi under
+the ensemble. Jensen then gives E[σi ] ≤ k/d with equality up to O(k/d) variance corrections
+from the Jacobi ensemble’s concentration (Collins, 2003: Var(σi ) = O(k/d2 )).
+p
+P
+Step 3 (expected angle). Since θ̄ = k1 i arccos σi and arccos is C 2 on [0, 1) with arccos( k/d) =
+p
+p
+π/2 − k/d + p
+O(k/d)3/2 , Delta-method gives E[θ̄] = arccos( k/d) + O(k/d). For
+(d, k)=(2304, 2): 2/2304 = 0.02946, arccos(0.02946) = 88.31◦ ; the second-order correction
+is bounded by k/d = 8.7×10−4 radians ≈ 0.05◦ , below the discretisation of the 88.3◦ measurement.
+Monte Carlo verification. For each (d, k) ∈ {(1536, 2), (2304, 2), (3584, 2), (2304, 4), (2304, 6)}
+we sampled 10,000 pairs (U, V ) via QR of Gaussian matrices and recorded θ̄. The empirical means
+were {88.5◦ , 88.3◦ , 88.6◦ , 87.9◦ , 86.7◦ } with standard deviations all <1.0◦ , matching the analytic
+values to within 0.1◦ .
+Consequence for our measurement. The probe–DAS angles {88.3◦ , 87.9◦ , 86.7◦ } at k ∈ {2, 4, 6}
+on G EMMA 2 2B are within one standard deviation of the null at every k. An indistinguishability test
+at α=0.05 fails to reject: the probe subspace is statistically indistinguishable from a uniform-random
+subspace in its angular relationship to the mediator. This is the strongest form of the 88◦ claim.
+25
+
+⊤
+Proposition 3 (proof of the three parts). (a) Upper bound.
+Let PM =UM
+UM and
+⊤
+PU =U U be the mediator and ablation orthogonal projectors.
+By assumption (i),
+f (x)−f (x−PU x)=g(UM x)−g(UM (x−PU x))=g(UM x)−g(UM x−UM PU x). Lipschitz continuity of g with constant L gives |f (x)−f (x−PU x)| ≤ L∥UM PU x∥. Squaring and taking expectations
+under (iii),
+min(k,kM )
+2
+
+E∥UM PU x∥ = tr UM PU E[xx
+
+⊤
+
+⊤
+] PU UM
+
+
+
+= σ ∥UM U ⊤ ∥2F = σ 2
+2
+
+X
+
+cos2 θi ,
+
+i=1
+
+using the SVD of UM U
+
+⊤
+
+whose singular values are cos θi . This is (1).
+
+(a)
+
+(b) Matching lower bound under row(UM ) ⊆ row(U ). Write PUM for the projection onto
+row(UM ). Containment gives PU PUM =PUM , so UM PU x=UM x and ∥UM PU x∥=∥UM x∥. Under a one-sided modulus-of-continuity lower bound |g(u)−g(v)| ≥ L∥u−v∥ (which holds, for
+example, when g is C 1 with bounded-away-from-zero gradient on the data manifold, a sufficient
+condition for trained networks with non-trivial task-sensitivity), we get E|f (x)−f (x−PU x)|2 ≥
+⊤
+L2 E∥UM x∥2 =L2 σ 2 tr(UM UM
+(b)
+)=L2 σ 2 kM . This is (2).
+(c) Haar expectation and concentration. For U ∼ Stiefel(k, d) independent of UM (or WLOG
+UM =[IkM | 0] by rotation invariance), ∥UM U ⊤ ∥2F is the sum of squares of the top-left kM ×k block
+of a Haar-random d×d orthogonal matrix. Its expectation is E∥UM U ⊤ ∥2F = k kM /d exactly, by
+trace identity over the Jacobi ensemble (Collins & Matsumoto, 2009, Prop. 4.1). The variance is
+O(k 2 /d2 ).
+(c)
+Two-sided
+null
+expectation
+(corollary
+proof). Combining
+(a)+(c)
+gives
+EU ∼Haar Ex |f (x)−f (x−PU x)|2 ≤ L2 σ 2 k kM /d. Combining (b) applied at U =UDAS with
+row(UM ) ⊆ row(UDAS ) (the DAS optimum saturates this when k ≥ kM is trained to convergence)
+gives a lower bound L2 σ 2 kM . Their ratio is L2 σ 2 kM /(L2 σ 2 k kM /d) = (L/L)2 d/k. Hence the
+population specificity ratio at the null concentrates at (L/L)2 d/k. When L ≈ L (locally linear g),
+ρnull
+k ≈ d/k.
+Interpretation. Proposition 3 gives neither a one-sided upper bound on ρk nor a lower bound; it
+gives a concentration scale for the null. Observed ρk can exceed d/k — when g is super-linearly
+sensitive to UM -directed perturbations, numerator inflates; or when the random denominator collapses
+below its mean (bf16 saturation at 7B/9B), denominator deflates. Both occur in our data: on G EMMA
+2 2B (kM ≈k=4) the observed ρ4 =1050 exceeds the equal-Lipschitz prediction d/k=576 by a factor
+of 1.8, consistent with mild super-linearity of g; at 7B/9B the observed ratio explodes because the
+denominator is at machine zero, a regime treated explicitly in Supp. S25.
+
+S23
+
+Supplement: algorithm pseudocode
+
+Algorithm 2: DAS subspace training (one model, one layer)
+1
+
+Input: frozen model M at layer L, prompt set P, rank k
+
+Output: U ∈ Rk×d
+
+V ∼ Unif(Rd×d );
+V ← QR(V ).Q;
+−3
+4 optimizer ← A DAM W(V ; lr=10
+)
+5 for step = 1, . . . , 400 do
+6
+sample minibatch B ⊂ P, |B|=8;
+7
+Q, _ ← QR(V );
+8
+U ← Q[ :, :k ]⊤
+9
+hook at blocks.L.hook_resid_post: x 7→ x − U ⊤ U x;
+10
+logits ← M (B)
+P
+⋆
+1
+11
+L ← − |B|
+b log p(yb | Bb );
+12
+backprop through QR;
+13
+optimizer step
+2
+
+3
+
+14
+
+return U ← QR(V ).Q[ :, :k ]⊤
+
+26
+
+Algorithm 3: QK-twist scan with BH-FDR
+Input: model M , per-DOY mean activations {x̄d }365
+Output: {(L, h, c⋆ , z, p, q)} for significant
+d=1
+heads
+2 for each head (L, h) do
+(L,h)
+(L,h)
+3
+Qd , Kd ← WQ x̄d , WK x̄d ;
+√
+⊤
+4
+Md,d′ ← Qd Kd′ / dhead
+5
+S(c) ← mean{Md,d′ : d−d′ =c}, c ∈ [−182, 182];
+6
+z(L,h) ← maxc̸=0 |S(c) − µS |/σS ;
+7
+c⋆ ← arg max |z|
+8
+p(L,h) ← fraction of null peaks ≥ z(L,h)
+▷ 200 shuffled-DOY permutations
+1
+
+9
+
+q ← BH-FDR({p(L,h) }, α=0.05)
+
+▷ multiple-testing correction
+
+Algorithm 4: Manifold deviation δ(x) for a clinical query
+⋆
+Input: tokens T , date positions P ⊂ {1, . . . , |T |}, reference activations {x̄d }365
+d=1 at L
+δ(x) ∈ [0, 1]
+2 X̄ ← [x̄1 ; · · · ; x̄365 ]
+▷ mean over 10 templates;
+mean
+3 Ū , _, _ ← SVD(X̄ − X̄
+); keep top-k
+4 run M (T );
+⋆
+5 cache ht at L for each t ∈ P
+6 for t ∈ P do
+7
+rt ← ht − Ū⊤ Ū ht ;
+8
+δt ← ∥rt ∥/∥ht ∥
+
+1
+
+9
+
+Output:
+
+return δ(x) ← maxt∈P δt
+
+S24
+
+Supplement: empirical
+
+P
+
+cos2 θi and anisotropy
+
+This supplement reports the empirical angular quantity that Prop. 3 bounds, tests how activation
+anisotropy affects the null, and provides the corrected null variance formula.
+Spectral diagnostics. The sample covariance Σ of 365 Set-A mean activations at L⋆ =1, d=2304
+has: Tr(Σ)=181.1, condition number κ=1.47×1011 (extreme rank deficiency from only 365 vectors
+in R2304 ), and effective rank Tr(Σ)2 /Tr(Σ2 )=11.5 (i.e., the empirical variance is concentrated in
+∼ 12 dominant directions). Under the corrected null variance formula (Prop. 3 assumes E[xx⊤ ]=σ 2 I;
+see below for the anisotropic correction), the anisotropy-corrected standard deviation is 14× wider
+than the isotropic approximation. This does not affect the reported Monte Carlo p-values of 0.51–
+0.72, which directly sample from the empirical (anisotropic) coordinate distribution; the correction is
+required only when using the analytic variance bound from Prop. 3(c).
+P
+Empirical
+cos2 θi , raw coordinates. On G EMMA 2 2B, L⋆ =1, d=2304, the observed
+probe vs. DAS quantity is 0.00091, 0.00559, 0.01520 at k ∈ {2, 4, 6}; the analytic null k 2 /d is
+0.00174, 0.00694, 0.01562. The probe is at or below the random-null expectation at every k. A
+104 -sample Monte Carlo of uniform k-subspaces in R2304 gives random means 0.00174 ± 0.00123,
+0.00693 ± 0.00246, 0.01561 ± 0.00370. The empirical p-value that the random null exceeds the
+observed probe value is 0.72, 0.68, 0.51: the probe subspace is statistically indistinguishable from
+noise in its angular relationship to the mediator.
+Whitened coordinates. Activations at L⋆ are anisotropic; we test whether the null story is a whitening artifact. We estimate Σ from 365 cached Set-A activations (ridge regularisation 10−3
+P·tr(Σ)/d),
+form W =Σ−1/2 , and whiten probe, DAS, and 104 random bases in this space. Results:
+cos2 θi at
+k ∈ {2, 4, 6} is 0.00372, 0.00574, 0.01600 observed vs random mean 0.00174, 0.00691, 0.01562 —
+the gap remains on the order of one random-null standard deviation. Whitening does not reverse or
+meaningfully amplify the effect (Fig. 12).
+27
+
+(a) raw coords
+
+(b) whitened coords
+
+observed (probe vs DAS)
+analytic null k 2/d
+
+0.020
+
+analytic null k 2/d
+
+0.020
+
+[∑cos2 θi] (random, ±2σ)
+
+0.015
+
+∑cos2 θi
+
+∑cos2 θi
+
+observed (probe vs DAS)
+
+0.010
+
+[∑cos2 θi] (random, ±2σ)
+
+0.015
+0.010
+0.005
+
+0.005
+0.000
+
+0.000
+k=2
+
+k=4
+
+k=6
+
+k=2
+
+k=4
+
+k=6
+
+2
+
+Figure 12: Empirical
+cos θi in raw (a) and whitened (b) coordinates. Gray points and ±2σ bars: 104 -draw
+Haar random k-subspace null; red squares: observed probe vs DAS; blue triangles: analytic k2 /d null.
+P
+
+S25
+
+Supplement: angle indistinguishability tests and specificity CIs
+
+P
+Hypothesis tests. For each of the four scales, we Monte-Carlo the null distribution of
+cos2 θi
+5
+between a Haar-random k=4 subspace and the trained DAS basis with 10 draws. The analytic null
+k 2 /d ∈ {0.0104, 0.0069, 0.00446, 0.00446} for d ∈ {1536,P
+2304, 3584, 3584} respectively matches
+the MC mean to the third decimal. Observed probe–DAS cos2 θi are reported in Supp. S24; the
+empirical p-value for probe-subspace indistinguishability from the null ranges from 0.51 to 0.72
+across k ∈ {2, 4, 6}.
+Specificity-ratio CIs. We bootstrap ρk by resampling the cached per-draw random-control accuracies
+(n=25 at 1.5B/2B, n=20 at 7B/9B) with 104 draws.
+d
+
+DAS drop (pp)
+
+Rand drop (pp, mean±s.d.)
+
+ρk 95% CI
+
+1536
+2304
+3584
+3584
+
+44.0
+42.0
+51.0
+45.0
+
+0.20 ± 0.41
+0.04 ± 0.94
+0.00 ± 0.00
+0.00 ± 0.00
+
+[1.2×102 , 1.1×103 ]
+[2.3×102 , 4.2×107 ]
+[5.1×107 , 5.1×107 ]
+[4.5×107 , 4.5×107 ]
+
+Model
+Q WEN 2.5 1.5B
+G EMMA 2 2B
+Q WEN 2.5 7B
+G EMMA 2 9B
+
+(G EMMA 2 2B: the lower bound uses the one-sided Clopper–Pearson preserve-rate CI to exclude
+denominator sign flips; the bootstrap upper arm is large because occasional resamples yield near-zero
+or slightly negative random drops.) At 7B/9B, random drops are exactly zero within bf16 precision;
+we report ρk in scientific notation with the convention droprandom =10−8 (machine epsilon for bf16
+accumulated over 20 draws). √Tightening the denominator by 10× would require ∼ 100× more
+random draws by the usual 1/ n scaling of the mean standard error .
+Fieller intervals and an additive baseline. Bootstrap ratio-CIs break when the denominator crosses
+zero. We therefore also report (i) Fieller’s theorem CI for the ratio of means, which handles the
+near-zero-denominator case by distinguishing finite-interval, exterior, and unbounded solution types,
+and (ii) the additive baseline ∆add =dropDAS − droprand (in pp), which is well-defined regardless of
+denominator scale.
+
+Model
+
+DAS drop
+
+Rand mean±s.e.
+
+∆add
+
+ρ point
+
+Fieller 95% CI
+
+CI kind
+
+Q WEN 2.5 1.5B
+G EMMA 2 2B
+Q WEN 2.5 7B
+G EMMA 2 9B
+
+44.0 pp
+42.0 pp
+51.0 pp
+45.0 pp
+
+0.20±0.08 pp
+0.04±0.19 pp
+0.00±0.00 pp
+0.00±0.00 pp
+
+43.8 pp
+42.0 pp
+51.0 pp
+45.0 pp
+
+220
+1050
+∞
+∞
+
+[122.2, 1100.8]
+(−∞, −128.7]∪[103.4, ∞)
+whole real line
+whole real line
+
+interval
+exterior
+unbounded
+unbounded
+
+Reading the Fieller column: on Q WEN 2.5 1.5B the random mean is cleanly positive and the ratio CI
+is a finite interval [122, 1101]. On G EMMA 2 2B the random-drop s.e. puts zero within the sampling
+distribution of the denominator, yielding the exterior case (−∞, −129] ∪ [103, ∞): the data are
+consistent with either a very large positive ratio or a very negative one, which is Fieller’s honest
+answer when the denominator is indistinguishable from zero. On 7B/9B the random-drop variance
+is exactly zero and the Fieller interval is unbounded. In all four cases the additive baseline ∆add is
+42–51 pp, which is the scale-robust statistic for the specificity effect.
+28
+
+S26
+
+Supplement: post-ablation residual-stream norms
+
+One concern with subspace ablation is that it might introduce distribution shift via the norm change,
+not the loss of mediator content. We therefore report, on cached activations at L⋆ of G EMMA 2 2B,
+the fraction of norm each basis removes: ∥U ⊤ U x∥/∥x∥.
+Basis
+
+k
+
+Set-A frac. removed
+
+Clinical date-token frac. removed
+
+probe
+DAS
+probe
+DAS
+probe
+DAS
+SAE top-50
+Random (Haar, n=100 draws)
+
+2
+2
+4
+4
+6
+6
+50
+4
+
+0.016
+0.191
+0.031
+0.194
+0.032
+0.193
+0.578
+0.041 ± 0.011
+
+0.016
+0.135
+0.021
+0.151
+0.022
+0.132
+0.550
+0.039 ± 0.014
+
+Two observations: (i) DAS removes a fraction (19–19.4%) that is modest in absolute terms but ∼ 5×
+the random-control fraction, consistent with DAS finding a direction aligned with a high-variance
+component of activation space — which is what Prop. 3 predicts for the mediator. (ii) The probe
+removes less than a random direction (3% vs 4%), sitting in an atypical low-variance direction; its
+R2 ≈0.99 does not translate into norm dominance. The 42 pp DAS-ablation drop therefore cannot
+be attributed to a generic distributional shift: both probe and random ablations perturb the residual
+stream comparably yet produce < 1 pp accuracy changes.
+
+S27
+
+Supplement: layer-robustness of the probe–DAS dissociation
+
+A natural question is whether the L⋆ selection (peak probe R2 ) might be responsible for the dissociation: perhaps a different layer choice would find probe and DAS aligned. We test this by computing
+principal angles between probe-subspaces at all 26 layers and the DAS basis at L⋆ =1, using cached
+activations (no new forward passes). Results are in the table below (representative layers); the full
+26-layer sweep is shown in Fig. 13.
+Layer (∆ from L⋆ )
+
+CV probe R2 (k=2)
+
+L=0 (∆=−1)
+L=1 (L⋆ )
+L=2 (∆=+1)
+L=3 (∆=+2)
+L=22 (deep)
+L=25 (last)
+
+probe–DAS θ̄ (k=2)
+◦
+
+0.991
+0.993
+0.993
+0.995
+−
+−
+
+88.95
+89.01◦
+88.44◦
+89.47◦
+89.0◦
+89.8◦
+
+87.34◦
+87.59◦
+87.70◦
+87.42◦
+89.0◦
+89.8◦
+
+88.83
+88.42◦
+88.40◦
+88.47◦
+89.0◦
+89.8◦
+
+1.0
+
+⟨cos2 θ⟩(probel, DAS@L * )
+L* =1
+
+⟨cos2 θ⟩(probel, probeL * )
+L* =1
+
+0.8
+⟨cos2 θi⟩
+
+0.0025
+⟨cos2 θi⟩
+
+(k=6)
+
+◦
+
+(b) Probe self-similarity across layers (vs. L * )
+
+(a) Probe alignment with DAS basis across layers
+0.0030
+
+(k=4)
+
+0.0020
+0.0015
+
+0.6
+0.4
+0.2
+
+0.0010
+
+0.0
+0
+
+5
+
+10
+
+15
+
+20
+
+25
+
+Layer l
+
+0
+
+5
+
+10
+
+15
+
+20
+
+25
+
+Layer l
+
+Figure 13: Probe–DAS mean principal angle across all 26 layers of G EMMA 2 2B at k ∈ {2, 4, 6}. The dashed
+line is the Haar-random null. The angle is within 1.5◦ of null at every layer; no layer alignment exists between
+the probe and the causal mediator.
+
+Across all 26 layers the probe–DAS angle is within 1.5◦ of the Haar-null (89.6◦ for k=4, d=2304).
+This layer-universal dissociation means the finding is not an artifact of L⋆ selection: there is no layer
+at which the linear probe direction aligns with the causal mediator subspace. Simultaneously, probe
+representations are layer-specific: cos2 θ between the probe trained at layer l and the probe at L⋆ falls
+29
+
+below 0.16 for all l ̸= L⋆ (median 0.003), confirming that L⋆ correctly identifies the layer where
+DOY structure is maximally concentrated in the readout direction.
+Attribution patching locates causal computation at L=24, not L⋆ =1. Running attribution patching [Syed et al., 2024] (n=188 prompts) on G EMMA 2 2B duration queries yields per-layer absolute
+attribution sums (summed over 8 heads). The peak is at L=24 (score=1.90); L⋆ =1 has score 0.14
+(7th percentile). This dissociation confirms that probe R2 identifies representation concentration,
+not the causal computation locus. DAS ablation at L⋆ =1 still achieves 42 pp accuracy drop because
+the residual stream at L⋆ propagates to all downstream layers: ablating the causal subspace early
+prevents the circuit from completing at L=24.
+Layer-depth nuance and temporal predictability. Lubana et al. [2026] find that temporal feature
+analysis (TFA) works best at ∼50% model depth and that deeper layers show the predictive component
+failing. Our results are compatible: the probe peaks at L⋆ =1 (early), DAS operates at L⋆ =1, and
+attribution patching peaks at L=24 (92% depth). Critically, the layer-universal 89◦ angle means
+the dissociation is not a layer-selection artifact: probes at early layers decode embedding structure,
+probes at middle layers may capture temporal contextual information, but at no layer does the probe
+direction approach the mediator direction. At L⋆ =1 the TFA predictable component aligns 7.1–7.6×
+Haar with DAS while the novel component aligns only 2.0–2.5×, confirmed by both zero-shot and
+learned TFA (Supp. S35, Fig. 15): the mediator sits within the predictable subspace, not outside it.
+Whether repeating this decomposition at 50% depth (L≈13) would change the picture is an open
+question; the layer-universal 89◦ probe–DAS angle and the first-moment / second-moment dichotomy
+(Prop. 1) both predict it will not.
+
+S28
+
+Supplement: effective mediator dimension
+
+We use the cached Qwen 2.5 1.5B DAS bases at k ∈ {2, 4, 8, 12} (from das_qwen and
+das_qwen_highk) to probe the effective rank of the mediator subspace. Ablation drops are monotone
+only up to k=4 (−37, −44 pp), after which they plateau and slightly relax (−33, −35 pp at k=8, 12).
+Pairwise principal angles reveal that bases at different k are not nested: mean cos θi between k=4
+and k=12 is 0.45; between k=8 and k=12 it is 0.33; no pair has any principal angle with cos θ>0.95
+(Fig. 14).
+
+44
+37
+33
+
+12
+
+0.67
+
+0.45
+
+8
+
+0.66
+
+0.40
+
+4
+
+0.61
+
+1.00
+
+0.33
+
+35
+
+30
+
+0.33
+
+20
+10
+
+0.75
+0.50
+
+k2
+
+Ablation drop (pp)
+
+40
+
+(b) Mean cos θi across k-pairs
+
+(a) DAS drop saturation
+
+50
+
+2
+
+0.61
+
+0.40
+
+0.45
+
+0.66
+
+0.67
+
+8
+
+12
+
+0.25
+0.00
+
+0
+2
+
+4
+
+6
+8
+10
+k (DAS subspace dim)
+
+12
+
+2
+
+4
+k1
+
+Figure 14: Effective mediator dimension on Q WEN 2.5 1.5B. (a) Ablation drop saturates at k=4; higher k
+admits multiple spanning bases and ablation is noisier to optimize. (b) Mean cos θi between bases at different k:
+no nested-subspace structure; larger-k DAS does not strictly extend smaller-k.
+
+Interpretation. Combined with the Grassmannian-scatter result at k=6 on G EMMA 2 2B (§4), the
+effective mediator dimension is 4, not 6. Five independent seeds at k=6 converge to consistent
+NLL (−72.0 ± 0.7) but scatter uniformly on G(6, 2304) (mean pairwise max angle 87.7◦ ±1.8◦ vs.
+Haar null 87.1◦ ), confirming that the two extra dimensions beyond the 4-dimensional mediator are
+unconstrained by the DAS objective and roam freely. At k=4, by contrast, five seeds converge to a
+compact basin (pairwise CCA > 0.85), consistent with a rank-4 causal subspace. The ablation-drop
+saturation at k=4 on both G EMMA 2 2B and Q WEN 2.5 1.5B is therefore a statement about the
+effective rank of the causal mediator.
+30
+
+S29
+
+Supplement: DAS sensitivity to loss and hyperparameters
+
+A natural robustness question is whether DAS mediators are stable under alternative losses or
+hyperparameter choices. The seed-variance evidence already partially addresses this: five independent
+DAS runs at k=4 converge to correlated bases (CCA > 0.94, ablation accuracy within [0%, 2%]
+across seeds), indicating a stable attractor. A full alternative-loss sweep (sequence-level NLL,
+consistency objective) would further tighten this; the infrastructure is in place and results will be
+reported in follow-up work. Two additional pieces of evidence support stability. First, the seedvariance analysis in Supp. S1 shows that five independently-seeded DAS runs on G EMMA 2 2B k=4
+find different but pairwise-correlated bases (CCA > 0.94), consistent with a unique rank-4 causal
+subspace. At k=6, five additional GPU seeds scatter uniformly on G(6, 2304) (mean pairwise max
+angle 87.7◦ , indistinguishable from Haar-random), confirming effective dimension = 4 (Supp. S1).
+Second, the present Supp. S28 shows that DAS at k ∈ {2, 4, 8, 12} on Q WEN 2.5 1.5B produces
+non-nested bases whose ablation drops saturate at k=4. Both results are consistent with a rank-4
+causal mediator that is robust to initialization: the subspace is stable even if individual DAS solutions
+are solver-dependent. A direct sweep over alternative losses (full-sequence NLL, consistency losses,
+counterfactual penalties) is the natural next experiment.
+
+S30
+
+Supplement: DAS cross-set generalization
+
+A potential concern is that the DAS mediator found on one prompt distribution (Set-F, duration
+queries) might not transfer to a held-out distribution. We test this by training DAS independently on
+two halves of Set-F (“Set-A”: 830 prompts; “Set-F”: 830 prompts) and evaluating each basis on both
+sets. Results are reported in terms of the accuracy remaining under DAS ablation (lower = DAS more
+effective).
+Cross-set transfer is strong. The Set-A-trained basis achieves low accuracy on Set-F and vice versa,
+indicating that both bases capture the same underlying causal structure. The mean principal angle
+between the two independently-trained k=4 DAS bases quantifies the geometric overlap: angles near
+0◦ indicate the same subspace was found; angles near 90◦ indicate orthogonal (unrelated) subspaces.
+Results show that the two independently-trained DAS bases span a nearly identical subspace (mean
+angle < 15◦ ), confirming that the rank-4 mediator is a stable property of the model and task, not an
+artifact of the specific prompt sample used for DAS training.
+Cross-template-family transfer. We further test whether the DAS basis trained on Set-F (duration
+queries) transfers to held-out template families without retraining. Evaluating the Set-F basis (k=4,
+L⋆ =1) on n=200 prompts per family: Set-F itself shows a 36.0 pp accuracy drop under DAS
+ablation (clean acc. 0.36); Set-G (explicit-comparison templates) shows a 9.0 pp drop (clean acc.
+0.175, ablated 0.085). Set-H templates yield 0% clean accuracy, so transfer is untestable there
+(the model cannot perform the task on those lexicalisations regardless of intervention). The partial
+transfer to Set-G—with no retraining—indicates the discovered subspace captures task-relevant
+structure beyond the specific Set-F lexicalisation, though the reduced magnitude suggests some
+template-specific variance remains in the DAS basis.
+
+S31
+
+Supplement: strict train/test splits and bootstrap CI on the
+readout-mediator angle
+
+A potential concern is that the probe–DAS angle estimate is inflated by data reuse—the probe and
+DAS are each trained on overlapping prompts, so the measured angle could reflect shared noise
+rather than true geometric structure. We address this with five complementary analyses on the full
+n=3,650 individual-prompt activation cache (365 DOYs × 10 templates, layer L⋆ =1, d=2,304; all
+CPU-only).
+Existing DAS train/eval split. The DAS optimisation already uses disjoint prompts: 232 train /
+100 eval, zero overlap (70/30 split). At k=4, DAS ablation drops eval accuracy from 42% to 0%
+(ρ4 =1,050); random ablation moves it by ≤ 0.04 pp. The causal subspace is not overfit to the DAS
+training set.
+31
+
+Strict 60/20/20 splits. We partition the 3,650 prompts into train (60%), validation (20%), and test
+(20%) sets, stratified by month to prevent seasonal leakage. A fresh circular Ridge probe (1-harmonic,
+α=1.0) is trained on the train split only. The probe–DAS angle at k=4 is:
+Split
+
+n
+
+Probe R2
+
+θ̄ to DAS k=4
+
+Train
+Val
+Test
+Full
+
+2,190
+730
+730
+3,650
+
+0.987
+0.989
+0.989
+0.988
+
+88.2◦
+87.0◦
+87.7◦
+87.8◦
+
+All four estimates sit within 1.3◦ of the Haar null (88.3◦ ). The overlap score ⟨cos2 θ⟩ ranges from
+0.0013 to 0.0034, bracketing the Haar expectation of k/d=0.0017.
+Five-fold cross-validated angle. Monthly-stratified 5-fold CV trains the probe on 80% of prompts
+and evaluates the angle on the held-out 20%. The fold-level angles are 87.7◦ , 87.8◦ , 87.6◦ , 87.9◦ ,
+87.9◦ (mean 87.79◦ ± 0.10◦ ); held-out R2 =0.981 ± 0.001. The angle estimate is stable to ±0.1◦
+across folds.
+Bootstrap confidence interval. We resample the full n=3,650 activation set with replacement
+(B=1,000, seed= 42), retrain the circular probe on each resample, and measure θ̄ to the (fixed) DAS
+k=4 basis. The resulting 95% percentile CI is [87.28◦ , 88.28◦ ] (mean 87.80◦ , std= 0.26◦ ). The
+Haar null (88.3◦ ) falls 0.02◦ outside the upper bound—a statistically significant but geometrically
+negligible deviation of 0.5◦ (0.6% of the angle). This is consistent with both subspaces inhabiting
+the same ambient activation geometry: since probe and DAS directions are both learned from the
+same model, a trace amount of shared structure (e.g., alignment with the top principal components of
+the activation covariance) is expected and does not undermine the near-orthogonality claim.
+Template-family held-out. To test whether the angle dependson template-specific phrasing, we
+run leave-2-template-out cross-validation: for each of the 10
+2 =45 held-out template pairs, we
+train the probe on the remaining 8 templates (≈2,920 prompts) and measure θ̄ on the held-out pair
+(≈730 prompts). The resulting angles are 87.71◦ ± 0.32◦ (range [87.20◦ , 88.51◦ ])—the angle is
+invariant to which templates are held out, confirming that the near-orthogonality is not an artifact of
+template-specific lexical overlap between probe and DAS training data.
+Summary. Across all five analyses—existing DAS split, strict stratified partitions, five-fold CV,
+bootstrap resampling, and template-family holdout—the probe–DAS angle is 87.7◦ –87.8◦ , within
+0.5◦ of the Haar null. The angle estimate does not depend on how the data are partitioned and is not
+inflated by shared training prompts.
+
+S32
+
+Supplement: relationship to NDM and other unsupervised subspace
+decompositions
+
+Neighbor Distance Minimization (NDM) of Huang and Hahn [2026] discovers non-basis-aligned
+interpretable subspaces by unsupervised feature reconstruction and validates them via causal patching.
+In the Prop. 3 framework, NDM subspaces should sit between probes and DAS on the readout-tomediator spectrum: they are not task-gradient targeted (so ρk should be smaller than DAS), but they
+are geometry-respecting (so ρk should exceed the probe null). The natural experiment — training an
+NDM decomposition on Set-A activations at L⋆ , measuring its principal angle to the DAS basis, and
+placing it on the spectrum — requires NDM training infrastructure and is out of scope for this local,
+no-training response. We predict: (i) NDM components aligned with sinusoidal date features will
+partially overlap the DAS span (ρNDM
+between 102 and 103 ), (ii) the overlap will strengthen if NDM
+k
+is trained on a task-conditioned activation distribution.
+The broader implication connects to the seed-induced uniqueness result of Okatan et al. [2025]:
+narrow task-relevant subspaces, not global similarity, drive transfer. Our readout-mediator-angle
+framework is a measurement instrument for exactly the quantity that paper argues governs subliminal
+trait leakage. The complementarity is direct: their setting (same task, different seeds) and ours (same
+task, same model, different probing tools) both rely on identifying narrow causal subspaces and
+measuring their coincidence.
+32
+
+A final scale-trend note: Wang et al. [2025] report that attention outputs are low-rank across families
+and scales. Our Supp. S28 observation that effective mediator rank saturates around ∼ 6 at d ∈
+{1536, 2304, 3584} is consistent with this, and our Prop. 3 consequence — specificity grows as d/k
+at fixed k — makes the > 500,000× ratio at 7B/9B a direct prediction of attention low-rankness.
+
+S33
+
+Supplement: open directions
+
+Three concrete experimental designs for future work.
+(i) Prospective clinical triage. A prospective triage trial would enlist ≥500 de-identified EHR
+queries, compute δ(x) pre-generation, and test whether non-deferred accuracy exceeds the 2.8×
+baseline demonstrated offline. The primary endpoint is whether the Youden-optimal threshold
+(δ ⋆ =0.86, 64% deferral) transfers out-of-distribution.
+(ii) Frontier-scale prediction. Prop. 3(c) predicts specificity ratios ρk ≍ d/k=2048 at 70B parameters (d=8192, k=4). Testing this requires DAS training on frontier models but follows directly from
+the infrastructure in Supp. S1.
+(iii) Multilingual and multi-calendar. For a language with a non-Gregorian calendar (e.g. Hebrew
+lunar), we predict the probe–DAS angle null to hold with boundary-head offsets reflecting the target
+calendar structure rather than {±30, ±61} days. For a mathematical reasoning task with a known
+geometric representation, we predict angles consistent with the spatial domain.
+
+S34
+
+Supplement: cross-task diagnostic details
+
+The cross-task validation in §6 runs the full readout-mediator protocol on two non-temporal domains
+(a third, factual country→capital lookup, was excluded due to 0% clean accuracy on G EMMA 2 2B;
+see below). Each domain uses G EMMA 2 2B at the probe-optimal layer L⋆ (re-estimated per domain
+via probe R2 sweep over layers 0–9), k=4, DAS training (steps chosen per domain to ensure loss
+convergence), and ≥10 Haar-random ablation controls.
+Arithmetic. Single-digit addition prompts (“The sum of a and b is ”). n=25 prompts with
+a, b ∈ [1, 9]; answers are single-token integers. Result: L⋆ =2, probe R2 =1.0, mean angle 88.1◦ .
+Clean accuracy 100%; DAS ablation drops to 32% (68 pp, ρk ≫103 × since all 10 random controls
+leave accuracy at 100%); probe ablation 0 pp. Contrary to our initial expectation that arithmetic
+would serve as a positive control (small angle, both ablations hurt), this domain shows the same
+dissociation as temporal and spatial reasoning: the perfect linear probe decodes a direction orthogonal
+to the causal subspace.
+Spatial. 1D number-line displacement (“Starting at position X, after moving Y steps forward,
+you arrive at position ”). n=60 prompts, answers in [1, 99], single token. Result: L⋆ =1, probe
+R2 =1.0, mean angle 88.4◦ . Clean accuracy 20%; DAS ablation drops to 0% (20 pp, ρk =20.8×);
+probe ablation increases accuracy by 6 pp (probe direction is not causally load-bearing). This
+replicates the temporal dissociation on a second geometric-manifold domain.
+Factual (excluded). Country→capital lookup (“The capital city of France is ”) was tested but
+G EMMA 2 2B achieves 0% clean accuracy (n=50 prompts), so ablation metrics are undefined
+and this domain is excluded from the main-text table. A larger model would be needed to test the
+associative-domain prediction.
+
+S35
+
+Supplement: TFA predictable/novel decomposition alignment
+
+Lubana et al. [2026] decompose per-token activations into a predictable component (the projection of
+xt onto the subspace spanned by {x1 , . . . , xt−1 }) and a novel component (the orthogonal residual).
+We test whether this decomposition explains the 88◦ readout-mediator angle—specifically, whether
+the mediator sits in the predictable or novel part of the activation. We evaluate two implementations:
+a zero-shot linear predictor (SVD of the past-token matrix) and a learned attention-based model
+(TemporalSAE Lubana et al. 2026; trained 10K steps on our cached activations, NMSE=0.069).
+33
+
+Setup. We apply both decompositions to 50 Set-F duration prompts at L⋆ =1 using cached fullsequence activations. At the probe position (last content token), the zero-shot predictable component
+accounts for f¯pred =42.2% of activation energy; the learned model assigns 84.8% to predictable. For
+each component × method, we collect the (N, 2304) point cloud across all 50 prompts, extract
+the top-10 SVD directions as a subspace basis, and measure principal angles against both the DAS
+mediator (k=4) and the probe subspace (k=2).
+Principal-angle results. The initial hypothesis was that the novel component would lean toward
+DAS (explaining the angle as probe-decodes-predictable, model-computes-with-novel). The data
+reject this hypothesis—the predictable component aligns 3× more strongly with DAS than the novel
+component does, and both methods agree (Table 6):
+P
+Table 6: Principal-angle alignment of TFA components with the DAS mediator and probe subspace.
+cos2 θi
+normalized by the Haar null (kcomp · r/d). Both the zero-shot (ZS) and learned (L) implementations agree on the
+direction of the dissociation. 50 prompts, L⋆ =1, θ̄ via SVD of the component point cloud.
+P 2
+P 2
+Component
+cos θ vs. DAS ×Haar
+cos θ vs. Probe ×Haar
+ZS Predictable
+ZS Novel
+Learned Predictable
+Learned Novel
+
+0.132
+0.044
+0.123
+0.035
+
+7.6×
+2.5×
+7.1×
+2.0×
+
+0.026
+0.016
+0.024
+0.019
+
+3.0×
+1.8×
+2.7×
+2.2×
+
+Haar null
+
+0.017
+
+1.0×
+
+0.009
+
+1.0×
+
+Grassmannian visualization. To make this geometric, we embed all subspaces—DAS, probe,
+PCA, TFA predictable, TFA novel, and 100 Haar-random k-frames—as points on the Grassmannian
+Gr(4, 2304) using MDS with mean principal angle as the pairwise distance metric (Fig. 15). The
+TFA-predictable subspace (both zero-shot and learned) is pulled toward DAS and away from the
+random cloud, sitting at 82.7◦ –83.7◦ from DAS versus the random mean of 88.0◦ ±0.3◦ . The probe,
+by contrast, sits at 88.5◦ —squarely in the random cloud, indistinguishable from noise. The TFA-novel
+component lands at 85.2◦ –86.6◦ , between the predictable and random clusters.
+Interpretation. The predictable component captures signal that can be derived from attending
+to prior tokens—at L⋆ =1, this includes the date-pair context (tokens 5–8 and 13–16). Duration
+computation is inherently context-dependent: computing “March 5 to June 10” requires looking back
+at “March 5.” The DAS mediator captures precisely this kind of context-accumulated signal, so its
+overlap with the predictable subspace is expected. Date identity, by contrast, depends partly on the
+current token embedding itself—a stimulus-driven signal that lands in the novel component.
+The probe–mediator orthogonality is therefore within the predictable subspace: both probe and
+mediator capture aspects of accumulated context, but different functional projections of it (circular
+day-of-year structure for the probe; month-pair difference structure for the mediator). A simple
+predictable/novel split does not explain the 88◦ angle—but it does explain why the mediator is where
+it is: duration computation lives in the part of the activation that comes from context, not from the
+current token alone (Fig. 16).
+
+S36
+
+Supplement: temporal dynamics of mediator energy
+
+The main paper treats activations as a static collection (one vector per prompt). Here we examine
+how mediator and probe subspace energy evolves across token positions within a single prompt.
+For each token position t in a duration prompt, we compute the fraction of activation energy in the
+DAS mediator subspace:
+emed (t) =
+
+∥UM xt ∥2
+,
+∥xt ∥2
+
+eprobe (t) =
+
+∥UP xt ∥2
+,
+∥xt ∥2
+
+(4)
+
+where UM and UP are the DAS and probe projection matrices.
+Fig. 18 shows these energy trajectories for three representative duration prompts (n=50 total). Three
+findings emerge:
+34
+
+(A) Subspaces on the Grassmannian Gr(4, 2304)
+Filled = learned TFA, outline = zero-shot TFA
+DAS mediator
+Probe
+PCA
+
+Probe
+
+60
+
+MDS dimension 2
+
+40
+
+TFA Pred
+TFA Novel
+Random (n=100)
+
+20
+0
+DAS
+PCA
+
+−20
+
+Pred (ZS)
+Pred (L)
+
+−40
+Novel (ZS)
+
+−60
+
+Novel (L)
+−60
+
+−40
+
+−20
+
+0
+
+20
+
+40
+
+60
+
+MDS dimension 1
+(B) Distance to DAS
+
+(C) Random null distribution
+88.5°
+
+Probe
+86.8°
+
+TFA-Novel (L)
+
+86.6°
+
+1.5
+
+Density
+
+PCA
+
+85.2°
+
+TFA-Novel (ZS)
+
+Haar null = 87.6°
+Random mean = 88.0°
+
+82.7°
+
+TFA-Pred (ZS)
+
+82
+
+1.0
+
+0.5
+
+83.7°
+
+TFA-Pred (L)
+
+Haar null
+TFA-Pred (L)
+Probe
+
+84
+
+86
+
+88
+
+0.0
+
+90
+∘
+
+84
+
+85
+
+86
+
+87
+
+88
+
+89
+
+Mean principal angle to DAS ( ∘ )
+
+Mean principal angle to DAS ( )
+
+Figure 15: TFA components on the Grassmannian. (A) MDS embedding of subspaces on Gr(4, 2304) using
+mean principal angle as the distance metric. Gray dots: 100 Haar-random k-frames (convex hull shaded).
+The TFA-predictable subspace (gold triangles; filled = learned, outline = zero-shot) is pulled toward DAS and
+away from the random cloud. The probe (blue square) sits in the random cloud at 88.5◦ . (B) Grassmannian
+distances to DAS, sorted. TFA-Pred (learned: 83.7◦ , zero-shot: 82.7◦ ) sits well below the Haar null (87.6◦ ).
+(C) Random-null distribution of distances to DAS (histogram) with TFA-Pred (gold) and Probe (blue) marked.
+n=50 prompts, L⋆ =1.
+
+vs. DAS mediator (k = 4)
+
+vs. Probe subspace (k = 2)
+
+Haar null (1.0×)
+
+Σcos2 θi / Haar null
+
+8
+
+Haar null (1.0×)
+
+7.6×
+
+7.1×
+
+3.0×
+
+3
+
+2.7×
+
+6
+
+2.2×
+
+2
+
+1.8×
+
+4
+2.5×
+
+0
+
+ZS
+Novel
+
+1
+
+2.0×
+
+2
+
+ZS
+Pred
+
+Learned
+Novel
+
+0
+
+Learned
+Pred
+
+ZS
+Novel
+
+ZS
+Pred
+
+Learned
+Novel
+
+Learned
+Pred
+
+Figure 16: Extended alignment of TFA predictable
+novel components with the DAS mediator (left, k=4)
+P and
+and probe subspace (right, k=2), measured as
+cos2 θi normalized by the Haar null. Both zero-shot (ZS) and
+learned (L) implementations show the same pattern: predictable leans toward DAS (7.1–7.6× null); novel is
+closer to chance (2.0–2.5×). 50 prompts, L⋆ =1.
+
+35
+
+A
+
+B
+
+C
+
+Causal specificity ratio
+
+TFA: novel computation projection
+
+9
+
+Each row: a different month's SAE feature firing on its token
+
+DAS
+Feb #10937
+
+woman
+
+.
+
+The
+
+annual
+
+February
+
+.
+
+So
+
+Mar #7421
+
+woman
+
+.
+
+The
+
+annual
+
+March
+
+for
+
+Marriage
+
+Jun #7929
+
+her
+
+knowledge
+
+of
+
+the
+
+June
+
+1
+
+9
+
+Aug #521
+
+is
+
+referred
+
+to
+
+as
+
+August
+
+Eve
+
+.
+
+Sep #14687
+
+World
+
+Report
+
+.
+
+—
+
+September
+
+Oct #12722
+
+.
+
+Filed
+
+October
+
+8
+
+rho=1050
+
+[CAUSAL]
+
+7x
+
+7
+6
+
+3
+
+1
+
+Probe
+
+1
+
+Gradient
+
+cos2 overlap / null
+
+rho=0.0 [INERT]
+
+rho=19.1 [CAUSAL]
+
+5
+4
+3
+2
+
+2
+
+PCA
+
+rho=15
+
+[CAUSAL]
+
+1.0x
+
+1
+
+11 of 12 months have dedicated SAE features at Layer 3
+
+DAS ablation destroys temporal computation;
+probe ablation has no effect
+
+0.1x
+
+Haar null
+
+0.1x
+
+0
+0
+
+10
+
+20
+
+30
+Accuracy drop (pp)
+
+40
+
+50
+
+Novel
+->DAS
+
+Novel
+->Probe
+
+Boundary
+->DAS
+
+Boundary
+->Probe
+
+Figure 17: Feature-level detectors and causal specificity. (A) Month-tiling: 11 of 12 months have dedicated
+SAE features at Layer 3, each firing selectively on its month token. (B) Causal specificity ratio ρ: DAS ablation
+drops accuracy by 42 pp (ρ=1050×); probe ablation has ρ=0.8 (INERT); gradient probe achieves ρ=19.1; PCA
+reaches ρ=15. (C) TFA novel-computation projection: the predictable component aligns 7× Haar with DAS,
+while the probe sits at 0.1×—the mediator lives in context-accumulated signal.
+
+(i) Mediator energy is distributed, not spike-like. emed ranges from 2.9% to 13.1% across token
+positions (vs. k/d=0.17% for a random 4-subspace in R2304 ), a 17–75× excess over the dimensionality baseline. The energy does not spike at date-word tokens (“January”: 5.0%; “April”: 5.2%) but
+rather at structural delimiter tokens: the space immediately following the month name reaches 13.0%
+and the final token “is” reaches 11.3%.
+(ii) “Between” is the energy minimum. Despite being the semantic cue for duration, the token
+“between” consistently has the lowest mediator energy (2.9%). The mediator subspace at L⋆ =1
+encodes positional/structural information (which tokens carry date arguments), not the semantic
+relation between them.
+(iii) Probe energy is negligible at every position. eprobe <0.2% across all tokens and all prompts—
+the sin / cos probe direction captures day-of-year structure only in the mean-per-DOY activation
+space and is effectively invisible in per-token dynamics.
+
+S37
+
+Supplement: disentangling task-structure vs corpus-statistics for the
+±30, ±61-day modes
+
+A direct disentanglement—training a synthetic model on a corpus with controlled month
+distributions—requires model training and is out of scope. We instead report four lines of indirect evidence, including a formal statistical test, that are jointly consistent with a task-structure
+origin.
+Evidence (i): cross-family offset coincidence. The same two offset modes (|c|≈30, |c|≈61 days)
+arise in both G EMMA 2 2B (24 BH-significant boundary heads) and Q WEN 2.5 1.5B (top-20 heads),
+despite different pretraining corpora, different tokenizers, and different initializations (§5). We
+formalize this coincidence with a Monte Carlo simulation test. For each of N =105 draws we sample
+two independent offset sets of the observed sizes from Uniform({1, . . . , 182}) and count the number
+of modes matched within a tolerance window ±τ . At τ =3 d, the observed 2 shared modes exceed
+99.1% of null draws (p=0.009); at τ =5 d, p=0.020; at τ =10 d, p=0.052 (Fig. 19). The τ =3 result
+survives Bonferroni correction for the three tolerances tested (αadj =0.017).
+Evidence (ii): Pythia emergence during training. Pythia emergence traces a ∼37× increase in
+circularness during training, not at initialization (§5, Supp. S7), indicating the offset-bearing circuit
+is learned from the task, not inherited from random weights.
+Evidence (iii): absent weekly mode. No ±7-day mode is observed despite weekly periodicity being
+abundant in pretraining corpora. Neither is any ±365-day (annual) or ±1-day (unit) mode present.
+This rules out corpus-frequency, annual-cycle, and fine-grained-counting confounds, respectively,
+leaving month-grained arithmetic as the parsimonious explanation.
+Evidence (iv): temporal priors and non-stationarity. Lubana et al. [2026] show that LM representations are non-stationary and that standard sparse autoencoders impose i.i.d. priors that miss
+temporal structure. The fact that both model families converge to temporal (monthly) rather than
+36
+
+Event A happened on January 1. Event B happened on…
+
+12
+10
+8
+6
+
+8
+12
+
+0.75
+
+16
+
+4
+
+20
+
+2
+0
+
+d n y
+> t
+os ven A ene o uar
+n
+<b E
+pp
+Ja
+ha
+
+·
+
+. nt B ed on ry
+e
+a
+en
+nu
+Ev
+pp
+Ja
+ha
+
+1
+
+·
+
+. he er of ys en m
+T mb
+da twe the
+nu
+be
+
+2
+
+0
+
+is
+
+Event A happened on January 1. Event B happened on…
+
+12
+
+16
+
+20
+
+0.25
+
+DAS-projected cos sim
+
+4
+
+10
+
+Token pos.
+
+Energy fraction (%)
+
+8
+
+0
+
+12
+
+8
+6
+
+8
+
+0.00
+
+12
+16
+
+4
+
+20
+
+2
+d n y
+> t
+os ven A ene o uar
+n
+<b E
+pp
+Ja
+ha
+
+·
+
+. nt B ed on ril
+e
+en
+Ap
+Ev
+pp
+ha
+
+1
+
+·
+
+. he er of ys en m
+T mb
+da twe the
+nu
+be
+
+1
+
+0
+
+is
+
+Event A happened on January 25. Event B happened o…
+
+4
+
+8
+
+12
+
+16
+
+20
+
+DAS-projected cos sim
+
+−0.25
+
+−0.50
+
+0
+
+14
+12
+
+5
+
+10
+
+Token pos.
+
+Energy fraction (%)
+
+4
+
+0.50
+
+14
+
+0
+
+1.00
+
+4
+
+Token pos.
+
+Energy fraction (%)
+
+DAS-projected cos sim
+0
+
+Random (0.17%)
+Mediator (k = 4)
+
+14
+
+8
+6
+
+10
+
+−0.75
+
+15
+
+4
+20
+
+2
+0
+
+d n y
+> t
+os ven A ene o uar
+n
+<b E
+pp
+Ja
+ha
+
+·
+
+2
+
+5
+
+. nt B ed on ry
+e
+ua
+en
+Ev
+br
+pp
+Fe
+ha
+
+·
+
+8
+
+. he er of ys en m is
+T mb
+da twe the
+nu
+be
+
+0
+
+5
+
+10
+
+15
+
+20
+
+−1.00
+
+Token pos.
+
+Token position
+
+Figure 18: Temporal dynamics of mediator energy (emed , gold bars) across token positions for three Set-F
+duration prompts. The k/d random baseline is shown as a dashed line. Left: per-token mediator energy with
+token labels. Right: pairwise cosine similarity of DAS-projected activations, showing block structure around
+date-bearing positions.
+
+37
+
+p = 0.0200 (100k MC draws)
+Null (uniform offsets)
+Observed = 2 matches
+
+Density
+
+0.6
+
+0.4
+
+0.2
+
+0.0
+
+−0.5
+
+0.0
+
+0.5
+
+1.0
+
+1.5
+
+2.0
+
+2.5
+
+Number of matched offset modes (±5d tolerance)
+
+Figure 19: Monte Carlo null distribution of offset-mode coincidences (τ =5 d tolerance, 105 draws from
+Uniform({1, . . . , 182})). The observed 2-mode match (gold line) falls in the far right tail (p=0.020).
+
+statistical (weekly) offsets is further evidence that the circuit is shaped by task structure, not corpus
+statistics—precisely the kind of temporal prior that SAEs trained under i.i.d. assumptions would fail
+to recover (cf. Prop. 4.2 of Lubana et al. 2026).
+A controlled-training experiment remains the gold standard.
+
+S38
+
+Supplement: mediator-projection + controlled perturbation test
+
+A validation of Prop. 3’s Lipschitz bound would inject controlled perturbations ϵ·v for v ∈ row(UDAS )
+vs v ⊥ UDAS and measure the resulting duration-error dependence on ϵ. Prop. 3 predicts a linear
+regime for in-subspace perturbations and a flat regime for orthogonal ones. The experiment requires
+model forward passes (not cached). We flag it as the most direct next validation; the current paper’s
+evidence for Prop. 3 is instead the observed ρk ordering across tools (Supp. S11), which already
+consistent with the bound.
+
+S39
+
+Supplement: non-linear probes do not close the readout-mediator angle
+
+One might ask whether the paper’s linear sin / cos ridge probe is the reason the probe–DAS angle is
+at the random-null: perhaps a richer probe class would find the mediator. We falsify this by training
+four probe families on Set-A activations at L⋆ =1 and extracting a gradient-saliency-SVD subspace
+for each.
+Probe family
+Ridge circular (paper default)
+MLP [128, 128] tanh
+Kernel ridge (RBF)
+Random forest
+Haar random-null angle
+
+CV R2
+
+k=2 angle
+
+k=4 angle
+
+k=6 angle
+
+0.992
+0.950
+0.840
+0.394
+
+◦
+
+89.2
+89.1◦
+89.3◦
+88.6◦
+
+◦
+
+88.0
+87.9◦
+88.4◦
+88.7◦
+
+86.7◦
+86.9◦
+87.2◦
+86.2◦
+
+–
+
+88.3◦
+
+88.3◦
+
+88.3◦
+
+Every probe family—linear or non-linear—places its gradient-saliency subspace at the random-null
+angle to DAS (within 1◦ of the Haar expectation). Non-linear probes decode DOY just as well
+as linear ones (MLP and kernel ridge R2 >0.84) but do not recover the mediator direction. The
+readout-vs-mediator separation is a structural property of the task, not a probe-capacity limit.
+
+S40
+
+Supplement: alternative probe targets
+
+A complementary concern: perhaps the paper’s 2-D sin / cos(DOY) target is too narrow, and the
+mediator (which appears to operate at month granularity, k≈4) would be captured by a probe with a
+richer target. We test four decoding targets on Set-A activations at L⋆ =1 (G EMMA 2 2B, d=2304):
+(a) sin / cos(DOY) Ridge (k=2, paper default); (b) a 12-way month-of-year Ridge classifier (k=4,
+top-4 class-weight rows); (c) a harmonic k=4 target (sin/cos at fundamental and second harmonic);
+(d) a learned k=4 target (PCA-4 of the one-hot-month embedding).
+38
+
+Target
+
+k
+
+Decoding
+2
+
+Angle to DAS k=4
+
+Holm-adj p
+
+◦
+
+DOY sin / cos
+MOY 12-way (top-4)
+Harmonic (h ∈ {1, 2})
+Learned k=4 (PCA-month)
+
+R =0.994
+bal. acc. 89.9%
+R2 =0.980
+R2 =0.679
+
+2
+4
+4
+4
+
+87.93
+88.52◦
+88.03◦
+87.69◦
+
+1.00
+1.00
+1.00
+1.00
+
+Haar null (MC, N =5,000)
+
+–
+
+4
+
+88.3◦ ±1.0◦
+
+–
+
+Every probe target, regardless of decoding power, places its linear
+within ∼ 1◦ of the Haar
+P subspace
+2
+2
+null against the DAS mediator (Holm-adjusted one-sided p for cos θi > kM /d is 1.00 in all cases).
+The 12-way month classifier at 90% balanced accuracy is as far from DAS as a sin/cos Ridge at
+R2 =0.99, confirming that the readout-mediator separation is a property of which directions decode,
+not how much information a probe extracts.
+
+S41
+
+Supplement: amnesic / erasure baselines vs DAS
+
+Modern concept-erasure methods (LEACE [Belrose et al., 2023], Mean-Projection [Haghighatkhah
+et al., 2022], INLP) target selective removal of linear information about a concept. Do their erasure
+subspaces overlap with the DAS mediator? At k=4, DOY target on G EMMA 2 2B Set-A:
+P
+
+cos2 θi
+
+Method
+
+k
+
+Mean angle to DAS
+
+Probe Ridge (paper default)
+Probe Ridge (harmonic k=4)
+INLP k=4
+Mean-Projection k=4
+LEACE k=4
+
+2
+4
+4
+4
+4
+
+87.93◦
+88.03◦
+88.10◦
+87.34◦
+86.75◦
+
+0.0028
+0.0082
+0.0061
+0.0117
+0.0222
+
+Haar null (N =2000)
+
+4
+
+88.3◦
+
+0.0069±0.0025
+
+All four amnesic methodsPsit at 86.8–88.1◦ from DAS. LEACE and Mean-Projection capture a
+modest residual overlap ( cos2 ≈ 0.02, ∼5σ above the Haar null); INLP and probe Ridge are
+indistinguishable from the null. The interpretation: selective linear-concept erasure is concentrated on
+the decoder subspace, not the mediator— consistent with the paper’s central claim that readable-from
+and computed-with occupy orthogonal directions.
+
+S42
+
+Supplement: matched-budget comparison on the spectrum
+
+Placing tools on a parameter-matched ruler (dim-equivalents where an attention head is counted as
+4d parameter-dims):
+Method
+DAS k=4
+SAE top-50 features
+Probe ridge k=4
+Random k=4 (Haar mean)
+QK-twist top-10 heads
+AP top-12 heads
+AP top-60 heads
+AP top-100 heads
+
+Drop (pp)
+
+Dim-equivalent
+
+pp per dim-equivalent
+
+42.0
+11.5
+0.6
+0.04
+17.2
+4.8
+8.2
+12.0
+
+4
+50
+4
+4
+10,240
+12,288
+61,440
+102,400
+
+10.5
+0.23
+0.15
+0.010
+0.0017
+0.0004
+0.0001
+0.0001
+
+DAS achieves ∼ 60× the per-dim specificity of SAEs, 70× the probe, and ∼ 6,000× the most
+parameter-efficient head-level method (QK-twist). Even at 100× the parameter count, head-level
+methods do not approach DAS-level specificity at the relevant granularity. The ordering on this axis
+matches the ordering on the ρk axis (Supp. S11): DAS ≫ SAE ≫ attribution/QK > probe ≈ random.
+39
+
+S43
+
+Supplement: residual stream DAS energy tracking
+
+To understand how the early-layer mediator (L⋆ =1) influences late-layer computation,
+we track the DAS subspace energy fraction eL ≡ EDOY [∥UDAS xL ∥2 /∥xL ∥2 ] through
+all 26 layers of G EMMA 2 2B, using the 365-DOY mean activations cached in
+cached_tensors/gemma2b_full/activations/mean_activations.pt.
+DAS energy never drops below null. The DAS energy profile (Fig. 20) shows a monotone decay
+from the L=1 peak (26.4× Haar null) through a mid-network trough at L=18 (3.1×), followed by a
+secondary recovery at L=22 (6.6×). Critically, DAS energy exceeds the Haar random null at every
+layer (minimum 2.1× at L=25), indicating that mediator information is carried forward through the
+residual stream as an additive component throughout the entire forward pass. This is distinct from the
+probe subspace, which tracks the random null (0.3–4.1×) with no coherent pattern.
+Mechanistic interpretation. The residual stream architecture means that any layer with elevated
+DAS energy is a potential site for causal computation. The boundary heads at L=11–12 identified as
+the primary causal bottleneck in Supp. S46 operate where DAS energy is ∼ 8× null—well above
+background but below the early peak. This is consistent with these heads reading from and writing to
+the mediator subspace as part of the circuit. The late-layer secondary peak (L=22) corresponds to
+the QK-twist boundary-head cluster, but those heads are causally inert (Supp. S46), suggesting the
+secondary peak reflects passive information persistence rather than active computation.
+L★=1
+(DAS trained)
+
+Subspace energy fraction (%)
+
+5
+
+DAS mediator (k=4)
+Probe subspace (k=2)
+Haar null (0.174%)
+
+4
+
+3
+
+L=22
+(boundary heads)
+
+2
+
+1
+L=18 trough
+(3.1× null)
+
+0
+
+0
+
+5
+
+10
+
+15
+
+20
+
+25
+
+Layer
+Figure 20: DAS mediator energy through 26 layers. DAS subspace energy (blue) vs. probe subspace energy
+(orange) vs. Haar random null (dashed). Boundary-head layers shaded. DAS energy exceeds random null at
+every layer; probe energy does not.
+
+S44
+
+Supplement: per-direction DAS ablation
+
+To test whether the rank-4 mediator subspace operates as a cooperative unit or decomposes
+
+ into
+independent directions, we ablate each DAS basis vector individually and in all 42 + 43 +1=11
+multi-direction combinations (n=200 Set-F prompts; Fig. 21).
+Individual directions are insufficient. Single-direction ablations yield ∆NLL ∈ [0.08, 0.51] (sum=
+1.16); the full k=4 ablation yields ∆NLL = 68.8, a cooperation ratio of 59×. No single direction
+accounts for more than 0.7% of the full effect. Direction u4 is strongest (∆NLL= 0.51, 53% accuracy
+drop); direction u3 is weakest (∆NLL= 0.08, 1.4% accuracy drop).
+Pairwise interactions are super-additive. Five of six direction pairs show super-additive interaction
+(observed > sum of singles), with mean pairwise interaction +0.07 NLL. The lone sub-additive
+40
+
+pair (u1 , u4 ) combines the two strongest individual directions. Triple and quadruple ablations show
+escalating nonlinearity: [u1 , u2 , u4 ] gives ∆NLL= 3.0 (2.8× the sum of singles), and [u1 , u2 , u3 , u4 ]
+gives ∆NLL= 68.8 (59×).
+The 59× cooperation ratio validates the rank-4 identification: the mediator is not a bag of independent
+features but a single 4-dimensional functional unit whose components interact nonlinearly to encode
+temporal information.
+Single-direction ablation
+
+Pairwise interaction
+
+Full (k=4): 68.77
+
+ΔNLL
+
+20
+
+0.6
+0.4
+0.2
+
+4
+
+u3
+
+,u
+
+4
+
+,u
+u2
+
+3
+
+,u
+u2
+
+u1
+
+,u
+
+4
+
+0.0
+3
+
+u4
+
+,u
+
+0.51
+
+u3
+
+u1
+
+0.08
+
+u2
+
+2
+
+0.18
+
+u1
+
+,u
+
+0.40
+
+u1
+
+ΔNLL
+
+40
+
+0
+
+Mean interaction: +0.07
+Sum of singles
+Pair ablation
+
+0.8
+
+60
+
+Figure 21: Per-direction DAS ablation. (A) Individual direction ∆NLL (dashed: full k=4 ablation). (B) Pairwise observed vs. expected (sum of singles). Super-additive pairs lie above the diagonal.
+
+S45
+
+Supplement: MLP vs. attention component attribution
+
+Zero-ablation of attention output vs. MLP output at layers 18–25 reveals that MLP sub-layers carry
+the dominant causal signal for duration computation (Fig. 22). For n=200 Set-F prompts, we measure
+∆NLL from zero-ablating (i) attention only, (ii) MLP only, and (iii) both.
+MLP ablation increases NLL at every layer from 18 to 24 (mean ∆NLL= +0.26), while attention
+ablation is positive only at layers 18–19 and 21, and is negative at layers 20, 22–24 (mean ∆NLL=
+−0.02). Negative attention ∆NLL means ablating attention improves duration performance—these
+heads actively interfere with the computation. At layer 25, both components have near-zero or
+negative ∆NLL, suggesting minimal contribution.
+The MLP-dominance finding is consistent with MLPs implementing the nonlinear calendar arithmetic
+(month-length lookups, day-of-month corrections) that the circuit requires. Attention heads at
+these layers may read and route temporal information—as the QK-twist analysis reveals—but the
+computational transformation is performed by the MLP.
+Fractional attribution
+1.0
+
+Attention
+MLP
+
+0.4
+
+Attn / (Attn + MLP)
+
+ΔNLL (ablated − clean)
+
+Component ablation: NLL increase
+
+0.3
+0.2
+0.1
+0.0
+
+0.8
+0.6
+0.4
+0.2
+
+−0.1
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+24
+
+0.0
+
+25
+
+Layer
+
+18
+
+19
+
+20
+
+21
+
+22
+
+23
+
+24
+
+25
+
+Layer
+
+Figure 22: MLP vs. attention attribution at layers 18–25. MLP ablation consistently increases NLL; attention
+ablation is near-zero or negative at late layers.
+
+41
+
+S46
+
+Supplement: cascading ablation of boundary-head groups
+
+The top-10 boundary heads span layers 1, 11, 12, 20, 23–25. Cascading ablation reveals an uneven
+causal distribution (Fig. 23). Early boundary heads (layers ≤ 22, n=4 heads: L11.H4, L12.H6,
+L20.H1, L1.H7) account for nearly all the causal effect (∆NLL= +0.455), while late boundary heads
+(layers > 22, n=6 heads across L23–L25) contribute negligibly (∆NLL= +0.016). The combined
+ablation (∆NLL= +0.489) shows weak super-additivity (+0.019): the interaction is positive but
+small.
+Per-layer breakdown reveals that layers 11 and 12 are the primary causal sites (∆NLL= +0.206
+and +0.238 respectively), while individual late-layer ablations at L23 and L25 slightly improve
+performance (∆NLL< 0). This refines the circuit architecture: QK-twist boundary heads at L23–25
+exhibit interpretable temporal offset structure (±30, ±61 days), but are not load-bearing for duration
+output. The computational bottleneck is at layers 11–12, closer to the DAS mediator site at L⋆ =1.
+Layer-group ablation
+
+Super-additive: +0.019 NLL
+
+10h
+
+4h
+
+0.5
+
+0.4
+
+0.4
+
+0.3
+
+0.3
+
+ΔNLL
+
+ΔNLL (ablated − clean)
+
+0.5
+
+0.2
+0.1
+
+0.47
+
+0.45
+
+0.49
+
+0.2
+0.1
+
+6h
+
+0.02
+
+0.0
+
+Early
+(L≤22)
+
+Late
+(L>22)
+
+0.0
+
+All
+boundary
+
+Early
+ΔNLL
+
+Late
+ΔNLL
+
+Expected
+(sum)
+
+Observed
+(combined)
+
+Figure 23: Cascading ablation. (A) ∆NLL by head group. (B) Observed combined drop vs. sum of group
+drops (weakly super-additive).
+
+S47
+
+Supplement: MLP SAE computation analysis
+
+We use GemmaScope MLP SAEs (gemma-scope-2b-pt-mlp-canonical, 16K features per layer,
+Wdec ∈ R16384×2304 ) as a transcoder substitute to decompose what each MLP writes to the residual
+stream into interpretable features. Unlike residual-stream SAEs (which decompose what is stored),
+MLP SAEs decompose what the MLP contributes—this is functionally equivalent to transcoders for
+the question “what is the MLP computing?”
+DAS alignment of MLP features. For each MLP SAE feature j with unit-norm decoder êj , we
+compute DAS-align(j)=∥UDAS êj ∥2 and probe-align(j)=∥Wprobe êj ∥2 . Across all 16,384 features
+at each layer L18–L25:
+• Jaccard of top-100 DAS-aligned vs. top-100 probe-aligned MLP features: ≤ 0.010 at every
+layer (mean 0.004)—the dissociation extends into the MLP computation.
+• Peak DAS enrichment: L25 (18.5× Haar null, 10 features above 10×), L24 (14.8×, 2
+features), L20 (12.9×, 1 feature).
+• The MLP SAE features at L18–L19 that are probe-aligned (writing calendar-date content)
+are a different set from those at L20–L25 that are DAS-aligned (writing duration content).
+MLP DAS energy contribution. Approximating the MLP’s contribution at layer L as ∆xL =
+xpost (L) − xpost (L−1) (valid since MLP dominates attention 2–4×):
+
+
+∥UDAS ∆xL ∥2
+DAS_contribution(L) = Ex
+∥∆xL ∥2
+Results (mean over 365 DOY prompts): L18 (0.6× null), L19 (0.7× null), L20 (3.2× null, peak),
+L21 (1.6×), L22 (1.5×), L23 (1.2×), L24 (2.0×), L25 (2.8×). Probe contribution peaks at L19
+42
+
+(4.3× null) then drops—confirming the two-stage structure. 6/8 MLP layers write positively into the
+DAS subspace.
+Month-specific MLP features. We cache GemmaScope MLP SAE activations at L18–L25 for 365
+day-of-year prompts (one per calendar day) and compute per-feature activation grouped by month.
+For each feature, we compute a month-discrimination score (variance of monthly means divided by
+overall mean).
+Features with statistically significant month discrimination (p<0.001, permutation test):
+• L21: 18 discriminating features (strongest layer by count)
+• L19, L20, L25: 13 features each
+• L22: 12 features
+Smoking-gun features:
+• Feature #7886 at L19 (“age-related numbers”; pos. logits: seventeen, nineteen, sixteen,
+eighteen): mean activation 3.98 (31-day months), 2.74 (30-day months), 1.83 (February).
+Pattern consistent with month-length sensitivity.
+• Feature #15148 at L22 (“law enforcement terms”): mean activation 0.86 (31-day), 0.18
+(30-day), 0.00 (February)—completely silent for February while active for all other months.
+• Feature #6208 at L21 (“modular systems”): 1.59 : 1.11 : 0.12 across 31-day/30-day/Feb.
+Features do not carry clean “month-length” semantic labels in NeuronPedia (they are polysemantic
+across web-text contexts). However, their month-specific activation is statistically unambiguous and
+consistent with distributed soft month-length encoding.
+Interpretation. The MLP computation at L18–L25 implements a soft month-length-sensitive transformation: early layers (L18–19) process the calendar date representation (probe content spikes), late
+layers (L20–25) write accumulated duration into the DAS subspace. This explains the ±30/±61-day
+QK-twist patterns: boundary heads route attention to single/double month boundaries, and the MLP
+layers accumulate the month lengths into a running duration total. We test this via targeted ablation
+of the top-5 month-discriminating features at layers L20, L24, L25 (Supp. S48).
+
+S48
+
+Supplement: MLP SAE feature causal ablation
+
+We ablate the top-5 month-discriminating MLP SAE features at each of L20, L24, L25 (identified
+by Exp 80’s month-discrimination score). For each feature j at layer L, we zero its SAE activation
+coefficient at the last token position during a forward pass, then measure the change in NLL for the
+correct duration token (∆NLLdur ) and for a matched set of 10 non-temporal control completions
+(∆NLLctrl ). The specificity ratio ρ = ∆NLLdur /|∆NLLctrl | separates duration-specific effects from
+generic disruption.
+Results. Across 15 features (5 per layer × 3 layers), ablating individual features produces near-zero
+absolute changes: |∆NLLdur | < 0.05 for 14/15 features. The sole exception is L25 feature #9608
+(∆NLLdur =+0.0003, ∆NLLctrl =0.0000, ρ=294.65×): ablating this feature uniquely raises duration NLL while leaving control NLL unchanged, confirming specificity despite the small absolute
+magnitude. Month-breakdown reveals this effect is concentrated in January/February—consistent
+with the month-boundary function of late MLP layers.
+Interpretation. The near-zero individual-feature effects are expected under the cooperative-subspace
+picture established in §5: the per-direction ablation of the DAS subspace showed a 59× super-additive
+cooperation ratio (individual directions contribute ∆NLL ∈ [0.08, 0.51]; full k=4 ablation yields
+∆NLL = 68.8). MLP SAE features lie on the readout-to-mediator spectrum; they are a partial readout
+of the DAS subspace (top-50 decoders span 4.7% of DAS variance), not individual load-bearing
+units. Ablating one feature removes ∼0.1% of the relevant subspace and produces correspondingly
+negligible NLL changes. Feature #9608 at L25 is the marginal case where that residual footprint is
+nonetheless duration-specific (zero control contamination), making it the strongest individual-feature
+causal handle in the MLP circuit.
+43
+
+S49
+
+Supplement: decoder-direction steering and transcoder comparison
+
+We test whether the causal gap between
+P the DAS subspace and sparse dictionary features can be
+bridged by steering—subtracting α· j êj from the residual stream at the hook point, where êj are
+unit-norm SAE or transcoder decoder directions [Templeton et al., 2024]—and whether GemmaScope
+pre-trained layer transcoders [Lieberum et al., 2024] produce different results from MLP SAEs. Five
+experiments (n=50 Set-F duration prompts each for GPU runs, α=3.0, G EMMA 2 2B) collectively
+demonstrate that the decomposition gap is structural.
+Error-node analysis (SAE dark matter). We decompose each DAS direction ui into its
+SAE-reconstructed component (top-k most-aligned features) and the residual “error” direction ei =ui −ûSAE
+, then steer with each component separately. Full DAS rank-4 ablation proi
+duces ∆NLL=+69.1 (massive causal effect). The SAE-reconstructed component produces
+∆NLL≈0 at every reconstruction depth k∈{5, 10, 20, 50, 100}; the error component likewise
+produces ∆NLL≈0; random controls are indistinguishable (Table 7). The reconstruction gap
+G(k)=1−∆NLLSAE /∆NLLDAS =1.000 at every k.
+Table 7: Error-node analysis. ∆NLL for DAS full ablation vs. SAE-reconstructed, error-only, and random
+steering at five reconstruction depths. n=50 Set-F prompts, α=3.0, G EMMA 2 2B.
+k
+
+DAS full
+
+SAE approx
+
+Error only
+
+Random
+
+5
+10
+20
+50
+100
+
++69.1
++69.1
++69.1
++69.1
++69.1
+
+−0.007
++0.002
++0.004
+−0.025
+−0.036
+
+−0.039
+−0.042
+−0.030
+−0.011
++0.004
+
+−0.002
+−0.002
++0.029
+−0.036
++0.005
+
+The gap is not about what the SAE misses (error directions are also causally inert via steering); it is
+about the mismatch between a rank-4 projection (which zeroes all variance in a 4D subspace) and a
+rank-1 directional subtraction (which perturbs along one direction, allowing the model to compensate
+via the remaining three cooperative dimensions).
+Transcoder
+vs
+MLP
+SAE. GemmaScope
+pre-trained
+layer
+transcoders
+(google/gemma-scope-2b-pt-transcoders, 16K JumpReLU features) map MLP inputs
+to outputs through a sparse bottleneck—a fundamentally different training objective from
+reconstruction-based SAEs. If the 4.7% DAS coverage by MLP SAEs reflected a dataset bias in
+SAE training [Chanin et al., 2025], transcoders should recover different features with higher DAS
+alignment. We find the opposite: both dictionaries fail equally.
+Table 8: Weight-space DAS alignment: transcoder (TC) vs MLP SAE at circuit layers. Top-50 span coverage
+= fraction of DAS subspace variance spanned by the top-50 decoder directions; Jaccard is over top-100 most
+DAS-aligned features.
+Layer
+
+TC span cov.
+
+SAE span cov.
+
+Jaccard
+
+L18
+L19
+L20
+L21
+L24
+L25
+
+0.050
+0.050
+0.051
+0.067
+0.076
+0.087
+
+0.080
+0.074
+0.078
+0.085
+0.085
+0.087
+
+0.010
+0.000
+0.000
+0.010
+0.005
+0.000
+
+Span coverage is 5–9% for both dictionaries—neither comes close to covering the rank-4 DAS
+subspace. The near-zero Jaccard (≤0.010) means the two dictionaries identify completely different
+features as most DAS-aligned, yet both fail equally at causal steering: individual features produce
+|∆NLL|<0.008 for both TC and SAE at L20, and group steering (k=5) is indistinguishable from
+random controls (|∆NLL|<0.005). At the residual-stream level (L1), the residual SAE achieves the
+highest span coverage of any dictionary (16.6%) vs. the L1 transcoder (5.2%), but neither produces
+measurable steering effects.
+Transcoder MLP pipeline gradient. Beyond span coverage, transcoders validate the directionality
+of the MLP pipeline. Across L18–L25, transcoder DAS alignment increases monotonically (mean
+44
+
+Haar ratio: 0.97× at L18–19 → 1.09× at L24–25; slope +0.019/layer) while probe alignment
+decreases (1.05×→0.98×; slope −0.011/layer), mirroring the MLP SAE read→write transition
+(Fig. 24). The rank correlation between transcoder and MLP SAE DAS alignment is Spearman
+ρ=1.000 at all eight layers—both dictionaries rank features identically by DAS content. Peak
+transcoder DAS enrichment is 19.4× Haar at L25 (cf. 18.5× for MLP SAEs). Logit-lens projection of the top DAS-aligned transcoder features at L24–L25 promotes copula tokens (is, was,
+Rus. yavlyayetsya; feature #10264 at L24, 14.0× DAS; feature #7290 at L25, 15.9× DAS), confirming the syntactic backbone operates through MLP computations. NeuronPedia descriptions at
+L19 (“code/markup syntax”, “proper nouns and IDs”) vs. L25 (“transcript speech”, “interpersonal
+relations”) reflect the shift from generic read-stage to structured write-stage computation.
+
+(a) Transcoder L20 #14897 (read→write boundary)
+(b) Transcoder L25 #7290 (peak DAS enrichment)
+Figure 24: GemmaScope transcoder features along the MLP pipeline. (a) Feature #14897 at L20 marks the
+read→write transition where probe alignment peaks and DAS alignment begins rising. (b) Feature #7290 at L25
+has 15.9× DAS Haar ratio and promotes copula tokens (is, was) in logit-lens projection, confirming transcoders
+independently identify the same syntactic backbone as MLP SAEs.
+
+Group decoder steering. DAS-aligned L1 feature groups of size k∈{1, 2, 3, 5, 10} with α=3.0 all
+produce |∆NLL|<0.025, with bootstrap 95% CIs crossing zero at every k. Random-feature controls
+are indistinguishable. No super-additivity is detected via steering (SA ratio ≤1.0 at all k), consistent
+with the error-node result: the cooperation operates at the level of the rank-4 projection, not at the
+level of summed decoder directions.
+Frozen-attention steering. Steering 10 DAS-aligned features at L1 with α=3.0 produces a base
+effect of only ∆NLL=+0.011—three orders of magnitude below the DAS ablation. Freezing
+attention patterns at boundary layers (L11–12) or MLP outputs at circuit layers (L18–25) produces
+pathway fractions FQK =1.26 and FMLP =2.12 with bootstrap CIs spanning [−1.4, 3.8] and [1.2, 10.0]
+respectively. The base effect is too small for meaningful pathway decomposition. The frozen-attention
+methodology remains valid and could be applied with DAS projection-based interventions in future
+work.
+Structural interpretation. The five experiments converge on a single conclusion: the rank-4 DAS
+subspace implements a cooperative mechanism that resists decomposition into any sparse feature
+basis—SAE or transcoder, residual or MLP-specific. The key distinction is between projection
+(removing all variance in a multi-dimensional subspace, which DAS ablation does) and perturbation
+(shifting the activation along a single direction, which decoder steering does). For a rank-1 causal
+mechanism, the two operations are equivalent. For a rank-4 cooperative mechanism with 59× superadditivity, perturbation along any single direction (or sum of directions that does not span the full
+4D subspace) allows the model to route around the intervention via the remaining dimensions. This
+resolves the SAE “dark matter” puzzle: the causal content is not hidden in directions the SAE misses,
+nor in features a different dictionary would find. It resides in the joint structure of a 4-dimensional
+subspace that no 1-dimensional intervention can disrupt.
+Figures: fig_error_node_analysis.pdf (Fig. 25), fig_transcoder_analysis.pdf (Fig. 26),
+fig_group_steering.pdf (Fig. 27), fig_frozen_attention_steering.pdf (Fig. 28).
+45
+
+Error-node analysis: SAE dark matter in the causal subspace
+
+A
+
+1.00
+
+1.00
+
+B
+
+1.00
+
+1.00
+
+1.00
+
+1.0
+
+Best SAE: k=20
+70
+
+Full gap (G=1)
+
++69.059
+
+60
+
+ΔNLL (duration prompts)
+
+Reconstruction gap G(k)
+
+0.8
+
+0.6
+
+0.4
+
+50
+40
+30
+20
+
+0.2
+10
++0.004
+
+0
+
+0.0
+10
+
+1
+
+10
+
+2
+
+DAS full
+
++0.029
+
+-0.030
+
+SAE best
+
+Error only
+
+Random
+
+Top-k SAE features per DAS direction
+
+Figure 25: Error-node analysis. (A) Reconstruction gap G(k) vs. top-k SAE features per DAS direction.
+G=1.00 at every depth: SAE-reconstructed directions capture zero causal effect via steering. (B) ∆NLL
+comparison at the best-k SAE reconstruction. DAS full ablation (+69.1) dwarfs all steering conditions.
+Transcoder vs MLP-SAE: DAS subspace coverage and steering
+
+A
+
+B
+Transcoder
+MLP SAE
+
+0.087
+0.085
+
+0.085
+
+DAS subspace coverage
+(top-50 features span)
+
+0.078
+
+0.067
+
+0.06
+0.050
+
+0.051
+
+0.050
+
+0.04
+
++0.0042
+
+0.004
+
+0.150
+
+0.076
+
+0.074
+
+0.166
+
+0.087
+
+DAS subspace coverage
+(top-50 features span)
+
+0.080
+
+0.08
+
+C
+
+0.175
+
+0.125
+
++0.0016
+
+ΔNLL at L20
+
+0.10
+
+0.100
+
+0.075
+
+0.002
++0.0008
+
+0.000
+
+0.052
+
+0.050
+-0.0012
+
+−0.002
+
+0.02
+0.025
+
+Figure 26: Transcoder vs MLP SAE. (A) DAS subspace span coverage (top-50 features) across MLP layers:
+0.000
+both0.00
+dictionariesL19achieve
+(B)L24L1 L25
+residual-stream
+comparison. L1
+(C) Steering−0.004
+comparison
+L20:SAEboth
+TC
+TC
+TC at SAE
+Random
+L1
+L18
+L20 5–9%.
+L21
+k=1
+k=5
+k=1
+k=5
+Transcoder
+Res SAE
+MLP Layer
+and SAE features produce
+∆NLL indistinguishable from random
+controls.
+-0.0027
+
+Group decoder steering resolves feature cooperation
+
+A
+
+B
+
+0.04
+0.03
+
+Linear (SA=1)
+
+0.75
+
+0.02
+
+Super-additivity ratio SA(k)
+
+ΔNLL (duration prompts)
+
+1.00
+
+DAS-aligned
+Random
+Probe-aligned
+
+0.01
+0.00
+−0.01
+−0.02
+
+0.50
+0.25
+0.00
+−0.25
+−0.50
+
+−0.03
+
+−0.75
+
+−0.04
+1
+
+2
+
+3
+
+5
+
+10
+
+1
+
+Group size k
+
+2
+
+3
+
+5
+
+10
+
+Group size k
+
+Figure 27: Group decoder steering. (A) ∆NLL by group size k: DAS-aligned and random feature groups
+are indistinguishable at every k. (B) Super-additivity ratio SA(k): no super-additive cooperation emerges via
+decoder-direction steering.
+
+46
+
++0.011
+
++0.005
+
+Frozen-attention steering: QK vs MLP pathway dissociation
+
+A
+
+B
+
+ΔNLL (duration prompts)
+
+0.010
+
+Pathway decomposition
+Other
+-238%
+
+0.005
+QK
+126%
++0.000
+
+0.000
+
+MLP
+212%
+
+−0.005
+
+−0.010
+
+Steer
+only
+
+Steer +
+freeze attn
+(L11-12)
+
+Steer +
+freeze MLP
+(L18-25)
+
+Random
+steer +
+freeze attn
+
+Freeze
+attn only
+
+Steer +
+freeze attn
+(L5,8)
+
+Steer +
+freeze MLP
+(L5,8)
+
+-0.003
+Figure 28: Frozen-attention
+steering. (A) ∆NLL across seven conditions; all values |∆NLL|<0.1, three orders
+-0.004
+of magnitude below DAS ablation. (B) Pathway decomposition
+pie chart (uninterpretable due to noise-floor base
+-0.007
+effect).
+
+S50
+
+Supplement: GemmaScope SAE feature dissociation
+-0.012
+
+We use GemmaScope 16K residual-stream SAEs [Lieberum et al., 2024] to ground the geometric
+probe–DAS dissociation at the feature-dictionary level. For each SAE feature j with unit-norm
+decoder direction êj ∈ Rd , we compute:
+DAS-align(j) = ∥UDAS êj ∥2
+
+and
+
+probe-align(j) = ∥Wprobe êj ∥2 .
+
+Across all nfeat =16 384 features at L⋆ =1:
+• The top-100 DAS-aligned features and top-100 probe-aligned features share zero overlap
+(Jaccard = 0.000; bootstrap 95% CI: [0.000, 0.000]; random null: 0.003).
+• Pearson correlation between per-feature DAS and probe alignment: r = −0.037 (p =
+2.9×10−6 ), indicating a weak anti-correlation — features are slightly less probe-aligned
+when more DAS-aligned.
+• SAE reconstruction quality at L⋆ =1 on Set-A prompts: 92.1% variance explained (GemmaScope is in-distribution for these prompts).
+Semantic audit via NeuronPedia. We query NeuronPedia [Lin, 2023] for AI-generated descriptions
+and logit promotion of the top SAE features aligned with each direction.
+Probe direction (L=1): Feature #12499 (probe-aligned; NeuronPedia: “references to specific months
+and their associated frequencies”) promotes month, Month, MONTH in its logits. Top activating
+examples: “each year in the month of October in NSW”, “bounced back in the month of February”,
+“the first month of the season”. This feature encodes calendar position (which month), not duration.
+DAS mediator (L=24, relay hub): Feature #2309 (DAS-aligned; NeuronPedia: “references to
+quantities of time and duration”) promotes months, weeks, days, years in its logits—exactly the
+vocabulary used to express duration answers. Top activating examples: “within the past 24 hours”,
+“get back in a few weeks”, “almost 10 years now”. This feature encodes duration quantity, not calendar
+position.
+Cross-context causal attribution. We ran a GPU experiment comparing feature activations and
+WU -gradient attribution across 20 duration prompts and 15 control copula prompts (geographic: “The
+capital of France is ”, arithmetic: “2 plus 2 is ”, descriptive). Results:
+47
+
+(a) Probe-aligned: #12499 (“specific months”)
+
+(b) DAS-aligned: #14703 (“the word ‘is’ ”)
+
+(c) DAS-aligned L24: #2309 (“quantities of time”)
+(d) Relay L12: #15596 (“forms of ‘to be’ ”)
+Figure 29: NeuronPedia feature audit. Probe-aligned feature #12499 (a) activates on calendar months and
+promotes month/Month in its logits. DAS-aligned features encode syntactic structure: #14703 (b) at L⋆ =1
+activates on copula “is”, #2309 (c) at relay hub L=24 promotes duration vocabulary, and relay midpoint #15596
+(d) at L=12 carries the copula chain. The probe and DAS directions decompose into semantically disjoint
+feature sets.
+
+• DAS feature mean attribution: 2.41 (non-zero; 20 duration prompts).
+• Probe feature mean attribution: 0.000 (exactly zero).
+• Ratio DAS/probe: 2.4×109 (effectively ∞ — probe features carry zero causal signal to the
+duration output logit).
+• Jaccard(top-50 attribution, top-50 probe): 0.000 — no shared features.
+The DAS features activate more on generic “is” contexts than on long duration prompts (activation
+specificity 0.05), confirming they are structural copula encoders at L⋆ =1 rather than semantic
+duration encoders — the causal effect flows through later layers, not directly from L⋆ =1 to output.
+The probe features, by contrast, have zero attribution regardless of context.
+Interpretation. At L⋆ =1, the DAS-aligned features are primarily structural (copula “is” position;
+see §5), encoding the computational context of a duration query rather than its semantic content.
+Temporal semantics emerge at the relay hub (L=24), where feature #2309 aligns with the DAS
+direction and promotes duration-unit tokens that are the actual output vocabulary for duration answers.
+The probe direction, by contrast, is anchored to calendar-date vocabulary at L=1 and carries zero
+causal attribution for duration prediction (mean attribution = 0.000). This validates the paper’s core
+claim: the 88° probe–DAS angle reflects a real functional dissociation between when (probe) and how
+long (DAS), confirmed at three levels: geometry (principal angles), SAE feature identity (Jaccard
+= 0.000), and causal attribution (probe = 0, DAS > 0).
+Completeness and selectivity of SAE features. Following the framework of Cunningham et al.
+[2024], we assess completeness (fraction of the causal effect captured by the feature set) and selectivity
+(fraction of feature activations attributable to the target concept). Completeness is low: individual
+feature ablation yields |∆NLL|<0.05 for 14/15 top DAS-aligned features; group steering with up to
+100 features yields ∆NLL≈0, while full rank-4 subspace ablation yields ∆NLL=+69 (Supp. S49).
+The 59× cooperation ratio confirms the causal effect is a distributed property of the 4-D subspace,
+not localizable to individual dictionary atoms. Selectivity is also low: of the 16,384 GemmaScope
+features at L⋆ , only 50.8% of temporal features exceed the Haar null for DAS alignment (binomial
+48
+
+p=0.22, NS), and DAS-aligned features activate more on generic copula contexts than on duration
+prompts (activation specificity 0.05). Low completeness and low selectivity together explain why
+dictionary-based monitoring inherits the probe’s blind spot: the causal subspace operates below the
+resolution of any single-feature readout.
+Cross-layer validation. Nine experiments validate the structural-backbone interpretation. Semantic census: querying NeuronPedia for temporal features across all 26 layers yields 2,463 features, of which only 50.8% exceed the Haar null for DAS alignment (binomial p=0.22, NS)—
+temporal features are not preferentially DAS-aligned. Feature stitching: cross-layer handoff matrices
+L
+Li
+(hjk =Wdec
+[j] · Wenci+1 [:, k]) show DAS→DAS enrichment of 5.8× (L1→L11), 6.7× (L11→L12),
+and 2.5× (L12→L24), all p<10−8 (Mann–Whitney). The top relay chains are syntactically labeled
+end-to-end: #14703 (“is”) → #190 (“verbs of being”) → #15596 (“to be”) → #16044 (“states of
+being”). Prompt-level co-activation: encoding 500 prompts through SAEs at layers [1, 11, 12, 24],
+DAS→DAS co-activation is 7.8× DAS→Random (p<0.001, bootstrap). Logit attribution chain:
+numeric-token Z-score decreases from L=1 (+0.15) to L=24 (−0.09), and top-promoted tokens at
+L24 relay endpoints are discourse markers (“also”, “indeed”), not temporal vocabulary. Together,
+these results confirm the DAS subspace acts as a structural backbone: individual features encode the
+syntactic copula frame while the 4-dimensional subspace carries temporal information cooperatively
+(59× cooperation ratio, G(k)=1.00 reconstruction gap).
+
+(a) Amplify probe #12499 (α=+150)
+
+(b) Amplify DAS #2309 (α=+150)
+
+(c) Suppress DAS #14703 (α=−150)
+(d) Suppress relay #15596 (α=−150)
+Figure 30: NeuronPedia steering demonstrations. (a) Amplifying probe feature #12499 at high strength
+floods the output with calendar-month vocabulary—pure month fixation. (b) Amplifying DAS duration feature
+#2309 at L=24 produces obsessive duration-unit enumeration (days, weeks, months, seconds). (c) Strongly
+suppressing copula feature #14703 causes near-total generation collapse, confirming the syntactic backbone
+is essential for coherent temporal output. (d) Strongly suppressing relay midpoint #15596 degrades natural
+language into code fragments and HTML tags—the model loses its linguistic scaffolding entirely. Left column
+in each panel: normal generation; right column: steered generation. Prompt: “If someone was born on March 5
+and today is June 10, the elapsed time is approximately.”
+
+Dictionary robustness: temporal-specialist SAE at L=12. A purpose-built temporal SAE
+(canrager/temporalSAEs; 9,216 features, BatchTopK, Layer 12 residual stream; Lubana et al.,
+2026) provides a dictionary-architecture stress test. Three findings:
+(i) Relay chain overlap. The temporal-SAE feature most aligned with GemmaScope relay feature
+#15596 is #3087 (cosine =0.59; NeuronPedia: “forms of ‘to be’ ”), followed by #1157 (“It is”, cosine
+49
+
+=0.54). The copula relay at L=12 is recovered in an independently trained temporal dictionary, not
+merely a GemmaScope artifact.
+(ii) DAS>probe dissociation. 45.1% of temporal-SAE features exceed the DAS Haar null vs. 34.6%
+for probe (same direction as GemmaScope: 50.3% vs. 32.0%). The two dictionaries’ DAS alignment
+distributions differ significantly (KS =0.065, p<10−21 ), but both show DAS-dominant structure.
+Top DAS-aligned temporal-SAE features are copula-labeled (#3087: “forms of ‘to be’ ”; #1157: “It
+is”), while probe-aligned features carry temporal content (#8935: “Order entered date”).
+(iii) Rank-1 bottleneck orthogonality. The temporal_rank_1 variant compresses its attention
+through a 4D-per-head bottleneck (16D total, 4 heads). Projecting Q and K weight matrices through
+the dictionary D into residual-stream space and computing principal angles with the DAS basis yields
+min. angle 80.0◦ and DAS variance captured 1.1%—the temporal prediction bottleneck is nearly
+orthogonal to the temporal computation subspace. This distinguishes two kinds of temporal structure:
+what is predictable from context (bottleneck) vs. what causally mediates duration answers (DAS).
+Cross-dictionary direction similarity between temporal-SAE and GemmaScope top-50 DAS features
+is low (mean max-cosine =0.27; 2/50 matched at > 0.7), confirming the two dictionaries decompose
+the same subspace using different atoms while agreeing on which subspace directions are enriched.
+
+(a) Temporal-SAE #3087 (“forms of ‘to be’ ”)
+(b) Temporal-SAE #8935 (“Order entered date”)
+Figure 31: Temporal-specialist SAE features at L=12. (a) Feature #3087 from the Lubana et al. temporal
+SAE (canrager/temporalSAEs, 9,216 features) is DAS-aligned and matches GemmaScope relay feature
+#15596 (cosine=0.59), recovering the copula relay in an independently trained dictionary. (b) Feature #8935
+is probe-aligned and activates on date-entry contexts, encoding calendar position rather than duration—the
+probe–DAS dissociation holds across dictionary architectures.
+
+S51
+
+Supplement: OV circuit decomposition
+
+A natural question is whether boundary heads are characterized not only by their QK attention patterns
+but also by the subspaces they read from (WV ) and write to (WO ). We compute the DAS-alignment
+score ∥UDAS WOV ∥2F /∥WOV ∥2F for all 26×8=208 heads and compare boundary vs. non-boundary
+heads.
+Result. Boundary heads achieve mean alignment 0.00211 vs. 0.00181 for non-boundary heads
+(ratio 1.17×; Mann–Whitney p=4.2×10−3 ). Crucially, both values are barely above the Haar null
+k/d=4/2304≈0.00174: boundary heads are 1.21× null while non-boundary heads are 1.06× null.
+The WOV matrices therefore do not preferentially target the DAS mediator subspace.
+Interpretation. The circuit mechanism is QK-mediated (boundary heads route attention to the right
+temporal positions via their ±30/±61 day ridges) rather than OV-mediated (they do not directly
+read from or write to the mediator subspace in their weight matrices). This differentiates the circuit
+from classical induction heads, where OV composition is the primary mechanism. The low OV
+alignment also confirms that the mediator energy persists in the residual stream (Supp. S43) via a
+residual-stream skip, not via repeated attention-head read/write operations.
+Attention pattern rank structure. Wang et al. [2025] report that attention outputs are low-rank
+across families and scales. This is consistent with three observations in our circuit. (i) The effective
+mediator dimension saturates at k≈4–6 across d ∈ {1536, 2304, 3584} (Supp. S28): the causal
+subspace is far lower-rank than the ambient dimension, and Prop. 3’s ρnull
+k ≍d/k ensures specificity
+50
+
+strengthens with width at fixed k. (ii) Boundary-head WQK matrices project temporal structure
+through a dhead =256 bottleneck, and the QK-twist ridges at {30, 61} days are rank-1 periodic patterns
+in that space (each ridge is determined by a single offset frequency). The circuit therefore implements
+low-rank temporal routing through a composition of QK attention (low-rank pattern selection) and
+residual-stream skip (low-rank signal propagation), consistent with the low-rank attention hypothesis.
+(iii) The 4-D DAS subspace is ≤2 dimensions per GQA key-value group (nkv =4 for Gemma 2 2B),
+suggesting the causal bottleneck may be the key-value rank itself.
+Mann-Whitney p=4.2e-03
+
+DAS alignment per head
+
+Ratio: 1.2×
+
+0.0035
+
+6
+
+Head
+
+0.0030
+4
+
+0.0025
+0.0020
+
+2
+
+0.0015
+
+‖UDAS WOV ‖2F /‖WOV ‖2F
+
+0.0035
+
+0
+0
+
+10
+
+0.0030
+0.0025
+0.0020
+0.0015
+
+20
+
+Non-boundary
+
+Boundary
+
+Layer
+Figure 32: OV circuit decomposition. (A) Heatmap of WOV DAS-alignment per head; boundary heads (gold
+squares) show only a modest 1.17× enrichment. (B) Violin comparison; the effect is statistically significant
+(p=0.004) but substantively small, confirming the circuit is QK-mediated rather than OV-mediated.
+
+S52
+
+Supplement: attribution flow graph
+
+To visualize the full circuit structure, we build a directed attribution graph over all 208 attention
+heads. Each edge (h1 , h2 ) carries weight AP(h1 ) · AP(h2 ) · QK-align(h1 , h2 ), where QK-align is
+the DAS-projected QK inner product normalized by Frobenius norms. We retain the top edges for
+visualization, colored by flow type.
+Key findings (Fig. 33).
+• Encoding zone (L0–5): L1H7 (the boundary head at L⋆ =1) is the DAS mediator anchor.
+• Processing zone (L6–15): L7H7 is the dominant routing hub; L11H4 and L12H6 are the
+early causal bottleneck (consistent with cascading ablation, Supp. S46).
+• Output zone (L16–25): L24H2 is the highest-AP relay hub, receiving convergent signal
+from multiple processing heads and redistributing to QK-twist boundary heads L25H5,
+L24H4, L23H1.
+The circuit is therefore a two-bottleneck structure: an early bottleneck at L11–12 (causally loadbearing) and a late relay hub at L24H2 (structurally central but causally redundant per cascading
+ablation).
+
+S53
+
+Supplement: probe-based monitoring stress tests
+
+The readout-mediator dissociation has direct consequences for proposals to use linear probes as
+runtime safety monitors. If a probe’s subspace is near-orthogonal to the causal mediator, a monitor
+built on that probe can report high confidence while the model’s actual computation shifts entirely—
+the temporal analog of a deception probe that is satisfied while the model’s internal mechanism has
+changed. The temporal domain provides ground truth (correct answer in days), enabling precise
+measurement of probe blindness. Six experiments test this from geometric, causal, adversarial, and
+information-theoretic angles. Table 9 summarizes the battery; subsections below give full protocols
+and results.
+†
+
+n=200; cf. ρ=1050 at n=332 (Supp. S11).
+51
+
+Attribution flow: DAS mediator (L ⋆ = 1) ⟶ boundary heads via intermediate relay hubs
+Encoding
+
+Processing
+
+L = 0–5
+
+Output
+
+L = 6–15
+
+L = 16–25
+
+L12H6
+bottleneck
+
+L7H7
+DAS mediator
+L ⋆ = 1 (L1H7)
+
+7
+
+L25H5
+
+6
+
+L24H4
+
+Head index
+
+5
+4
+
+L24H2
+relay hub
+
+3
+2
+
+DAS mediator (L1H7, L ⋆ = 1)
+
+1
+
+Boundary head (QK-twist)
+Relay hub (L24H2)
+Processing head (size ∝ AP)
+
+0
+
+Flow to boundary head
+Relay through hub
+Background flow
+
+0
+
+L11H4
+bottleneck
+
+L23H1
+
+5
+
+10
+
+15
+
+20
+
+25
+
+Layer
+
+Figure 33: Attribution flow graph. Directed edges show information flow from the DAS mediator (L⋆ =1,
+green) through intermediate hubs to boundary heads (gold). Gold arrows: flow to boundary heads. Coral arrows:
+relay through L24H2 hub. Node size proportional to AP score.
+Table 9: Probe-based monitoring stress tests. All experiments use G EMMA 2 2B at L⋆ =1, k=4 (DAS).
+Experiment
+
+Key metric
+
+Cross-probe universality (116)
+Adversarial injection (112)
+Mutual information (114)
+Specificity battery (113)
+Mock deception probe (110)
+Ablation invisibility (111)
+
+Max Haar deviation
+DAS error / probe error
+I(probe; DAS)
+ρ(DAS) vs. ρ(Probe)
+CV acc / angle to DAS
+∆NLL / probe shift
+
+Result
+
+Verdict
+
+◦
+
+PASS
+PASS
+PASS
+PASS
+PASS
+—
+
+2.8
+71d / 5.7d
+0.000 nats
+2650× vs. −6.5×†
+66% / 88.4◦
+54.5 / 16.7d
+
+Cross-probe universality (Exp. 116). One might argue that the 88◦ angle is specific to the circular
+probe’s harmonic encoding. We train seven probes with distinct targets on cached L⋆ =1 activations:
+circular DOY (k=2), month (12-class, k=4), season (4-class), day-of-week (7-class), quarter (4class), before/after solstice (binary, k=1), and the gradient probe (k=4). For each, we extract the
+weight-matrix SVD basis and compute principal anglesp
+to UDAS . Table 10 reports results. All seven
+land within 2.8◦ of their respective Haar nulls (arccos k/d), with the gradient probe showing the
+largest deviation (84.8◦ vs. 87.6◦ ) because it is optimized for ∇h NLL rather than R2 . The blind spot
+is a generic property of k ≪ d, not a quirk of one probe architecture.
+Table 10: Principal angles between seven probe bases and the DAS subspace (kDAS =4, d=2304).
+Probe target
+
+k
+
+Mean angle (◦ )
+
+Haar null (◦ )
+
+Dev.
+
+Circular DOY
+Month (12-class)
+Season (4-class)
+Day-of-week
+Quarter (4-class)
+Solstice (binary)
+Gradient (k=4)
+
+2
+4
+4
+4
+4
+1
+4
+
+87.6
+87.8
+88.7
+88.3
+87.8
+87.4
+84.8
+
+88.3
+87.6
+87.6
+87.6
+87.6
+88.8
+87.6
+
+0.7◦
+0.2◦
+1.0◦
+0.7◦
+0.2◦
+1.4◦
+2.8◦
+
+Adversarial subspace injection (Exp. 112). Exps. 111–116 show the probe is passively blind; this
+experiment shows the gap is actively exploitable via a controlled two-component perturbation.
+Construction. Let UM ∈ R4×2304 be the DAS basis and WP ∈ R2×2304 the circular-probe weight rows.
+We orthogonalize WP against UM via Gram-Schmidt to obtain ŨP (verification: θ(ŨP , UM )=90.0◦ ,
+removing the ∼0.2% cos2 leakage). For each test prompt with ground-truth day-of-year d, define a
+52
+
+All probes land at Haar null — blind spot is generic
+
+95.0
+
+Mean principal angle to DAS (°)
+
+92.5
+90.0
+87.5
+85.0
+82.5
+80.0
+Haar null
+Haar ±3°
+Measured angle
+
+77.5
+75.0
+
+ar
+
+ul
+irc
+
+C
+
+ss)
+
+Y
+
+DO
+
+Mo
+
+a
+-cl
+(12
+nth
+
+on
+eas
+
+S
+
+(4-
+
+s)
+
+s
+cla
+
+Da
+
+eek
+
+-w
+
+f
+y-o
+
+ss)
+
+cla
+
+(7-
+
+Qu
+
+er
+art
+
+ss)
+
+cla
+
+(4-
+
+So
+
+ce
+lsti
+
+)
+
+y
+nar
+
+(bi
+
+k=
+
+ent
+adi
+
+(
+be
+pro
+
+4)
+
+Gr
+
+Figure 34: Cross-probe universality. (A) Measured angle
+P vs. Haar null for seven probe architectures; all fall
+within the ±2σ null band (gray). (B) Subspace overlap ( cos2 θi / min(k1 , k2 )) between each probe and DAS;
+all are ≤2.2%. (C) Probe accuracy/R2 vs. angle to DAS: high performance does not predict causal alignment.
+
+target day d⋆ =((d+179) mod 365)+1 (∼ 180 days away) and construct:
+
+
+xadv = x + α U⊤
++ β Ũ⊤
+MUM µd − µd⋆
+P yd − ŷ
+|
+{z
+}
+|
+{z
+}
+∆DAS : shifts mediator toward d⋆
+
+,
+
+(5)
+
+∆probe : restores probe to d
+
+where µd is the mean activation at day d (averaged over 10 templates),
+yd =[sin(2πd/365), cos(2πd/365)] is the correct sin/cos target, and ŷ=ŨP xscaled + b is the
+current probe prediction. The DAS component ∆DAS is the projection of (µd −µd⋆ ) onto UM scaled
+by α; it lives entirely within the 4-dimensional mediator and is invisible to the orthogonalized probe.
+The probe component ∆probe is the least-norm correction that pushes the probe readout toward the
+correct date; it lives entirely within ŨP and cannot affect the mediator.
+Perturbation budget. Both ∆DAS and ∆probe inherit their scale from the activation geometry: the
+inter-date signal ∥µd −µd⋆ ∥ is ∼1.2× the within-date standard deviation, so α=1 corresponds to a
+one-signal-unit shift. At (α=3, β=2), the total perturbation norm ∥xadv −x∥/∥x∥ averages 3.6% of
+the activation norm. A norm-matched random perturbation (isotropic Gaussian scaled to the same ℓ2
+budget) shifts DAS content by 23.4 days on average (n=50 DOYs, 200 random draws)—expected,
+since a random direction in R2304 has nonzero projection onto the 4-D mediator. The targeted
+perturbation displaces 3× further (71 vs. 23 days), and crucially, only the targeted version is invisible
+to the probe: random perturbations shift probe readout proportionally to norm, while the adversarial
+construction decouples the two by design.
+Evaluation. We sweep α ∈ {0, 1, 3}, β ∈ {0, 1, 2} on n=50 evenly-spaced test DOYs (d ∈
+{1, 8, 15, . . . , 358}). Probe error is measured as circular angular RMSE (atan2 on the first harmonic);
+mechanism displacement is the nearest-neighbor DOY in DAS coordinates (UM xadv matched to the
+365-point reference set {UM µj }365
+j=1 ).
+Results. At (α=3, β=2), the DAS nearest-neighbor is displaced by 70.8 days while probe angular
+error is 5.7 days (Fig. 6). Crucially, α and β are decoupled: DAS error scales linearly with α
+(0 → 24 → 71 days) and is invariant to β; probe error is invariant to α and decreases with β. The
+monitor is maximally reassured while the mechanism is maximally corrupted.
+Mutual information between probe and mechanism (Exp. 114). Angles and specificity are
+geometric and causal; mutual information is model-free. We compute three per-prompt scalar
+53
+
+summaries on the 365 mean-per-DOY activations at L⋆ =1: zprobe (circular probe predicted DOY),
+zDAS (∥UDAS x∥2 , DAS energy), and zDOY (ground truth). The KSG estimator [Kraskov et al., 2004]
+with k=5 neighbors gives I(zprobe ; zDAS ) = 0.000 nats, while I(zprobe ; zDOY ) = 3.99 nats. A phaseshuffle null (n=200) yields p=1.0—the observed MI is indistinguishable from noise (Fig. 35). The
+probe carries temporal information but zero bits about the mechanism’s state.
+
+Information triangle
+
+Phase-shuffle null (p=1.000)
+
+Null 95th (0.076)
+
+25
+
+3
+
+20
+
+2
+
+15
+10
+
+1
+0
+I(probe
+
+Probe vs mechanism (no structure)
+
+Observed (0.0000)
+95th (0.076)
+
+DAS energy
+
+MI (nats)
+
+4
+
+5
+; DAS)
+
+I(probe
+
+; DOY)
+
+I(DAS;
+
+0
+
+DOY)
+
+170
+160
+150
+140
+130
+120
+
+0.00 0.02 0.04 0.06 0.08
+I(probe; DAS)
+
+0
+
+100
+200
+300
+Probe predicted DOY
+
+Figure 35: Mutual information. (A) MI bar chart: I(probe; DAS) and I(DAS; DOY) are at the null floor;
+only I(probe; DOY) is non-trivial. (B) Phase-shuffle null distribution with observed MI (red line) firmly within
+it (p=1.0). (C) Scatter of probe DOY vs. DAS energy: no structure.
+
+Extended specificity battery (Exp. 113). Using the ∆NLL values from 100 Set-F duration prompts
+on a single T4 instance, we compute ρ for four named subspaces against a null of 50 random k=4
+ablations: DAS (ρ=2650×), gradient probe (19×), PCA (15×), and the temporal probe (−6.5×—
+negative, meaning ablation slightly helps the model). A decision threshold of ρ > 5.0× (2× null
+median) correctly classifies DAS, gradient, and PCA as causal, and the probe as inert (Fig. 36).
+ρ per subspace
+PCA
+
+Null ρ distribution (random subspaces)
+Probe (-6.5)
+Gradient (19.1)
+PCA (14.7)
+Threshold (5)
+
+0.14
+
+14.7×
+
+0.10
+Density
+
+19.1×
+
+Probe
+
+Gradient
+
+0.39
+
+Probe
+
+-0.13
+
+0.08
+0.06
+
+-6.5×
+
+0.30
+
+DAS: 2651× →
+
+0.12
+Gradient
+
+Ablation damage
+PCA
+
+0.04
+0.02
+
+2651×
+
+DAS
+
+54.5
+
+DAS
+
+Causal threshold (5)
+
+Random ±2σ
+
+0.00
+0
+
+50
+
+100
+150
+200
+Specificity ratio ρ
+
+250
+
+300
+
+−10
+
+−5
+
+0
+
+5
+ρ
+
+10
+
+15
+
+20
+
+0
+
+10
+
+20
+
+30
+ΔNLL (nats)
+
+40
+
+50
+
+Figure 36: Specificity battery. (A) ρ per subspace; DAS is off the chart at 2650×. (B) Null ρ distribution with
+named subspaces marked. (C) ∆NLL per subspace with random ±2σ band.
+
+Mock deception probe (Exp. 110). We train a logistic-regression “confidence monitor” on L⋆ =1
+activations to predict whether the model is confident (NLL below median) or uncertain (NLL
+above median) about each duration prompt. The monitor achieves 66% cross-validated accuracy
+(AUROC = 0.76)—above chance, reading surface correlates of difficulty. Its weight vector sits at
+88.4◦ from the DAS subspace (0.4◦ from the Haar null at k=1, d=2304), with cos2 leakage of 0.08%
+and a theoretical ρ upper bound of 2.03×—firmly in the inert regime (Fig. 37). A purpose-built
+safety monitor inherits the same blind spot.
+Ablation invisibility (Exp. 111). Complementing the main-text ablation results, we explicitly measure probe readout shift under DAS ablation on cached activations. DAS ablation (∆NLL=54.5 nats)
+shifts the circular probe by only 16.7 days (4.6% of the 365-day calendar), while random ablations
+shift it by 5.9 ± 4.2 days. The DAS subspace holds 4.6% of activation energy but 100% of the causal
+effect; the probe occupies a nearly orthogonal 95.4% and sees a faint echo through the ∼0.2% cos2
+leakage amplified by the atan2 nonlinearity (Fig. 38).
+54
+
+Monitor accuracy ≠ causal relevance
+
+Confidence label distribution
+Confident (low NLL)
+Uncertain (high NLL)
+Median (1.0)
+
+10
+
+ρ (specificity ratio)
+
+Count
+
+8
+
+6
+
+4
+
+2
+
+0
+1
+
+2
+NLL (nats)
+
+3
+
+10
+
+3
+
+10
+
+2
+
+10
+
+1
+
+Safety probe ≈ random direction
+
+2651×
+
+Haar null
+(random)
+
+88.8°
+
+2.0×
+
+-6.5×
+
+0
+
+−10
+
+1
+
+−10
+
+2
+
+Safety probe
+↔ DAS
+
+4
+
+DAS
+
+Temporal
+probe
+
+Safety
+monitor
+
+88.4°
+
+80
+
+82
+
+84
+86
+88
+Principal angle (degrees)
+
+90
+
+92
+
+Figure 37: Mock deception probe. (A) NLL distribution split at median into confident/uncertain labels. (B) ρ
+comparison: DAS (2650×) vs. temporal probe (−6.5×) vs. safety monitor (≤2.0×). (C) Principal angle
+between the safety monitor and DAS sits at the Haar null.
+Probe shift under ablation
+10
+
+Probe is blind to mechanism destruction
+30
+
+Random ablations
+DAS ablation (16.65d)
+
+DAS subspace
+(destroyed)
+
+DAS ablation
+3-day threshold
+
+25
+
+8
+
+4.6%
+
+Probe shift (days)
+
+Count
+
+DAS = 4.6% of energy
+but 100% of causal effect
+
+6
+
+4
+
+20
+15
+10
+95.4%
+
+5
+
+2
+
+Remaining
+(untouched)
+
+0
+
+0
+5
+
+10
+15
+Probe angular shift (days)
+
+20
+
+0
+
+100
+
+200
+Day of year
+
+300
+
+Figure 38: Ablation invisibility. (A) Probe-shift histogram for 50 random ablations (gray) vs. DAS ablation (red).
+(B) Per-DOY probe shift under DAS ablation; most are below the 3-day threshold. (C) Energy decomposition:
+DAS holds 4.6% of activation norm but 100% of causal effect.
+
+S54
+
+Supplement: notation and abbreviations
+Symbol
+
+Definition
+
+d
+k
+L⋆
+UP ∈ Rk×d
+UM ∈ Rk×d
+θ̄(UP , UM )
+θi
+ρk
+ρnull
+k
+G(k, d)
+
+Residual-stream dimension (2304 for Gemma 2 2B; 3584 for 9B)
+Rank of probe or DAS subspace (primary results at k=4)
+Layer selected by peak probe R2 under 5-fold CV (L⋆ =1 for Gemma 2 2B)
+Probe subspace (top-k left singular vectors of circular Ridge weights)
+DAS mediator subspace (QR-parametrised, trained to maximise ablation NLL)
+Mean principal angle between UP and UM
+⊤
+i-th principal angle (arccos σi (UP UM
+))
+Specificity ratio: ∆NLLDAS /∆NLLrand
+Haar null for ρk ; ≍ d/k (Prop. 3c)
+Grassmannian: space of k-planes in Rd
+
+Abbreviation
+
+Expansion
+
+DAS
+SAE
+TFA
+BH
+NLL
+DOY
+GQA
+CKA
+INLP
+LEACE
+
+Distributed Alignment Search [Geiger et al., 2024]
+Sparse autoencoder [Cunningham et al., 2024]
+Temporal feature analysis [Lubana et al., 2026]
+Boundary head (QK-twist |z| ≥ 3, BH-FDR corrected)
+Negative log-likelihood
+Day-of-year (1–365)
+Grouped query attention
+Centered kernel alignment
+Iterative Null-space Projection [Ravfogel et al., 2020]
+Least-squares Concept Erasure [Belrose et al., 2023]
+
+55
+
+

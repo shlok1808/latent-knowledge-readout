@@ -1,0 +1,59 @@
+{
+ "slug": "c12-tigges-circuits-across-training-2407.10827",
+ "url": "https://arxiv.org/pdf/2407.10827",
+ "pdf_ok": true,
+ "pages": 26,
+ "chars": 102399,
+ "title_guess": "arXiv:2407.10827v2 [cs.LG] 25 Nov 2024  LLM Circuit Analyses Are Consistent Across Training",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 4,
+   "caption_start": " Figure 1: Task behavior across models and time (higher indicates a better match with expected behavior). Across tasks and scales, model abilities tend to develop at the same number of tokens. Gendere"
+  },
+  {
+   "id": "Figure 2",
+   "page": 6,
+   "caption_start": " Figure 2: The development of components relevant to IOI and Greater-Than, across models and time. Each line indicates the degree to which attention heads in the circuit at each timestep exhibit the r"
+  },
+  {
+   "id": "Figure 3",
+   "page": 7,
+   "caption_start": " Figure 3: The development over time of components relevant to IOI and Greater-Than in Pythia-160m. Each line indicates the degree to which an attention head, denoted as (layer, head), exhibits a give"
+  },
+  {
+   "id": "Figure 4",
+   "page": 8,
+   "caption_start": " Figure 4: A: Pythia-160m\u2019s IOI circuit at the end of training (300B tokens). The remaining plots show the percent of model IOI performance that is explained by the Copy Suppression and Name-Mover Hea"
+  },
+  {
+   "id": "Figure 5",
+   "page": 9,
+   "caption_start": " Figure 5: Exponentially-weighted moving average Jaccard similarity for circuit node sets over training token count. In general, larger models tend to have both higher average EWMA-JS and fewer abrupt"
+  },
+  {
+   "id": "Figure 6",
+   "page": 23,
+   "caption_start": "Figure 6: Number of Nodes in the circuits  Figure 7: Node Jaccard Similarity of intermediate circuits with the circuit at the final checkpoint. Compared with the exponential weighted moving average (F"
+  },
+  {
+   "id": "Figure 7",
+   "page": 23,
+   "caption_start": " Figure 7: Node Jaccard Similarity of intermediate circuits with the circuit at the final checkpoint. Compared with the exponential weighted moving average (Figure 5, main text), we see more fluctuati"
+  },
+  {
+   "id": "Figure 8",
+   "page": 24,
+   "caption_start": "Figure 8: Edge Weighted Jaccard Similarity of the intermediate circuits with the circuit at the final checkpoint. The similarity slowly climbs and remains high at the end. Compared with the exact node"
+  },
+  {
+   "id": "Figure 9",
+   "page": 26,
+   "caption_start": " Figure 9: Accuracy over training for four different datasets. Step numbers each represent approximately 2M tokens, so Step 1000 would be 2B tokens. We see that the rate of capability acquisition tend"
+  }
+ ],
+ "n_figures_tables": 9,
+ "section_heading_candidates": [],
+ "looks_abstract_only": false,
+ "has_references": true
+}

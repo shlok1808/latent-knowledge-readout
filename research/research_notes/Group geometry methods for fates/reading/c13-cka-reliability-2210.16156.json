@@ -1,0 +1,292 @@
+{
+ "slug": "c13-cka-reliability-2210.16156",
+ "title": "Reliability of CKA as a Similarity Measure in Deep Learning (Davari, Horoi, Natik, Lajoie, Wolf, Belilovsky; arXiv 2210.16156v2, Nov 2022)",
+ "sections_read": [
+  "Abstract",
+  "1 Introduction",
+  "2 Background on CKA and Related Work (Comparing representations; Quantifying similarity; CKA; Recent CKA results; Nonlinear CKA)",
+  "3 CKA Sensitivity to Subset Translation (Theorem 1; Corollary 2; CKA sensitivity to outliers and Corollary 3; CKA sensitivity to transformations preserving linear separability and Corollary 4; Extensions to nonlinear CKA)",
+  "4 Experiments and Results",
+  "4.1 CKA Early Layer Results",
+  "4.2 Practical Implications of Theoretical Results",
+  "4.3 Explicitly Optimizing the CKA Map (incl. Wider networks; Analysis of Modified Representations)",
+  "5 Discussion and Conclusion",
+  "Acknowledgements",
+  "References (skimmed)",
+  "Appendix A Experimental Details",
+  "A.1 Minibatch CKA",
+  "A.2 Network Architecture",
+  "A.3 Training Details",
+  "A.4 CKA Map Loss Balance (Algorithm 1)",
+  "Appendix B Additional Results",
+  "B.1 CKA Sensitivity to Invertible Linear Transformations",
+  "B.2 Wider Networks",
+  "B.3 RBF Kernel",
+  "B.4 CKA Map Optimization via Logistic Loss",
+  "B.5 CKA Optimization of ViT",
+  "B.6 Closer Look at the Early Layers",
+  "B.7 Out of Distribution Evaluation",
+  "Appendix C Proofs (Theorem 1; Corollary 2; Corollary 4)"
+ ],
+ "setup": {
+  "data": "Synthetic: 10K points uniform in a 1K-dimensional unit cube at the origin plus 10K points in a cube centred at (1.1, 0, ..., 0), linearly separable on dimension 1. CIFAR10 (10k training images for the translation test; test set for reported results). Patch Camelyon (CKA maps under distribution shift). CIFAR-10C (OOD accuracy after CKA manipulation).",
+  "models": "Vision only, no language models: a 9-layer CNN (8 conv + 1 FC, from Kornblith et al. 2019 Sec 6.1), trained as generalised, memorised (random labels), or left randomly initialised; ResNet-34 at widths x1, x2, x4, x5; VGG-style nets at widths x1, x2, x4, x8, x10; a small ViT (8 blocks, 12 heads, hidden size 256).",
+  "positions_layers": "Layer-by-layer CKA maps over all layers; layers 1-2 for the generalised/memorised/random comparison; the last hidden layer before the output for the SVM-preserving translation test and the PCA of manipulated representations.",
+  "baselines": "Original (unmanipulated) CKA maps and accuracies (e.g. CNN 85.9%, ResNet-34 x1 93.7%, VGG x1 85.9%, ViT 88.7%); published CKA conclusions of Kornblith et al. (2019) and Nguyen et al. (2021, 2022).",
+  "controls": "Distillation loss (or cross-entropy variant) to keep outputs while the CKA map is optimised, with an accuracy tolerance that scales lambda; results reported on the test set; OOD accuracy on CIFAR-10C; linear-probe accuracy as a usefulness check next to CKA; same vs different seeds; 5 seeds (Fig 2); 10 random instantiations (Fig 9); several RBF bandwidths (0.2, 0.4, 0.5, 0.8, 1.0 x median distance); minibatch CKA with the unbiased HSIC estimator."
+ },
+ "figures": [
+  {
+   "id": "Figure 1",
+   "page": 4,
+   "what_is_plotted": "Schematic of the transforms in the theory: (a) a copy of X where the subset X\\S is translated by c times v; (b) only one point is translated (outlier case); (c) two linearly separable subsets where the translation keeps the hyperplane and margins.",
+   "takeaway": "Defines 'subset translation', the simple transform under which linear CKA can be driven down.",
+   "numbers": "None (schematic).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 2",
+   "page": 6,
+   "what_is_plotted": "Linear CKA vs layer (1-8) between a generalised CNN and (blue) a randomly initialised CNN, (orange) a memorised CNN; mean and s.d. over 5 seeds.",
+   "takeaway": "Early layers of networks that learned very different (or no) features still get high CKA.",
+   "numbers": "Approx, read from figure: generalised vs memorised about 1.0 (L1), 0.85 (L2), 0.7 (L3), 0.5 (L4), 0.45 (L5), 0.4 (L6), 0.2 (L7), 0.03 (L8); generalised vs random about 0.67 (L1), 0.52 (L2), 0.45 (L3), 0.42 (L4), 0.32 (L5), 0.25 (L6), 0.35 (L7, wide band about 0.2-0.5), 0.17 (L8).",
+   "text_matches_figure": "partly: 'relatively high' early-layer CKA is clear for generalised vs memorised (about 1.0 / 0.85) but only moderate for generalised vs random (about 0.5-0.67)."
+  },
+  {
+   "id": "Figure 3 (not separately listed in manifest; its caption is merged into the Figure 2 entry)",
+   "page": 6,
+   "what_is_plotted": "Convolution filters of layers 1 and 2 for the generalised, random and memorised networks.",
+   "takeaway": "Filters look very different (smooth colour blobs for generalised, high-frequency noise for random, mostly noise-like for memorised) despite the high CKA in Figure 2.",
+   "numbers": "None (images).",
+   "text_matches_figure": "yes (qualitative)."
+  },
+  {
+   "id": "Figure 4",
+   "page": 6,
+   "what_is_plotted": "(a) CKA between synthetic two-cube data and a copy where one cube is translated, vs translation distance (0-50), for linear and RBF CKA (sigma = 1, 0.5, 0.2 x median). (b) Linear CKA between a CIFAR10 CNN's last-layer training representations and copies where a whole class (averaged over classes) or a single point (averaged over 10 points) is translated without crossing the SVM hyperplanes, vs distance (0-5000).",
+   "takeaway": "Translating part of a representation set, even along a direction that keeps class separability and margins, collapses CKA; one point out of tens of thousands is enough if moved far.",
+   "numbers": "Approx, read from figure: (a) linear, RBF median and RBF 0.5 median fall from 1.0 to about 0.5 by distance about 5 and about 0.2 by about 10, plateau about 0.1-0.15; RBF 0.2 median stays at about 1.0. (b) whole-class translation falls to about 0.2 within about 100-200 and plateaus near 0.18; single-point translation falls roughly linearly to about 0.15 at about 2300 and about 0.02 by 5000. Text: SVM separates the data with 'approx. 91% success rate'.",
+   "text_matches_figure": "partly: (a) matches 'quickly drop below 0.2'; for (b) the text says values 'quickly drop to 0', but the whole-class curve plateaus near 0.18 and the single-point curve only nears 0 at about 5000."
+  },
+  {
+   "id": "Figure 5",
+   "page": 7,
+   "what_is_plotted": "8x8 layer CKA maps of a CIFAR10 CNN: original and after optimising Eq. 3 to (1) maximise CKA between first and last layer, (2) maximise all, (3) minimise all; linear (top) and RBF sigma = 0.8 median (bottom).",
+   "takeaway": "The whole CKA map can be pushed toward a target with almost no accuracy change.",
+   "numbers": "From figure labels: original 85.9%; linear 85.4% / 85.5% / 85.4%; RBF 85.5% / 85.4% / 84.3%. Approx, read from figure: the 'maximise all' map is bright everywhere (about 0.6-1.0); the 'minimise all' map is near-identity with off-diagonal near 0.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 6",
+   "page": 7,
+   "what_is_plotted": "Comical target CKA maps (Christmas Tree, Goblin, Carrot, Bow & Arrow, Sword) and the maps the CNN reaches after optimisation, plus the original map.",
+   "takeaway": "Arbitrary target maps can be roughly reproduced while accuracy is kept.",
+   "numbers": "From figure labels: 85.5% (Christmas Tree), 85.3% (Goblin), 85.7% (Carrot), 85.6% (Bow & Arrow), 85.7% (Sword) vs original 85.9%.",
+   "text_matches_figure": "partly: shapes are recognisable (tree, carrot, sword clearly), fidelity varies (goblin blurry), consistent with the stated priority on accuracy."
+  },
+  {
+   "id": "Figure 7",
+   "page": 8,
+   "what_is_plotted": "ResNet-34 CKA maps at widths x2, x4, x5 (original and optimised toward the width x1 target map).",
+   "takeaway": "The 'block structure' attributed to wide networks can be removed so the map looks like a thin network's, with unchanged accuracy.",
+   "numbers": "From figure labels: original x2 93.9%, x4 93.7%, x5 93.7%; target x1 93.7%; optimised x2 93.3%, x4 94.1%, x5 93.2%. Approx, read from figure: original x4/x5 show a large bright block over roughly layers 10-30.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 8",
+   "page": 8,
+   "what_is_plotted": "PCA (PC1 vs PC2) of last-hidden-layer test representations before and after the Fig. 5 'maximise all layers' manipulation, coloured by class.",
+   "takeaway": "The optimiser raised CKA by pushing a subset of one class far out along one direction, the same mechanism as the theorem (emergent, not imposed).",
+   "numbers": "Approx, read from figure: original cloud spans PC1 about -40 to 45; after manipulation a stream of class-9 points extends to about PC1 150, PC2 100 while the rest stays near the origin.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 10",
+   "page": 17,
+   "what_is_plotted": "The Fig. 7 ResNet-34 maps (original and optimised on CIFAR10) evaluated on Patch Camelyon.",
+   "takeaway": "The manipulated maps still resemble the thin target under a large data shift.",
+   "numbers": "No numbers on the figure.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 11",
+   "page": 17,
+   "what_is_plotted": "VGG-style networks at widths x2, x4, x8, x10: original maps and maps optimised toward the width x1 target.",
+   "takeaway": "Same manipulation works on a second architecture with small accuracy cost.",
+   "numbers": "From figure labels: original x2 88.6%, x4 90.9%, x8 91.9%, x10 92.3%; target x1 85.9%; optimised x2 88.4%, x4 90.7%, x8 91.5%, x10 92.0%.",
+   "text_matches_figure": "partly: optimised maps resemble the target, but at this resolution the original wide-VGG maps already look broadly similar to the target, so this is a weaker demonstration than Fig. 7."
+  },
+  {
+   "id": "Figure 12",
+   "page": 18,
+   "what_is_plotted": "Fig. 5 manipulations repeated for linear CKA and RBF CKA at sigma = 0.2, 0.4, 0.8 x median distance.",
+   "takeaway": "When RBF CKA is informative it is just as manipulable; at sigma = 0.2 x median the map is nearly all about 1.0 (uninformative).",
+   "numbers": "From figure labels: original 85.9%; linear 85.4/85.5/85.4%; sigma 0.2: 85.6/85.4/85.3%; sigma 0.4: 85.7/85.3/81.7%; sigma 0.8: 85.5/85.4/84.3%.",
+   "text_matches_figure": "yes; note 'minimise all' at sigma 0.4 costs about 4 accuracy points (85.9 to 81.7)."
+  },
+  {
+   "id": "Figure 13",
+   "page": 19,
+   "what_is_plotted": "Fig. 5 linear manipulations with cross-entropy instead of distillation loss.",
+   "takeaway": "The manipulation does not depend on distillation.",
+   "numbers": "From figure labels: original 85.9%; 85.5% / 85.6% / 85.4%.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 14",
+   "page": 19,
+   "what_is_plotted": "ViT (8 blocks) CKA maps: original and the three manipulations.",
+   "takeaway": "Transformer CKA maps are also manipulable.",
+   "numbers": "From figure labels: original 88.7%; max first/last 88.3%; max all 88.5%; min all 85.2%.",
+   "text_matches_figure": "partly: 'minimal loss of performance' holds for the two maximise cases; minimising all costs 3.5 points."
+  },
+  {
+   "id": "Table 1",
+   "page": 19,
+   "what_is_plotted": "ViT architecture: 8 Transformer blocks, 12 attention heads, hidden size 256, 200 epochs.",
+   "takeaway": "The transformer tested is tiny and vision-only.",
+   "numbers": "8 blocks; 12 heads; hidden 256; 200 epochs.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 15",
+   "page": 20,
+   "what_is_plotted": "Bar chart of CKA at layers 1 and 2: generalised vs generalised, vs memorised, vs random, with same or different seeds.",
+   "takeaway": "Early-layer CKA is high whether or not the networks learned useful features, with or without a shared seed.",
+   "numbers": "Approx, read from figure: same seed: GvG about 1.0 / 0.97, GvM about 0.97 / 0.91, GvR about 0.69 / 0.52; different seeds: GvG about 1.0 / 0.90, GvM about 0.98 / 0.87, GvR about 0.57 / 0.42 (layer 1 / layer 2).",
+   "text_matches_figure": "partly: high for GvM, moderate for GvR."
+  },
+  {
+   "id": "Figure 16",
+   "page": 20,
+   "what_is_plotted": "Linear-probe accuracy on CIFAR10 test from layers 1 and 2 of the generalised, memorised and random networks.",
+   "takeaway": "Features with CKA about 0.9-1.0 to the generalised net (memorised net) are useless to a linear probe, so CKA does not track usefulness.",
+   "numbers": "Approx, read from figure: generalised about 71% (L1) and 73% (L2); memorised about 10-11%; random about 10%.",
+   "text_matches_figure": "yes. Reader caution: about 10% (chance) probe accuracy from a random-init conv layer is lower than one would usually expect and is not explained in the paper."
+  },
+  {
+   "id": "Figure 17",
+   "page": 21,
+   "what_is_plotted": "CIFAR-10C accuracy per corruption for the original and the three Fig. 5 manipulated networks.",
+   "takeaway": "The manipulated networks behave the same out of distribution, so the CKA change is not a hidden functional change.",
+   "numbers": "From legend: average original 66.0, max first/last 65.7, max all 66.0, min all 65.5. Approx, read from figure: per-corruption about 38 (gaussian noise) to about 84 (brightness). Caption says 'models from Figure17' (typo; text says Fig. 5).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 9 (not in manifest; page 16 image not available)",
+   "page": 16,
+   "what_is_plotted": "From the text only: linear CKA between X and XM for invertible random M with entries from N(mu, sigma^2), as a function of mu and sigma, mean and s.d. over 10 instantiations.",
+   "takeaway": "An invertible linear map, which keeps all information, can drive linear CKA to about 0.",
+   "numbers": "Not read from figure (no page image); text says CKA 'drops to 0' even for small mu and sigma.",
+   "text_matches_figure": "not checked: page image not provided."
+  }
+ ],
+ "key_results": [
+  {"claim": "Headline: CKA can be manipulated while the model's function barely changes.", "quote": "the CKA value can be easily manipulated without substantial changes to the functional behaviour of the models, and call for caution when leveraging activation alignment metrics.", "page": 1},
+  {"claim": "Theorem 1: translating a subset of representations can drive linear CKA down; the limit is Gamma(rho) x ||E_S[x]||^2 / E||x||^2 x sqrt(participation ratio), with Gamma(rho) = rho/(1-rho).", "quote": "any set of internal neural representations X (e.g., from hidden layers of a network) can be manipulated with simple transformations (translations of a subset", "page": 4},
+  {"claim": "Such a translation can be functionally inert: the next layer ignores it if its weights are orthogonal to the shift direction.", "quote": "it is also easy to eliminate or ignore in a single layer transformation, as long as the weight vectors associated with the neurons in the subsequent layer", "page": 4},
+  {"claim": "Corollary 3: a single far-moved outlier can make two nearly identical sets look dissimilar.", "quote": "This will drastically lower the CKA value between the two considered representations despite their obvious similarity.", "page": 5},
+  {"claim": "Corollary 4: CKA drops even when the translation keeps the same separating hyperplane and margins.", "quote": "translating one of the subsets in a direction that preserves the linear separability of the representations and the size of the margins while simultaneously decreasing the CKA", "page": 5},
+  {"claim": "Empirically (synthetic), both linear and RBF CKA collapse under subset translation.", "quote": "Despite these multiple notions of “similarity” between X and Y being preserved, the CKA values quickly drop below 0.2 for both linear and RBF CKA.", "page": 6},
+  {"claim": "Empirically (CIFAR10 CNN last layer), CKA collapses although a linear classifier still separates both sets.", "quote": "The CKA values quickly drop to 0, despite the existence of a linear classifier that can classify both sets of representations into the correct classes with > 90% accuracy.", "page": 7},
+  {"claim": "High early-layer CKA does not mean similar or useful features.", "quote": "considerably high CKA similarity values for early layers, does not necessarily translate to more useful, or similar, captured features.", "page": 6},
+  {"claim": "Whole CKA maps can be set by optimisation with little accuracy change.", "quote": "In cases (1) and (2), the network performance is barely hindered by the manipulations of its CKA map.", "page": 8},
+  {"claim": "The wide-network block structure can be removed without changing performance.", "quote": "the specific structures associated with wider network can be completely removed and the map can be nearly identical to the thinner model without changing the performance substantially.", "page": 9},
+  {"claim": "The optimiser rediscovered subset translation on its own: one class's subset was pushed out along a direction.", "quote": "We observe that a a single class has a very noticeable set of points that are translated in a particular direction, away from the general set of classes.", "page": 9},
+  {"claim": "Manipulated networks behave the same out of distribution.", "quote": "We observe that overall the average performance of these models on this out-of-distribution data remains effectively unchanged.", "page": 21},
+  {"claim": "Recommendation: use several measures and interpretable ones such as orthogonal Procrustes.", "quote": "Comparison methods that are straightforward to interpret or which are linked to well understood and simple theoretical properties such as solving the orthogonal Procrustes problem", "page": 9}
+ ],
+ "methods": [
+  {
+   "name": "Linear and RBF CKA (minibatch, unbiased HSIC) and layer-by-layer CKA maps",
+   "what_it_measures": "Alignment of the centred Gram matrices of two representation sets on the same inputs; invariant to orthogonal transforms and isotropic scaling.",
+   "which_fate_it_could_diagnose": "Descriptive only. Could support H1 (do pushback and tempting-option conditions change the geometry the same way?) but cannot by itself separate transformed (5) from unchanged (orthogonal re-encodings are invisible) or erased (6) from a subset shift (low CKA without information loss).",
+   "causal_followup_it_allows": "None by itself; must be paired with probes, Procrustes and patching.",
+   "data_and_compute_needed": "Cheap: activations for the same items under two conditions; minibatch estimator keeps memory low.",
+   "code_available": "Not stated in paper.txt."
+  },
+  {
+   "name": "Subset-translation and single-outlier stress tests (Thm 1, Cor 3, Cor 4; Fig 4)",
+   "what_it_measures": "How much a similarity measure drops when part of the data is shifted along a direction that keeps separability (or when one point is moved).",
+   "which_fate_it_could_diagnose": "A sanity check for our own pipeline before calling override vs erased vs transformed: inject a known shift on the flipped subset along a direction orthogonal to the correctness probe and confirm which of our measures react.",
+   "causal_followup_it_allows": "Synthetic ground truth; can be combined with steering the same direction in the model to see whether behaviour changes (bypass check).",
+   "data_and_compute_needed": "Trivial (synthetic or re-used activations).",
+   "code_available": "Not stated."
+  },
+  {
+   "name": "SVM-hyperplane-preserving translation (Cor 4; Fig 4b)",
+   "what_it_measures": "Whether two sets still share the decision geometry (same hyperplanes, margins) when a global similarity score says they differ.",
+   "which_fate_it_could_diagnose": "Bypass (2) and override (4): flipped items may differ from resisted ones along a direction orthogonal to the correctness readout; this test separates 'geometry changed in a behaviour-irrelevant direction' from 'correctness information lost'.",
+   "causal_followup_it_allows": "Steer or ablate the shift direction and check whether the answer changes.",
+   "data_and_compute_needed": "Cheap: a linear classifier per layer.",
+   "code_available": "Not stated."
+  },
+  {
+   "name": "Adversarial CKA-map optimisation with distillation (Eq. 3, Algorithm 1)",
+   "what_it_measures": "Whether a similarity measure can be driven to a target by training while outputs are held fixed.",
+   "which_fate_it_could_diagnose": "Stage B 'removed vs hidden' and H3: shows a geometry-based monitor can be gamed by optimisation; we could run a small LoRA version to test whether our fate monitor survives a model trained to fool it.",
+   "causal_followup_it_allows": "Compare mechanism (patching) before and after the manipulation.",
+   "data_and_compute_needed": "Cheap for CIFAR CNNs (15-30 epochs); for a 9B LLM a LoRA run with a geometry loss term (our estimate, not tested in paper).",
+   "code_available": "Not stated; pseudo-code for lambda balancing given (Algorithm 1)."
+  },
+  {
+   "name": "PCA visualisation of what changed",
+   "what_it_measures": "Which points or classes carry a similarity change.",
+   "which_fate_it_could_diagnose": "Whether a CKA/RSA difference between conditions is driven by a few items (outliers) or by a coherent group shift.",
+   "causal_followup_it_allows": "Identify the items/direction to patch.",
+   "data_and_compute_needed": "Trivial.",
+   "code_available": "Not stated."
+  },
+  {
+   "name": "Linear probe accuracy alongside CKA",
+   "what_it_measures": "Usefulness (linear decodability) of features, to check whether high or low CKA tracks it.",
+   "which_fate_it_could_diagnose": "Erased (6) vs decodable: CKA alone cannot say whether the correct answer is still decodable.",
+   "causal_followup_it_allows": "Probe-direction steering/ablation.",
+   "data_and_compute_needed": "Cheap.",
+   "code_available": "Not stated."
+  }
+ ],
+ "controls_worth_copying": [
+  "Synthetic stress tests with known ground truth (subset translation, single outlier, invertible linear map) run on our similarity pipeline before using it on real activations.",
+  "Always report a linear-probe (decodability) result next to any CKA/RSA number.",
+  "Check function out of distribution after any manipulation (they used CIFAR-10C).",
+  "Same vs different seeds and several random instantiations; several RBF bandwidths (and drop bandwidths where the map is uniformly about 1).",
+  "PCA of the representations to see what drives a similarity change.",
+  "Use several similarity measures, including Procrustes, and tie each to an explicit notion of similarity."
+ ],
+ "pitfalls": [
+  {"pitfall": "CKA is invariant to orthogonal transforms (rotation, reflection, permutation) and isotropic scaling, so a rotated or sign-flipped re-encoding of the whole set is invisible to it.", "quote": "it is invariant to orthogonal transformations such as permutations, rotations and reflections and to isotropic scaling.", "page": 3},
+  {"pitfall": "Outlier sensitivity: one point among tens of thousands can collapse CKA.", "quote": "the fact that the position of a single point out of tens of thousands can so drastically influence the CKA value raises doubts about CKA’s reliability", "page": 7},
+  {"pitfall": "Subset translations along behaviour-irrelevant directions collapse CKA; they can occur naturally and go unnoticed.", "quote": "these transformations can naturally occur in ANNs, as discussed in Sec. 3, and one wouldn’t necessarily know that they have occurred.", "page": 7},
+  {"pitfall": "Insensitive to removing low-variance directions that matter for probing (from Ding et al.).", "quote": "Ding et al. (2021) demonstrated that CKA lacks sensitivity to the removal of low variance principal components from the analyzed representations even when this removal significantly decreases probing accuracy.", "page": 3},
+  {"pitfall": "High CKA can come from a few dominant data points (block structure, Nguyen et al. 2022).", "quote": "the previously observed high CKA similarity between representations of later layers in large capacity models (so-called block structure) is actually caused by a few dominant data points", "page": 3},
+  {"pitfall": "Not a metric: no triangle inequality, so downstream comparisons of CKA values are shaky.", "quote": "Williams et al. (2021) discussed how CKA does not respect the triangle inequality, which makes it problematic to use CKA values as a similarity measure in downstream analysis tasks.", "page": 3},
+  {"pitfall": "RBF CKA with small bandwidth is uninformative.", "quote": "RBF CKA with σ = 0.2 × median is significantly less informative than RBF CKA with higher values of σ.", "page": 6},
+  {"pitfall": "An information-preserving invertible linear map can drive linear CKA to about 0.", "quote": "we observe that even for small values of µ and σ, CKA drops to 0", "page": 16},
+  {"pitfall": "Optimisation can set CKA maps to targets while behaviour stays, so CKA can be gamed.", "quote": "it is possible to achieve a strong CKA similarity between early and later layers of a well-trained network without noticeably changing the model behaviour.", "page": 8},
+  {"pitfall": "A single scalar discards geometry.", "quote": "Such measures are trying to condense a large amount of rich geometrical information from many high-dimensional representations into a single scalar", "page": 9},
+  {"pitfall": "Extra caution for models whose training is not controlled (e.g. open pretrained models, which is our case).", "quote": "especially when the procedure used to produce the model is not known, consistent, or controlled.", "page": 9},
+  {"pitfall": "Reader note, not stated by the paper: Fig 4b text says CKA 'drops to 0' but the whole-class curve plateaus near 0.18; Fig 16 random-init probes at about chance are unexplained; Fig 11 originals already look close to the target.", "quote": "", "page": null}
+ ],
+ "limitations_quote": "Indeed, some of the problematic transformations we identify are not necessarily encountered in many applications.",
+ "limitations_page": 9,
+ "limitations_extra": [
+  {"quote": "It is not our intention to cast doubts over linear CKA as a representation similarity measure in deep learning, or over recent work using this method.", "page": 9},
+  {"quote": "it is outside the scope of our work to theoretically analyze nonlinear kernel CKA", "page": 5}
+ ],
+ "future_work_quote": "Significant work is still required to understand these methods in the context of deep learning representation comparison, what notion of similarity each of them concretely measures",
+ "future_work_page": 9,
+ "bears_on_fates": [
+  {"fate": "5 transformed", "how": "CKA is invariant to orthogonal transforms, so a whole-set rotation or reflection (one kind of re-encoding) gives the same CKA as no change; and a low CKA can arise without any re-encoding. CKA alone cannot diagnose 'transformed'; use Procrustes alignment plus probe transfer across conditions.", "strength": "strong"},
+  {"fate": "6 erased", "how": "Low CKA does not mean the information is gone: a subset translation or one outlier drives CKA toward 0 while a linear classifier still separates classes with > 90% accuracy. Erasure must be shown with decodability (probes) and causal tests, not with CKA.", "strength": "strong"},
+  {"fate": "4 override", "how": "Our inference, not the paper's: an added competing signal on only the flipped items (e.g. a push along an 'agree with user' direction) is exactly a subset translation, so CKA between neutral and pressured activations would drop even if correctness stays decodable. A CKA drop may signal an added component rather than a loss; test by centring each group (flipped, resisted) separately and recomputing.", "strength": "moderate"},
+  {"fate": "2 bypass", "how": "The theorem's remark that a shift orthogonal to the next layer's weights has no functional effect is the geometric form of 'present but causally inert'; representational differences need patching before they count as mechanism.", "strength": "moderate"},
+  {"fate": "1 readout/threshold failure", "how": "Nothing direct; CKA says nothing about where a readout threshold sits.", "strength": "weak"},
+  {"fate": "3 not routed", "how": "Nothing direct.", "strength": "weak"}
+ ],
+ "bears_on_group_angle": "The most directly relevant warning for our RSA/CKA plans. (1) CKA/RSA compress the geometry of a point cloud into one number that a few items or a subset shift can dominate; for H1 (pressure-specific geometry) report bootstrap or leave-one-item-out ranges and check outliers with PCA. (2) CKA cannot see rotations/reflections, so it cannot carry the transformed-vs-erased call; pair it with orthogonal Procrustes (with and without a translation term), principal angles between class-mean subspaces, and probe transfer from neutral to pressured activations. (3) Flipped-vs-resisted point clouds may differ mainly by a mean shift of one group; principal angles on centred data would ignore that shift, while CKA would over-react to it, so track the mean-shift vector and the subspace separately. (4) Because CKA can be optimised to arbitrary values with behaviour fixed, a geometry measure is not safe as a Stage B pass/fail monitor. The paper itself recommends multiple measures, Procrustes and visualisation.",
+ "architecture_location": "No LLM or component-level claims. In CNN/ResNet/VGG/ViT layer maps it shows that 'where' conclusions drawn from CKA maps (early-vs-late similarity, wide-network block structure) can be created or erased without behaviour change, so a claim like 'pressure and neutral representations diverge at layer L' needs more than a CKA map. It also shows early layers score high CKA between networks with unrelated features (about 0.5-1.0 at layers 1-2, approx from Figs 2 and 15).",
+ "actionable_fix": "No model fix. It gives a monitor-design rule: do not use CKA (or any single-scalar similarity) as the test of whether a fix removed or merely hid a failure, since training can move CKA maps to targets with at most 0.5 accuracy points change in the linear-CKA CNN cases (85.9% to 85.4-85.5%; up to 1.6 points for RBF sigma 0.8, 85.9% to 84.3%). Use causal checks (patching), decodability (probes) and behaviour, and if a geometry monitor is kept, combine several measures and stress-test it with subset translations and outliers.",
+ "reuse_verdict": "adapt - copy the stress tests (subset translation, single outlier, invertible map) and the advice to pair CKA with Procrustes, probes and PCA; keep linear CKA only as a descriptive companion; avoid using CKA alone to call transformed vs erased, or as a Stage B monitor.",
+ "relevance_to_project": "Relevant as a methods warning for the group angle, not as evidence about LLMs: every experiment is a small vision model on CIFAR10 (2022), with no language models, facts or social pressure. Its subset-translation theorem maps closely onto our setting, where only the flipped items might be shifted along an 'agree with user' direction; that would crash CKA while the correct answer stays decodable. It should change how we use CKA/RSA for H1 and for transformed-vs-erased, and it argues for Procrustes plus probe transfer as the primary tools."
+}

@@ -1,0 +1,44 @@
+{
+ "slug": "w2-info-geometry-shared-2609.11063",
+ "url": "https://arxiv.org/pdf/2609.11063",
+ "pdf_ok": true,
+ "pages": 91,
+ "chars": 290658,
+ "title_guess": "The information geometry of large language models is shared, learned, and controllable Dario Picozzi",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 3,
+   "caption_start": " Figure 1: Behaviour identifies the resolved read-out, and geometry predicts local output change. a, Behavioural identification: held-out predictive loss after re-optimising nuisance parameters grows "
+  },
+  {
+   "id": "Figure 2",
+   "page": 7,
+   "caption_start": " Figure 2: Predictive geometry is shared across models and approaches human completion structure. a, Output Fisher\u2013Rao agreement against activation-space agreement on natural text for all 29 cross-tok"
+  },
+  {
+   "id": "Figure 3",
+   "page": 9,
+   "caption_start": " Figure 3: Language statistics shape the spectrum and its effective dimension. a, Profile-predicted against measured spectral exponent over ranks 8\u201332 for all 576 held-out model\u2013context cells (nine mo"
+  },
+  {
+   "id": "Figure 4",
+   "page": 10,
+   "caption_start": " Figure 4: Corpus statistics predict acquisition across model sizes. a, Ex-ante corpus n-gram margins predict subsequent margins without refitting for fresh facts disjoint from calibration at Pythia 7"
+  },
+  {
+   "id": "Figure 5",
+   "page": 12,
+   "caption_start": " Figure 5: The geometry predicts intervention cost and supports reusable control. a, At matched behaviour change, the measured ratio of off-target output divergence for Euclidean versus damped natural"
+  },
+  {
+   "id": "Table 1",
+   "page": 14,
+   "caption_start": "Table 1: One correction spans the evaluated operations. The result column reports the strongest reported matched comparison for each operation; the final column gives its evidence base. Intervals are "
+  }
+ ],
+ "n_figures_tables": 6,
+ "section_heading_candidates": [],
+ "looks_abstract_only": false,
+ "has_references": true
+}

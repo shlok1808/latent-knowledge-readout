@@ -1,0 +1,376 @@
+{
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 2
+  },
+  {
+   "id": "Figure 3",
+   "page": 5
+  },
+  {
+   "id": "Figure 6",
+   "page": 7
+  },
+  {
+   "id": "Figure 7",
+   "page": 7
+  },
+  {
+   "id": "Figure 5",
+   "page": 7
+  },
+  {
+   "id": "Figure 9",
+   "page": 9
+  },
+  {
+   "id": "Table 2",
+   "page": 13
+  },
+  {
+   "id": "Table 3",
+   "page": 13
+  },
+  {
+   "id": "Figure 10",
+   "page": 14
+  },
+  {
+   "id": "Table 4",
+   "page": 14
+  },
+  {
+   "id": "Figure 11",
+   "page": 16
+  },
+  {
+   "id": "Figure 12",
+   "page": 16
+  },
+  {
+   "id": "Table 5",
+   "page": 17
+  },
+  {
+   "id": "Figure 13",
+   "page": 19
+  },
+  {
+   "id": "Figure 14",
+   "page": 20
+  },
+  {
+   "id": "Figure 15",
+   "page": 20
+  },
+  {
+   "id": "Figure 16",
+   "page": 21
+  },
+  {
+   "id": "Figure 17",
+   "page": 22
+  },
+  {
+   "id": "Table 6",
+   "page": 23
+  },
+  {
+   "id": "Figure 18",
+   "page": 24
+  },
+  {
+   "id": "Figure 19",
+   "page": 25
+  },
+  {
+   "id": "Figure 20",
+   "page": 26
+  },
+  {
+   "id": "Figure 21",
+   "page": 27
+  },
+  {
+   "id": "Figure 22",
+   "page": 28
+  },
+  {
+   "id": "Figure 23",
+   "page": 28
+  },
+  {
+   "id": "Figure 24",
+   "page": 29
+  },
+  {
+   "id": "Figure 25",
+   "page": 30
+  },
+  {
+   "id": "Figure 26",
+   "page": 31
+  },
+  {
+   "id": "Figure 27",
+   "page": 32
+  },
+  {
+   "id": "Figure 28",
+   "page": 33
+  },
+  {
+   "id": "Figure 29",
+   "page": 33
+  },
+  {
+   "id": "Figure 30",
+   "page": 34
+  },
+  {
+   "id": "Figure 31",
+   "page": 35
+  },
+  {
+   "id": "Table 7",
+   "page": 36
+  },
+  {
+   "id": "Figure 32",
+   "page": 37
+  },
+  {
+   "id": "Figure 33",
+   "page": 38
+  },
+  {
+   "id": "Figure 34",
+   "page": 39
+  },
+  {
+   "id": "Table 8",
+   "page": 40
+  },
+  {
+   "id": "Table 9",
+   "page": 40
+  },
+  {
+   "id": "Figure 35",
+   "page": 41
+  },
+  {
+   "id": "Table 10",
+   "page": 42
+  },
+  {
+   "id": "Figure 36",
+   "page": 43
+  },
+  {
+   "id": "Figure 38",
+   "page": 45
+  },
+  {
+   "id": "Figure 39",
+   "page": 45
+  },
+  {
+   "id": "Figure 40",
+   "page": 46
+  },
+  {
+   "id": "Figure 41",
+   "page": 46
+  },
+  {
+   "id": "Figure 42",
+   "page": 47
+  },
+  {
+   "id": "Table 11",
+   "page": 48
+  },
+  {
+   "id": "Table 12",
+   "page": 49
+  },
+  {
+   "id": "Figure 43",
+   "page": 49
+  },
+  {
+   "id": "Table 13",
+   "page": 49
+  },
+  {
+   "id": "Table 14",
+   "page": 50
+  },
+  {
+   "id": "Table 15",
+   "page": 50
+  },
+  {
+   "id": "Table 1",
+   "page": 51
+  },
+  {
+   "id": "Table 16",
+   "page": 51
+  },
+  {
+   "id": "Figure 44",
+   "page": 51
+  },
+  {
+   "id": "Figure 45",
+   "page": 52
+  },
+  {
+   "id": "Figure 46",
+   "page": 52
+  },
+  {
+   "id": "Figure 47",
+   "page": 52
+  },
+  {
+   "id": "Figure 48",
+   "page": 53
+  },
+  {
+   "id": "Figure 49",
+   "page": 53
+  },
+  {
+   "id": "Figure 50",
+   "page": 53
+  },
+  {
+   "id": "Figure 51",
+   "page": 53
+  },
+  {
+   "id": "Figure 52",
+   "page": 53
+  },
+  {
+   "id": "Figure 53",
+   "page": 54
+  },
+  {
+   "id": "Figure 54",
+   "page": 54
+  },
+  {
+   "id": "Figure 55",
+   "page": 54
+  },
+  {
+   "id": "Figure 56",
+   "page": 54
+  },
+  {
+   "id": "Figure 57",
+   "page": 55
+  },
+  {
+   "id": "Figure 58",
+   "page": 56
+  },
+  {
+   "id": "Figure 59",
+   "page": 57
+  },
+  {
+   "id": "Figure 60",
+   "page": 58
+  },
+  {
+   "id": "Figure 61",
+   "page": 58
+  },
+  {
+   "id": "Figure 62",
+   "page": 59
+  },
+  {
+   "id": "Figure 63",
+   "page": 60
+  },
+  {
+   "id": "Figure 64",
+   "page": 61
+  },
+  {
+   "id": "Figure 65",
+   "page": 61
+  },
+  {
+   "id": "Figure 66",
+   "page": 62
+  },
+  {
+   "id": "Figure 67",
+   "page": 62
+  },
+  {
+   "id": "Figure 68",
+   "page": 62
+  },
+  {
+   "id": "Figure 69",
+   "page": 63
+  },
+  {
+   "id": "Figure 70",
+   "page": 63
+  },
+  {
+   "id": "Figure 71",
+   "page": 63
+  },
+  {
+   "id": "Figure 72",
+   "page": 63
+  },
+  {
+   "id": "Figure 73",
+   "page": 63
+  },
+  {
+   "id": "Figure 74",
+   "page": 64
+  },
+  {
+   "id": "Figure 75",
+   "page": 64
+  },
+  {
+   "id": "Figure 76",
+   "page": 64
+  },
+  {
+   "id": "Figure 77",
+   "page": 64
+  },
+  {
+   "id": "Figure 78",
+   "page": 65
+  },
+  {
+   "id": "Figure 79",
+   "page": 65
+  },
+  {
+   "id": "Figure 80",
+   "page": 66
+  },
+  {
+   "id": "Figure 81",
+   "page": 66
+  }
+ ]
+}

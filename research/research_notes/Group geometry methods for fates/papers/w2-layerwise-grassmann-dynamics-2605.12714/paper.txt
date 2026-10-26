@@ -1,0 +1,2989 @@
+arXiv:2605.12714v1 [cs.LG] 12 May 2026
+
+Layer-wise Representation Dynamics: An Empirical
+Investigation Across Embedders and Base LLMs
+
+Jingzhou Jiang Yi Yang Kar Yan Tam
+The Hong Kong University of Science and Technology
+jjiang105@connect.ust.hk
+imyiyang@ust.hk, kytam@ust.hk
+
+Abstract
+Hidden states change substantially across the layers of modern language models,
+but most layer-wise analyses focus on one aspect of that change. We propose
+Layer-wise Representation Dynamics (LRD), a framework with three layer-wise
+measurement families: Frenet (Grassmann speed and curvature) for global subspace
+motion, Neighborhood Retention Score (NRS) for local nearest-neighbor retention,
+and Graph Filtration Mutual Information (GFMI) for alignment with the final layer.
+Applying LRD to 31 models (encoder-based and decoder-based embedders, plus
+base LLMs) on 30 MTEB tasks reveals architectural and task-level differences
+that are not apparent from final-layer representations alone. We then use LRD
+for two applications: label-free model selection and inference-time layer pruning.
+For selection, all three model-level scores correlate positively with downstream
+MTEB performance, with end-to-end subspace displacement (d0,L ) the strongest,
+and the same direction holds on a smaller base-LLM MMLU panel. For pruning,
+GFMI is the only measurement-guided rule that beats Random at the 15% and 20%
+budgets and has the best median change at every budget. Frenet is effective only at
+the lightest budget, while NRS does not transfer from model selection to pruning.
+These results show that layer-wise structure provides signal for both interpretation
+and deployment decisions.
+
+1
+
+Introduction
+
+Modern language models do not form their hidden representations in the same way. Embedders
+(encoder-based or decoder-based) and base large language models (LLMs) may organize the same
+examples through different layer-wise structures before producing their final-layer states. Understanding these structures matters because the semantic space is shaped across layers, not only by the final
+embedding. Representation-similarity methods make hidden states comparable across layers and
+models [31, 73], while recent layer-wise analysis shows that intermediate layers can reveal structure
+that is not captured by the final layer alone [60]. We therefore analyze the layer-wise representation
+sequence each model produces on the same inputs, and compare these sequences across models from
+multiple perspectives.
+Comparing these sequences from multiple perspectives in a unified way is still uncommon. Layerwise studies have made the sequence visible but typically emphasize one criterion, such as a probe, a
+similarity score, or a grouping rule [29, 18, 14, 39]. Methods that use representations as evidence,
+such as label-free model selection [11], usually rely on a single representation, commonly the final
+embedding, and rarely incorporate the layer-wise view. The formation process is therefore underused
+both for interpretation and for representation-based decisions.
+Motivated by these observations, we introduce Layer-wise Representation Dynamics (LRD), an
+analysis built from three complementary layer-wise measurement families. Each family targets a
+Preprint.
+
+distinct aspect of the layer sequence, and the three are complementary rather than redundant. One
+family measures global subspace motion, another local nearest-neighbor retention, and the third
+alignment with the final layer. For each model-task pair, LRD follows the same examples through the
+network, making it possible to distinguish layers that redirect the representation globally, maintain
+local neighborhoods, or already resemble the final-layer organization.
+We apply LRD to 31 off-the-shelf models on 30 MTEB tasks. The pool contains 25 embedders
+(encoder-based and decoder-based) and 6 base LLMs. The tasks include classification, retrieval,
+semantic textual similarity, reranking, and duplicate detection. Across this set of model-task pairs,
+we can compare layer-wise behavior between architectures and across task types.
+Beyond analysis, we use LRD for model selection and layer pruning. Our contributions are threefold.
+(1) We introduce LRD, a framework of three complementary measurement families that capture
+global subspace motion, local-neighborhood retention, and final-layer alignment across layers. (2)
+LRD reveals architectural and task-level differences that final-layer representations alone do not show.
+(3) The LRD measurements inform two applications: model selection on MTEB, where the three
+model-level scores correlate positively with downstream performance and d0,L is strongest, and layer
+pruning, where GFMI beats Random at the 15% and 20% budgets and has the best median change at
+every budget.
+Section 2 reviews related work on layer-wise analysis, representation-based assessment, and the
+foundations of LRD. Section 3 defines the three measurement families. Section 4 describes the
+model-task setup and family-level observations, Sections 5–6 present the two application studies, and
+Section 7 discusses limitations and concludes the paper.
+
+2
+
+Related Work
+
+2.1
+
+Layer-wise representation analysis
+
+Intermediate layers of modern language models carry linguistic and semantic structure rather than
+acting as uniform stages between input and output. Probing studies on BERT and related encoders
+locate syntactic and semantic information at specific depths [65, 25]. Best-layer and progression
+analyses add that semantic signals are not always strongest at the final layer and that hidden-state
+sequences fall into recognizable layer groups [60, 29, 18]. A complementary line of work documents
+concrete layer-wise phenomena: objective-dependent bottom-up accumulation [69], anisotropy and
+narrow-cone behavior at deeper layers [13, 17], and broader transformer-geometry observations on
+subspace structure, phase-like changes, and trajectory shape [55, 68, 27, 37]. Together these results
+establish the layer sequence as an informative object of study and motivate the layer-wise analysis we
+develop with LRD.
+Across this body of work, however, the chosen unit of analysis differs substantially: a probe target, a
+similarity score between two layer matrices, a coarse layer block, or a geometric quantity such as
+subspace orientation or curvature. Each choice answers its own question well, but their evidence has
+rarely been brought together across multiple model families and task types under one protocol. LRD
+does not propose yet another single criterion. It specifies a uniform layer-wise extraction protocol and
+reports three complementary measurement families on the same model-task pairs, so that cross-model
+and cross-task comparisons rest on a common measurement basis.
+2.2
+
+Representation-based model assessment
+
+Internal representations also serve as evidence for model assessment before full task-specific evaluation. Representational similarity analysis (RSA) and its neural-network extensions compare
+systems through pairwise relations among examples or through learned representation matrices
+[31, 73, 32, 54, 47, 10]. Alignment-based criteria ask whether an embedding space is consistent with
+an external linguistic or structural reference [67, 22]. Effective-rank methods such as RankMe use
+the spectrum of learned representations as an unsupervised proxy for downstream performance [19],
+and information-sufficiency criteria such as EMIR rank embedders by representation-level signals
+before benchmark evaluation [11]. These methods establish that representation structure can carry
+informative pre-evaluation signal, but the evidence is typically a single representation per model, most
+often the final embedding. The formation process by which that embedding is reached is largely set
+2
+
+aside. LRD’s model-selection study uses this formation process directly: it treats the full layer-wise
+sequence on the same examples as label-free evidence for downstream MTEB performance.
+2.3
+
+Metric foundations and roles
+
+LRD combines three measurement families as complementary diagnostics under a shared layer-wise
+analysis protocol. We do not claim a single underlying theory that unifies them into one score. Each
+family targets a different kind of layer-wise change and is grounded in its own line of prior work. The
+preceding sections motivate two constraints on LRD: representations should be followed across depth,
+and the resulting evidence should not be collapsed into a single holistic similarity value. Additional
+layer-wise probing work reinforces this point by showing that the informative layer can depend on
+feature type, architecture, and downstream use [40, 28, 15, 78]. For LRD, the implication is not to
+choose another best layer or another single similarity score, but to keep distinct measurement roles.
+Dominant-subspace rotation, local-neighborhood reordering, and intermediate-to-final alignment are
+different events, even when they produce similar aggregate similarity. To isolate the global subspace
+component, LRD adopts Grassmannian geometry, where principal-angle distances give a standard
+notion of subspace displacement [1]. This choice is consistent with prior transformer-geometry
+analyses of how hidden-state structure changes across layers [55, 68]. The Grassmann speed and
+curvature in LRD belong to this subspace role and are not intended as proxies for local or graph-level
+structure.
+For the local component, manifold-learning and graph-regularization methods represent local structure
+through neighborhood graphs [64, 3, 4], a view directly relevant to embedding-based retrieval and
+matching, where neighborhood structure and embedding-space distances matter for task performance
+[48, 56]. The Neighborhood Retention Score (NRS) builds on this lineage. For the final-layer
+alignment component, Graph Filtration Mutual Information (GFMI) combines three traditions:
+alignment-style comparison [67, 22], filtration-based multi-scale graph comparison [12], and mutualinformation partition comparison [52]. The goal of bundling these three families is not to collapse
+them into one number, but to retain their distinct sensitivities within a single evaluation protocol.
+
+3
+
+Layer-wise Measurement Families
+
+In this section, we define three measurement families that quantify how representations evolve across
+layers. For each task, we fix a set of N examples, indexed by i = 1, . . . , N . For a model with
+layers 0, . . . , L, layer l produces a representation matrix Xl ∈ RN ×d , where d is the representation
+dimension and the i-th row of Xl is the representation of example i at layer l. The measurements are
+computed on the discrete matrix sequence X0 , X1 , . . . , XL .
+3.1
+
+Global subspace motion: Grassmann speed and curvature
+
+The Frenet measurement family represents each layer by its dominant linear subspace and treats
+the layer sequence as a discrete path in the space of subspaces, with adjacent-layer distance and
+three-layer curvature playing the roles of speed and bending. We draw on the subspace reduction
+used by Raghu et al. [54] and compare centered representation matrices through their leading singular
+subspaces. For each model-task pair, we fix the subspace dimension r as the smallest rank that
+explains 95% of the variance of the final-layer representation XL . We use the final layer because XL
+is the representation used by downstream tasks, and we apply the same r to every layer so that all
+subspaces lie in Gr(d, r), the Grassmann manifold of r-dimensional subspaces of Rd . For layer l,
+Ql ∈ Rd×r denotes an orthonormal basis for this subspace, given by the top-r right singular vectors
+of the centered Xl .
+Distances between layers are then computed on Gr(d, r). If θ1 , . . . , θr are the principal angles
+between Qa and Qb , we use the Grassmann geodesic distance [1]
+!1/2
+r
+X
+2
+dGr (Qa , Qb ) =
+θi
+,
+θi = arccos σi (Q⊤
+(1)
+a Qb ).
+i=1
+
+Here σi (·) denotes the i-th singular value. Write da,b = dGr (Qa , Qb ) for the distance between layers
+a and b. The adjacent-layer speed is sl = dl,l+1 . Large sl means that the dominant directions still
+change from layer l to layer l + 1. Small sl indicates that the global subspace is relatively stable.
+3
+
+To capture whether the subspace path changes direction, we also compute Menger curvature over
+triples of consecutive layers. The curvature assigned to the middle layer is
+κl+1 =
+
+4A
+dl,l+1 dl+1,l+2 dl,l+2
+
+,
+
+(2)
+
+where A is thep
+triangle area computed from sides a = dl,l+1 , b = dl+1,l+2 , c = dl,l+2 via Heron’s
+formula, A = p(p − a)(p − b)(p − c) with p = (a + b + c)/2. Degenerate triples, such as zeroarea triangles, are assigned zero curvature, matching the implementation. The next measurement
+family shifts from global subspaces to local neighborhoods.
+3.2
+
+Local neighborhood retention: NRS
+
+Global subspace motion does not determine local neighbor retention. The NRS measurement family
+measures local retention directly by comparing nearest-neighbor sets for the same anchors in adjacent
+layers. We adapt the neighborhood-overlap idea of Valeriani et al. [68], instantiated here as cosine
+kNRS -nearest-neighbor sets over the rows of each Xl .
+Let kNRS be the NRS neighborhood size, and let A ⊆ {1, . . . , N } be a fixed random anchor
+set used across all layers, with |A| = min(500, N ) in our experiments. For anchor i ∈ A, let
+Nl (i) = kNNkNRS (i; Xl ) be the indices of the kNRS nearest rows to row i of Xl under cosine
+distance, excluding i itself. The Jaccard retention between adjacent layers is
+Jl (i) =
+
+|Nl (i) ∩ Nl+1 (i)|
+,
+|Nl (i) ∪ Nl+1 (i)|
+
+Jl =
+
+1 X
+Jl (i).
+|A|
+
+(3)
+
+i∈A
+
+High Jl means that layer l + 1 preserves the local neighborhoods induced by layer l. Low Jl means
+that many anchors change nearest-neighbor sets. The next measurement family shifts the reference
+from adjacent layers to the final layer.
+3.3
+
+Final-layer alignment: GFMI
+
+The GFMI measurement family compares each layer with the final-layer representation and adapts
+the filtration idea from topological data analysis to avoid choosing a single graph threshold [12]. Let
+Gl (τ ) denote the cosine kGFMI -nearest-neighbor graph at layer l in which the edge between examples
+i and j is kept whenever its cosine distance is at most the τ -th percentile of layer l’s edge-distance
+distribution. Because edge-distance scales differ across layers, the threshold is parameterized by perlayer percentiles rather than by shared absolute distances, and we use τ ∈ [0, 100] throughout. Small
+τ keeps only very close neighbors and produces fine-grained groups. Larger τ merges these groups
+into coarser components. We refer to this percentile sweep as a graph filtration. If an intermediate
+layer is already organized like the final layer, the two filtrations induce similar component partitions
+across many percentiles.
+Let Cl (τ ) = CC(Gl (τ )) be the connected-component partition at layer l, and let CL (τ ) be the
+corresponding partition at the final layer. We compare the two partitions with mutual information
+[52], written MIl (τ ) = I(Cl (τ ); CL (τ )). This gives one value per percentile. A layer receives
+high values when its connected-component partition resembles the final-layer partition across many
+percentiles. We summarize the sweep by integrating MIl (τ ) over the percentile range [5, 95],
+Z 95
+GFMI(l) =
+MIl (τ ) dτ,
+(4)
+5
+
+implemented numerically by trapezoidal integration over a discrete percentile grid. We refer to this
+value as the GFMI area under the curve (GFMI AUC) in the result tables. Here I(·; ·) is raw discrete
+mutual information, so GFMI values are not bounded in [0, 1], and the self-GFMI of the final layer
+reduces to the integrated entropy of CL (τ ) over the same percentile range.
+The three measurement families above produce layer-wise sequences, and these sequences are kept
+separate throughout. Sections 5 and 6 apply two different reductions: model selection turns each
+sequence into one model-level scalar, and layer pruning uses per-layer scores. The exact reductions
+are defined in those sections.
+4
+
+4
+
+Setup and Layer-wise Observations
+
+We apply the measurements from Section 3 to 31 models and 30 MTEB tasks. For each model-task
+pair, we pool each layer’s token-level hidden states into one vector per example using the official or
+model-recommended pooling rule when available, and compute the measurements over the per-layer
+outputs.
+4.1
+
+Models and tasks
+
+The model pool contains 25 embedding models with public MTEB references and six base LLMs
+with MMLU references. The embedding models span two architectural sub-classes: encoder-based
+embedders built on bidirectional encoder backbones (e.g., E5 [72], BGE [8]) and decoder-based
+embedders built on causal LLM backbones (e.g., SFR-Embedding [45], Qwen3-Embedding [77],
+NV-Embed-v2 [35]). The base LLMs are generation-oriented models that have not been contrastively
+tuned for retrieval, including Mistral 7B [30] and Gemma 2 [63]. The complete model and task panels
+are provided in Appendix B.1. The 30 tasks cover classification, retrieval, Semantic Textual Similarity
+(STS), reranking, and duplicate detection. Examples include Banking77 [6], Natural Questions [33],
+SciFact [71], STS Benchmark [7], and MIND [74]. For base LLMs, we compute LRD on the same
+30 MTEB input sets, but do not use MTEB as a downstream quality reference. MTEB therefore
+provides both inputs and task-level quality references for embedding models, while MMLU provides
+only a model-level reference for base LLMs.
+4.2
+
+Layer-wise observations by architecture family and task type
+
+We summarize the per-layer sequences of Section 3 with derived summaries, introduced alongside the
+patterns they describe. These summaries are descriptive, intended to expose family- and task-level
+structure. The application-specific scores used in Sections 5 and 6 are defined separately in those
+sections. Table 1 reports family-level shape and trend summaries averaged over all tasks, while
+Table 2 reports magnitude summaries split by task type.
+Architecture-level patterns. For curvature (Eq. 2), we use the normalized peak depth dpeak (κ) =
+(arg maxl∈Lκ κl )/Lκ , where Lκ is the set of valid curvature indices and Lκ = max Lκ . For NRS
+(Eq. 3), we use the late-vs-early trend
+X
+X
+1
+1
+∆J =
+Jl −
+Jl ,
+(5)
+|Llate |
+|Learly |
+l∈Llate
+
+l∈Learly
+
+where Learly and Llate denote the first and last thirds of the layer indices.
+Curvature peak depth dpeak (κ) separates the three families: encoder embedders peak at mid-depth,
+whereas decoder embedders and base LLMs peak later (Table 1). NRS retention shows the same split.
+Encoder embedders are nearly flat (∆J ≈ 0.01), while in decoder embedders and base LLMs the
+local neighborhoods stabilize toward later layers. Both signals are consistent with prior layer-wise
+analyses showing that bidirectional encoders concentrate processing in the middle [65, 69], whereas
+causal LMs accumulate information bottom-up.
+Table 1: Layer-wise patterns by architecture family. Symbols are defined in the main text. Per-model
+averages are in Appendix C.
+Family
+Encoder embedder
+Decoder embedder
+Base LLM
+
+Models
+13
+12
+6
+
+dpeak (κ)
+
+∆J
+
+0.56
+0.89
+0.78
+
++0.015
++0.144
++0.121
+
+Task-type patterns. For task-type
+P analysis we use three layer-aggregate
+P magnitude summaries:
+the mean curvature κ̄ = |Lκ |−1 l∈Lκ κl , the mean speed s̄ = |Ls |−1 l∈Ls sl (with Ls the set
+PL
+of valid speed indices), and the GFMI scale Ḡ = (L + 1)−1 l=0 GFMI(l) (Eq. 4). Because raw
+GFMI is bounded by the partition entropy of the final-layer kNN graph, which itself differs across
+5
+
+families, we treat Ḡ as a within-family magnitude signal. The first two quantities capture trajectory
+curvature and per-layer displacement, respectively.
+Table 2 shows a consistent split by task type: classification has higher mean curvature in the encoder
+and decoder families, with base LLMs showing little task-type difference, whereas retrieval has higher
+mean speed and GFMI scale. This pattern is consistent with task geometry. Classification organizes
+examples around discrete labels, which matches sharper trajectory curvature. Retrieval compares
+sample pairs by relative distance rather than discrete labels, which is consistent with transformations
+spreading across more layers and with the per-layer kNN graph aligning with the final-layer graph
+earlier. The latter is consistent with evidence that retrieval ability is encoded primarily in shallow
+layers [61].
+Table 2: Task-type stratified layer-aggregate summaries by model family. Means are over model-task
+pairs. CLS = classification, RET = retrieval, Other = STS / reranking / pair detection.
+Mean curv. κ̄
+Family
+
+CLS
+
+RET Other
+
+Mean speed s̄
+CLS
+
+RET
+
+Other
+
+GFMI scale Ḡ
+CLS
+
+RET Other
+
+Encoder embedder 0.137 0.132 0.142 12.299 12.749 11.931 93.4 98.1 109.8
+Decoder embedder 0.142 0.132 0.133 11.873 12.632 12.263 247.9 258.8 247.5
+Base LLM
+0.346 0.345 0.255 7.695 8.024 8.873 325.9 351.7 314.6
+
+5
+
+Model Selection with LRD
+
+Consider choosing among candidate embedding models for a deployment task whose downstream
+score is unavailable, e.g. a proprietary corpus without labeled queries. We test whether the layer-wise
+measurements of Section 3, computed only from task inputs, can rank models in agreement with
+downstream references on a 25-model MTEB panel and a 6-LLM MMLU panel. From each family
+peak
+we derive a single model-level selection score (d0,L for Frenet, J¯late for NRS, G
+for GFMI), each
+compressing the layer-wise sequence in a different way. Agreement across all three would indicate
+that the layer-wise view is not tied to a single aggregation choice.
+5.1
+
+Model-level selection scores
+
+Frenet end-to-end distance: d0,L . The Frenet selection score d0,L = dGr (Q0 , QL ) (Eq. 1) is the
+Grassmann distance between the input and output subspaces, in contrast to the per-step distances
+sl = dl,l+1 that summarize adjacent-layer motion (Appendix A). It captures the net displacement of
+the representation subspace from input to output, and unlike path-integrated Frenet derivatives does
+not scale with the layer count L, so it remains comparable across architectures of different depths.
+Embedding models whose hidden subspace moves further between the input and the final layer are
+expected to produce stronger downstream representations.
+NRS late-layer retention: J¯late . The NRS selection score J¯late is the mean Jaccard retention Jl
+(Eq. 3) between adjacent layers over the late third of adjacent-layer transitions (Appendix A). It
+measures how stable the local neighborhood structure becomes in the layers closest to the final layer.
+We restrict to the late third because these layers carry the representations exposed to downstream
+tasks, and because Section 4 shows that late-layer NRS retention differs systematically across model
+families. Embedding models whose late layers stop substantially rewiring local sample neighborhoods
+are expected to yield stronger downstream representations.
+peak
+
+peak
+
+GFMI peak alignment: G
+. The GFMI selection score G
+averages, over all L + 1 layers
+including the final layer, supτ MIl (τ ), where MIl (τ ) is the per-percentile mutual information defined
+in Section 3 (Appendix A). The per-layer maximization over τ lets each layer use the percentile
+at which MIl (τ ) is largest, rather than forcing all layers to share one fixed percentile. Embedding
+models whose intermediate layers are already well aligned with the final graph organization are
+expected to produce stronger downstream representations.
+6
+
+Table 3: Label-free model-selection correlations. MTEB entries are cross-task mean±sd Spearman
+correlations on the 25-model embedding panel. Parentheses give the number of significant tasks.
+MMLU is a 6-model directional check.
+MTEB-25
+Metric Family
+d0,L
+J¯late
+peak
+
+G
+
+5.2
+
+Frenet
+NRS
+GFMI
+
+All (sig./30)
+
+CLS (13)
+
+MMLU-6
+RET (11)
+
+Other (6)
+
++0.64 ± 0.17 (28) +0.67 ± 0.13 +0.68 ± 0.16 +0.50 ± 0.22
++0.58 ± 0.17 (26) +0.64 ± 0.11 +0.57 ± 0.17 +0.49 ± 0.26
++0.52 ± 0.19 (23) +0.60 ± 0.14 +0.51 ± 0.09 +0.36 ± 0.32
+
+ρ
++0.64
++0.46
++0.64
+
+Setup
+
+Both panels use the same 30 MTEB task inputs as the source of layer-wise representations. What
+differs is the downstream quality reference and the model class being tested. The MTEB panel is
+our primary evidence: 25 embedding models with 30 task-specific MTEB scores [48]. For each task
+we compute the Spearman correlation between the selection score and the MTEB score across the
+25 models, and report the cross-task mean and standard deviation together with the number of tasks
+reaching p < 0.05. The MMLU panel tests whether the same scores generalize to a different model
+class and benchmark. It comprises 6 base LLMs, each with a single aggregate MMLU score [24]. We
+average each LLM’s selection score over the 30 task inputs and compute one Spearman correlation
+across the 6 LLMs. With n = 6 this panel resolves only large effects, so we report it as a directional
+generalization check.
+5.3
+
+Results
+
+Table 3 reports the MTEB-25 results: d0,L is the strongest selection score with the highest mean
+peak
+Spearman correlation (+0.64) and significance on 28 of 30 tasks. J¯late (+0.58) and G
+(+0.52)
+are positive but weaker. Stratifying by task type (Table 3, right side) reveals a task-type split.
+On classification, all three scores remain close (+0.67 / +0.64 / +0.60), suggesting that each
+measurement family carries comparable selection information. On retrieval, d0,L remains high at
+peak
++0.68, while J¯late and G
+fall to +0.57 and +0.51. The weaker GFMI signal on retrieval is
+consistent with its graph-partition target: classification can produce more discrete final-layer clusters,
+whereas retrieval and similarity-style tasks depend more on continuous neighborhood geometry.
+Mean correlations are lower on the smaller Other group (STS, reranking, pair / duplicate detection: 6
+tasks, 2 per subtype), where the cross-task mean is dominated by within-subtype variation. Spearman
+captures global rank agreement, and top-k selection quality is left to future work. Appendix D.1
+reports the corresponding task-level correlations.
+Figure 1 shows the model-level view: for each score, the x-axis is its mean over the 30 task inputs and
+the y-axis is the model’s mean official MTEB score over those same 30 tasks. A monotone increasing
+trend indicates that the label-free score and the labeled benchmark agree at the model level. The trend
+is clearest for d0,L and consistently positive for the other two scores, so a label-free pre-selection
+using any of them prefers higher-MTEB models on average.
+Averaging each LLM’s selection score over the 30 task inputs and correlating against MMLU
+peak
+gives Spearman ρ = +0.64 for both d0,L and G
+, and +0.46 for J¯late (Table 3). All three
+correlations remain positive on MMLU, indicating that the layer-wise score does not flip sign across
+the embedder/base-LLM boundary. With n = 6, this is a directional generalization check, and we do
+not interpret the relative ordering of the three scores on this panel.
+
+6
+
+Layer Pruning with LRD
+
+We next test whether the same layer-wise measurements carry layer-level redundancy signal. For a
+fixed model and task, we rank layers by a measurement-derived per-layer score, skip the corresponding
+transformer blocks at inference time without retraining or recovery, and report the score change
+relative to the unpruned model. Layers flagged as redundant by an informative measurement should
+cause smaller score drops than layers selected by random or last-k baselines.
+7
+
+Jlate
+
+MTEB overall (mean over 30 tasks)
+
+d0, L
+
+Gpeak
+
+77.5
+75.0
+72.5
+70.0
+67.5
+65.0
+62.5
+60.0
+57.5
+
+Spearman = + 0.85
+15
+
+20
+
+25
+
+d0, L (mean over 30 tasks)
+
+Spearman = + 0.72
+
+30
+
+0.2
+
+0.3
+
+0.4
+
+0.5
+
+0.6
+
+0.7
+
+Jlate (mean over 30 tasks)
+
+0.8
+
+Spearman = + 0.68
+2
+
+3
+
+4
+
+5
+
+6
+
+Gpeak (mean over 30 tasks)
+
+7
+
+Figure 1: Per-model selection-score scatter on the MTEB-25 panel. Scores and official MTEB results
+are averaged over the 30 tasks, with Spearman ρ annotated in each panel.
+6.1
+
+Pruning rules
+
+For each model and task we convert each family’s layer-wise sequence into a per-layer pruning
+score by independently z-scoring within that sequence (Appendix A). The Frenet rule combines low
+Grassmann speed (Eq. 1) with low Menger curvature (Eq. 2). The NRS rule prefers layers with high
+Jaccard overlap to the previous layer. The GFMI rule prefers layers with high filtration AUC against
+the final graph. A higher score means the layer contributes less under its family’s measurement and is
+removed first at each pruning budget: in Frenet terms the subspace barely moves or bends, in NRS
+terms the local neighborhoods are already stable, and in GFMI terms the layer is already close to
+the final graph. The GFMI criterion is indirect: it does not measure the block’s local transformation
+size but whether the layer’s graph organization already resembles the final-layer pattern. Compared
+to the model-level scores of Section 5, here we use each layer’s measurement directly rather than
+aggregating to a single scalar. For GFMI this means using GFMI(l) from Section 3 (Eq. 4) at each
+peak
+layer, rather than the supτ MIl (τ ) summary used in G
+(Section 5).
+6.2
+
+Setup
+
+We evaluate on three MTEB tasks (AmazonPolarityClassification, FiQA2018, STSBenchmark) and
+five models from the three architectural families: two encoder embedders, two decoder embedders,
+and one base LLM.1
+Each (model, task) cell runs the three rules of Appendix A and two baselines: random removal
+averaged over 3 seeds and last-k removal (the k deepest unprotected layers). The first three and last
+three layers are protected. Pruning budgets of {5, 10, 15, 20}% are taken over the remaining layers.
+We report rel∆ = 100 (spruned − sunpruned )/sunpruned , where s is the official MTEB metric for that
+task. Values closer to zero indicate less degradation.
+6.3
+
+Results
+
+Table 4: Layer-pruning relative score change across budgets, aggregated over 15 model-task cells.
+Values closer to 0 are better.
+Mean rel. ∆ (%)
+
+Median rel. ∆ (%)
+
+5%
+
+10%
+
+15%
+
+20%
+
+5%
+
+10%
+
+15%
+
+20%
+
+Random
+Last-k
+
+−4.79
+−6.73
+
+−4.14
+−11.76
+
+−5.90
+−14.76
+
+−12.08
+−13.13
+
+−1.96
+−1.94
+
+−2.88
+−5.47
+
+−5.41
+−8.66
+
+−5.41
+−8.66
+
+Frenet
+NRS
+GFMI
+
+−2.10
+−9.54
+−5.09
+
+−8.83
+−14.90
+−6.95
+
+−19.62
+−15.05
+−2.37
+
+−21.33
+−15.50
+−6.14
+
+−0.98
+−1.94
+−0.20
+
+−5.32
+−5.51
+−0.20
+
+−15.12
+−7.27
+−1.31
+
+−14.19
+−9.89
+−3.27
+
+Rule
+
+1 The five models are BGE-base-en-v1.5, E5-large-v2, Nemotron-Embed-1B, LLM2Vec-Mistral-7B, and Mistral-7B-v0.1.
+
+8
+
+Median relative score change (%)
+
+Mean relative score change (%)
+
+Layer pruning: relative score change vs unpruned baseline (15 cells = 5 models × 3 datasets per budget; closer to 0 is better)
+
+0
+
+−5
+
+−10
+
+−15
+
+−20
+5
+
+10
+
+15
+
+0.0
+−2.5
+−5.0
+−7.5
+−10.0
+−12.5
+−15.0
+
+20
+
+5
+
+Pruning budget (% of prunable layers)
+GFMI (z(aucl))
+
+10
+
+15
+
+20
+
+Pruning budget (% of prunable layers)
+
+Frenet (−z(sl) − z(κl))
+
+NRS (z(Jl))
+
+Last-k
+
+Random (3 seeds)
+
+Figure 2: Layer-pruning score change over 15 model-task cells. GFMI improves over Random by
+mean at 15% and 20%, and is closest to zero by median at every budget.
+
+Table 4 and Figure 2 support three observations. First, GFMI gives the clearest advantage at the
+larger pruning budgets: by mean, it improves over Random at 15% (−2.37% vs −5.90%) and 20%
+(−6.14% vs −12.08%). At lighter budgets, rule ordering is less consistent: Frenet has the best mean
+at 5%, Random has the best mean at 10%, and GFMI separates most clearly in the median panel.
+The median panel is less sensitive to catastrophic cells and shows GFMI closest to zero at every
+budget. Second, the Frenet rule is competitive at the lightest budget (−2.10% mean at 5%, the lowest
+of any rule) but degrades rapidly as the budget grows (−21.33% at 20%). This makes the Frenet
+rule a light-budget signal rather than a stable rule for larger pruning budgets. Third, the NRS rule
+is the weakest of the three: although J¯late is a positive model-level selection signal in Section 5,
+the per-layer rule z(Jl ) does not carry over to pruning, since a layer that does not change local
+neighborhoods is not necessarily dispensable.
+The Random baseline is itself competitive at light budgets, in line with prior layer-removal work
+[14, 44, 21]. The GFMI advantage is concentrated at higher budgets and is largest on encoder
+embedders. On LLMs the three rules are harder to separate from Random. Appendix D.2 reports the
+aggregate mean-curve view and full per-cell pruning results.
+
+7
+
+Limitations and Conclusion
+
+LRD comprises three layer-wise measurement families (Frenet, NRS, GFMI) for global subspace
+motion, local neighborhood stability, and final-layer alignment. On 31 models and 30 MTEB tasks,
+it exposes architecture- and task-level patterns (Section 4). Its three model-level selection scores
+correlate positively with downstream MTEB performance (Section 5), and GFMI beats Random at the
+15% and 20% pruning budgets (Section 6). The NRS results show that model-level and layer-level
+signals need not transfer: J¯late is positive for selection, while z(Jl ) is the weakest pruning rule.
+Limitations remain. Model selection relies mainly on the 25-model MTEB embedding panel, with
+the 6-LLM MMLU result only a directional generalization check (n = 6). The embedding panel
+uses public MTEB models and should be tested on less curated pools. We omit head-to-head labelfree or transferability baselines, while Section 2 gives the conceptual contrast with single-layer
+summaries. The selection study also evaluates global rank agreement, leaving task-specific top-k
+selection behavior for a larger benchmark. The pruning panel has five models, three tasks, and one
+base LLM, and uses inference-time block skipping without retraining, so it is not a compression
+benchmark. It therefore isolates whether LRD scores identify less damaging layers, not whether a
+compressed model can be recovered after pruning. Random is competitive at light budgets, and the
+measurement-guided prior is supported only for GFMI past the 10% budget. The measurements also
+depend on input sampling, pooling, k-NN construction, and graph filtration percentile. Broader task
+coverage and stability analyses remain open.
+9
+
+References
+[1] P-A Absil, Robert Mahony, and Rodolphe Sepulchre. Optimization algorithms on matrix
+manifolds. Princeton University Press, 2008.
+[2] Ebtesam Almazrouei, Hamza Alobeidli, Abdulaziz Alshamsi, Alessandro Cappelli, Ruxandra Cojocaru, Mérouane Debbah, Étienne Goffinet, Daniel Hesslow, Julien Launay, Quentin
+Malartic, et al. The falcon series of open language models. arXiv preprint arXiv:2311.16867,
+2023.
+[3] Mikhail Belkin and Partha Niyogi. Laplacian eigenmaps for dimensionality reduction and data
+representation. Neural computation, 15(6):1373–1396, 2003.
+[4] Mikhail Belkin, Partha Niyogi, and Vikas Sindhwani. Manifold regularization: A geometric
+framework for learning from labeled and unlabeled examples. Journal of machine learning
+research, 7(11), 2006.
+[5] Vera Boteva, Demian Gholipour, Artem Sokolov, and Stefan Riezler. A full-text learning to rank
+dataset for medical information retrieval. In European Conference on Information Retrieval
+(ECIR), 2016.
+[6] Iñigo Casanueva, Tadas Temčinas, Daniela Gerz, Matthew Henderson, and Ivan Vulić. Efficient
+intent detection with dual sentence encoders. In Proceedings of the 2nd workshop on natural
+language processing for conversational AI, pages 38–45, 2020.
+[7] Daniel Cer, Mona Diab, Eneko Agirre, Inigo Lopez-Gazpio, and Lucia Specia. Semeval2017 task 1: Semantic textual similarity multilingual and crosslingual focused evaluation. In
+Proceedings of the 11th international workshop on semantic evaluation (SemEval-2017), pages
+1–14, 2017.
+[8] Jianlv Chen, Shitao Xiao, Peitian Zhang, Kun Luo, Defu Lian, and Zheng Liu. Bge m3embedding: Multi-lingual, multi-functionality, multi-granularity text embeddings through
+self-knowledge distillation. arXiv preprint arXiv:2402.03216, 4(5), 2024.
+[9] Arman Cohan, Sergey Feldman, Iz Beltagy, Doug Downey, and Daniel S. Weld. SPECTER:
+Document-level representation learning using citation-informed transformers. In Proceedings
+of the 58th Annual Meeting of the Association for Computational Linguistics (ACL), 2020.
+[10] Tianyu Cui, Yogesh Kumar, Pekka Marttinen, and Samuel Kaski. Deconfounded representation
+similarity for comparison of neural networks. Advances in Neural Information Processing
+Systems, 35:19138–19151, 2022.
+[11] Maxime Darrin, Philippe Formont, Ismail B AYED, Jackie C CHEUNG, and Pablo Piantanida.
+When is an embedding model more promising than another? Advances in Neural Information
+Processing Systems, 37:68330–68379, 2024.
+[12] Edelsbrunner, Letscher, and Zomorodian. Topological persistence and simplification. Discrete
+& computational geometry, 28(4):511–533, 2002.
+[13] Kawin Ethayarajh. How contextual are contextualized word representations? comparing the
+geometry of bert, elmo, and gpt-2 embeddings. In Proceedings of the 2019 conference on
+empirical methods in natural language processing and the 9th international joint conference on
+natural language processing (EMNLP-IJCNLP), pages 55–65, 2019.
+[14] Angela Fan, Edouard Grave, and Armand Joulin. Reducing transformer depth on demand with
+structured dropout. arXiv preprint arXiv:1909.11556, 2019.
+[15] Mohsen Fayyaz, Ehsan Aghazadeh, Ali Modarressi, Hosein Mohebbi, and Mohammad Taher
+Pilehvar. Not all models localize linguistic knowledge in the same place: A layer-wise probing
+on bertoids’ representations. In Proceedings of the Fourth BlackboxNLP Workshop on Analyzing
+and Interpreting Neural Networks for NLP, pages 375–388, 2021.
+10
+
+[16] Jack FitzGerald, Christopher Hench, Charith Peris, Scott Mackie, Kay Rottmann, Ana Sanchez,
+Aaron Nash, Liam Urbach, Vishesh Kakarala, Richa Singh, et al. MASSIVE: A 1m-example
+multilingual natural language understanding dataset with 51 typologically-diverse languages.
+In Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics
+(ACL), 2022.
+[17] Jun Gao, Di He, Xu Tan, Tao Qin, Liwei Wang, and Tie-Yan Liu. Representation degeneration
+problem in training natural language generation models. arXiv preprint arXiv:1907.12009,
+2019.
+[18] Tian Gao, Amit Dhurandhar, Karthikeyan Natesan Ramamurthy, and Dennis Wei. Representation similarity reveals implicit layer grouping in neural networks. In Mechanistic Interpretability
+Workshop at NeurIPS 2025, 2025.
+[19] Quentin Garrido, Randall Balestriero, Laurent Najman, and Yann Lecun. Rankme: Assessing
+the downstream performance of pretrained self-supervised representations by their rank. In
+International conference on machine learning, pages 10929–10974. PMLR, 2023.
+[20] Aaron Grattafiori, Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian,
+Ahmad Al-Dahle, Aiesha Letman, Akhil Mathur, Alan Schelten, Alex Vaughan, et al. The llama
+3 herd of models. arXiv preprint arXiv:2407.21783, 2024.
+[21] Andrey Gromov, Kushal Tirumala, Hassan Shapourian, Paolo Glorioso, and Dan Roberts. The
+unreasonable ineffectiveness of the deeper layers. In The Thirteenth International Conference
+on Learning Representations, 2024.
+[22] Furkan Gürsoy, Mounir Haddad, and Cécile Bothorel. Alignment and stability of embeddings:
+measurement and inference improvement. Neurocomputing, 553:126517, 2023.
+[23] Faegheh Hasibi, Fedor Nikolaev, Chenyan Xiong, Krisztian Balog, Svein Erik Bratsberg,
+Alexander Kotov, and Jamie Callan. DBpedia-Entity v2: A test collection for entity search. In
+Proceedings of the 40th International ACM SIGIR Conference on Research and Development in
+Information Retrieval, 2017.
+[24] Dan Hendrycks, Collin Burns, Steven Basart, Andy Zou, Mantas Mazeika, Dawn Song, and
+Jacob Steinhardt. Measuring massive multitask language understanding. arXiv preprint
+arXiv:2009.03300, 2020.
+[25] John Hewitt and Christopher D Manning. A structural probe for finding syntax in word
+representations. In Proceedings of the 2019 Conference of the North American Chapter of the
+Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long
+and Short Papers), pages 4129–4138, 2019.
+[26] Doris Hoogeveen, Karin M. Verspoor, and Timothy Baldwin. CQADupStack: A benchmark
+data set for community question-answering research. In Proceedings of the 20th Australasian
+Document Computing Symposium (ADCS), 2015.
+[27] Eghbal Hosseini and Evelina Fedorenko. Large language models implicitly learn to straighten
+neural sentence trajectories to construct a predictive representation of natural language. Advances in Neural Information Processing Systems, 36:43918–43930, 2023.
+[28] Ganesh Jawahar, Benoît Sagot, and Djamé Seddah. What does bert learn about the structure
+of language? In Proceedings of the 57th annual meeting of the association for computational
+linguistics, pages 3651–3657, 2019.
+[29] Jiachen Jiang, Jinxin Zhou, and Zhihui Zhu. Tracing representation progression: Analyzing and
+enhancing layer-wise similarity. arXiv preprint arXiv:2406.14479, 2024.
+[30] Yihang Jiang, Xiaoyang Li, Guangxu Zhu, Hang Li, Jing Deng, Kaifeng Han, Chao Shen,
+Qingjiang Shi, and Rui Zhang. 6g non-terrestrial networks enabled low-altitude economy:
+Opportunities and challenges. arXiv preprint arXiv:2311.09047, 2023.
+11
+
+[31] Simon Kornblith, Mohammad Norouzi, Honglak Lee, and Geoffrey Hinton. Similarity of neural
+network representations revisited. In International conference on machine learning, pages
+3519–3529. PMlR, 2019.
+[32] Nikolaus Kriegeskorte, Marieke Mur, and Peter A Bandettini. Representational similarity
+analysis-connecting the branches of systems neuroscience. Frontiers in systems neuroscience,
+2:249, 2008.
+[33] Tom Kwiatkowski, Jennimaria Palomaki, Olivia Redfield, Michael Collins, Ankur Parikh, Chris
+Alberti, Danielle Epstein, Illia Polosukhin, Jacob Devlin, Kenton Lee, et al. Natural questions: a
+benchmark for question answering research. Transactions of the Association for Computational
+Linguistics, 7:453–466, 2019.
+[34] Wuwei Lan, Siyu Qiu, Hua He, and Wei Xu. A continuously growing dataset of sentential
+paraphrases. In Proceedings of the 2017 Conference on Empirical Methods in Natural Language
+Processing (EMNLP), 2017.
+[35] Chankyu Lee, Rajarshi Roy, Mengyao Xu, Jonathan Raiman, Mohammad Shoeybi, Bryan
+Catanzaro, and Wei Ping. Nv-embed: Improved techniques for training llms as generalist
+embedding models. arXiv preprint arXiv:2405.17428, 2024.
+[36] Haoran Li, Abhinav Arora, Shuohui Chen, Anchit Gupta, Sonal Gupta, and Yashar Mehdad.
+MTOP: A comprehensive multilingual task-oriented semantic parsing benchmark. In Proceedings of the 16th Conference of the European Chapter of the Association for Computational
+Linguistics (EACL), 2021.
+[37] Melody Zixuan Li, Kumar Krishna Agrawal, Arna Ghosh, Komal Kumar Teru, Adam Santoro,
+Guillaume Lajoie, and Blake A Richards. Tracing the representation geometry of language
+models from pretraining to post-training. arXiv preprint arXiv:2509.23024, 2025.
+[38] Zehan Li, Xin Zhang, Yanzhao Zhang, Dingkun Long, Pengjun Xie, and Meishan Zhang.
+Towards general text embeddings with multi-stage contrastive learning. arXiv preprint
+arXiv:2308.03281, 2023.
+[39] Gui Ling, Ziyang Wang, Yuliang Yan, and Qingwen Liu. Slimgpt: Layer-wise structured
+pruning for large language models. Advances in Neural Information Processing Systems, 37:
+107112–107137, 2024.
+[40] Nelson F Liu, Matt Gardner, Yonatan Belinkov, Matthew E Peters, and Noah A Smith. Linguistic
+knowledge and transferability of contextual representations. In Proceedings of the 2019
+Conference of the North American Chapter of the Association for Computational Linguistics:
+Human Language Technologies, Volume 1 (Long and Short Papers), pages 1073–1094, 2019.
+[41] Andrew L. Maas, Raymond E. Daly, Peter T. Pham, Dan Huang, Andrew Y. Ng, and Christopher
+Potts. Learning word vectors for sentiment analysis. In Proceedings of the 49th Annual Meeting
+of the Association for Computational Linguistics: Human Language Technologies, 2011.
+[42] Marco Marelli, Stefano Menini, Marco Baroni, Luisa Bentivogli, Raffaella Bernardini, and
+Roberto Zamparelli. A SICK cure for the evaluation of compositional distributional semantic
+models. In Proceedings of the Ninth International Conference on Language Resources and
+Evaluation (LREC), 2014.
+[43] Julian McAuley and Jure Leskovec. Hidden factors and hidden topics: understanding rating
+dimensions with review text. In Proceedings of the 7th ACM conference on Recommender
+systems, pages 165–172, 2013.
+[44] Xin Men, Mingyu Xu, Qingyu Zhang, Qianhao Yuan, Bingning Wang, Hongyu Lin, Yaojie
+Lu, Xianpei Han, and Weipeng Chen. Shortgpt: Layers in large language models are more
+redundant than you expect. In Findings of the Association for Computational Linguistics: ACL
+2025, pages 20192–20204, 2025.
+[45] Rui Meng, Ye Liu, Shafiq Rayhan Joty, Caiming Xiong, Yingbo Zhou, and Semih Yavuz.
+Sfrembedding-mistral: enhance text retrieval with transfer learning. Salesforce AI Research
+Blog, 3(6), 2024.
+12
+
+[46] Luke Merrick, Danmei Xu, Gaurav Nuti, and Daniel Campos. Arctic-embed: Scalable, efficient,
+and accurate text embedding models. arXiv preprint arXiv:2405.05374, 2024.
+[47] Ari Morcos, Maithra Raghu, and Samy Bengio. Insights on representational similarity in neural
+networks with canonical correlation. Advances in neural information processing systems, 31,
+2018.
+[48] Niklas Muennighoff, Nouamane Tazi, Loïc Magne, and Nils Reimers. Mteb: Massive text
+embedding benchmark. In Proceedings of the 17th Conference of the European Chapter of the
+Association for Computational Linguistics, pages 2014–2037, 2023.
+[49] Niklas Muennighoff, Hongjin Su, Liang Wang, Nan Yang, Furu Wei, Tao Yu, Amanpreet
+Singh, and Douwe Kiela. Generative representational instruction tuning. arXiv preprint
+arXiv:2402.09906, 2024.
+[50] Zach Nussbaum, John X Morris, Brandon Duderstadt, and Andriy Mulyar. Nomic embed:
+Training a reproducible long context text embedder. arXiv preprint arXiv:2402.01613, 2024.
+[51] James O’Neill, Polina Rozenshtein, Ryuichi Kiryo, Motoko Kubota, and Danushka Bollegala. I
+wish i would have loved this one, but i didn’t–a multilingual dataset for counterfactual detection
+in product review. In Proceedings of the 2021 Conference on Empirical Methods in Natural
+Language Processing, pages 7092–7108, 2021.
+[52] SJD Phoenix. Elements of information theory, 1992.
+[53] Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, Ilya Sutskever, et al.
+Language models are unsupervised multitask learners. OpenAI blog, 1(8):9, 2019.
+[54] Maithra Raghu, Justin Gilmer, Jason Yosinski, and Jascha Sohl-Dickstein. Svcca: Singular
+vector canonical correlation analysis for deep learning dynamics and interpretability. Advances
+in neural information processing systems, 30, 2017.
+[55] Emily Reif, Ann Yuan, Martin Wattenberg, Fernanda B Viegas, Andy Coenen, Adam Pearce,
+and Been Kim. Visualizing and measuring the geometry of bert. Advances in neural information
+processing systems, 32, 2019.
+[56] Nils Reimers and Iryna Gurevych. Sentence-bert: Sentence embeddings using siamese bertnetworks. In Proceedings of the 2019 conference on empirical methods in natural language
+processing and the 9th international joint conference on natural language processing (EMNLPIJCNLP), pages 3982–3992, 2019.
+[57] Kirk Roberts, Tasmeer Alam, Steven Bedrick, Dina Demner-Fushman, Kyle Lo, Ian Soboroff,
+Ellen Voorhees, Lucy Lu Wang, and William R. Hersh. Searching for scientific evidence in
+a pandemic: An overview of TREC-COVID. Journal of the American Medical Informatics
+Association, 2021.
+[58] Elvis Saravia, Hsien-Chi Toby Liu, Yen-Hao Huang, Junlin Wu, and Yi-Shin Chen. CARER:
+Contextualized affect representations for emotion recognition. In Proceedings of the 2018
+Conference on Empirical Methods in Natural Language Processing (EMNLP), 2018.
+[59] Darsh Shah, Tao Lei, Alessandro Moschitti, Salvatore Romeo, and Preslav Nakov. Adversarial
+domain adaptation for duplicate question detection. In Proceedings of the 2018 Conference on
+Empirical Methods in Natural Language Processing (EMNLP), 2018.
+[60] Oscar Skean, Md Rifat Arefin, Dan Zhao, Niket Patel, Jalal Naghiyev, Yann LeCun, and Ravid
+Shwartz-Ziv. Layer by layer: Uncovering hidden representations in language models. arXiv
+preprint arXiv:2502.02013, 2025.
+[61] Xinyuan Song, Keyu Wang, PengXiang Li, Lu Yin, and Shiwei Liu. Demystifying the roles of
+llm layers in retrieval, knowledge, and reasoning. In ICASSP 2026-2026 IEEE International
+Conference on Acoustics, Speech and Signal Processing (ICASSP), pages 16792–16796. IEEE,
+2026.
+13
+
+[62] Saba Sturua, Isabelle Mohr, Mohammad Kalim Akram, Michael Günther, Bo Wang, Markus
+Krimmel, Feng Wang, Georgios Mastrapas, Andreas Koukounas, Nan Wang, et al. jinaembeddings-v3: Multilingual embeddings with task lora. arXiv preprint arXiv:2409.10173,
+2024.
+[63] Gemma Team, Morgane Riviere, Shreya Pathak, Pier Giuseppe Sessa, Cassidy Hardin,
+Surya Bhupatiraju, Léonard Hussenot, Thomas Mesnard, Bobak Shahriari, Alexandre Ramé,
+et al. Gemma 2: Improving open language models at a practical size. arXiv preprint
+arXiv:2408.00118, 2024.
+[64] Joshua B Tenenbaum, Vin de Silva, and John C Langford. A global geometric framework for
+nonlinear dimensionality reduction. science, 290(5500):2319–2323, 2000.
+[65] Ian Tenney, Dipanjan Das, and Ellie Pavlick. Bert rediscovers the classical nlp pipeline. In
+Proceedings of the 57th annual meeting of the association for computational linguistics, pages
+4593–4601, 2019.
+[66] Nandan Thakur, Nils Reimers, Andreas Rücklé, Abhishek Srivastava, and Iryna Gurevych.
+BEIR: A heterogeneous benchmark for zero-shot evaluation of information retrieval models. In
+Thirty-fifth Conference on Neural Information Processing Systems Datasets and Benchmarks
+Track, 2021.
+[67] Yulia Tsvetkov, Manaal Faruqui, Wang Ling, Guillaume Lample, and Chris Dyer. Evaluation of
+word vector representations by subspace alignment. In Proceedings of the 2015 Conference on
+Empirical Methods in Natural Language Processing, pages 2049–2054, 2015.
+[68] Lucrezia Valeriani, Diego Doimo, Francesca Cuturello, Alessandro Laio, Alessio Ansuini,
+and Alberto Cazzaniga. The geometry of hidden representations of large transformer models.
+Advances in Neural Information Processing Systems, 36:51234–51252, 2023.
+[69] Elena Voita, Rico Sennrich, and Ivan Titov. The bottom-up evolution of representations in
+the transformer: A study with machine translation and language modeling objectives. In
+Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing
+and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP),
+pages 4396–4406, 2019.
+[70] Henning Wachsmuth, Shahbaz Syed, and Benno Stein. Retrieval of the best counterargument
+without prior topic knowledge. In Proceedings of the 56th Annual Meeting of the Association
+for Computational Linguistics (ACL), 2018.
+[71] David Wadden, Shanchuan Lin, Kyle Lo, Lucy Lu Wang, Madeleine van Zuylen, Arman Cohan,
+and Hannaneh Hajishirzi. Fact or fiction: Verifying scientific claims. In Proceedings of the
+2020 Conference on Empirical Methods in Natural Language Processing (EMNLP), pages
+7534–7550, 2020.
+[72] Liang Wang, Nan Yang, Xiaolong Huang, Binxing Jiao, Linjun Yang, Daxin Jiang, Rangan
+Majumder, and Furu Wei. Text embeddings by weakly-supervised contrastive pre-training.
+arXiv preprint arXiv:2212.03533, 2022.
+[73] Alex H Williams, Erin Kunz, Simon Kornblith, and Scott Linderman. Generalized shape metrics
+on neural representations. Advances in neural information processing systems, 34:4738–4750,
+2021.
+[74] Fangzhao Wu, Ying Qiao, Jiun-Hung Chen, Chuhan Wu, Tao Qi, Jianxun Lian, Danyang Liu,
+Xing Xie, Jianfeng Gao, Winnie Wu, et al. Mind: A large-scale dataset for news recommendation.
+In Proceedings of the 58th annual meeting of the association for computational linguistics,
+pages 3597–3606, 2020.
+[75] Zhilin Yang, Peng Qi, Saizheng Zhang, Yoshua Bengio, William Cohen, Ruslan Salakhutdinov,
+and Christopher D. Manning. HotpotQA: A dataset for diverse, explainable multi-hop question
+answering. In Proceedings of the 2018 Conference on Empirical Methods in Natural Language
+Processing (EMNLP), 2018.
+14
+
+[76] Puxuan Yu, Luke Merrick, Gaurav Nuti, and Daniel Campos. Arctic-embed 2.0: Multilingual
+retrieval without compromise. arXiv preprint arXiv:2412.04506, 2024.
+[77] Yanzhao Zhang, Mingxin Li, Dingkun Long, Xin Zhang, Huan Lin, Baosong Yang, Pengjun
+Xie, An Yang, Dayiheng Liu, Junyang Lin, et al. Qwen3 embedding: Advancing text embedding
+and reranking through foundation models. arXiv preprint arXiv:2506.05176, 2025.
+[78] Ej Zhou, Caiqi Zhang, Tiancheng Hu, Chengzu Li, Nigel Collier, Ivan Vulić, and Anna Korhonen. Beyond the final layer: Intermediate representations for better multilingual calibration in
+large language models. arXiv preprint arXiv:2510.03136, 2025.
+
+15
+
+A
+
+Formula Details and Conventions
+
+A.1
+
+Primitive conventions
+
+This subsection records the finite-sample conventions needed to instantiate the primitives defined
+in Section 3. It supplements the main text by fixing indexing, boundary cases, and discretization
+choices.
+Frenet. For a fixed model and task, we use the final-layer rank convention from Section 3 for
+all layers. Speed is forward indexed: sl = dGr (Ql , Ql+1 ) for l = 0, . . . , L − 1. Curvature is
+assigned to the middle layer of each consecutive triple, so κl is computed from (Ql−1 , Ql , Ql+1 ) for
+l = 1, . . . , L − 1. Degenerate or zero-area triples receive curvature zero.
+NRS. The anchor set is sampled once for a fixed model and task and reused across all layers. It
+contains up to 500 examples, sampled without replacement from the task inputs. We use cosine
+kNRS -nearest neighbors with kNRS = 20. Thus Jl compares layers l and l + 1 and is defined for
+l = 0, . . . , L − 1.
+GFMI. GFMI uses cosine kGFMI -nearest-neighbor candidate graphs with kGFMI = 30. The
+filtration parameter τ is a per-layer percentile rather than a shared raw cosine-distance threshold, so
+different layers can sweep different absolute distance ranges. The thresholded graph is symmetrized
+before connected components are computed. Both the integrated GFMI value and the peak summary
+are evaluated on the same discrete percentile grid over [5, 95]. The integrated value is the trapezoidal
+area under the per-percentile MI curve, with no additional normalization.
+A.2
+
+Model-level selection scores
+
+The selection scores in Section 5 reduce each measurement family to a single scalar for each fixed
+model and task. They are deliberately simple reductions of the primitives in Section 3, so that the
+model-selection experiment tests whether the layer-wise signals survive a direct aggregation rather
+than a task-specific fitting procedure.
+Frenet end-to-end distance. The Frenet score uses the end-to-end subspace displacement rather
+than a path-integrated quantity. This makes the score comparable across models of different depths
+while still measuring how far the representation subspace moves from the input side to the final layer.
+With Q0 , QL the orthonormal PCA bases at layers 0 and L,
+d0,L = dGr (Q0 , QL ).
+(6)
+NRS late-layer retention. The NRS score focuses on the late third of adjacent-layer transitions, because these transitions are closest to the representations exposed to downstream tasks
+and Section 4 shows that late-layer retention differs systematically across model families. Let
+Llate = {⌈2L/3⌉, . . . , L − 1} index the late third of adjacent-layer transitions. The NRS selection
+score is
+X
+1
+J¯late =
+Jl .
+(7)
+|Llate |
+l∈Llate
+
+GFMI peak alignment. The GFMI score uses a per-layer peak before averaging over layers. This
+lets each layer contribute at the percentile where its component partition best matches the final-layer
+partition, rather than forcing all layers to share one fixed percentile. The GFMI selection score is
+L
+1 X
+peak
+G
+=
+sup MIl (τ ).
+(8)
+L+1
+τ ∈T
+l=0
+
+A.3
+
+Per-layer pruning rules
+
+The pruning rules in Section 6 turn each primitive sequence into a layer-level redundancy score. The
+scores are standardized within each fixed model and task, using
+xl − µ x
+z(xl ) =
+,
+(9)
+σx
+16
+
+where µx and σx are computed over the valid indices of the corresponding primitive sequence. The
+three rules are
+frenetl = −z(sl ) − z(κl ),
+nrsl = z(Jl ),
+(10)
+gfmil = z(GFMI(l)).
+The signs make larger scores mean more removable: Frenet favors layers with low speed and low
+curvature, NRS favors layers that preserve adjacent-layer neighborhoods, and GFMI favors layers
+already aligned with the final-layer graph. Layers are sorted in decreasing order of the rule score
+and removed up to the budget. The first three and last three layers of every model are excluded from
+removal, which also covers boundary indices where a primitive is undefined, such as sl at l = L, κl
+at l = 0 or l = L, and Jl at l = L.
+
+B
+
+Experimental Details
+
+B.1
+
+Models and tasks
+
+Tables B.1 and B.2 list the 31-model and 30-task panel used for the main layer-wise analysis and
+model-selection study.
+Table B.1: Model panel used for LRD measurements. “#L” denotes transformer layers.
+Model
+
+Family / Backbone
+
+#L
+
+Encoder embedders (13)
+all-MiniLM-L6-v2 [56]
+all-mpnet-base-v2 [56]
+BGE-base-en-v1.5 [8]
+BGE-large-en-v1.5 [8]
+E5-base-v2 [72]
+E5-large-v2 [72]
+GTE-base [38]
+GTE-large [38]
+Jina-Embeddings-v3 [62]
+Mxbai-Embed-Large-v1
+Nomic-Embed-Text-v1.5 [50]
+Snowflake-Arctic-Embed-L [46]
+Snowflake-Arctic-Embed-M-v2 [76]
+
+MiniLM (BERT-style)
+MPNet (BERT-style)
+BERT-base
+BERT-large
+BERT-base
+BERT-large
+BERT-base
+BERT-large
+XLM-RoBERTa
+BERT-large
+Nomic BERT
+BERT-large
+GTE-multilingual
+
+6
+12
+12
+24
+12
+24
+12
+24
+24
+24
+12
+24
+12
+
+Decoder embedders (12)
+BGE-en-icl [8]
+BGE-multilingual-gemma2 [8]
+E5-Mistral-7B-Instruct [72]
+GritLM-7B [49]
+GTE-Qwen2-7B-Instruct [38]
+Linq-Embed-Mistral
+NV-Embed-v2 [35]
+Qwen3-Embedding-0.6B [77]
+Qwen3-Embedding-8B [77]
+SFR-Embedding-2-R [45]
+SFR-Embedding-Mistral [45]
+Zeta-Alpha-E5-Mistral
+
+Mistral-7B
+Gemma-2-9B
+Mistral-7B
+Mistral-7B
+Qwen2-7B
+Mistral-7B
+Mistral-7B
+Qwen3-0.6B
+Qwen3-8B
+Mistral-7B
+Mistral-7B
+Mistral-7B
+
+32
+42
+32
+32
+28
+32
+32
+28
+36
+32
+32
+32
+
+Base LLMs (6)
+Falcon-7B [2]
+Gemma-2-2B [63]
+GPT-2 [53]
+GPT-2 XL [53]
+Llama-3.2-1B [20]
+Mistral-7B-v0.1 [30]
+
+Falcon
+Gemma-2
+GPT-2
+GPT-2
+Llama-3
+Mistral-7B
+
+32
+26
+12
+48
+16
+32
+
+17
+
+Table B.2: MTEB input sets used for LRD measurements. Metric is the official MTEB main metric
+[48].
+
+B.2
+
+Task
+
+Type
+
+Metric
+
+Classification (13)
+AmazonCounterfactualClassification [51]
+AmazonPolarityClassification [43]
+Banking77Classification [6]
+DBpediaClassification [23]
+EmotionClassification [58]
+ImdbClassification [41]
+MassiveIntentClassification [16]
+MassiveScenarioClassification [16]
+MTOPDomainClassification [36]
+MTOPIntentClassification [36]
+ToxicConversationsClassification
+TweetSentimentExtractionClassification
+TweetTopicSingleClassification
+
+Classification
+Classification
+Classification
+Classification
+Classification
+Classification
+Classification
+Classification
+Classification
+Classification
+Classification
+Classification
+Classification
+
+Accuracy
+Accuracy
+Accuracy
+Accuracy
+Accuracy
+Accuracy
+Accuracy
+Accuracy
+Accuracy
+Accuracy
+Accuracy
+Accuracy
+Accuracy
+
+Retrieval (11)
+ArguAna [70]
+CQADupstackRetrieval [26]
+FiQA2018 [66]
+HotpotQA [75]
+NFCorpus [5]
+NQ [33]
+QuoraRetrieval
+SCIDOCS [9]
+SciFact [71]
+Touche2020
+TRECCOVID [57]
+
+Retrieval
+Retrieval
+Retrieval
+Retrieval
+Retrieval
+Retrieval
+Retrieval
+Retrieval
+Retrieval
+Retrieval
+Retrieval
+
+nDCG@10
+nDCG@10
+nDCG@10
+nDCG@10
+nDCG@10
+nDCG@10
+nDCG@10
+nDCG@10
+nDCG@10
+nDCG@10
+nDCG@10
+
+Other (6)
+AskUbuntuDupQuestions
+MindSmallReranking [74]
+SICK-R [42]
+STSBenchmark [7]
+SprintDuplicateQuestions [59]
+TwitterURLCorpus [34]
+
+Reranking
+Reranking
+STS
+STS
+Duplicate detection
+Duplicate detection
+
+MAP
+MAP
+Spearman
+Spearman
+AP
+AP
+
+Protocols and compute
+
+LRD measurements are computed from forward-pass hidden states without training or fine-tuning.
+For each model-task pair, the task inputs define a layer-wise representation sequence X0 , . . . , XL ,
+and the same task inputs are reused across models within a measurement family. All measurement
+hyperparameters are fixed across experiments: Frenet uses the 95% final-layer PCA variance rule,
+NRS uses kNRS = 20, and GFMI uses kGFMI = 30 with 20 percentile points over [5, 95]. For model
+selection, we compute the Spearman correlation between each LRD selection score and the official
+MTEB score across the 25 embedding models for each task, then report the mean and standard
+deviation across the 30 tasks. For the MMLU directional check, we average each base LLM’s LRD
+selection score over the 30 MTEB input sets and compute one Spearman correlation across the six
+base LLMs against their aggregate MMLU scores. For layer pruning, we evaluate five models on three
+tasks under pruning budgets {5, 10, 15, 20}% using the model and task panel listed in Section 6.2.
+We compare Random, last-k, Frenet, NRS, and GFMI rules. Random is averaged over three draws,
+and the first three and last three layers are protected for every rule.
+Compute. Experiments were run on a server with four NVIDIA Tesla V100 GPUs (32GB each).
+The reported measurement and pruning experiments required approximately 300 GPU-hours in total.
+18
+
+C
+
+Additional Layer-wise Analyses
+
+Section 4 reports family-level and task-type summaries computed from the raw layer-wise measurement sequences. The table below gives the per-model averages behind those summaries, with
+each row averaged over all 30 tasks. Layer-aggregate magnitudes match Section 4: κ̄ is the average
+per-layer Menger curvature, s̄ is the average Grassmann speed, and Ḡ is the average layer-wise
+integrated GFMI.
+Figure C.1 separates broad family effects from high-leverage model effects. The position and trend
+summaries support the architecture-level pattern from Section 4: decoder embedders concentrate
+at late curvature peaks and positive NRS ∆J, whereas encoder embedders show more dispersed
+peak locations and nearly flat NRS change. This agreement indicates that the same late-layer
+organization appears in both a global subspace statistic and a local neighborhood statistic. The
+magnitude summaries distinguish base LLMs from decoder embedders rather than placing them on
+the same continuum. Base LLMs have higher mean curvature and GFMI scale, lower mean speed, and
+substantial within-family spread, so their family averages should be read together with the per-model
+dispersion.
+
+1.0
+model average over 30 tasks
+
+Per-model derived-summary distributions
+NRS J
+
+Curvature peak depth
+
+0.8
+0.6
+0.4
+0.2
+
+r
+
+ode
+
+Enc
+
+model average over 30 tasks
+
+16
+
+r
+LM
+ode
+eL
+Dec
+Bas
+Mean speed s
+
+Mean curvature
+0.8
+0.7
+0.6
+0.5
+0.4
+0.3
+0.2
+0.1
+
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+
+r
+ode
+
+Enc
+
+r
+LM
+ode
+eL
+Dec
+Bas
+GFMI scale G
+
+r
+ode
+
+Enc
+
+r
+ode
+
+Dec
+
+Bas
+
+LM
+
+eL
+
+350
+300
+250
+200
+150
+100
+50
+
+14
+12
+10
+8
+6
+4
+2
+
+r
+
+ode
+
+Enc
+
+r
+
+ode
+
+Dec
+
+eL
+
+Bas
+
+LM
+
+r
+ode
+
+Enc
+
+r
+ode
+
+Dec
+
+Bas
+
+LM
+
+eL
+
+Figure C.1: Per-model distributions of the five layer-wise summaries used in Section 4. Dots are
+task-averaged model values and black bars mark family means.
+Figure C.2 shows that the summaries are structured but not interchangeable. In the left panel, many
+decoder embedders fall in the late-peak and positive-∆J region, linking late global subspace bending
+with late local-neighborhood stabilization. Encoders occupy a broader range of peak depths but
+stay closer to flat or negative ∆J, consistent with weaker late-layer neighborhood stabilization. The
+middle panel separates GFMI from speed: encoders and decoders can have overlapping mean speed,
+yet encoders occupy a lower-GFMI band. Final-layer graph alignment therefore captures structure
+beyond subspace displacement. The right panel gives the clearest base-LLM separation. Encoders
+and decoders mostly remain in a low-curvature, higher-speed region, whereas several base models
+move toward higher curvature and lower speed. Together these panels support the use of three
+complementary summaries rather than a single aggregate score.
+Table C.3 reports the exact per-model values used by Figure C.1. These values indicate whether
+a family-level effect is distributed across many models or concentrated in a small number of highleverage cases. They clarify three patterns that are only visible qualitatively in the figures. First,
+encoder embedders have the widest spread in curvature peak depth, ranging from early E5 peaks to
+19
+
+Complementarity among layer-wise summaries
+0.15
+
+Encoder embedder
+Decoder embedder
+Base LLM
+
+GFMI scale G
+
+NRS J
+
+0.10
+0.05
+0.00
+0.05
+
+14
+
+300
+
+12
+
+250
+200
+150
+
+0.10
+
+100
+
+0.15
+
+50
+
+0.20
+
+0.2
+
+0.4
+
+0.6
+
+Curvature peak depth
+
+0.8
+
+16
+
+350
+
+Mean speed s
+
+0.20
+
+1.0
+
+10
+8
+6
+4
+
+2
+
+4
+
+6
+
+8
+
+10
+
+Mean speed s
+
+12
+
+14
+
+16
+
+2
+
+0.1
+
+0.2
+
+0.3
+
+0.4
+
+0.5
+
+Mean curvature
+
+0.6
+
+0.7
+
+0.8
+
+Figure C.2: Pairwise views of complementary layer-wise summaries. Each point is one model
+averaged over the 30-task panel.
+late Snowflake peaks. Second, decoder embedders are more concentrated in curvature peak depth and
+NRS ∆J, but their GFMI values still vary substantially, with NV-Embed-v2 and GTE-Qwen2-7BInstruct below the main decoder cluster. Third, base LLMs show the largest magnitude heterogeneity:
+GPT-2 has high mean curvature and low mean speed, while Llama-3.2-1B and Mistral-7B-v0.1 are
+closer to the decoder speed range.
+Table C.3: Per-model task-averaged summaries over the 30-task panel.
+Curv. peak
+
+∆J
+
+κ̄
+
+s̄
+
+Ḡ
+
+Encoder embedders
+all-MiniLM-L6-v2
+all-mpnet-base-v2
+BGE-base-en-v1.5
+BGE-large-en-v1.5
+E5-base-v2
+E5-large-v2
+GTE-base
+GTE-large
+Jina-Embeddings-v3
+Mxbai-Embed-Large-v1
+Nomic-Embed-Text-v1.5
+Snowflake-Arctic-Embed-L
+Snowflake-Arctic-Embed-M-v2
+
+0.258
+0.440
+0.770
+0.844
+0.113
+0.080
+0.503
+0.670
+0.167
+0.812
+0.580
+0.991
+0.987
+
+-0.196
+-0.059
+0.101
+0.172
+-0.124
+-0.095
+-0.006
+0.118
+-0.048
+0.174
+-0.070
+0.083
+0.150
+
+0.183
+0.150
+0.116
+0.118
+0.156
+0.152
+0.110
+0.110
+0.183
+0.120
+0.149
+0.113
+0.115
+
+9.010
+10.733
+14.342
+13.841
+10.270
+10.459
+15.349
+14.929
+8.657
+13.634
+10.820
+14.622
+14.411
+
+122.2
+109.6
+92.8
+97.8
+104.0
+119.9
+81.1
+109.5
+99.0
+96.1
+101.1
+125.1
+20.9
+
+Decoder embedders
+BGE-en-icl
+BGE-multilingual-gemma2
+E5-Mistral-7B-Instruct
+GritLM-7B
+GTE-Qwen2-7B-Instruct
+Linq-Embed-Mistral
+NV-Embed-v2
+Qwen3-Embedding-0.6B
+Qwen3-Embedding-8B
+SFR-Embedding-2-R
+SFR-Embedding-Mistral
+Zeta-Alpha-E5-Mistral
+
+0.867
+0.953
+0.868
+0.868
+0.924
+0.867
+0.867
+0.892
+0.916
+0.867
+0.867
+0.867
+
+0.176
+0.083
+0.189
+0.191
+0.058
+0.183
+0.157
+0.064
+0.077
+0.186
+0.190
+0.179
+
+0.137
+0.138
+0.150
+0.147
+0.103
+0.136
+0.125
+0.147
+0.123
+0.140
+0.146
+0.144
+
+12.068
+11.534
+11.184
+11.403
+15.433
+12.399
+13.546
+11.036
+12.957
+12.042
+11.492
+11.658
+
+251.5
+274.6
+313.0
+198.5
+150.9
+281.3
+118.4
+257.6
+262.6
+297.6
+307.6
+308.4
+
+Base LLMs
+Falcon-7B
+Gemma-2-2B
+GPT-2
+GPT-2 XL
+
+0.744
+0.901
+0.380
+0.893
+
+0.088
+0.167
+-0.014
+0.076
+
+0.472
+0.168
+0.813
+0.255
+
+4.474
+9.418
+2.166
+6.273
+
+314.4
+318.0
+373.3
+381.4
+
+Model
+
+Continued on next page
+20
+
+Model
+
+Curv. peak
+
+∆J
+
+κ̄
+
+s̄
+
+Ḡ
+
+0.924
+0.856
+
+0.202
+0.208
+
+0.115
+0.143
+
+14.451
+11.523
+
+317.1
+294.2
+
+Llama-3.2-1B
+Mistral-7B-v0.1
+
+D
+
+Application-level supporting results
+
+This section provides a disaggregated view of the two application studies. It does not introduce
+additional claims beyond Sections 5 and 6. Instead, it reports cell-level evidence underlying the
+aggregate results in Tables 3 and 4. The model-selection figures and tables examine whether the
+positive mean Spearman correlations in Table 3 are broadly distributed across tasks, while the pruning
+figure and table identify which cells account for the mean and median patterns in Table 4.
+D.1
+
+Model selection
+
+Figure D.3 and Table D.4 report the dataset-conditioned model-selection correlations. Each row fixes
+one MTEB task, treats the 25 embedding models as candidates, and correlates an LRD score with
+the official MTEB score across those candidates, matching the evaluation axis used in Section 5.
+A high ρ means that the label-free score ranks stronger models higher for that task. Over the full
+panel, the Frenet end-to-end distance d0,L is the most stable signal. It is positive on every task and
+has the highest overall mean correlation (+0.64). The three families are closest on classification,
+where the task-type means are +0.67 for d0,L , +0.64 for NRS, and +0.60 for GFMI. This supports
+the interpretation that local-neighborhood retention and graph-partition alignment are informative
+when the task is organized around discrete labels. The separation is larger on retrieval: d0,L remains
+high at +0.68, while NRS falls to +0.57 and GFMI to +0.51. These results position GFMI as a
+complementary model-selection signal rather than the primary criterion. Its graph-partition target
+has lower contrast when the final representation is not naturally clustered. The weakest cells are
+concentrated in the smaller Other group, where the means are +0.50, +0.49, and +0.36. GFMI is
+weak on MindSmallReranking (+0.04) and negative on SprintDuplicateQuestions (−0.07), so the
+low Other mean reflects identifiable task-level failures rather than only variance from averaging.
+Table D.4: Task-level model-selection correlations. Entries report ρ with
+p-values in parentheses.
+peak
+
+d0,L
+
+J¯late
+
+Classification
+AmazonCounterfactual
+AmazonPolarity
+Banking77
+DBpedia
+Emotion
+Imdb
+MTOPDomain
+MTOPIntent
+MassiveIntent
+MassiveScenario
+ToxicConversations
+TweetSentimentExtraction
+TweetTopicSingle
+
++0.62 (< .001)
++0.87 (< .001)
++0.55 (0.004)
++0.53 (0.011)
++0.67 (< .001)
++0.84 (< .001)
++0.81 (< .001)
++0.59 (0.002)
++0.73 (< .001)
++0.63 (< .001)
++0.69 (< .001)
++0.76 (< .001)
++0.43 (0.048)
+
++0.61 (0.001)
++0.78 (< .001)
++0.43 (0.032)
++0.61 (0.003)
++0.65 (< .001)
++0.78 (< .001)
++0.65 (< .001)
++0.64 (< .001)
++0.73 (< .001)
++0.67 (< .001)
++0.60 (0.001)
++0.73 (< .001)
++0.41 (0.059)
+
++0.57 (0.003)
++0.73 (< .001)
++0.37 (0.071)
++0.57 (0.006)
++0.56 (0.004)
++0.75 (< .001)
++0.66 (< .001)
++0.60 (0.002)
++0.79 (< .001)
++0.68 (< .001)
++0.37 (0.068)
++0.69 (< .001)
++0.40 (0.062)
+
+Retrieval
+ArguAna
+CQADupstack
+FiQA2018
+HotpotQA
+NFCorpus
+
++0.56 (0.004)
++0.60 (0.001)
++0.85 (< .001)
++0.81 (< .001)
++0.88 (< .001)
+
++0.46 (0.021)
++0.62 (< .001)
++0.80 (< .001)
++0.66 (< .001)
++0.73 (< .001)
+
++0.47 (0.018)
++0.49 (0.014)
++0.65 (< .001)
++0.54 (0.006)
++0.54 (0.005)
+
+Task
+
+G
+
+Continued on next page
+
+21
+
+peak
+
+d0,L
+
+J¯late
+
+NQ
+Quora
+SCIDOCS
+SciFact
+TRECCOVID
+Touche2020
+
++0.77 (< .001)
++0.66 (< .001)
++0.33 (0.105)
++0.80 (< .001)
++0.70 (< .001)
++0.56 (0.004)
+
++0.72 (< .001)
++0.57 (0.003)
++0.21 (0.310)
++0.59 (0.002)
++0.49 (0.013)
++0.40 (0.048)
+
++0.63 (< .001)
++0.54 (0.006)
++0.38 (0.060)
++0.43 (0.034)
++0.43 (0.031)
++0.45 (0.023)
+
+Other
+AskUbuntuDupQuestions
+MindSmallReranking
+SICK-R
+STSBenchmark
+SprintDuplicateQuestions
+TwitterURLCorpus
+
++0.66 (< .001)
++0.47 (0.018)
++0.44 (0.030)
++0.56 (0.004)
++0.12 (0.558)
++0.77 (< .001)
+
++0.75 (< .001)
++0.21 (0.306)
++0.59 (0.002)
++0.43 (0.032)
++0.17 (0.408)
++0.79 (< .001)
+
++0.70 (< .001)
++0.04 (0.852)
++0.57 (0.003)
++0.32 (0.113)
+−0.07 (0.748)
++0.62 (< .001)
+
+Task
+
+G
+
+Figure D.4 is the task-type distribution view of the per-task correlations in Table D.4. Classification
+forms the most compact positive band, which is consistent with discrete-label objectives giving all
+three primitives a similar ranking signal. Better models tend to produce clearer class structure, so
+subspace displacement, local-neighborhood retention, and graph-partition alignment move together.
+Retrieval remains positive but spreads more widely, especially for NRS and GFMI. This broader
+spread is consistent with retrieval depending on continuous neighborhood geometry rather than a
+small number of discrete clusters, making local overlap and graph partitions more dataset-specific.
+The Other group is the least coherent aggregation because its six tasks mix reranking, STS, and
+duplicate detection. Its wider spread should therefore be read as task heterogeneity rather than as a
+stable estimate of one task family.
+
+22
+
+AmazonCounterfactual
+
++0.62
+
++0.61
+
++0.57
+
+AmazonPolarity
+
++0.87
+
++0.78
+
++0.73
+
+Banking77
+
++0.55
+
++0.43
+
++0.37
+
+DBpedia
+
++0.53
+
++0.61
+
++0.57
+
+Emotion
+
++0.67
+
++0.65
+
++0.56
+
+Imdb
+
++0.84
+
++0.78
+
++0.75
+
+MTOPDomain
+
++0.81
+
++0.65
+
++0.66
+
+MTOPIntent
+
++0.59
+
++0.64
+
++0.60
+
+MassiveIntent
+
++0.73
+
++0.73
+
++0.79
+
+MassiveScenario
+
++0.63
+
++0.67
+
++0.68
+
+ToxicConversations
+
++0.69
+
++0.60
+
++0.37
+
+TweetSentiment
+
++0.76
+
++0.73
+
++0.69
+
+TweetTopicSingle
+
++0.43
+
++0.41
+
++0.40
+
+ArguAna
+
++0.56
+
++0.46
+
++0.47
+
+0.6
+
+CQADupstack
+
++0.60
+
++0.62
+
++0.49
+
+0.5
+
+FiQA2018
+
++0.85
+
++0.80
+
++0.65
+
+0.4
+
+HotpotQA
+
++0.81
+
++0.66
+
++0.54
+
+0.3
+
+NFCorpus
+
++0.88
+
++0.73
+
++0.54
+
+0.2
+
+NQ
+
++0.77
+
++0.72
+
++0.63
+
+Quora
+
++0.66
+
++0.57
+
++0.54
+
+SCIDOCS
+
++0.33
+
++0.21
+
++0.38
+
+SciFact
+
++0.80
+
++0.59
+
++0.43
+
+TRECCOVID
+
++0.70
+
++0.49
+
++0.43
+
+Touche2020
+
++0.56
+
++0.40
+
++0.45
+
+AskUbuntuDupQuestions
+
++0.66
+
++0.75
+
++0.70
+
+MindSmallReranking
+
++0.47
+
++0.21
+
++0.04
+
+SICK-R
+
++0.44
+
++0.59
+
++0.57
+
+STSBenchmark
+
++0.56
+
++0.43
+
++0.32
+
+SprintDuplicateQuestions
+
++0.12
+
++0.17
+
+-0.07
+
+TwitterURLCorpus
+
++0.77
+
++0.79
+
++0.62
+
+d0, L
+
+Jlate
+
+Gpeak
+
+0.9
+0.8
+
+Spearman
+
+0.7
+
+0.1
+0.0
+
+Figure D.3: Task-level Spearman correlations on the MTEB task panel.
+23
+
+CLS
+
+RET
+
+Other
+
+Per-task Spearman
+
+0.8
+0.6
+0.4
+0.2
+0.0
+
+d0, L
+
+Jlate
+
+Gpeak
+
+Figure D.4: Task-type distribution of per-task Spearman correlations.
+Table D.5 reports the six-model MMLU panel used for the directional check in Section 5. Unlike the
+MTEB panel, this comparison has one downstream score per model rather than one score per task, so
+it tests whether task-averaged LRD scores preserve a coarse model-level ordering across base LLMs.
+peak
+The MMLU panel preserves the main ordering signal observed on MTEB: d0,L and G
+both reach
+Spearman ρ = +0.64, whereas J¯late is weaker at ρ = +0.46. Thus the two strongest MTEB-side
+scores also give the clearest model-level signal on the base-LLM panel.
+Table D.5: Base-LLM model-selection panel. LRD scores are averaged over the 30 MTEB input sets
+before correlating with aggregate MMLU.
+Model
+Mistral-7B-v0.1
+Gemma-2-2B
+Llama-3.2-1B
+Falcon-7B
+GPT-2
+GPT-2 XL
+
+D.2
+
+MMLU
+
+d0,L
+
+J¯late
+
+64.1
+51.3
+32.2
+27.8
+26.0
+26.0
+
+26.39
+19.63
+21.44
+11.67
+4.71
+20.11
+
+0.806
+0.691
+0.684
+0.557
+0.577
+0.784
+
+peak
+
+G
+
+7.50
+7.66
+7.61
+6.21
+7.19
+7.17
+
+Layer pruning
+
+Figure D.5 plots the mean relative score change from Table 4 as a function of pruning budget,
+averaging over the 15 model-task cells. The rule ordering changes with budget. At 5%, Frenet has
+the best mean change (−2.10%), while GFMI is close to Random (−5.09% vs. −4.79%). At 10%,
+Random is best mean change (−4.14%), and GFMI remains intermediate (−6.95%). The GFMI
+advantage appears at 15%, where it improves over Random (−2.37% vs. −5.90%) and avoids the
+large degradation seen under Frenet (−19.62%) and NRS (−15.05%). At 20%, GFMI remains the
+best measurement-guided rule (−6.14%), while Frenet and NRS remain much lower (−21.33% and
+−15.50%). This budget-dependent pattern supports the main Section 6 claim that GFMI becomes
+most useful as the pruning budget grows.
+Table D.6 reports the cell values underlying Figure D.5. These values show that the high-budget
+GFMI advantage is not solely a consequence of averaging. At 15% and 20%, many GFMI cells
+remain close to zero, while the other measurement-guided rules include larger negative entries. The
+same pattern appears in the medians in Table 4: GFMI is closest to zero at every budget, including
+−1.31% at 15% and −3.27% at 20%, compared with Random’s −5.41% at both budgets. These
+cell-level results show that GFMI is most effective when the budget is large enough for random
+or local-change-based rules to remove high-impact blocks, while final-layer graph alignment still
+identifies layers whose removal is less damaging.
+24
+
+Random
+Last-k
+
+Frenet
+NRS
+
+GFMI
+
+Mean rel. (%)
+
+0
+5
+10
+15
+20
+5
+
+10
+
+15
+
+20
+
+Pruning budget (%)
+
+Figure D.5: Mean pruning curves over the 15 model-task cells. Values closer to zero are better.
+Table D.6: Per-cell pruning relative score change. Each entry is the
+percentage change from the unpruned score for one model, task, rule, and
+budget.
+Model / task
+BGE-base
+AmazonPolarity
+
+FiQA2018
+
+STSBenchmark
+
+E5-large
+AmazonPolarity
+
+FiQA2018
+
+STSBenchmark
+
+5%
+
+10%
+
+15%
+
+20%
+
+Random
+Last-k
+Frenet
+NRS
+GFMI
+Random
+Last-k
+Frenet
+NRS
+GFMI
+Random
+Last-k
+Frenet
+NRS
+GFMI
+
+-2.0
+-2.0
+-2.0
+-0.6
+-2.0
+-18.6
+-18.6
+-18.6
+-11.1
+-8.5
+-2.9
+-2.9
+-0.8
+-0.7
+-0.2
+
+-2.0
+-2.0
+-2.0
+-0.6
+-2.0
+-18.6
+-18.6
+-18.6
+-11.1
+-8.5
+-2.9
+-2.9
+-0.8
+-0.7
+-0.2
+
+-5.4
+-8.7
+-3.0
+-5.4
+-3.3
+-26.9
+-37.8
+-36.9
+-19.3
+-11.6
+-6.1
+-6.8
+-5.5
+-1.6
+-1.3
+
+-5.4
+-8.7
+-3.0
+-5.4
+-3.3
+-26.9
+-37.8
+-36.9
+-19.3
+-11.6
+-6.1
+-6.8
+-5.5
+-1.6
+-1.3
+
+Random
+Last-k
+Frenet
+NRS
+GFMI
+Random
+Last-k
+Frenet
+NRS
+GFMI
+Random
+Last-k
+Frenet
+NRS
+
++1.3
++1.0
++0.7
++1.0
++0.3
+-0.3
+-31.8
+-10.0
+-31.8
+-0.8
+-0.1
+-1.4
+-0.1
+-1.0
+
+-0.1
+-5.5
+-5.3
+-5.5
++0.0
+-0.6
+-73.4
+-20.4
+-73.4
+-2.0
+-0.5
+-5.5
+-9.9
+-5.5
+
+-0.5
+-20.4
+-15.6
+-7.3
+-0.8
+-0.4
+-87.4
+-80.1
+-75.4
+-7.2
+-0.7
+-19.3
+-36.2
+-19.3
+
+-1.7
+-26.8
+-14.2
+-14.5
+-2.2
+-3.7
+-96.6
+-83.1
+-72.9
+-8.9
+-1.6
+-26.8
+-30.8
+-26.8
+
+Rule
+
+Continued on next page
+25
+
+Model / task
+LLM2Vec
+AmazonPolarity
+
+FiQA2018
+
+STSBenchmark
+
+Nemotron
+AmazonPolarity
+
+FiQA2018
+
+STSBenchmark
+
+Mistral-7B
+AmazonPolarity
+
+FiQA2018
+
+STSBenchmark
+
+Rule
+
+5%
+
+10%
+
+15%
+
+20%
+
+GFMI
+
+-0.0
+
+-0.1
+
+-0.4
+
+-0.8
+
+Random
+Last-k
+Frenet
+NRS
+GFMI
+Random
+Last-k
+Frenet
+NRS
+GFMI
+Random
+Last-k
+Frenet
+NRS
+GFMI
+
+-1.6
++1.8
++1.0
+-1.0
++1.1
++2.4
++6.9
+-10.4
+-7.6
++6.9
++1.5
++5.3
+-1.0
++5.3
++3.1
+
+-3.3
++1.5
++1.2
+-0.7
++1.5
+-4.4
++30.1
+-12.5
+-11.4
++30.1
++0.2
++9.2
+-2.3
++9.2
++9.2
+
+-4.5
++1.6
+-2.4
+-1.0
++1.6
+-8.8
++40.7
+-18.8
+-31.8
++40.7
+-3.6
++10.1
+-5.2
++11.2
++10.1
+
+-4.7
++2.1
+-5.0
+-0.8
++2.1
+-3.8
++34.1
+-26.5
+-38.4
++34.1
++0.9
++9.9
+-6.7
++6.3
++7.1
+
+Random
+Last-k
+Frenet
+NRS
+GFMI
+Random
+Last-k
+Frenet
+NRS
+GFMI
+Random
+Last-k
+Frenet
+NRS
+GFMI
+
+-4.7
+-1.9
+-6.1
+-1.9
+-6.1
+-6.6
+-18.4
+-13.6
+-18.4
+-31.4
+-2.4
+-3.4
+-0.1
+-3.4
+-3.4
+
+-7.9
+-9.2
+-9.0
+-9.2
+-10.9
+-40.4
+-35.4
+-19.5
+-35.4
+-52.8
+-8.4
+-6.6
+-1.9
+-6.6
+-6.6
+
+-7.9
+-9.2
+-9.0
+-9.2
+-10.9
+-40.4
+-35.4
+-19.5
+-35.4
+-52.8
+-8.4
+-6.6
+-1.9
+-6.6
+-6.6
+
+-17.3
+-5.9
+-8.7
+-5.9
+-15.5
+-71.5
+-43.8
+-37.5
+-43.8
+-54.5
+-12.2
+-9.9
+-7.2
+-9.9
+-5.2
+
+Random
+Last-k
+Frenet
+NRS
+GFMI
+Random
+Last-k
+Frenet
+NRS
+GFMI
+Random
+Last-k
+Frenet
+NRS
+GFMI
+
++4.4
++4.5
++4.6
++4.4
++4.5
+-40.5
+-42.7
++28.2
+-42.7
+-42.7
+-2.0
++2.7
+-3.5
+-33.4
++2.7
+
++3.6
++4.6
++4.1
++3.9
++0.9
++64.9
+-83.2
++2.3
+-83.2
+-83.2
+-41.9
++20.4
+-37.9
++6.6
++20.4
+
++3.7
++4.7
++5.3
++3.3
++4.7
++30.5
+-39.7
+-50.4
+-39.7
+-39.7
+-9.2
+-7.3
+-15.1
++11.5
++42.0
+
++4.1
++5.1
++3.4
++4.0
++5.1
+-16.8
+-29.0
+-37.4
+-29.0
+-29.0
+-14.6
++44.1
+-20.9
++25.5
+-8.0
+
+26
+
+

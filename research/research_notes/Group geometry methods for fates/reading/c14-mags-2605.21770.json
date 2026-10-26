@@ -1,0 +1,356 @@
+{
+  "slug": "c14-mags-2605.21770",
+  "title": "Manifold-Guided Attention Steering (MAGS) (Li, Satish, Guruprasad, Sengupta, D'Antoni, Yu; UC San Diego; arXiv 2605.21770v1, 20 May 2026)",
+  "sections_read": [
+    "Abstract",
+    "1 Introduction",
+    "2 Related Work",
+    "2.1 Activation Steering and Inference-time Intervention",
+    "2.2 Geometric Structure of Transformer Representations",
+    "3 Detecting Error Drift in Attention Heads",
+    "3.1 Setup and Notation",
+    "3.2 Contrastive Error Manifold Construction (per-problem difference vectors, difference matrix, error subspace via PCA, global correct-state centroid, Remark 1)",
+    "3.3 Proximity-Based Error Detection",
+    "3.4 Empirical Validation of the Drift Hypothesis",
+    "4 Manifold-Guided Attention Steering (head selection, error-component correction, Algorithm 1, Proposition 1, compositional steering MAGSu)",
+    "5 Experiments",
+    "5.1 Reasoning Benchmarks (setup, baselines, manifold construction, Tables 1-2, results)",
+    "5.2 Molecular Generation (Table 3)",
+    "6 Discussion (hyperparameter sensitivity, latent trajectory analysis)",
+    "7 Conclusion (incl. Limitations and future work)",
+    "Acknowledgements",
+    "References",
+    "A Proof of Proposition 1",
+    "B Additional Experimental Details",
+    "B.1 Ablation on Hyperparameter Sensitivity (Table 4)",
+    "C Visualization of the effect of steering on attention graph (Figure 5)",
+    "C.1 Computational infrastructure",
+    "D Statistical Significance (Tables 5-6)"
+  ],
+  "setup": {
+    "data": "Math: MATH-500 (N=500) and GSM8K test (N=1319); code: HumanEval (N=164) and MBPP (N=427); SMILES generation (500 molecules per method) scored for validity and AutoDock-GPU binding. Error subspaces fit on sampled traces from training sets: Math-Instruct for MATH-500, GSM8K train, APPS for both code benchmarks; up to 8 samples per problem, problems without both a correct and an incorrect trace discarded. Number of training problems not reported.",
+    "models": "Llama-3.1-8B-Instruct and Gemma-4-E4b-it (math and code); GPT-OSS-20B (SMILES only). fp16 on RTX 4090s; H200 for GPT-OSS.",
+    "positions_layers": "Per-head attention outputs a_t (input to W_O) at every generated token. Diagnostic AUROC map: Llama-3.1-8B-Instruct layers {8, 16, 24, 31}, all 32 heads. Steered heads: top-1 or top-3 by held-out AUROC; which heads/layers were chosen per model is not reported.",
+    "method_summary": "Per problem, mean head output over all tokens of incorrect traces minus mean over correct traces; stack over problems; top-k right singular vectors = error subspace B (k not reported). Score d_t = squared norm of B(a_t - mu_c) with mu_c the global correct-trace mean; trigger when d_t exceeds a per-head threshold (q-th percentile on correct traces; q not reported); correction subtracts alpha * B^T B (a_t - mu_c).",
+    "baselines": "Unsteered; ITI (probe-direction head steering), Angular Steering (fixed 2-D rotation), Contrastive Decoding (expert vs amateur model). ITI and AS re-fit on the same correct/incorrect trace contrast.",
+    "controls": "Problem-level 70/30 split for the detection diagnostic; per-problem differencing to cancel problem content; thresholds calibrated on correct traces; perplexity reported as a fluency side-effect; bootstrap 95% CIs (Appendix D); forced-token-sequence comparison for the attention-shift analysis.",
+    "metrics": "Trajectory-level AUROC per head; accuracy / pass@1; perplexity; SMILES validity and docking score."
+  },
+  "figures": [
+    {
+      "id": "Figure 1",
+      "page": 2,
+      "what_is_plotted": "Illustrative six-step solution to 'find the maximum of f(x)=4(x+7)(2-x)': a static-steering trace with a constant correction dial at every step and errors from step 4 (answer 52, wrong), and a MAGS trace with corrections only at steps 4-5 (answer 81, correct).",
+      "takeaway": "Intended intuition: correct only where the error occurs.",
+      "numbers": "Final answers 52 (static) vs 81 (MAGS; 81 is the correct maximum).",
+      "text_matches_figure": "partly - presented as an example; no model is named and it is not stated whether this is a real trace or an idealized illustration."
+    },
+    {
+      "id": "Figure 2",
+      "page": 4,
+      "what_is_plotted": "Schematic in a PC1-PC2 plane: green 'correct space' and red 'error space' density blobs, the learned span(B) drawn along PC1, and the projection B^T B pointing from an error activation back toward mu_c.",
+      "takeaway": "The intended geometry: correct and error states separated along a low-rank direction.",
+      "numbers": "None (schematic; axis values are illustrative).",
+      "text_matches_figure": "yes (labelled a schematic) - but real data in Fig. 4 is far less cleanly separated."
+    },
+    {
+      "id": "Figure 3",
+      "page": 5,
+      "what_is_plotted": "Heatmap of trajectory-level error-detection AUROC for each head (x: head 0-31) at layers 8, 16, 24, 31 of Llama-3.1-8B-Instruct on Math-Instruct; dots mark AUROC > 0.65.",
+      "takeaway": "Some heads carry a trace-level correctness signal; the last layer has the most such heads.",
+      "numbers": "Approx, read from figure: max about 0.85 (layer 8, head about 10); dots - layer 8 about 6 heads, layer 16 about 2, layer 24 about 4, layer 31 about 15 (about 27 of 128 total); several heads near 0.30-0.35 (e.g. layer 8 heads about 21-23, layer 16 head about 13, layer 24 heads about 1 and 4); colour scale about 0.35-0.85.",
+      "text_matches_figure": "partly - 'sparse and concentrated' holds for layers 8-24 but nearly half the heads in layer 31 pass 0.65; and the many heads far below 0.5 carry an equally strong inverted signal (errors have smaller projection norms) that the paper ignores. No correction for testing 128 heads on a 30% held-out split."
+    },
+    {
+      "id": "Table 1",
+      "page": 7,
+      "what_is_plotted": "Accuracy and perplexity on Llama-3.1-8B-Instruct for unsteered, ITI, AS, CD, MAGS on MATH-500, GSM8K, HumanEval, MBPP.",
+      "takeaway": "MAGS has the highest accuracy on all four benchmarks for Llama.",
+      "numbers": "Acc (unsteered / ITI / AS / CD / MAGS): MATH-500 0.478 / 0.498 / 0.506 / 0.492 / 0.530; GSM8K 0.860 / 0.855 / 0.857 / 0.858 / 0.867; HumanEval 0.561 / 0.573 / 0.591 / 0.591 / 0.604; MBPP 0.562 / 0.548 / 0.546 / 0.555 / 0.574. PPL MATH-500 1.229 / 1.227 / 1.232 / 1.295 / 1.227; MBPP PPL 2.978 / 2.250 / 2.214 / 2.291 / 2.970.",
+      "text_matches_figure": "partly - point estimates match the text, but Table 6 CIs overlap for nearly all comparisons and Table 4 shows configurations were chosen on MATH-500 itself."
+    },
+    {
+      "id": "Table 2",
+      "page": 7,
+      "what_is_plotted": "Same for Gemma-4-E4b-it.",
+      "takeaway": "MAGS best or tied on all four; ITI ties MAGS on GSM8K and is within 0.002 on MATH-500; all baselines hurt HumanEval.",
+      "numbers": "Acc: MATH-500 0.614 / 0.646 / 0.566 / 0.604 / 0.648; GSM8K 0.899 / 0.913 / 0.900 / 0.874 / 0.913; HumanEval 0.560 / 0.463 / 0.518 / 0.433 / 0.604; MBPP 0.587 / 0.557 / 0.548 / 0.593 / 0.604. GSM8K PPL unsteered 1.710 vs MAGS 1.210.",
+      "text_matches_figure": "partly - 'outperforms ... all three steering methods across both models and all four benchmarks' is overstated (tie with ITI on GSM8K); MAGS perplexity on GSM8K is far below unsteered, not 'matching' it."
+    },
+    {
+      "id": "Table 3",
+      "page": 8,
+      "what_is_plotted": "SMILES validity (%) and docking score (kcal/mol) for GPT-OSS-20B under unsteered, AS, ITI, MAGS, MAGSu.",
+      "takeaway": "ITI gives the best validity but worse binding; MAGS/MAGSu improve both a little.",
+      "numbers": "Validity 50.4 / 51.4 / 57.8 / 54.8 / 54.8; binding -7.36 / -7.44 / -7.20 / -7.54 / -7.56. No CIs.",
+      "text_matches_figure": "partly - consistent with the molecular-result text, but contradicts the abstract/conclusion claim that MAGS consistently outperforms baselines (ITI wins validity); binding differences are about 0.2 kcal/mol with no uncertainty."
+    },
+    {
+      "id": "Figure 4",
+      "page": 9,
+      "what_is_plotted": "Mean token-by-token trajectories of head-output activations projected on the top-4 PCs of the error subspace (PC1-PC2 and PC3-PC4) for unsteered (purple), MAGS (orange), ITI (teal), over a KDE of correct-output activations; faint per-problem traces; dashed connectors at the correction step. Model, layer and head are not stated.",
+      "takeaway": "ITI pushes activations far from the correct-output density; MAGS stays near it.",
+      "numbers": "Approx, read from figure: all start near (-0.25, -0.24) in PC1-PC2; unsteered ends near (-0.03, -0.08) at the edge of the correct density, MAGS near (-0.07, -0.05), ITI near (0.2, -0.1) outside. In PC3-PC4 unsteered and MAGS end overlapping near (-0.03, 0.0-0.03); ITI near (0.1, 0.08). Correction connectors start at the first trajectory point.",
+      "text_matches_figure": "partly - ITI clearly ends far away, but the unsteered mean trajectory moves toward (not away from) the correct density in PC1-PC2 and ends close to MAGS, so 'drifts steadily away ... and fails to recover' is not visible; corrections appear at the start of generation."
+    },
+    {
+      "id": "Table 4",
+      "page": 12,
+      "what_is_plotted": "MATH-500 accuracy (Llama-3.1-8B-Instruct) across hyperparameters: MAGS (top-3/top-1 heads x alpha), ITI (K heads x alpha), Angular Steering (rotation angle).",
+      "takeaway": "MAGS is insensitive (0.492-0.530); ITI and AS can collapse.",
+      "numbers": "MAGS top-3 alpha 0.3/0.5/0.7/1.0: 0.502/0.498/0.492/0.530; top-1 alpha 0.7/1.0: 0.492/0.530. ITI K=24: 0.476/0.472/0.298; K=48: 0.488/0.472/0.214; K=96: 0.498/0.480/0.314 (alpha 0.5/1/5). AS 0-330 deg: 0.488, 0.506, 0.466, 0.284, 0.206, 0.334, 0.412, 0.400, 0.344, 0.430, 0.500, 0.468.",
+      "text_matches_figure": "yes for ranges - but the best value per method equals the Table 1 number, i.e. every method's reported result is its best configuration on the test benchmark."
+    },
+    {
+      "id": "Figure 5",
+      "page": 13,
+      "what_is_plotted": "Head-averaged relative attention change (steered minus unsteered, divided by unsteered) at a layer after the correction (l_bip, not specified), query token x key token, for two MATH-500 problems on Gemma-4-E4b-it, both runs forced on the same token sequence.",
+      "takeaway": "After the correction, later queries attend more to a few specific key positions (vertical stripes).",
+      "numbers": "Approx, read from figure: colour scale +/-0.16x; strongest stripe at the first key token ('Here'), others at tokens of the opening 'Here is the step by step derivation' preamble and at a few later tokens; row labels t+14 ... t+24 are relative to the correction, which puts the first correction at the very first generated tokens.",
+      "text_matches_figure": "partly - stripes are visible, but the largest is at the first token (a usual attention-sink position), only two hand-picked problems are shown, and the correction appears to fire on boilerplate preamble tokens rather than at a reasoning error."
+    },
+    {
+      "id": "Table 5",
+      "page": 14,
+      "what_is_plotted": "Bootstrap 95% CIs (B=10,000, percentile) for Gemma-4-E4b-it on all four benchmarks.",
+      "takeaway": "Most MAGS vs baseline CIs overlap.",
+      "numbers": "MATH-500: unsteered 0.614 [0.572, 0.656], ITI 0.646 [0.604, 0.688], MAGS 0.648 [0.606, 0.690]; GSM8K: unsteered 0.899 [0.887, 0.911], MAGS 0.913 [0.898, 0.928]; HumanEval: unsteered 0.560 [0.482, 0.634], MAGS 0.604 [0.524, 0.677]; MBPP: CD 0.593 [0.546, 0.639], MAGS 0.604 [0.557, 0.649].",
+      "text_matches_figure": "partly - the appendix is titled 'Statistical Significance' but the unpaired CIs do not support 'consistently outperforms'; no paired test is reported."
+    },
+    {
+      "id": "Table 6",
+      "page": 14,
+      "what_is_plotted": "Bootstrap 95% CIs for Llama-3.1-8B-Instruct.",
+      "takeaway": "Largest gain (MATH-500) still has overlapping CIs with unsteered.",
+      "numbers": "MATH-500: unsteered 0.478 [0.428, 0.516], AS 0.506 [0.462, 0.550], MAGS 0.530 [0.486, 0.574]; GSM8K: unsteered 0.860 [0.841, 0.879], MAGS 0.867 [0.848, 0.886]; HumanEval: unsteered 0.561 [0.494, 0.640], MAGS 0.604 [0.524, 0.677]; MBPP: unsteered 0.562 [0.515, 0.609], MAGS 0.574 [0.527, 0.621].",
+      "text_matches_figure": "partly - same issue as Table 5."
+    }
+  ],
+  "key_results": [
+    {
+      "claim": "Central claim: specific heads' outputs leave a low-dimensional correctness region at the error and the deviation compounds.",
+      "quote": "the output activations of specific attention heads diverge from a low-dimensional correctness manifold at the point of error, and this deviation compounds through subsequent steps",
+      "page": 1
+    },
+    {
+      "claim": "Headline improvement claim (appears to be relative improvement; 0.530 vs 0.478 on Llama MATH-500 is about 10.9% relative).",
+      "quote": "MAGS consistently outperforms static steering baselines on benchmarks across three model families, by up to 10.8% while incurring negligible inference overhead",
+      "page": 2
+    },
+    {
+      "claim": "Per-problem differencing is what removes problem-content directions from the subspace.",
+      "quote": "If PCA were fit on E (l,h) directly (pooled baseline), the dominant directions would reflect problem-level features (e.g., problem difficulty or topic)",
+      "page": 4
+    },
+    {
+      "claim": "Detection signal is localized in a subset of heads (AUROC > 0.65 marked).",
+      "quote": "The signal is sparse and concentrated in specific heads (marked dots for AUROC > 0.65), confirming that error drift is a structured, localized phenomenon",
+      "page": 5
+    },
+    {
+      "claim": "Largest accuracy gains are on MATH-500.",
+      "quote": "MAGS achieves the largest gains: +5.2 points over the unsteered Llama baseline and +3.4 points over the unsteered Gemma baseline",
+      "page": 7
+    },
+    {
+      "claim": "Code gains of about 4 points on HumanEval.",
+      "quote": "MAGS improves HumanEval pass@1 by approximately 4 points over the unsteered baseline on both models",
+      "page": 7
+    },
+    {
+      "claim": "Unconditional steering hurts code on Gemma.",
+      "quote": "All three baselines degrade HumanEval performance relative to the unsteered Gemma model",
+      "page": 7
+    },
+    {
+      "claim": "Fluency is preserved.",
+      "quote": "MAGS consistently matches or approaches unsteered perplexity across benchmarks",
+      "page": 8
+    },
+    {
+      "claim": "Hyperparameter robustness of MAGS.",
+      "quote": "MAGS accuracy varies narrowly (0.492–0.530) across all configurations tested",
+      "page": 8
+    },
+    {
+      "claim": "ITI is brittle.",
+      "quote": "ITI spans a much wider range (0.214–0.498), with performance collapsing at high steering strength",
+      "page": 8
+    },
+    {
+      "claim": "ITI trades validity for binding on SMILES.",
+      "quote": "it substantially improves validity but incurs a significant drop in binding affinity",
+      "page": 8
+    },
+    {
+      "claim": "Trajectory claim for the unsteered model (not well supported by Fig. 4).",
+      "quote": "The unsteered trajectory (purple) drifts steadily away from the correct-output distribution and fails to recover",
+      "page": 9
+    },
+    {
+      "claim": "ITI ends far from the correct-output density.",
+      "quote": "ITI (teal), even after intervention, continues to diverge and settles in a region far from the correct-output distribution",
+      "page": 9
+    },
+    {
+      "claim": "Downstream routing effect of a correction: later queries attend more to certain keys.",
+      "quote": "certain key tokens receive consistently higher attention across all subsequent query steps",
+      "page": 13
+    },
+    {
+      "claim": "Correction leaves the complement of the error subspace untouched.",
+      "quote": "the dh − k directions unrelated to the error manifold are completely untouched",
+      "page": 6
+    }
+  ],
+  "methods": [
+    {
+      "name": "Per-item contrastive difference subspace at each attention head (mean incorrect minus mean correct trace for the same problem, PCA over problems)",
+      "what_it_measures": "The few directions in a head's output space along which failing runs differ from succeeding runs of the same item, with item content cancelled.",
+      "which_fate_it_could_diagnose": "Override (fate 4) and H1: for each fact, flipped-run mean minus resisted-run mean (or post-pushback minus pre-pushback) per head; the resulting subspace, compared by principal angles across pressure types, tests whether pushback and tempting-option failures use the same directions. Alignment with a 'user-claim' direction would point to override.",
+      "causal_followup_it_allows": "Project the subspace out of the head output (Eq. 9) and check whether flips are prevented; compare projection in one head vs many.",
+      "data_and_compute_needed": "Items with both outcomes under sampling (they discard problems without both within 8 samples) - for us, several pushback phrasings or samples per fact. Hooks on W_O inputs and an SVD per head; cheap at 9B-27B.",
+      "code_available": "no repository linked in the paper"
+    },
+    {
+      "name": "Per-head proximity score with threshold calibrated on correct traces; per-head trajectory AUROC map",
+      "what_it_measures": "How much a head's current output sits along the error directions relative to the correct-trace mean; which heads predict failure.",
+      "which_fate_it_could_diagnose": "Monitoring and localization: a per-head AUROC map for flip vs resist gives candidate heads that read the user's claim or the model's earlier answer. Must use both tails (AUROC far below 0.5 is also signal) and a signed score to have any chance at transformed (fate 5).",
+      "causal_followup_it_allows": "Head-level projection ablation or patching of the top heads.",
+      "data_and_compute_needed": "Forward passes with head-output hooks; problem-level split; cheap.",
+      "code_available": "no"
+    },
+    {
+      "name": "Conditional projection correction (fire only above threshold; remove alpha times the error-subspace component of a_t - mu_c)",
+      "what_it_measures": "Whether removing the error component only when it is large improves outcomes without side effects.",
+      "which_fate_it_could_diagnose": "Stage B fix template for override (fate 4): remove the competing component only when it is present, leaving the rest of the head output intact; compare with plain DPO (H2).",
+      "causal_followup_it_allows": "It is the intervention; pair with a matched always-on version and a random-subspace control (not done in the paper).",
+      "data_and_compute_needed": "Same subspace; negligible inference overhead (O(K k dh) per step).",
+      "code_available": "no"
+    },
+    {
+      "name": "Token-by-token trajectories in the subspace's top PCs over a KDE of correct states",
+      "what_it_measures": "How steered and unsteered generations move relative to the region occupied by correct runs.",
+      "which_fate_it_could_diagnose": "Fork-point search (jump vs drift): plot flipped vs resisted per-item trajectories from the pushback turn onward. Use per-item paths, not only means.",
+      "causal_followup_it_allows": "Choose an intervention time at the fork point.",
+      "data_and_compute_needed": "Cheap.",
+      "code_available": "no"
+    },
+    {
+      "name": "Relative attention-shift map under forced decoding (steered vs unsteered run on the same token sequence)",
+      "what_it_measures": "How a correction written into the KV cache changes which positions later queries attend to.",
+      "which_fate_it_could_diagnose": "Not routed (fate 3): after injecting or restoring the correct answer, check whether later heads actually read it (do queries attend more to the model's own earlier answer token?).",
+      "causal_followup_it_allows": "Locate which downstream heads pick up the corrected entry.",
+      "data_and_compute_needed": "Two forward passes per item with attention weights stored; cheap.",
+      "code_available": "no"
+    }
+  ],
+  "controls_worth_copying": [
+    {
+      "control": "Problem-level train/test split so the subspace never sees test items.",
+      "quote": "Using Math-Instruct traces from Llama-3.1-8B-Instruct collected at layers {8, 16, 24, 31}, we perform a problem-level 70/30 train/test split",
+      "page": 5
+    },
+    {
+      "control": "Per-item differencing before PCA (Remark 1) - for us, flipped minus resisted on the same fact, matched on prior confidence."
+    },
+    {
+      "control": "Calibrate trigger thresholds only on good (resisted) runs so the false-trigger rate on normal behavior is controlled."
+    },
+    {
+      "control": "Compare steered and unsteered internals on the same forced token sequence, so differences come only from the intervention.",
+      "quote": "both steered and unsteered streams are run on the same forced token sequence (the steered model’s greedy outputs), so the two caches diverge solely through the corrections",
+      "page": 13
+    },
+    {
+      "control": "Re-fit competing steering baselines (ITI, angular steering) on the same contrast sets, and report a fluency side-effect metric next to accuracy."
+    }
+  ],
+  "pitfalls": [
+    {
+      "pitfall": "Hyperparameters for every method were swept on the evaluation benchmark itself; the reported Table 1 numbers equal each method's best configuration in Table 4 (test-set selection).",
+      "quote": "Hyperparameter ablations on MATH-500 (Llama-3.1-8B-Instruct). Best result per method in bold.",
+      "page": 12
+    },
+    {
+      "pitfall": "Only unpaired percentile bootstrap CIs; they overlap for nearly every MAGS vs baseline comparison (e.g. Llama MATH-500 0.530 [0.486, 0.574] vs unsteered 0.478 [0.428, 0.516]). No paired test on the same problems.",
+      "quote": "All confidence intervals are 95% percentile bootstrap CIs with B=10000 resamples (seed = 42).",
+      "page": 14
+    },
+    {
+      "pitfall": "Labels are final-answer correctness of whole traces and means are over all tokens, so the subspace is trace-level; it does not locate the 'point of error' the abstract claims.",
+      "quote": "is assigned a binary label yτ ∈ {0, 1} (1 = correct final answer)",
+      "page": 3
+    },
+    {
+      "pitfall": "Inconsistent aggregation and thresholds: the diagnostic uses max aggregation and a balanced-accuracy threshold, head selection uses the mean score, and steering uses a q-th percentile threshold on correct traces.",
+      "quote": "we aggregate the per-step proximity scores {dt } into a single scalar using max aggregation",
+      "page": 5
+    },
+    {
+      "pitfall": "Head selection uses a different statistic (mean) than the diagnostic (max).",
+      "quote": "AUROC is computed between the trajectory-level error label and the mean proximity score over the trajectory",
+      "page": 5
+    },
+    {
+      "pitfall": "Key settings are never given: subspace rank k, percentile q, number of training problems, decoding temperature, which heads/layers were steered per model.",
+      "quote": "where τ (l,h) is set to the q-th percentile of",
+      "page": 5
+    },
+    {
+      "pitfall": "Selection bias in the fitting set: only problems where the model sometimes succeeds and sometimes fails within 8 samples are kept.",
+      "quote": "problems for which both a correct and an incorrect trace cannot be obtained within 8 samples are discarded",
+      "page": 7
+    },
+    {
+      "pitfall": "The score is an unsigned squared norm around the global correct mean; heads with AUROC far below 0.5 (visible in Fig. 3) carry inverted signal that is ignored, and the score cannot separate a sign-flipped encoding from any other displacement. The 'manifold' is a linear subspace plus one global centroid, and the correction pulls every item toward the same global mean in those k dims. (Observation from Eqs. 6-9 and Fig. 3; not stated by the authors.)"
+    },
+    {
+      "pitfall": "Fig. 4 and Fig. 5 suggest corrections fire at the first generated tokens (preamble), not at reasoning errors, and the attention change is largest at the first token (an attention-sink position) - approx, read from figure; not discussed by the authors."
+    },
+    {
+      "pitfall": "'Three model families' overstates breadth: reasoning and code results use two models; GPT-OSS-20B appears only in the SMILES task. Perplexity scorer is not specified."
+    }
+  ],
+  "limitations_quote": "MAGS requires a set of contrastive-output traces for manifold fitting, which may be difficult to curate in low-resource domains.",
+  "limitations_page": 9,
+  "future_work_quote": "the degree to which the learned manifold transfers across tasks within a domain (e.g., arithmetic to symbolic reasoning) remains an open question",
+  "future_work_page": 9,
+  "bears_on_fates": [
+    {
+      "fate": "4 override",
+      "how": "Per-item contrastive subspace at head outputs plus conditional projection removal is a ready template for 'remove the competing component when present'. The paper does not test whether the subspace is an added competing signal or a loss of the correct one.",
+      "strength": "moderate"
+    },
+    {
+      "fate": "3 not routed",
+      "how": "Forced-decoding attention-shift maps check whether a corrected head output is read by later queries.",
+      "strength": "weak"
+    },
+    {
+      "fate": "2 bypass",
+      "how": "Cautionary: heads with good detection AUROC give only small, statistically weak gains when steered, a reminder that decodable at a head does not mean the head mediates the answer.",
+      "strength": "weak"
+    },
+    {
+      "fate": "1 readout/threshold failure",
+      "how": "Threshold calibration on correct runs is relevant to how we set probe cut-offs, but the paper does not study readout failure.",
+      "strength": "weak"
+    },
+    {
+      "fate": "5 transformed",
+      "how": "The unsigned norm score cannot detect re-encoding; the ignored AUROC<0.5 heads hint that signs matter. Use a signed or full-vector comparison instead.",
+      "strength": "weak"
+    },
+    {
+      "fate": "6 erased",
+      "how": "Not addressed.",
+      "strength": "weak"
+    }
+  ],
+  "bears_on_group_angle": "Helps in small, practical ways: per-item differencing before PCA is essential when comparing flipped vs resisted point clouds (otherwise top PCs are item content); doing it per attention head gives a component-level subspace rather than a residual-stream one; plotting token-by-token trajectories in subspace PCs over a density of good runs is a cheap fork-point picture; the forced-sequence attention-shift map is a cheap routing check. Warns: 'manifold' here is just a linear subspace (no curvature, no group structure); mean trajectories hide per-item fork points; an unsigned norm throws away direction, which is what distinguishes transformed from drifted; 128-head scans on a small held-out split need multiple-comparison care; the paper's visual trajectory claims do not match its own figure well.",
+  "architecture_location": "Component type: attention-head outputs (input to W_O). Depth (Llama-3.1-8B-Instruct, Math-Instruct only): heads above 0.65 AUROC at all four monitored layers (8, 16, 24, 31), densest in the final layer (about 15 of 32 heads, approx from Fig. 3), strongest single head in layer 8 (about 0.85). Only one model and one dataset for the localization map; heads actually steered in Gemma and GPT-OSS are not reported; no seeds or checkpoints. So: weak evidence for 'late layers plus a few early heads', nothing on consistency across models.",
+  "actionable_fix": "An inference-time, head-level, conditional fix: learn per-head subspaces from per-item contrastive pairs (flipped vs resisted on the same fact), trigger only when the projection exceeds a threshold set on resisted runs, and remove only that component. For our Stage B this is a cheap fate-4 (override) baseline to put next to plain DPO, plus a per-head monitor. Given the weak statistics, treat it as a baseline to beat, not a proven fix, and add a random-subspace control.",
+  "reuse_verdict": "adapt - copy the per-item contrastive differencing, head-level subspaces, conditional projection and the forced-decoding attention-shift check; avoid their evaluation practice (tuning on test, unpaired overlapping CIs, unsigned one-tailed AUROC) and do not cite it as evidence that correctness lives on a manifold.",
+  "relevance_to_project": "Less relevant than the title suggests. The 'manifold' is a linear PCA subspace of per-problem differences, so it adds nothing on curved geometry, subspace tracking across layers, or group structure. Its useful parts are engineering pieces for Stage A/B (per-item differencing at head outputs, conditional projection, attention-shift under forced decoding). The evidence is weak (test-set tuning, overlapping CIs, figures that only partly support the text), so it should be used as a method template, not as a result."
+}

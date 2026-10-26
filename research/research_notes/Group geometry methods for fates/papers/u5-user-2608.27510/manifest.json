@@ -1,0 +1,158 @@
+{
+ "slug": "u5-user-2608.27510",
+ "url": "https://arxiv.org/pdf/2608.27510",
+ "pdf_ok": true,
+ "pages": 30,
+ "chars": 99033,
+ "title_guess": "How Do Linear Probes Emerge? A Circuit-Tracing Framework with Concept-Targeted Attribution Vedant Palit1,2,3 Florent Draye3,4 Terry Jingchen Zhang1,2",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 2,
+   "caption_start": " Figure 1: The CTA pipeline: CLT replaces MLP modules for interpretability; attribution graphs capture causal feature flow toward the probe; graph-structural features predict probe accuracy; CLT featu"
+  },
+  {
+   "id": "Figure 2",
+   "page": 3,
+   "caption_start": " Figure 2: Probe score trajectories across layers for all four concepts. Shaded bands mark the steepest singlestep rise, indicating the belief point Lb where the residual stream most sharply aligns wi"
+  },
+  {
+   "id": "Table 1",
+   "page": 4,
+   "caption_start": " Table 1: Causal dissociation for Toxicity and Truthfulness depicted at their respective Lb , implemented across Gemma-2-2B and Llama-3.2-1B. Ablating probe-exclusive nodes collapses \u2206S with near-zero"
+  },
+  {
+   "id": "Figure 3",
+   "page": 5,
+   "caption_start": " Figure 3: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for Toxicity. The separation is statistically significant for each feature (p < 0."
+  },
+  {
+   "id": "Table 2",
+   "page": 5,
+   "caption_start": " Table 2: Predicting probe accuracy from graphstructural features using 5-fold group-aware crossvalidation. Bootstrap 95% confidence intervals for GB are \u03c1 \u2208 [0.724, 0.964], with p < 0.005 under group"
+  },
+  {
+   "id": "Figure 4",
+   "page": 6,
+   "caption_start": " Figure 4: Top activated examples for L6/F4508. This feature is present in CTAs of more than 50% of positive prompts from the SST-2 sentiment dataset, specifically activating in positive superlatives."
+  },
+  {
+   "id": "Figure 5",
+   "page": 7,
+   "caption_start": " Figure 5: Top predictive features appear 6\u201320\u00d7 more frequently than a random feature at Lb , revealing a stable mechanistic core despite prompt-level circuit variation.  tual recall. Its signal is re"
+  },
+  {
+   "id": "Figure 6",
+   "page": 8,
+   "caption_start": " Figure 6: Consecutive-layer Jaccard J(L, L \u2212 1) for a representative prompt per concept, showing rapid circuit evolution in early layers followed by stabilization at J \u2248 0.9 by intermediate layers.  "
+  },
+  {
+   "id": "Figure 7",
+   "page": 18,
+   "caption_start": " Figure 7: Probe validation accuracy across layers for Gemma-2-2B (left) and Llama-3.2-1B (centre). Toxicity is linearly decodable from early layers in both models; Sentiment and Truthfulness show wea"
+  },
+  {
+   "id": "Table 3",
+   "page": 18,
+   "caption_start": " Table 3: Probe accuracy at each concept\u2019s belief layer Lb for both models. Sentiment and Truthfulness show lower ceilings in Llama-3.2-1B, consistent with weaker encoding of affective and factual con"
+  },
+  {
+   "id": "Table 4",
+   "page": 19,
+   "caption_start": " Table 4: Full causal ablation results across all four concepts on Gemma-2-2B (see Section 4.2 for the main study). S \u2032 = post-ablation probe score; \u2206S = change from control. Reasoning\u2019s \u2206S signs are "
+  },
+  {
+   "id": "Table 5",
+   "page": 19,
+   "caption_start": " Table 5: 5-fold group-aware CV results for Channel 2 (Gemma-2-2B).  and the logit-exclusive subgraph produces a 92% flip rate with near-zero internal effect (\u2206S = +0.53). Second, the logit-exclusive "
+  },
+  {
+   "id": "Table 6",
+   "page": 20,
+   "caption_start": " Table 6: Bootstrap 95% CI (500 resamples) and permutation test (200 shuffles) for Channel 2 GB model (Gemma-22B). 1.0  Within-Layer Predictability of Probe Score Margin Toxicity Sentiment Reasoning T"
+  },
+  {
+   "id": "Figure 8",
+   "page": 20,
+   "caption_start": " Figure 8: Spearman \u03c1 between predicted and actual probe score margins across layers for all four concepts. Toxicity maintains consistently high predictability across all layers; Truthfulness peaks at"
+  },
+  {
+   "id": "Figure 9",
+   "page": 21,
+   "caption_start": " Figure 9: Top predictive features appear 8\u201321\u00d7 more frequently than a random feature at highest validation accuracy layer, revealing a stable mechanistic core despite prompt-level circuit variation. "
+  },
+  {
+   "id": "Figure 10",
+   "page": 22,
+   "caption_start": " Figure 10: Mean per-prompt Jaccard similarity J(T @LT , R@LR ) between Truthfulness and Reasoning attribution graphs across all layer-pair combinations. Cross-concept overlap is non-negligible only w"
+  },
+  {
+   "id": "Figure 11",
+   "page": 23,
+   "caption_start": " Figure 11: Representative CLT features identified by the probe attribution pipeline, visualized via Neuronpedia. Each panel shows the feature\u2019s layer, index, mean activation, and top/bottom predicted"
+  },
+  {
+   "id": "Table 7",
+   "page": 24,
+   "caption_start": " Table 7: Full causal ablation results across all four concepts on Llama-3.2-1B. S \u2032 = post-ablation probe score; \u2206S = change from control. Sentiment baseline is negative as the probe encodes positive"
+  },
+  {
+   "id": "Table 8",
+   "page": 24,
+   "caption_start": " Table 8: 5-fold group-aware CV results for Channel 2 (Llama-3.2-1B).  Observed \u03c1 95% CI on \u03c1 Null mean \u03c1 p(\u03c1)  Raw +0.780 [+0.368, +0.955] \u22120.011 \u00b1 0.179 < 0.005  Table 9: Bootstrap 95% CI (500 resam"
+  },
+  {
+   "id": "Table 9",
+   "page": 24,
+   "caption_start": " Table 9: Bootstrap 95% CI (500 resamples) and permutation test (200 shuffles) for Channel 2 GB model (Llama3.2-1B).  Structural separation is weaker than Gemma-2-2B. While the raw signal is significa"
+  },
+  {
+   "id": "Figure 12",
+   "page": 27,
+   "caption_start": " Figure 12: Gemma-2-2B: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for sentiment. The separation is statistically significant for each f"
+  },
+  {
+   "id": "Figure 13",
+   "page": 27,
+   "caption_start": " Figure 13: Gemma-2-2B: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for reasoning. The separation is statistically significant for each f"
+  },
+  {
+   "id": "Figure 14",
+   "page": 28,
+   "caption_start": " Figure 14: Gemma-2-2B: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for truthfulness. The separation is not purely significant for featur"
+  },
+  {
+   "id": "Figure 15",
+   "page": 28,
+   "caption_start": " Figure 15: Llama-3.2-1B: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for Sentiment. No feature reaches significance at p < 0.05, and eff"
+  },
+  {
+   "id": "Figure 16",
+   "page": 29,
+   "caption_start": " Figure 16: Llama-3.2-1B: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for Sentiment. No feature reaches significance at p < 0.05, and eff"
+  },
+  {
+   "id": "Figure 17",
+   "page": 29,
+   "caption_start": " Figure 17: Llama-3.2-1B: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for Reasoning. Maximum logit edge and graph density reach significa"
+  },
+  {
+   "id": "Figure 18",
+   "page": 30,
+   "caption_start": " Figure 18: Llama-3.2-1B: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for Truthfulness. No feature reaches significance at p < 0.05, and "
+  }
+ ],
+ "n_figures_tables": 27,
+ "section_heading_candidates": [
+  "A Experimentation Details",
+  "B Extended Result Discussion",
+  "C Activated Examples for Selected Features",
+  "D Implementation Results on Llama-3.2-1B",
+  "E Computational Resources",
+  "F Topological Fingerprints of Graph Structural Features",
+  "A.5.1 Graph Structural Predictor",
+  "A.5.2 Local CLT Feature Predictor"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

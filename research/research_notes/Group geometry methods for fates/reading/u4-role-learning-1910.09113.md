@@ -1,0 +1,193 @@
+# Discovering the Compositional Structure of Vector Representations with Role Learning Networks (Soulos, McCoy, Linzen, Smolensky; arXiv 1910.09113v3, 2020)
+
+`u4-role-learning-1910.09113`
+
+**Bottom line:** Copy the validation design: (1) replace the activation with the structured approximation and check the model's own downstream behaves the same (substitution accuracy); (2) edit one bound component and check the predicted output change (constituent surgery); (3) always compare with a structure-free baseline. A filler-role view also gives a concrete test for a 'transformed' fate: the answer is still present but bound to a different role.
+
+**Relevance to project:** Moderate to low. It is 2019-2020 RNN work on a synthetic grammar, not LLMs, facts, or pressure, and gives no evidence about location or scale. Its value is the validation design: replace with the structured approximation and check behaviour; edit one bound part and check the predicted change; compare to a structure-free baseline. That template cleanly separates 'decodable' from 'used' and gives a concrete test for a 'transformed' (re-bound) fate. It is more useful as a control design to copy than as a method to run directly.
+
+**Reuse verdict:** adapt: copy the validation logic, i.e. substitution accuracy through the model's own downstream, graded constituent surgery, the structure-free BOW baseline, and the held-out check of the interpretation. Do not run ROLE as is on LLM residual streams: it needs one vector per input and a token vocabulary with clean structural roles, and factual-pushback prompts have no clean grammar. Code is public if a single-position version is tried.
+
+## Setup
+
+- **data:** SCAN (synthetic command-to-action semantic parsing), simple train-test split; the grammar generates 20,910 input sequences (151,688 words). Sentence-model study: SNLI premise sentences.
+- **target models with sizes:** (1) GRU seq2seq encoder-decoder, 1 hidden layer of size 100, dropout 0.1, no attention, Adam lr .001, 100,000 steps at batch size 1 (best of a search over hidden 50/100/200/400 and dropout 0/.1/.5); 98.47% full-string test accuracy. (2) Four pre-trained sentence encoders: InferSent, Skip-thought, Stanford Sentiment model (SST), SPINN. All far smaller than any LLM; no transformers.
+- **positions layers read:** SCAN: the encoder's final hidden state (the single medial vector handed to the decoder) for every train and test example. Sentence models: the final sentence encoding.
+- **analysis model:** ROLE: a Tensor Product Representation T(S) = sum_t f_type(s_t) (x) r_t followed by a learned affine map W T(S) + b, trained by MSE to the target encodings; roles r_t = R a_t come from a bidirectional 2-layer LSTM giving soft attention over 50 learned role vectors, regularised toward one-hot (A.2). SCAN: filler dim 100, role dim 50, Adam lr .001, batch 32, early stopping patience 10, lambda in {.1, .02, .01} (best .02). Sentence models: fillers are the models' own word embeddings (25/300/300/620 dims) through a linear map, 50 roles of dim 50, lambda in {1, .1, .01, .001, .0001}.
+- **baselines:** Tensor Product Encoders (TPEs) with hand-defined roles: left-to-right, right-to-left, bidirectional, tree position (Stanford CoreNLP 3.9.1 parser for SNLI), Wickelroles (neighbours), and bag-of-words (BOW, the same role for every word, i.e. no structure).
+- **evaluation and controls:** SCAN: substitution accuracy (feed the approximation to the target's own decoder and check the full output) under three role modes: continuous (soft roles), snapped (argmax at test only), and discrete (a TPE retrained on ROLE's argmax labels); three random initialisations of ROLE with SDs; a hand-written role-assignment algorithm built on the training set and checked on the test set (98.7% match on test sequences, p. 6; the reported count pools train and test; it validates the algorithm against ROLE's roles, not ROLE itself); constituent surgery with 0-8 successive substitutions, three runs. Sentence models: MSE only, best of three ROLE initialisations by MSE; no decoder-based functional test.
+
+## Figures and tables (8 of 8 in manifest)
+
+### Figure 1 (p. 1)
+- **What is plotted:** Three-panel summary. Goal: an RNN encoder-decoder maps 'jump and run twice' to JUMP RUN RUN. Method: step 1 assigns roles to words with a learned role assigner (example tables 'jump and run twice' with roles 28 30 3 36, and 'jump and run left twice' with roles 28 30 11 3 36, plus a legend: 28 = command before 'and': last word; 30 = 'and'; 11 = command after 'and': 1st word; 3 = 2nd-to-last word; 36 = last word); step 2 combines filler and role dictionaries via COMPOSITION(words) = W sum Df[word_i] (x) Dr[role_i] + b. Results: the composed encoding gives the same decoder output, and the surgery RNN(jump and run twice) - W(Df[twice] (x) Dr[36]) + W(Df[thrice] (x) Dr[36]) gives JUMP RUN RUN RUN.
+- **Takeaway:** The RNN's bottleneck vector can be rewritten as a sum of word-times-role bindings that is both functionally equivalent (same decoder output) and editable (swap one binding and the output changes as predicted).
+- **Numbers:** Role IDs as listed (read from figure).
+- **Text matches figure:** partly: in 'jump and run twice' the figure gives 'run' role 3, but by the figure's own legend and the Appendix A.5 rules the first word after 'and' gets role 11 (role 3 is for the second-to-last word 'if not also the first word'). Minor, and possibly one of the 1.3% of sequences the algorithm misses, but internally inconsistent as drawn (read from figure).
+
+### Figure 2 (p. 4)
+- **What is plotted:** The DISCOVER task. Top: Encoder -> E -> Decoder, asking whether E is a sum of f_i (x) r_i. Middle: a Tensor Product Encoder produces E-hat = sum f_i (x) r_i, trained to minimise MSE to E. Bottom: E-hat is fed into the original decoder to test whether E = E-hat functionally.
+- **Takeaway:** The fit is judged by whether the target network's own downstream behaves the same on the approximation (substitution accuracy), not only by reconstruction error.
+- **Numbers:** none
+- **Text matches figure:** yes
+
+### Figure 3 (p. 4)
+- **What is plotted:** TPE architecture: fillers (3, 7, 3) and roles (r1, r2, r3) are embedded, combined by an outer product per constituent, summed, and linearly mapped to the encoder's dimension E.
+- **Takeaway:** The approximation is bilinear in filler and role embeddings plus one affine map; ROLE replaces the fixed role-embedding lookup with a learned role assigner.
+- **Numbers:** none
+- **Text matches figure:** yes
+
+### Figure 4 (p. 5)
+- **What is plotted:** Role learning module: an LSTM reads filler embeddings f_type(s_t); each hidden state h_t passes through a linear layer and softmax to give the role-attention vector a_t; the role embedding r_t is the a_t-weighted sum of columns of the role matrix R.
+- **Takeaway:** Roles are soft attention over a fixed dictionary, pushed toward one-hot by regularisation, so discrete roles can be read off with argmax.
+- **Numbers:** none
+- **Text matches figure:** yes
+
+### Table 1 (p. 6)
+- **What is plotted:** Mean substitution accuracy on SCAN over three random initialisations for learned roles (continuous, snapped, discrete) and hand-defined role schemes (LTR, RTL, Bi, Tree, Wickel, BOW).
+- **Takeaway:** Learned roles almost fully recover the encoder's function (about 95%); every hand-designed scheme fails (44% or less), and BOW (no structure) is near zero, so the structure is real and non-obvious.
+- **Numbers:** Continuous 94.83%; Snapped 81.71% +/- 7.28; Discrete 92.44%; LTR 6.68%; RTL 6.96%; Bi 10.72%; Tree 4.31%; Wickel 44.00%; BOW 4.52%. SD below 1% for all except snapped.
+- **Text matches figure:** yes
+
+### Figure 5 (p. 8)
+- **What is plotted:** Left: one worked example of five successive constituent surgeries on 'run left twice after jump opposite right thrice' (roles run:11 left:36 twice:8 after:43 jump:10 opposite:17 right:4 thrice:46), each giving the expected output with the altered output symbols in blue. Right: bar chart of mean constituent-surgery accuracy vs number of substitutions (0-8), three runs.
+- **Takeaway:** Editing bound constituents inside the real RNN encoding changes the decoder output in the predicted way most of the time; accuracy falls with the first few edits and then plateaus.
+- **Numbers:** Accuracy by number of substitutions, about 99 (0), 94 (1), 89 (2), 86 (3), 84 (4), 83 (5), 85 (6), 86 (7), 85 (8) percent (approx, read from figure). The left example's roles match the A.5 rules (checked by hand).
+- **Text matches figure:** partly: the text says long sequences of replacements succeed 'with high accuracy'; the bars show about a 15-point drop by 4-5 substitutions, plateauing at about 83-86% (approx, read from figure). The left panel is a single success case.
+
+### Table 2 (p. 8)
+- **What is plotted:** MSE of the approximations to four sentence encoders (InferSent, Skip-thought, SST, SPINN) for learned roles (continuous, snapped, discrete) and hand-defined schemes (LTR, RTL, Bi, Tree, BOW).
+- **Takeaway:** Learned roles give the lowest MSE for 3 of 4 models, but structure-free BOW is in the same range (and best for Skip-thought), so there is no evidence of compositional structure in these encoders.
+- **Numbers:** Continuous / BOW: InferSent 4.05e-4 / 4.34e-4; Skip-thought 9.30e-5 / 8.87e-5 (BOW best); SST 5.58e-3 / 9.38e-3 (Tree 5.99e-3); SPINN .139 / .176. Other columns: InferSent snapped 4.15e-4, discrete 5.76e-4, LTR 8.21e-4, RTL 9.70e-4, Bi 9.16e-4, Tree 7.78e-4.
+- **Text matches figure:** partly: 'except Skip-thought' matches the bold entries, but 'except for SST, ... same order of magnitude as BOW' is loose, since SST (5.58e-3 vs BOW 9.38e-3) is also the same order of magnitude; ROLE's margin over BOW is at most about 1.7x (InferSent 1.07x, SST 1.68x, SPINN 1.27x; BOW wins on Skip-thought). Discrete ROLE is worse than BOW on InferSent (5.76e-4 vs 4.34e-4), so evidence that the structure is discrete exists only for SCAN.
+
+### Table 3 (p. 14)
+- **What is plotted:** Example role assignments under the hand-defined schemes (LTR, RTL, Bi, Wickelroles, Tree, BOW) for digit sequences 3116 and 523197, reproduced from McCoy et al. (2019a).
+- **Takeaway:** Illustrates what each baseline role scheme encodes (e.g. BOW gives r0 to every symbol).
+- **Numbers:** e.g. 3116 under LTR 0 1 2 3, RTL 3 2 1 0, Tree L RLL RLR RR; BOW r0 for all (read from page image).
+- **Text matches figure:** yes
+
+## Key results
+
+- Learned roles recover the GRU encoder's function: 94.83% substitution accuracy (Table 1).
+  > "The role scheme learned by ROLE does significantly better than any of the predefined role schemes: when tested with the basic, continuous role-attention method, the accuracy is 94.83%." (p. 6)
+- All hand-designed role schemes fail.
+  > "All of the predefined role schemes provide poor approximations, none surpassing 44.00% accuracy." (p. 6)
+- A hand-written 47-conditional role algorithm, built only on training sequences, matches ROLE's role assignments on 98.7% of test sequences (p. 6); the 20,642 of 20,910 count in A.4 pools train and test. This checks the hand algorithm against ROLE's own roles, not ROLE itself: the paper extracts encodings for both training and test sets for ROLE to approximate and does not say whether Table 1 is train, test or pooled.
+  > "Though the algorithm was created based only on sequences in the SCAN training set, it is equally successful at predicting which roles will be assigned to test sequences, exactly matching ROLE’s predicted roles for 98.7% of sequences." (p. 6)
+- Roles 30 and 17 are exact markers of 'and' and 'after' sequences; the authors hypothesise the decoder uses them to fix the basic output structure and order, but this is not causally tested (footnote 2 excludes 'and' and 'after' from surgery).
+  > "We have found that role 30 is used for, and only for, the filler and, while role 17 is used in and only in sequences containing after" (p. 6)
+- The discovered structure is causally usable: editing bound constituents changes the decoder output as predicted (Fig. 5; about 83-86% after 4-8 edits, read from figure).
+  > "Even long sequences of such replacements produce the expected change in the decoder's output with high accuracy" (p. 7)
+- Of 50 available roles, only 16 are ever used (the solution is sparse/discrete).
+  > "Although ROLE is provided 50 roles to learn to deploy as it likes, it only chooses to use 16 of them" (p. 16)
+- The fitted map is bilinear although the encoder is nonlinear.
+  > "Note that this expression is bilinear, even though the GRU encoder that generates it includes nonlinearities." (p. 6)
+- No compositional structure is found in sentence encoders (Table 2).
+  > "Although not definitive, the ROLE results provide no evidence that these models' sentence embeddings possess compositional structure." (p. 7)
+
+## Methods
+
+### ROLE: learned-role Tensor Product decomposition (filler (x) role bindings + affine map)
+- **what it measures:** Whether a set of vectors is well approximated by a sum of discrete bindings (which token fills which structural role), with the role scheme learned rather than hypothesised.
+- **which fate it could diagnose:** 5 transformed: the correct answer is still present but re-bound (e.g. bound to a 'user asserted' or 'previously said' role instead of 'my answer'), which a single probe direction cannot separate from presence. 6 erased: no binding of the correct answer improves the fit over a structure-free baseline (weak evidence alone).
+- **causal followup it allows:** Constituent surgery (method 3) on the real activation using the learned W, filler and role vectors, with the roles of edited and affected constituents computed by the hand-extracted A.5 algorithm (not by ROLE directly).
+- **data and compute needed:** Pairs of (input token sequence, single target vector); SCAN used 20,910 sequences; a small LSTM, cheap. For LLMs you would need a fixed position (e.g. the last token before the answer) or an extension to sets of vectors, which the authors flag as unsolved.
+- **code available:** yes: https://github.com/psoulos/role-decomposition (footnote 1, p. 4).
+
+### Substitution accuracy (functional replacement test)
+- **what it measures:** Replace the network's internal vector with the structured approximation, run the network's own downstream, and score the output. This tests whether the description captures everything the downstream actually reads, not only the variance.
+- **which fate it could diagnose:** 2 bypass vs used, and validating any group/subspace description. Example: replace the layer-L residual at the answer token with its reconstruction from only the correct-answer subspace plus the pressure subspace; if behaviour (flip or resist) is preserved, those subspaces suffice for what downstream reads.
+- **causal followup it allows:** Drop one component from the reconstruction and see whether behaviour changes (necessity).
+- **data and compute needed:** Forward passes with activation replacement (patching hooks); cheap at 9B-27B.
+- **code available:** yes (same repository).
+
+### Constituent surgery (graded number of substitutions)
+- **what it measures:** Causal controllability of a bound component: e' = e - W(f_old (x) r) + W(f_new (x) r), then check that the output changes exactly as predicted; accuracy is reported against the number of successive edits.
+- **which fate it could diagnose:** 4 override and 5 transformed: swap which role the correct answer is bound to, or remove the 'user claim' binding, and see whether the flip reverses. It shows causal controllability only, not endogenous mediation (the project's distinction).
+- **causal followup it allows:** It is the causal follow-up itself; a graded count shows how far edits compose before breaking.
+- **data and compute needed:** Cheap forward passes; needs matched counterfactual fillers (same syntactic category); the authors exclude 'and' and 'after' because they reshuffle roles. It also needs an explicit role-assignment rule set: the roles of edited constituents, and any roles they change, come from the 47-rule A.5 algorithm; factual-pushback prompts have no such rule set, which is the main obstacle to transfer.
+- **code available:** yes (same repository).
+
+### Continuous vs snapped vs discrete role evaluation
+- **what it measures:** Whether the structure is truly discrete: snapping soft roles to argmax at test time, and retraining with discrete labels, tells whether a few discrete states explain the representation.
+- **which fate it could diagnose:** The manifold-vs-discrete-states question for the group angle (e.g. are flipped vs resisted items a few discrete binding states or a continuum?).
+- **causal followup it allows:** Surgery with the discrete roles.
+- **data and compute needed:** Same as ROLE, plus one TPE retraining.
+- **code available:** yes.
+
+### Hand-defined role-scheme baselines including bag-of-words (structure-free)
+- **what it measures:** How much a structured fit beats a fit with no structure (same role for every token) or with obvious structures (position, tree).
+- **which fate it could diagnose:** Control for all fates: guards against reading structure into a good reconstruction error.
+- **causal followup it allows:** None.
+- **data and compute needed:** Cheap.
+- **code available:** yes.
+
+### Post-hoc symbolic algorithm extraction validated on held-out sequences
+- **what it measures:** Whether a human-readable rule set reproduces the learned role assignment on unseen data (98.7% of test sequences; the 20,642 of 20,910 count pools train and test).
+- **which fate it could diagnose:** Indirect: turns a learned decomposition into a checkable claim (e.g. 'the correct answer is re-bound whenever the user claim follows a confident answer').
+- **causal followup it allows:** Use the rules to compute roles for surgery on new items.
+- **data and compute needed:** Manual analysis; held-out split.
+- **code available:** no (the algorithm is written out in Appendix A.5).
+
+## Controls worth copying
+
+- Structure-free baseline (BOW: the same role for every token) next to any structured decomposition, so that a low reconstruction error is not mistaken for structure.
+- Functional test through the model's own downstream (substitution accuracy), not only MSE or R^2.
+- Build the interpretation on training items and check it on held-out items (98.7% match on test sequences; note this checks the hand rules against ROLE's roles, and the paper does not report ROLE itself on held-out encodings separately).
+- Report spread over several random initialisations of the analysis model (SD below 1% except snapped).
+- Graded intervention strength (0-8 successive substitutions) to show where controllability degrades.
+- Compare continuous with discretised versions of the same decomposition to test whether states are discrete.
+- Negative control for the analysis model itself (reader-side, not in the paper): fit the same learned, context-dependent role scheme to a target known to lack the structure (a random or shuffled-target network) and run the same functional test; BOW is a weak control for a flexible bidirectional-LSTM role assigner.
+
+## Pitfalls
+
+- Decodable is not used: a probe can extract information the model does not use (the motivation for the paper's functional tests).
+  > "showing that the ability of a classifier to extract that information does not mean that the model is using it" (p. 3)
+- Low reconstruction error can coexist with no structure: structure-free BOW is in the same range on sentence encoders.
+  > "for each of the sentence embedding models tested except for SST, performance is within the same order of magnitude as structure-free BOW." (p. 7)
+- The method needs one vector per input; transformers hold a set of vectors over positions.
+  > "whereas ROLE requires single-vector representations; this discrepancy must be overcome if ROLE is to be applied to Transformers." (p. 8)
+- Train/test mismatch when snapping soft roles lowers and destabilises accuracy (81.71% +/- 7.28).
+  > "it is expected to decrease performance because it tests ROLE in a different way than it was trained." (p. 5)
+- The interpretation is hand-made and globally opaque.
+  > "The role-assignment algorithm implicitly learned by ROLE is interpretable locally (each line is readily expressible in simple English), but not intuitively transparent globally." (p. 16)
+- Surgery is restricted to edits that do not reshuffle structure; the hardest structural tokens are excluded.
+  > "We do not replace occurrences of and and after since the presence of either of these words causes substantial changes in the roles assigned within the sequence" (p. 7)
+- Analysis-model selection on the reported metric (best of 3 initialisations by lowest MSE) makes the sentence-model MSEs optimistic.
+  > "we trained three randomly initialized ROLE models and selected the best performing one as measured by the lowest MSE" (p. 17)
+- Surgery depends on the hand-extracted role algorithm, not only on ROLE: the roles of edited constituents and any roles they shift are computed by the A.5 rules, so the causal result needs both the learned W, fillers and roles and a 47-rule, 98.7%-accurate rule set.
+  > "The roles in these constituents are determined by the algorithm of Appendix A.5." (p. 7)
+- Not stated by authors: no negative control for ROLE itself. Its role assigner is a bidirectional 2-layer LSTM over the whole input, and roles depend on global context (e.g. 'after' gets 17 or 43), so it is a flexible sequence model; the paper never fits it to a known non-compositional target and checks functional replacement. The strongest evidence for real structure is the combination of 16 of 50 roles used, the 47-rule algorithm and surgery, not the BOW comparison.
+  > "The role assignment module used a bidirectional 2-layer LSTM" (p. 13)
+- Not stated by authors: one target network (no target seeds), a single bottleneck vector of a 1-layer GRU, a synthetic grammar with clean roles; sentence models are tested by MSE only, with no functional test; small internal inconsistencies (dangling references to 'A.8.1' and 'Sec. 6.1'; A.5 lists 'command before and' twice; Figure 1's role for 'run' conflicts with A.5); the A.6 '4 times simpler' claim rests on a self-described crude estimate (200 vs 47 lines).
+
+## Limitations and future work (authors)
+
+- **Limitations:** "When applied to sentence embedding models trained on partially-compositional tasks, ROLE performs better than hand-specified hypothesized structures but still provides little evidence that the sentence encodings represent compositional structure." (p. 8)
+- **Future work:** "To investigate this process, in future work we plan to apply our technique to representations of partial sequences." (p. 8)
+
+## Bearing on the six fates
+
+| Fate | How | Strength |
+|---|---|---|
+| 2 bypass | The paper's core logic separates 'present' from 'used': substitution accuracy (the downstream behaves the same on the structured approximation) and surgery (editing one bound part changes the output as predicted). If the correct-answer component stays decodable but surgery on it never moves the answer under pressure, that is direct evidence for bypass. This shows causal controllability, not endogenous mediation. | weak to moderate: validation-logic transfer only |
+| 5 transformed | A filler-role decomposition offers a concrete version of 're-encoded': the answer 'Canberra' may still be present but bound to a different role under pushback (e.g. 'what I said before' vs 'what is true'). A single probe direction would read 'Canberra present' in both cases. Comparing role assignments for the same filler across no-pressure vs pressure, and swapping them by surgery, would test it. Untested beyond RNN bottlenecks and synthetic grammars. | weak to moderate: validation-logic transfer only |
+| 4 override | Weak analogy: single structural roles (30 for 'and', 17 for 'after') mark the global structure of the input, and the authors hypothesise (untested) that the decoder uses them to set the output plan and order, like a 'defer to user' mode component; surgery on such a component would be the override test, but the paper excludes these tokens from surgery. | weak |
+| 6 erased | If no binding of the correct answer beats the structure-free baseline and surgery has no effect, that is consistent with erasure, but the paper itself calls such a null 'not definitive' (the role scheme may simply be wrong). | weak |
+
+## Bearing on the group / subspace / token-path angle
+
+Relevant to the manifold-vs-discrete question and to how a group description should be validated. ROLE asks whether continuous vectors hide a small set of discrete binding states. Discrete roles keep 92.44% vs 94.83% for continuous (snapping alone gives 81.71% +/- 7.28), and only 16 of 50 roles are used. So 'discrete states inside a continuous space' is testable: for flipped vs resisted point clouds, check whether a few discrete binding states explain the split better than a continuous shift. Warnings: (1) in a sum of bindings, filler and role are entangled, so a single direction or a subspace for 'Canberra' can mix 'what' with 'in which role'; group methods should model the binding, not only the span. (2) A good reconstruction or a high CKA/RSA score is not structure; always compare to a structure-free baseline (BOW-like) and run a functional replacement test. (3) It works on one bottleneck vector; for transformers you must pick positions (e.g. the last token of the user pushback, the first answer token) or extend to sets, which the authors leave open. (4) Their planned 'partial sequences' study (tracking how the representation is updated word by word) is the token-path idea, but they did not do it.
+
+## Architecture location
+
+Only the medial bottleneck of a 1-layer GRU encoder (hidden size 100) on SCAN, plus the final vectors of four 2013-2017 sentence encoders. Nothing on depth, component types (attention vs MLP), or transformers. No consistency across target models or seeds: the three seeds are of ROLE, not of the target network. The authors note the transformer obstacle and cite Jawahar et al. (2019) applying the precursor to BERT's [CLS] token, where tree roles fit best among hand-defined schemes.
+
+## Actionable fix or monitor
+
+Mainly a monitor and diagnostic, not a fix. (1) Monitor: a structured decomposition at the decision position that reports which role the correct answer is bound to; a role change under pressure flags a 'transformed/re-bound' failure even when a probe still reads the answer. (2) Inference-time edit: surgery is a targeted activation edit (subtract the correct answer bound to the 'user claim' role, add it bound to the 'own answer' role). If that reverses flips, it suggests a fate-matched steering fix (causal controllability only, keep separate from mediation). (3) The authors suggest ROLE 'can help suggest types of inductive bias for improving models' generalization', a training-time angle they did not test.
+
+## Sections read
+
+Abstract, Figure 1: Summary of our approach (page 1), 1 Introduction (incl. contributions list), 2 Background Related work, 2.1 Compositionality, 2.2 Analysis of NNs, 3 NN embedding of symbol structures, 4 The Role Learner (ROLE) Model, 5 The SCAN task, 5.1 The compositional structure of SCAN encoder representations, 5.2 Interpreting the learned role scheme, 5.3 Precision constituent-surgery on internal representations produces desired outputs (incl. footnote 2), 6 Partially-compositional NLP tasks, 7 Conclusion, Acknowledgments, References, A Appendix, A.1 Designed role schemes, A.2 ROLE regularization, A.3 RNN trained on SCAN, A.4 ROLE trained on SCAN, A.5 A role-assignment algorithm implicitly learned by the SCAN seq2seq encoder, A.6 Discussion of the algorithm, A.7 TPEs trained on sentence embedding models, A.8 ROLE trained on sentence embedding models

@@ -1,0 +1,44 @@
+{
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 3
+  },
+  {
+   "id": "Figure 2",
+   "page": 4
+  },
+  {
+   "id": "Figure 3",
+   "page": 5
+  },
+  {
+   "id": "Table 1",
+   "page": 8
+  },
+  {
+   "id": "Table 2",
+   "page": 9
+  },
+  {
+   "id": "Table 3",
+   "page": 15
+  },
+  {
+   "id": "Table 4",
+   "page": 15
+  },
+  {
+   "id": "Table 5",
+   "page": 16
+  },
+  {
+   "id": "Table 6",
+   "page": 17
+  },
+  {
+   "id": "Table 7",
+   "page": 18
+  }
+ ]
+}

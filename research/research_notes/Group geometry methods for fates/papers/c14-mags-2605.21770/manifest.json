@@ -1,0 +1,71 @@
+{
+ "slug": "c14-mags-2605.21770",
+ "url": "https://arxiv.org/pdf/2605.21770",
+ "pdf_ok": true,
+ "pages": 14,
+ "chars": 43183,
+ "title_guess": "Manifold-Guided Attention Steering Ian Li i6li@ucsd.edu",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 2,
+   "caption_start": "Figure 1: Comparison of static and Manifold-Guided Attention Steering (MAGS) on an example problem. Step-by-step reasoning traces for a static baseline and MAGS. Blue boxes denote correct reasoning st"
+  },
+  {
+   "id": "Figure 2",
+   "page": 4,
+   "caption_start": " Figure 2: Schematic of the contrastive error manifold. Correct and error activation spaces are separated along the learned subspace span(B). Given an error activation at , the projection B\u22a4B gives (l"
+  },
+  {
+   "id": "Figure 3",
+   "page": 5,
+   "caption_start": "Figure 3: Per-head error detection AUROC across four monitored layers for the Math-Instruct dataset with Llama-3.1-8b-Instruct. Dots mark heads with AUROC > 0.65. The signal is sparse and concentrated"
+  },
+  {
+   "id": "Table 1",
+   "page": 7,
+   "caption_start": "Table 1: Performance and output fluency (perplexity, \u2193) of steering methods on Llama-3.1-8B-Instruct. Best accuracy per benchmark in bold; best perplexity in italics.  MATH-500  GSM8k  HumanEval  MBPP"
+  },
+  {
+   "id": "Table 2",
+   "page": 7,
+   "caption_start": " Table 2: Performance and output fluency (perplexity, \u2193) of steering methods on Gemma-4-E4b-it. Best accuracy per benchmark in bold; best perplexity in italics  MATH-500  GSM8k  HumanEval  MBPP  Metho"
+  },
+  {
+   "id": "Table 3",
+   "page": 8,
+   "caption_start": "Table 3: Molecular generation by steering GPT-OSS-20B. Validity: higher is better (%). Binding Affinity: lower score is better(kcal/mol). Method Validity (\u2191) Binding Affinity (\u2193) Unsteered Angular Ste"
+  },
+  {
+   "id": "Figure 4",
+   "page": 9,
+   "caption_start": "Figure 4: Latent-space trajectories of attention-head activations projected onto the top-4 principal components of the contrastive error subspace. Filled contours: kernel-density estimate of the corre"
+  },
+  {
+   "id": "Table 4",
+   "page": 12,
+   "caption_start": "Table 4: Hyperparameter ablations on MATH-500 (Llama-3.1-8B-Instruct). Best result per method in bold. (a) MAGS: top-k heads and steering strength \u03b1.  Config  \u03b1  (b) ITI: number of steered heads K and"
+  },
+  {
+   "id": "Figure 5",
+   "page": 13,
+   "caption_start": " Figure 5: Relative attention shift \u2206W/Wunsteered at layer \u2113bip for two representative problems from MATH-500, steered with Gemma-4-E4b-it. Each cell shows the head-averaged attention change between t"
+  },
+  {
+   "id": "Table 5",
+   "page": 14,
+   "caption_start": "Table 5: Bootstrap 95% CIs on Gemma-4-E4b-it across all benchmarks (B=10,000 resamples, percentile method). MATH-500 (N =500)  GSM8k (N =1319)  HumanEval (N =164)  Method  Acc.  95% CI  Acc.  95% CI  "
+  },
+  {
+   "id": "Table 6",
+   "page": 14,
+   "caption_start": " Table 6: Bootstrap 95% CIs on Llama-3.1-8B-Instruct across all benchmarks (B=10,000 resamples, percentile method). MATH-500 (N =500)  GSM8k (N =1319)  HumanEval (N =164)  Method  Acc.  95% CI  Acc.  "
+  }
+ ],
+ "n_figures_tables": 11,
+ "section_heading_candidates": [
+  "4090 GPUs (24 GB VRAM) with model weights loaded in float16 precision. GPT-OSS 20B"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

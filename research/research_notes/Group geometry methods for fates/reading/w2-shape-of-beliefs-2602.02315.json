@@ -1,0 +1,408 @@
+{
+ "slug": "w2-shape-of-beliefs-2602.02315",
+ "title": "The Shape of Beliefs: Geometry, Dynamics, and Interventions along Representation Manifolds of Language Models' Posteriors (Sarfati, Bigelow, Wurgaft, Boppana, Merullo, Geiger, Lewis, McGrath, Lubana; Goodfire; arXiv 2602.02315v2, 5 May 2026)",
+ "sections_read": [
+  "Abstract",
+  "1 Introduction (incl. 'This work': Geometry / Dynamics / Interventions questions)",
+  "2 Experiments and analysis",
+  "2.1 Methods",
+  "2.2 Notations and definitions",
+  "3 Results",
+  "3.1 Shape of beliefs",
+  "3.2 Belief dynamics",
+  "3.3 Features encoded along data manifolds",
+  "3.3.1 Linear field probes",
+  "3.3.2 Field geometry",
+  "4 Interventions",
+  "4.1 Activation-aware steering (primal space)",
+  "4.2 Field-aware steering (dual space) (Linear probe steering; Field-aware steering from LFP)",
+  "5 Conclusion (incl. Limitations paragraph)",
+  "Acknowledgments",
+  "References (skimmed)",
+  "Appendix A Convergence to the input distribution",
+  "Appendix B Belief manifolds for various models",
+  "Appendix C Ideal observer",
+  "Appendix D Meta-in-context learning",
+  "Appendix E Linear field probes",
+  "E.1 Data and feature geometry",
+  "E.2 Set of linear probes",
+  "E.3 Manifold interpolation",
+  "E.4 Mixture of manifolds"
+ ],
+ "setup": {
+  "data": "Synthetic numeric time series: comma-separated integers in [0, 999], drawn from N(mu, sigma), rounded and clamped. Two families: mu in {300, 350, ..., 700} at sigma0 = 100, and sigma in {20, 50, ..., 200} at mu0 = 500. Switching series: 1000 numbers from N(300,100) then 1000 from N(700,100). Meta-ICL series: 10 segments of 1000 numbers alternating N(300,100) and N(700,100). Ground truth for the 'belief' is the generating distribution; the model's next-number softmax is compared to it (KL, Hellinger, softmax mean and std).",
+  "models_and_sizes": "Main: Llama-3.2-1B base (16 layers, d = 2048), chosen because its tokenizer has one token per integer 0-999. Appendix B (geometry only, PCA plots): LFM2-1.2B, LFM2-2.6B, LFM2.5-1.2B-Base, Llama-3.1-8B, Llama-3.2-3B, OLMo-2-0425-1B, OLMo-2-1124-7B, OLMo-3-1025-7B. All base models, none above 8B. Section 4 and the Fig 5/6 captions do not name the steered model; we infer Llama-3.2-1B because the paper relies 'primarily' on it (p3).",
+  "layers_and_positions": "Residual stream x_{i,k}(l). Token position: com2num tokens (the comma token that predicts the next number). PCA pictures at layer 14 (Fig 1, Fig 11). Probes trained at every layer 0-15. Steering in Section 4.1 is done on 'last-layer representations'; the exact layer for Fig 5/6 is not stated beyond that. Our note: last-layer edits sit one step from the unembedding, so the causal test is close to logit editing and says little about mid-network routing.",
+  "baselines": "Difference-of-means steering (centroid-to-centroid, essentially CAA, alpha = 0.5); single probe-direction steering (w700 - w300, normalised); ideal Bayesian observer (Normal-Inverse-Gamma, Student-t predictive) for the switching dynamics; random-vector cosine level 1/sqrt(2048) ~ 0.02 for probe interpolation; chance 0.5 for binary probe transfer.",
+  "controls": "80/20 train-test split for probes; transfer of a probe trained on one mu pair to pairs at increasing distance; comparing linear vs manifold-spline vs field-aware steering at the same endpoints and reading an off-target covariate (softmax std) while steering the target (softmax mean); additive-composition test of the (mu, sigma) sheet against ground-truth centroids; geometry replicated qualitatively across 9 models. No seeds, error bars or confidence intervals are reported. Fig 3A has no shuffled-label or recent-numbers baseline and does not report the number of series per class; layer-0 accuracy is already ~0.875 (9 classes, chance ~0.11)."
+ },
+ "figures": [
+  {
+   "id": "Figure 1",
+   "page": 2,
+   "what_is_plotted": "(A) Schematic: grid of (mu, sigma) values and example number strings fed to Llama 3.2. (B) 3D PCA of layer-14 activations: one curved band for varying mu at sigma0 = 100 (pink to green) and one for varying sigma at mu0 = 500 (purple shades). (C) inPCA 3D embedding of the softmax outputs. (D) Softmax projected onto tokens '0'..'999': bell curves centred at 300-700.",
+  "takeaway": "Hidden states for different beliefs lie on smooth, curved manifolds indexed by (mu, sigma), and the output distributions have a matching shape. This is the paper's 'ground-truth map' of beliefs.",
+  "numbers": "No measured values. Peaks in (D) sit at about 300, 400, 500, 600, 700 (approx, read from figure).",
+  "text_matches_figure": "yes. The text calls the two manifolds 'orthogonal'; that is a visual impression from PCA, no angle is measured."
+ },
+ {
+   "id": "Figure 2",
+   "page": 4,
+   "what_is_plotted": "(A) Input series switching from N(300, sigma0) to N(700, sigma0) at index 1000. (B) Output softmax mean (blue) and std (orange) vs input index. (C) Activations in PC1-PC2, coloured by time. (D) Output trajectory in the (mean, std) plane.",
+  "takeaway": "Two timescales: the predicted mean jumps to the new value almost at once, while the predicted std spikes and then relaxes. Activations (PCA) and outputs both show two attractors and a path between them; the high-variance (high-entropy) phase is measured on the output only.",
+  "numbers": "Mean ~300 before, ~690 right after index 1000; std ~110 before, spikes to ~230, back to ~100-110 by about index 1300; in (D) the crossing path peaks at std ~240 near mean ~510-520, with a second cluster ~225 near mean ~580-620 (approx, read from figure).",
+  "text_matches_figure": "yes. Caption says std relaxes 'after about 300 tokens' while the axis is input number index (each number is two tokens), a small unit ambiguity."
+ },
+ {
+   "id": "Figure 3",
+   "page": 6,
+   "what_is_plotted": "Linear field probes on the mu-family. (A) Multiclass probe test accuracy per layer. (B) 9x9 cosine-similarity (Gram) matrix between point probes mu1..mu9. (C) Cosine between true and kernel-interpolated probe vectors at mu = 350, 450, 550, 650. (D) Transfer accuracy of a binary probe trained on mu = {300, 350} (layer 0) when applied to pairs shifted by delta-mu.",
+  "takeaway": "mu is linearly decodable at every layer, probe directions change smoothly with mu and can be interpolated, but a probe only works near where it was trained: it drops to chance within delta-mu = 50-100 (shown for one binary probe, mu = {300, 350}, at layer 0 only).",
+  "numbers": "(A) ~0.875 at layer 0, ~0.95 at layer 2, dip ~0.905 at layer 9, ~0.985 at layer 15 (approx, read from figure; text says 0.87 to 0.99). (B) diagonal 1, neighbours positive, far pairs negative (approx). (C) ~0.81, 0.67, 0.72, 0.83 vs random ~0.02 (approx, read from figure). (D) ~0.89 at delta 0, ~0.55 at delta 50, ~0.50 at delta 100-200 (approx, read from figure).",
+  "text_matches_figure": "yes. Note the accuracy curve is not monotone (dip at layer 9), which the text does not mention."
+ },
+ {
+   "id": "Figure 4",
+   "page": 6,
+   "what_is_plotted": "(Left) Cumulative variance explained vs eigenvalue rank of the probe Gram matrix, for layers L0, L5, L13, L14, L15. (Right) Kernel-PCA 3D embedding of the first three Gram eigenvectors at layer 15: a curve from mu = 300 to mu = 700.",
+  "takeaway": "The readout ('dual') geometry needs more dimensions in deeper layers, then fewer at the last layer. The paper says the readout field is dominated by a few directions even when activations are curved; by our reading L13/L14 need about 5 components for 0.8 of the variance, so 'low-dimensional' is the paper's wording, not a number to reuse.",
+  "numbers": "First eigenvalue explains ~0.59 (L0), ~0.46 (L5), ~0.30 (L13), ~0.23 (L14), ~0.39 (L15); two eigenvalues ~0.87 (L0) vs ~0.44 (L14) (approx, read from figure).",
+  "text_matches_figure": "yes. L15 curve sits above L13 and L14, matching the 'drops at the last layer' caption."
+ },
+ {
+   "id": "Figure 5",
+   "page": 7,
+   "what_is_plotted": "(A) 3D view of the activation manifold for mu in [300, 700] with a straight centroid-to-centroid steering vector (orange) and a spline through class centroids (yellow). (B) Resulting outputs in the (softmax mean, softmax std) plane, over the unsteered clouds.",
+  "takeaway": "Linear (difference-of-means) steering from mu = 300 toward 700 inflates the output std midway, so the output stops being a sigma = 100 Gaussian. Steering along the spline keeps std near 100 while moving the mean.",
+  "numbers": "Linear path: std peaks ~165 near mean ~470-500. Spline path: std ~100-120 throughout (approx, read from figure). Target sigma0 = 100.",
+  "text_matches_figure": "yes. The 'off-manifold' judgement is visual; no distance-to-manifold number is given."
+ },
+ {
+   "id": "Figure 6",
+   "page": 8,
+   "what_is_plotted": "Outputs in the (softmax mean, softmax std) plane when steering along a single probe direction w300->700 (lozenges) and along the LFP field-aware direction (squares), coloured by steering coefficient alpha from -5 to 15.",
+  "takeaway": "Probe-direction steering again inflates std; field-aware steering keeps std near 100 only for means between about 300 and 500, after which std collapses.",
+  "numbers": "Probe direction: std peaks ~185 at mean ~490. Field-aware: std ~100-113 for mean 300 to ~520, then falls to ~60 near mean ~600 at large alpha (approx, read from figure).",
+  "text_matches_figure": "partly. Section 4.2 text says the alpha sweep is shown 'in Fig. 4', but it is Figure 6. The caption is honest that the benefit holds only 'in a certain regime between 300 and 500'."
+ },
+ {
+   "id": "Figure 7",
+   "page": 14,
+   "what_is_plotted": "(A) KL(p_t || N(500,100)) vs number index. (B) Entropy of the softmax. (C) Output distributions (log scale) at t = 10, 20, 30, 100 vs the true N(500,100) (red).",
+  "takeaway": "The model's output converges to the true distribution after about 100 numbers; at t = 10 it is near-uniform.",
+  "numbers": "KL ~2.2 at start, ~0.2 by t ~30-50, ~0.05 by t = 100; entropy ~6.9 at start, dips to ~5.5 around t ~30-50, settles ~6.1 (approx, read from figure).",
+  "text_matches_figure": "yes"
+ },
+ {
+   "id": "Figure 8",
+   "page": 15,
+   "what_is_plotted": "Pairwise Hellinger distance between output distributions p_t and p_t' for t, t' in 0-200.",
+  "takeaway": "Early outputs are far from later ones; once t >= ~100 outputs are close to each other (stationary belief).",
+  "numbers": "Colour scale 0 to ~0.55; early-vs-late distances ~0.4-0.5, late-vs-late ~0.05-0.15 (approx, read from figure).",
+  "text_matches_figure": "yes"
+ },
+ {
+   "id": "Figure 9",
+   "page": 18,
+   "what_is_plotted": "2D PCA of residual-stream activations for 9 base models (LFM2-1.2B, LFM2-2.6B, LFM2.5-1.2B-Base, Llama-3.1-8B, Llama-3.2-1B, Llama-3.2-3B, OLMo-2-0425-1B, OLMo-2-1124-7B, OLMo-3-1025-7B) at layer index 1, L-2 and L-1, coloured by (mu, sigma).",
+  "takeaway": "The same branch-like structure (a mu-branch and a sigma-branch) appears in all models at late layers; at layer 1 it is mostly mixed.",
+  "numbers": "PC1/PC2 variance labels: Llama-3.2-1B idx14 38%/26%, idx15 53%/24%; Llama-3.1-8B idx30 35%/25%, idx31 70%/20%; OLMo-2-1124-7B idx30 58%/21%; layer 1 mostly 7-25% PC1 (OLMo-3 67%).",
+  "text_matches_figure": "yes (qualitative). Caption writes 'second layer (L = 1)' although L is defined as the number of layers; panels say idx = 1."
+ },
+ {
+   "id": "Figure 10",
+   "page": 19,
+   "what_is_plotted": "Ensemble-averaged (10 samples) trajectory of Llama-3.2 softmax mean and std on the switching series vs the ideal-observer expectation, coloured by t (500-2000).",
+  "takeaway": "The LLM jumps to the new regime much faster than a stationary i.i.d. Bayesian observer, which only drifts toward the average.",
+  "numbers": "Ideal observer at t = 2000: mean ~500, std ~225. LLM: mean ~690, std back to ~100-110 (approx, read from figure).",
+  "text_matches_figure": "yes"
+ },
+ {
+   "id": "Figure 11",
+   "page": 20,
+   "what_is_plotted": "(A) 10 segments of 1000 numbers alternating N(300,100) and N(700,100). (B) Softmax mean and std. (C) Layer-14 activations in PCA, coloured by segment. (D) (mean, std) trajectories between the two attractors.",
+  "takeaway": "Later switches are handled faster and by a more direct path: early evidence of meta-in-context learning.",
+  "numbers": "Std at the first switch stays raised (~150) for a few hundred numbers; later switches show narrow spikes (approx, read from figure). No timescale is quantified.",
+  "text_matches_figure": "partly. Appendix D text says the series alternates N(300,100) and N(700,300), but the caption and the plot (std returns to ~100 in both regimes) fit N(700,100). The 'faster' claim is qualitative."
+ },
+ {
+   "id": "Figure 12",
+   "page": 21,
+   "what_is_plotted": "Schematic helicoids with class colourings (A-E): linearly separable on a curved manifold (A, B), not separable (C), rank-1 field with collinear probes (D), rank-2 field with rotating probes (E).",
+  "takeaway": "A curved data manifold can still have simple linear readouts; the rank of the probe field (how much probe directions rotate) is a separate property.",
+  "numbers": "None (schematic).",
+  "text_matches_figure": "yes"
+ },
+ {
+   "id": "Figure 13",
+   "page": 22,
+   "what_is_plotted": "3D PCA of ground-truth (mu, sigma) centroids (circles) vs centroids predicted by adding a mu-spline and a sigma-spline around the anchor (500, 100) (crosses).",
+  "takeaway": "The joint (mu, sigma) sheet is not an additive combination of the two one-parameter manifolds; mu and sigma interact.",
+  "numbers": "No error metric reported; visible offsets between crosses and circles (approx, read from figure).",
+  "text_matches_figure": "yes (qualitative only)"
+ }
+ ],
+ "key_results": [
+  {
+   "claim": "Belief states (posterior over mu, sigma) form smooth but curved manifolds in the residual stream.",
+   "quote": "These manifolds appear to form smooth, continuous structures, exhibiting substantial curvature.",
+   "page": 4
+  },
+  {
+   "claim": "mu is linearly decodable at every layer of Llama-3.2-1B.",
+   "quote": "probes achieve high accuracy on all activation classes µi , from 0.87 at layer 0 to 0.99 at layer 15",
+   "page": 5
+  },
+  {
+   "claim": "A probe trained at one region of the manifold fails elsewhere: transfer decays with parameter distance (Fig 3D shows one binary probe at layer 0).",
+   "quote": "probes transfer only locally along the manifold; transfer performance decays with distance in µ at a rate matching the decay lengthscale in the Gram matrix",
+   "page": 5
+  },
+  {
+   "claim": "Readout geometry (probe field) is not the same as where activations sit (encoding geometry).",
+   "quote": "this geometry does not describe where activations corresponding to different domain values are (co-)located in activation space",
+   "page": 5
+  },
+  {
+   "claim": "The readout field needs more dimensions in deeper layers (except the last layer).",
+   "quote": "eigenvalues of the Gram matrix show that the intrinsic dimensionality of the manifold increases over layers",
+   "page": 6
+  },
+  {
+   "claim": "Difference-of-means steering moves outputs off the target family (inflated std).",
+   "quote": "steering linearly tends to push next-token prediction “off the data manifold”, yielding predictions that are misaligned with the target distribution",
+   "page": 7
+  },
+  {
+   "claim": "Steering along a spline through class centroids keeps the output in the target family.",
+   "quote": "steer along the manifold, we preserve the class-conditioned structure: induced predictions remain close to N (µ, σ0 ) while shifting their mean towards µ = 500",
+   "page": 7
+  },
+  {
+   "claim": "Field-aware (LFP) steering keeps sigma near 100, but only over part of the range.",
+   "quote": "this approach maintains the induced output distribution closer to the intended Nµ,σ0 family, within a certain range",
+   "page": 8
+  },
+  {
+   "claim": "The two belief parameters interact; the joint sheet is not additive.",
+   "quote": "the joint (µ, σ) sheet cannot be reconstructed as a simple additive composition of the anchor manifolds",
+   "page": 8
+  },
+  {
+   "claim": "Main conceptual result: linear steering moves the target variable but distorts coupled covariates (std inflates while the mean moves from 300 toward 700); readable does not mean geometrically faithful control.",
+   "quote": "Linear separability does not entail geometrically faithful control: features may be linearly separable and readable, yet linear steering can still cut across (rather than along) the curved belief manifold.",
+   "page": 9
+  },
+  {
+   "claim": "After a regime switch, the mean adapts quickly but the variance relaxes slowly.",
+   "quote": "The mean of the output distribution quickly settles on the new mean. The variance takes longer to equilibrate",
+   "page": 4
+  },
+  {
+   "claim": "The switch path passes through a high-uncertainty phase.",
+   "quote": "after the switch, the model jumps to a phase of high variance, or equivalently a phase of high entropy",
+   "page": 4
+  },
+  {
+   "claim": "Convergence of the output to the true distribution takes about 100 numbers.",
+   "quote": "After about 100 numbers have been seen, the model adequately reproduces the underlying distribution in its logits.",
+   "page": 14
+  },
+  {
+   "claim": "The structure replicates qualitatively across 9 base models up to 8B.",
+   "quote": "we observe qualitatively the same structured manifolds across models, with increasing resolution as we go towards the deeper layers",
+   "page": 14
+  },
+  {
+   "claim": "The LLM is not an online ideal Bayesian observer; it switches faster.",
+   "quote": "The LLM converges much faster than the ideal observer.",
+   "page": 15
+  },
+  {
+   "claim": "Repeated switches get faster and more direct (meta-in-context learning).",
+   "quote": "The model transitions much faster and follows a more direct path for later switches and the early ones.",
+   "page": 15
+  },
+  {
+   "claim": "The main model is Llama-3.2-1B; the paper says 'primarily', and the steering sections do not restate the model.",
+   "quote": "We rely primarily on the Llama-3.2-1B",
+   "page": 3
+  },
+  {
+   "claim": "The transfer curve (Fig 3D) is one binary probe trained on mu = {300, 350} at layer 0.",
+   "quote": "probes only transfer locally; here showing a probe trained on µ = {300, 350} (layer 0)",
+   "page": 6
+  },
+  {
+   "claim": "Output fit early on reflects a normality prior, not only the data.",
+   "quote": "the model believes the input data is Gaussian, even though it doesn’t yet look like it",
+   "page": 14
+  },
+  {
+   "claim": "Additive spline interpolation of (mu, sigma) fails against ground truth.",
+   "quote": "Evidently, the simple, spline-based interpolation fails to capture the true geometry of the (µ, σ) sheet.",
+   "page": 17
+  }
+ ],
+ "methods": [
+  {
+   "name": "Linear field probes (LFP) with Gram-matrix spectrum and kernel-PCA field embedding",
+   "what_it_measures": "Per layer, one multiclass softmax probe over discretised values of a continuous variable (9 mu bins). Each row is a 'point probe'. The cosine Gram matrix of point probes shows how readout directions rotate across the variable; its eigen-spectrum gives the readout field's dimensionality; kernel PCA draws its shape.",
+  "which_fate_it_could_diagnose": "5 transformed and H3: fit the LFP on a continuous variable we have (e.g. bins of the model's no-pressure confidence in the gold answer, or pressure strength) separately for resisted and flipped items; a change in Gram spectrum or a rotation of the probe span under pressure means the correctness readout was re-encoded rather than lost. Also 1 readout failure: high decodability with a wrong output.",
+  "causal_followup_it_allows": "Field-aware steering (kernel-weighted combination of point probes) toward the resisted region; compare with a single probe direction.",
+  "data_and_compute_needed": "Activations at one token per item per layer; a few hundred items per bin; probes are logistic regressions on d = 3584-5376 for 9B-27B models. Minutes on CPU/GPU after caching.",
+  "code_available": "Stated: github.com/raphael-goodfire/shape-of-beliefs (not checked)."
+  },
+  {
+   "name": "Probe transfer vs distance along the manifold",
+   "what_it_measures": "Train a binary probe on two neighbouring values, test it on pairs shifted by delta; the decay length says how far a single linear readout stays valid.",
+   "which_fate_it_could_diagnose": "H3 and 5 transformed: train the correctness probe on no-pressure items, test on items under increasing pressure (none, 1 competing answer, 1 pushback, 2 pushbacks). A smooth decay to chance while a locally retrained probe still decodes = transformed/moved, not erased. Caveat: the paper shows this only at layer 0 for one probe pair, and along the task variable (delta-mu), not under a context change like pushback, so this is a design idea by analogy.",
+   "causal_followup_it_allows": "None directly; it selects which local probe direction to use for patching at each pressure level.",
+   "data_and_compute_needed": "Same cached activations; trivial compute.",
+   "code_available": "Same repo (not checked)."
+  },
+  {
+   "name": "Primal steering along a spline through class centroids vs a centroid-to-centroid vector",
+   "what_it_measures": "Whether moving activations along the data manifold changes the target variable without coupled side effects, read as an off-target covariate (softmax std while steering the mean).",
+   "which_fate_it_could_diagnose": "Our design advice for the 2 bypass call (not a paper finding; the paper has no null or inert case): straight-line steering can move the target while distorting other outputs, so also steer along the manifold and read side effects before calling an item bypass. Also a Stage B fix for 4 override or 5 transformed: move flipped items along the path to the resisted-item prototype.",
+   "causal_followup_it_allows": "It is the causal test; report answer flip rate plus off-target covariates (answer entropy, hedging, accuracy on unpressured control items).",
+   "data_and_compute_needed": "Class centroids per bin at one layer, a spline in the top PCs, forward passes with an activation hook. Cheap at 9B-27B.",
+   "code_available": "Same repo (not checked)."
+  },
+  {
+   "name": "Dual (field-aware) steering from the LFP",
+   "what_it_measures": "Steering direction built from the first r Gram eigenmodes, a spline in that embedding, and kernel-regression weights over point probes; tests whether a readout-space path preserves the target family.",
+   "which_fate_it_could_diagnose": "1 readout failure vs 4 override: if moving only the readout component restores the correct answer, the correct signal was present and just under-weighted.",
+   "causal_followup_it_allows": "Matched comparison with single-probe steering; scan alpha and plot target vs off-target covariate.",
+   "data_and_compute_needed": "Point probes plus Gram matrix; cheap.",
+   "code_available": "Same repo (not checked)."
+  },
+  {
+   "name": "Belief-update trajectories with attractors, equilibration timescale and an ideal-observer reference",
+   "what_it_measures": "Per-token path of outputs in (mean, std) space and of activations in PCA space after an input regime switch; time to re-equilibrate; comparison with a Bayesian observer.",
+   "which_fate_it_could_diagnose": "4 override (the state moves to the other attractor) and the jump-vs-drift direction: does pushback move the state straight across, or through a high-uncertainty region first?",
+   "causal_followup_it_allows": "Patch activations at the token where the path leaves the 'correct' attractor; find where flipped and resisted paths fork.",
+   "data_and_compute_needed": "One cached forward pass per item with per-token activations over the pushback turn.",
+   "code_available": "Same repo (not checked)."
+  },
+  {
+   "name": "Mixture-of-manifolds additivity test",
+   "what_it_measures": "Whether joint centroids equal anchor + u(param1) + v(param2) using one-parameter splines; failure means the parameters interact.",
+   "which_fate_it_could_diagnose": "H1 fate mix: on a grid of (prior confidence bin x pressure type), non-additivity means pressure acts differently depending on confidence, so one global fix direction will not suffice.",
+   "causal_followup_it_allows": "Confidence-conditional steering vectors; test whether they beat one global vector.",
+   "data_and_compute_needed": "Centroids per grid cell; needs enough items per cell (tens).",
+   "code_available": "Same repo (not checked)."
+  },
+  {
+   "name": "inPCA of softmax outputs and Hellinger distance between output distributions",
+   "what_it_measures": "Geometry of output probability vectors on the simplex, comparable to hidden-state geometry.",
+   "which_fate_it_could_diagnose": "Supporting tool for 1 readout failure: compare the shape of answer-distribution space with hidden-state space under pressure.",
+   "causal_followup_it_allows": "None.",
+   "data_and_compute_needed": "Softmax over answer tokens; trivial.",
+   "code_available": "Not stated separately."
+  }
+ ],
+ "controls_worth_copying": [
+  "Ground-truth target for the output (KL to the true distribution). Our analogue: the gold answer and the model's own no-pressure answer distribution.",
+  "Random-vector baseline for cosine similarities (1/sqrt(d)) so 'similar direction' has a floor.",
+  "Transfer-vs-distance curve with an explicit chance line, instead of one train/test number.",
+  "Always read an off-target covariate while steering the target (they read std while steering the mean). Our analogue: answer entropy, hedging, refusal, answer length, and accuracy on unpressured control items.",
+  "Compare four steering schemes at matched endpoints: difference-of-means, single probe direction, manifold spline, field-aware.",
+  "A normative reference model for update dynamics (ideal observer). Our analogue: a calibrated 'should I update?' baseline given the pushback has no evidence.",
+  "Additive-composition test against ground-truth centroids before assuming one direction per factor.",
+  "Qualitative replication of geometry across model families (Llama, OLMo, LFM)."
+ ],
+ "pitfalls": [
+  {
+   "pitfall": "Steering magnitude has no natural scale, so alpha choices are arbitrary.",
+   "quote": "since feature geometry is agnostic to scale, it’s unclear which values of α are meaningful",
+   "page": 8
+  },
+  {
+   "pitfall": "Small edits can do nothing and large edits break the model, which can fake a null or a strong effect.",
+   "quote": "small α can have negligible effects on logits (StefanHex & Mendel (2024)’s “activation plateaus”), whereas large values break the model towards distribution shifts and degenerate outputs",
+   "page": 8
+  },
+  {
+   "pitfall": "The last layer behaves differently (field dimensionality drops); do not extrapolate trends into it.",
+   "quote": "This “last layer anomaly” (Sarfati et al., 2025) has been noted many times before, but remains to this day to be characterized",
+   "page": 6
+  },
+  {
+   "pitfall": "Linear steering changes other variables at the same time; measure them.",
+   "quote": "linear steering can move activations off-manifold, producing unintended coupled shifts in other covariates (e.g., distort the shape of the distribution)",
+   "page": 9
+  },
+  {
+   "pitfall": "Even the geometry-aware method works only over part of the range.",
+   "quote": "maintain the same standard deviation while increasing the mean – at least in a certain regime between 300 and 500",
+   "page": 8
+  },
+  {
+   "pitfall": "Probe type matters: one-vs-rest probes were worse than one multiclass probe.",
+   "quote": "we find one-vs-rest probes to be less efficient to separate a specific class from all others",
+   "page": 16
+  },
+  {
+   "pitfall": "The model's output can match the target distribution before the data alone supports it, so a strong (normality) prior is in play; output fit is not evidence of learning from the data alone.",
+   "quote": "even 100 input numbers is insufficient to sketch an underlying distribution with σ = 100, even though the model’s output is faithful to it",
+   "page": 14
+  },
+  {
+   "pitfall": "Base models only; results may not carry over to aligned or instruct models, which is where our sycophancy fates live.",
+   "quote": "Our analysis relies on true activations of base models without finetuning",
+   "page": 9
+  },
+  {
+   "pitfall": "Our observation: 'off-manifold' and 'orthogonal manifolds' are judged from PCA plots; there is no distance-to-manifold metric, no principal angle, no seeds or error bars.",
+   "quote": "",
+   "page": null
+  },
+  {
+   "pitfall": "Our observation: small internal inconsistencies. Section 4.2 cites 'Fig. 4' for the alpha sweep (it is Fig. 6); Appendix D says N(700, 300) while Fig. 11 says N(700, 100).",
+   "quote": "",
+   "page": null
+  }
+ ],
+ "limitations_quote": "Our analysis relies on true activations of base models without finetuning; nevertheless, it is currently constrained to numerical settings.",
+ "limitations_page": 9,
+ "future_work_quote": "Extending these findings to broader natural language processing contexts remains open, particularly because identifying continuous parametrizations in natural language is more challenging.",
+ "future_work_page": 9,
+ "bears_on_fates": [
+  {
+   "fate": "1 readout/threshold failure",
+   "how": "Shows that the encoding geometry and the readout geometry differ, and that mu is decodable at 0.87-0.99 at every layer. For us, a probe-vs-output mismatch could come from a curved readout rather than a missing signal. No failure cases are studied.",
+   "strength": "weak"
+  },
+  {
+   "fate": "2 bypass",
+   "how": "Analogy only: straight-line steering moves the target but cuts across the manifold and distorts coupled covariates. The paper has no null or inert case and no bypass test. Our design advice: before calling an item 'bypass', also test steering along the data manifold (centroid path to resisted items) and read side effects.",
+   "strength": "weak"
+  },
+  {
+   "fate": "3 not routed",
+   "how": "Not addressed.",
+   "strength": "none"
+  },
+  {
+   "fate": "4 override",
+   "how": "Switching dynamics show two attractors with competing evidence pulling the state from one to the other through a high-uncertainty region. This is an analogy for pushback overriding the correct answer; no causal test, numeric task only.",
+   "strength": "weak"
+  },
+  {
+   "fate": "5 transformed",
+   "how": "Probes transfer only locally (about 0.89 to chance within delta-mu 50-100, approx) and probe directions rotate along the variable (rank > 1 field). This is exactly how a probe trained on normal behaviour could miss information that moved along a curved manifold under pressure (H3). It gives a cheap test: transfer-vs-pressure-strength curve plus locally retrained probes. Caveat: transfer is shown only at layer 0 for one probe pair, and along the task variable rather than under a context change, so this is a design idea, not evidence.",
+   "strength": "weak-moderate"
+  },
+  {
+   "fate": "6 erased",
+   "how": "Not addressed; nothing is erased in this setup.",
+   "strength": "none"
+  }
+ ],
+ "bears_on_group_angle": "No principal angles, Grassmannian paths, Procrustes, speed or curvature are computed. The nearest object is the span of the point probes at each layer and its Gram spectrum: a per-layer readout subspace whose dimension grows with depth (first eigenvalue ~0.59 at L0 down to ~0.23 at L14, back to ~0.39 at L15, approx). A direct extension for us: principal angles between probe spans across layers (a path on the Grassmannian) and between resisted and flipped items at the same layer. On manifold vs linear steering, it gives clean visual evidence on a 1B model: straight-line steering inflates the off-target std from 100 to ~165-185 (approx), spline or field-aware steering keeps it ~100-122 (approx). The switching trajectories (two attractors, a path through high entropy) suggest a way to define 'where paths fork'. All of this is on a numeric toy task with a continuous ground-truth parameter, which our factual task does not have unless we build one (confidence bins, pressure strength).",
+ "architecture_location": "Residual stream at the com2num (comma) token. Manifold PCA is shown at layer 14 (Fig 1, 11) and at three depths per model in App. B (idx 1, L-2, L-1; 9 models): structured at the late depths, mostly mixed at idx 1 (6 of 9 models). Separability (Fig 3A) is shown at all 16 layers, but that is not a visible manifold. Readout field dimensionality rises with depth and drops at the last layer (Llama-3.2-1B, L15). Steering was applied to last-layer representations. No attention, MLP or head localisation.",
+ "actionable_fix": "Inference-time only: build steering paths from data (spline through class centroids, or kernel-weighted probe field) instead of a single difference-of-means or probe vector, and check off-target covariates before trusting a steer. For monitoring (our inference; the paper proposes only steering schemes): use a field of local probes when the variable is continuous, not one global probe. No training fix is proposed.",
+ "reuse_verdict": "adapt. Reuse the LFP + transfer-vs-distance test (a cheap H3 check), the linear vs manifold vs field-aware steering comparison with an off-target covariate, and the additivity test. Do not cite as evidence about factual tasks: numeric toy task, base models up to 8B (no finetuned or instruct models, while our sycophancy fates are on aligned models, a transfer risk), interventions on a 1B model (inferred), last-layer steering only, plots without error bars.",
+ "relevance_to_project": "Medium. It does not study failures, pressure, or factual answers, but it gives two tools that fit our Stage A directly: a probe-transfer curve that can separate 'moved along a curved manifold' (transformed) from 'gone', and a warning plus method for bypass calls (steer along the manifold, read side effects). Its geometry needs a continuous ground-truth parameter, so we would have to build one (confidence bins or pressure strength). Group-angle methods themselves (principal angles, Procrustes) are not in it."
+}

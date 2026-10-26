@@ -1,0 +1,85 @@
+{
+ "slug": "p2-shared-compliance-subspace-2601.11563",
+ "url": "https://arxiv.org/pdf/2601.11563",
+ "pdf_ok": true,
+ "pages": 23,
+ "chars": 56751,
+ "title_guess": "Human-like Social Compliance in Large Language Models: Unifying Sycophancy and Conformity through Signal Competition Dynamics Long Zhang, Wei-neng Chen",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 2,
+   "caption_start": " Figure 1. Signal Competition Mechanism Leading Compliance or Assertion To bridge this gap, this research proposes the Signal Competition Mechanism (see Fig. 1), a unified framework that models both s"
+  },
+  {
+   "id": "Figure 2",
+   "page": 5,
+   "caption_start": " Figure 2. Conceptual model of the Signal Competition Mechanism. The diagram illustrates the deterministic struggle between the internal Information Calibration Signal and the external Social-Emotiona"
+  },
+  {
+   "id": "Figure 3",
+   "page": 9,
+   "caption_start": "Figure 3. Correlation Between the Sycophancy Rate And the Conformity Rate Across 15 Models 4.2 Geometric Alignment in Latent Space Having established behavioral correlation, we investigated whether th"
+  },
+  {
+   "id": "Figure 4",
+   "page": 9,
+   "caption_start": " Figure 4. Latent Space Compliance Projection for Qwen2.5-7B Figure 4 displays the latent space projection for Qwen2.5-7B. The visualization reveals three distinct clusters: the neutral baseline (gree"
+  },
+  {
+   "id": "Figure 5",
+   "page": 10,
+   "caption_start": " Figure 5. Latent Space Compliance Projection for Meta-Llama-3.1-8B Figure 5 illustrates the internal representation dynamics for Meta-Llama-3.1-8B. The projection sharply delineates the neutral basel"
+  },
+  {
+   "id": "Figure 6",
+   "page": 11,
+   "caption_start": "Figure 6. Latent Space Compliance Projection for InternLM3-8B From above, the convergence of our behavioral metrics and latent space visualizations affirmatively validates the hypothesis of RQ1: sycop"
+  },
+  {
+   "id": "Figure 7",
+   "page": 12,
+   "caption_start": "Figure 7. SVM Boundary of Signal Competition Mechanism Distinguishes Between Compliance and Assertion of Qwen2.5-7B-Instruct. Qwen2.5-7B-Instruct exhibits a highly deterministic behavioral pattern (Fi"
+  },
+  {
+   "id": "Figure 8",
+   "page": 13,
+   "caption_start": "Figure 8. SVM Boundary of Signal Competition Mechanism Distinguishes Between Compliance and Assertion of InternLM3-8B-Instruct. InternLM3-8B-Instruct displays the most rigorous mechanistic separation "
+  },
+  {
+   "id": "Figure 10",
+   "page": 15,
+   "caption_start": " Figure 10. Confidence Margin and Compliance Probability of Qwen2.5-7B-Instruct Qwen2.5-7B-Instruct reveals a critical vulnerability in its probabilistic defense (Figure 10). While there is a negative"
+  },
+  {
+   "id": "Figure 11",
+   "page": 16,
+   "caption_start": "Figure 11. Confidence Margin and Compliance Probability of InternLM3-8B-Instruct InternLM3-8B-Instruct exhibits a quintessential Sigmoid phase transition, aligning perfectly with the theoretical expec"
+  },
+  {
+   "id": "Figure 12",
+   "page": 16,
+   "caption_start": " Figure 12. Confidence Margin and Compliance Probability of Meta-Llama-3.1-8B-Instruct Meta-Llama-3.1-8B-Instruct presents a more gradual, linear resistance profile (Figure 12). Unlike the sharp phase"
+  }
+ ],
+ "n_figures_tables": 11,
+ "section_heading_candidates": [
+  "2.1 Theoretical Foundations: From Psychology to Information Dynamics",
+  "2.2 The Fragmented Landscape: The Case for a Cross-Phenomenon Approach",
+  "2.3 Proposed Signal Competition Mechanism",
+  "2.5 Research Questions in Current Study",
+  "3.1 Operationalization: Quantifying Signal Competition (\ud835\udc46, \ud835\udc3c, \ud835\udc40conf )",
+  "3.2 Dataset and Model Configuration",
+  "3.3 Experimental Design and Data Analysis",
+  "4.2 Geometric Alignment in Latent Space",
+  "4.3 The Deterministic Nature of Signal Competition",
+  "4.4 Probabilistic Verification: The Buffering Effect of Confidence",
+  "5.1 The Geometry of Convergence: Dimensionality Reduction in Social Reasoning",
+  "5.2 Vectorial Antagonism: The Predictability of Epistemic",
+  "6.1 The Epistemic-Social Hierarchy: Why Alignment Fails at the Limit",
+  "6.2 The Transparency-Truth Gap: The Permeability of Confidence",
+  "6.3 Towards Epistemic Alignment: From External Compliance to Internal Self-Regulation"
+ ],
+ "looks_abstract_only": false,
+ "has_references": false
+}

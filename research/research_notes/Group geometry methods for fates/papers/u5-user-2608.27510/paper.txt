@@ -1,0 +1,2997 @@
+How Do Linear Probes Emerge? A Circuit-Tracing Framework with
+Concept-Targeted Attribution
+Vedant Palit1,2,3 Florent Draye3,4 Terry Jingchen Zhang1,2
+Bernhard Schölkopf3,5 Zhijing Jin1,2,3
+1
+
+Jinesis Lab, University of Toronto & Vector Institute 2 EuroSafeAI
+3
+Max Planck Institute for Intelligent Systems, Tübingen, Germany
+4
+Hector Foundation 5 ELLIS Institute Tübingen
+{vedantpalit,zjin.admin}@cs.toronto.edu
+Abstract
+
+circuit localization identifies the model components responsible for a given behavior (Conmy
+et al., 2023). Recent attribution-graph methods
+combine these ideas by tracing feature-level influence through the model toward a final next-token
+logit (Ameisen et al., 2025). This has made it possible to study token generation at the level of sparse
+computational structure (Lindsey et al., 2025b).
+However, grounding every attribution graph in
+a next-token logit creates a token bottleneck. A
+model may internally represent a concept without
+expressing it in the token it generates. For example,
+when processing a toxic quote in a neutral framing,
+such as The harassment report included: “[Toxic
+Quote].” The platform..., the model may safely
+predict removed. A logit-targeted graph can explain
+why the model produces this safe continuation, but
+it does not directly explain how the toxic content
+was recognized and represented internally.
+Linear probes (Alain and Bengio, 2017) offer a
+complementary view by testing whether a concept
+is decodable from the model’s hidden activations.
+Yet probes are usually diagnostic rather than mechanistic: they tell us whether a concept is linearly
+accessible, but not which sparse features support
+the detection, why probe performance varies across
+layers or prompts, or how concept detection relates
+to token generation.
+We introduce Concept-Targeted Attribution
+(CTA), a method for constructing attribution
+graphs with respect to internal concept representations rather than output tokens. Given a linear
+probe trained to detect a concept in hidden activations, CTA uses the probe score as the scalar
+target for attribution. The resulting graph answers:
+“Which internal computations made this concept
+detectable in the model for this prompt?” In this
+way, CTA turns probes from post-hoc diagnostic
+tools into targets for circuit-level analysis.
+We apply CTA to four widely studied probes:
+toxicity, sentiment, reasoning, and truthfulness.
+
+arXiv:2608.27510v1 [cs.CL] 27 Aug 2026
+
+Transcoder attribution graphs are usually
+trained to explain why a model assigns high
+probability to a particular next token. We introduce Concept-Targeted Attribution (CTA),
+which instead trains attribution graphs with respect to a linear probe direction. CTA therefore yields probe-specific circuits that explain
+why an internal concept representation arises
+in a prompt, independently of whether it is expressed in the generated token. Using CrossLayer Transcoders, we show that these probetargeted graphs contain predictive structure:
+graph-level features predict probe accuracy
+across four widely studied concept categories
+(ρ = 0.91, R2 = 0.84), while local features
+identify the sparse components driving perprompt classification. This connects probe
+performance to interpretable circuit structure,
+allowing us to ask not only whether a probe
+works, but which internal computations make
+it work. Causal ablations further show that
+probe-targeted and logit-targeted graphs capture functionally distinct mechanisms. Removing probe-relevant features reduces internal
+concept scores while largely preserving generated tokens, whereas removing logit-relevant
+features changes the generated token in 92% to
+100% of cases with near-zero effect on probe
+scores. CTA provides a framework for moving
+from behavioral probe accuracy to mechanistic
+explanations of probe performance, enabling
+more detailed audits of internal concept representations, including safety-critical ones.1
+
+1
+
+Introduction
+
+Mechanistic interpretability has made remarkable
+progress through two complementary approaches
+(Bereska and Gavves, 2024). Feature decomposition uses sparse recovery methods to decompose
+polysemantic residual streams into dictionaries of
+interpretable features (Huben et al., 2024), while
+1
+
+Our code is at https://github.com/vedantpalit/
+concept-targeted-attribution.
+
+1
+
+Replace Modules with Cross-Layer Transcoders
+
+Attribution Graph w.r.t Concept Vector
+Linear Probe
+
+Probe
+Layer 3
+
+Extract Graph and CLT Features
+Global Features
+
+Layer 3
+
+Layer 2
+
+Layer 2
+
+Layer 1
+
+Layer 1
+Token 1
+
+Token 2 [Toxic Word]
+
+Nodal Statistics
+Topological
+Features
+Predictor
+
+Accuracy
+
+CLT Features
+
+Probe Score
+
+Token 4
+
+Figure 1: The CTA pipeline: CLT replaces MLP modules for interpretability; attribution graphs capture causal
+feature flow toward the probe; graph-structural features predict probe accuracy; CLT feature activations predict the
+probe margin.
+
+Our analysis addresses three questions. First, are
+probe-targeted attribution graphs functionally distinct from logit-targeted graphs? We find a causal
+double dissociation: ablating probe-exclusive features reduces concept scores while largely preserving the generated token, whereas ablating logitexclusive features changes the generated token in
+92%–100% of cases with near-zero effect on concept scores. Second, can attribution-graph structure
+explain probe quality? Graph-level features predict
+probe validation accuracy across the four concepts
+(ρ = 0.91, R2 = 0.84), while local features identify the sparse latents that drive per-prompt classification. Third, how consistent are probe-targeted
+graphs across prompts and layers? We find that
+while attribution graphs diverge at the periphery,
+they converge on a shared feature core that is recruited early and persists through the network, consistent with multiple distinct circuits converging
+on the same concept representation (Chen et al.,
+2026).
+
+2
+
+Dictionary-learning methods provide a more
+fine-grained unit of analysis. Sparse Autoencoders
+decompose model activations into overcomplete
+sets of sparse latent features, so that a residualstream vector can be represented as a small combination of more interpretable directions (Bricken
+et al., 2023; Templeton et al., 2024). Transcoders
+apply the same idea to model computations: instead of reconstructing an activation vector, they
+learn sparse features that reconstruct the output of
+an MLP block (Dunefsky et al., 2024). Cross-layer
+transcoders extend this setup across layers, allowing one to track how sparse features contribute to
+later residual updates. Both methods make it possible to build feature-level attribution graphs, where
+influence is traced through sparse latents and their
+linear paths rather than through coarse components
+such as neurons, heads, or layers (Ameisen et al.,
+2025).
+In current attribution-graph work, however, the
+target of this tracing procedure is typically an output logit. The resulting graph explains which sparse
+features and paths increased the probability of a
+particular next token. This logit-centric framing is
+powerful for studying token generation, but it does
+not directly describe internal concept representations that may be present without being expressed
+in the generated token.
+
+Related Work
+
+Circuit Discovery and Attribution Graphs The
+dominant circuit discovery paradigm begins with
+activation patching, which tests whether replacing
+an activation in one run with the corresponding
+activation from another run changes the model’s
+output (Vig et al., 2020; Meng et al., 2022; Wang
+et al., 2023). This identifies components whose
+activations are causally important for a behavior.
+Automated methods extend this idea by searching
+over many components to recover larger computational flow graphs through the model (Conmy et al.,
+2023; Hanna et al., 2025a).
+
+Concept Directions and Diagnostic Probing A
+parallel line of work studies concepts as directions
+in activation space. Linear probes are simple classifiers trained on hidden activations: if a probe
+can predict a concept label from a layer’s residual
+stream, the concept is taken to be linearly decodable at that layer (Alain and Bengio, 2017; Burns
+2
+
+Probe Belief Curves Across Layers
+
+et al., 2023; Zou et al., 2023; Marks and Tegmark,
+2024). Representation-engineering methods similarly identify directions associated with high-level
+properties and use them to analyze or steer model
+behavior (Zou et al., 2023; Marks and Tegmark,
+2024). Concept-based explanation methods such as
+TCAV also represent concepts as activation-space
+directions, then measure whether moving along
+those directions affects model predictions (Kim
+et al., 2018).
+These methods establish that high-level concepts
+can often be read out from hidden states, but they
+do not by themselves give a circuit-level explanation of the readout. A probe can tell us that toxicity,
+sentiment, reasoning, or truthfulness is decodable
+from a layer, but not which sparse features make the
+probe fire, how those features are assembled across
+the computation, or how the concept-level signal
+relates to the paths used for next-token generation.
+
+3
+
+Methodology
+
+3.1
+
+Transcoder Attribution Graphs
+
+1.0
+0.5
+
+Probe score
+
+𝐿14
+
+Toxicity
+Sentiment
+Reasoning
+Truthfulness
+
+𝐿15
+
+𝐿21
+
+𝐿22
+
+0.0
+−0.5
+−1.0
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10
+
+12
+
+14
+
+16
+
+18
+
+20
+
+22
+
+24
+
+Layer
+
+Figure 2: Probe score trajectories across layers for all
+four concepts. Shaded bands mark the steepest singlestep rise, indicating the belief point Lb where the residual stream most sharply aligns with the concept direction.
+
+dataset-level classification metric over held-out examples. A CTA graph therefore traces which sparse
+features and paths make a concept detectable in the
+residual stream for a particular prompt. In our experiments, we use Cross-Layer Transcoders and
+track changes in the probe score ∆Sθ̄ for causal
+dissociation experiments; further implementation
+details are provided in Appendix A.
+
+Transcoder attribution graphs replace the MLP, the
+main nonlinear part of a transformer block, with a
+sparse feature model. Given the residual stream xℓ
+entering layer ℓ, a transcoder reconstructs the MLP
+output as
+X
+MLPℓ (xℓ ) ≈
+fℓ,i dℓ,i + bℓ ,
+(1)
+
+3.2
+
+Concept Representation via Probing
+
+We evaluate the model across four semantic concepts spanning a range of the transformer’s internal computational lifecycle: (i) Toxicity (Logacheva et al., 2022), a safety-critical intent filter
+isolated from surface keywords via paired semantic contexts (ii) Sentiment (Socher et al., 2013), an
+early-layer affective signal (iii) Reasoning (Hong
+et al., 2025), contrasting multi-hop relational binding (Yang et al., 2018) against single-hop recall (Joshi et al., 2017) and (iv) Truthfulness (Marks
+and Tegmark, 2024), characterising factual verification. We train linear classifiers over the residual stream at each layer and apply Gram-Schmidt
+orthogonalisation, projecting each concept direction onto the orthogonal complement of the preceding directions. Post-correction concept directions
+are near-orthogonal (maximum | cos(θ̄)| = 0.069),
+confirming that orthogonality is a property of the
+model’s representational geometry rather than an
+artefact of post-processing. Full details of dataset
+curation, balancing, and training are provided in
+Appendix A. We define the belief point Lb as
+the layer exhibiting the greatest single-step rise in
+mean positive-class probe score, marking the layer
+at which the residual stream most sharply aligns
+with the concept direction. All single-layer graph
+extractions are anchored to the belief point layer.
+
+i
+
+where fℓ,i are sparse feature activations and dℓ,i
+their decoder directions. This makes attribution
+tractable: once the MLP is replaced by sparse
+feature contributions, attribution can be followed
+through the model’s linear paths. The resulting
+graph has sparse features as nodes and attribution
+weights as edges.
+An attribution graph explains a scalar target. In
+standard logit-targeted attribution, this target is
+a next-token logit zy , so the graph traces which
+sparse feature paths made the model more likely
+to generate token y. In Concept-Targeted Attribution (CTA), we keep the same graph construction but change the target: instead of explaining a
+token logit, we explain the score of a linear concept probe. For a concept direction θ̄ ∈ Rd and
+residual stream activation xℓ , the probe score is
+Sθ̄ (xℓ ) = θ̄⊤ xℓ . This score measures how strongly
+the residual stream aligns with the concept direction at a specific token position. It is a prompt-level
+scalar, distinct from probe accuracy, which is a
+3
+
+Subspace
+Clean
+Gprobe \ Glogit
+Glogit \ Gprobe
+Gprobe ∩ Glogit
+
+Gemma-2-2B
+Toxicity (L22)
+Truthfulness (L14)
+Post-S
+∆S
+Flip
+Post-S
+∆S
+Flip
+102.52
+—
+0.0%
+41.87
+—
+0.0%
+41.28 −61.24 0.0%
+29.84 −12.03 25.0%
+101.82
+0.70
+100.0% 41.84
+0.03
+100.0%
++36.50 −66.02 38.0% +2.93 −38.94 67.0%
+
+Llama-3.2-1B
+Toxicity (L14)
+Truthfulness (L1)
+Post-S ∆S
+Flip
+Post-S ∆S
+Flip
+0.43
+—
+0.0%
+0.11
+—
+0.0%
+−0.10 −0.53 0.0%
+0.11
+≈0
+0.0%
+0.43
+≈0
+100.0% 0.09 −0.02 100.0%
++0.67 +0.24 78.0% +0.08 −0.03 17.0%
+
+Table 1: Causal dissociation for Toxicity and Truthfulness depicted at their respective Lb , implemented across
+Gemma-2-2B and Llama-3.2-1B. Ablating probe-exclusive nodes collapses ∆S with near-zero behavioural flip
+while ablating logit-exclusive nodes flips generation in 100% of cases with negligible impact on S. ∆S magnitudes
+differ between models due to scale, however the dissociation effects remain consistent across both. Extended results
+in Appendices B and D.
+
+3.3
+
+Causal Dissociation
+
+a layer-mean baseline that predicts each layer’s
+mean validation accuracy across concepts, as a sanity check against layer-depth confounding.
+Local Feature Predictor. As a fine-grained analysis, we examine whether transcoder features active in the probe attribution graphs can predict perprompt classification confidence. For each concept,
+we use the features of the transcoder by activation strength as regressors and predict the probe
+score per prompt via Ridge regression with 5-fold
+cross-validation. We additionally identify rise features, which are features significantly enriched in
+prompts that transition from incorrect to correct at
+the belief point (Fisher’s exact test, p < 0.05) in order to pinpoint the specific sparse latents that drive
+individual probe decisions. Full model parameters,
+feature extraction details and validation protocols
+are provided in Appendix A.
+
+To test whether concept representation and token
+generation rely on distinct pathways, we use a
+causal dissociation analysis, following the classical
+logic of separating functional mechanisms through
+selective interventions (Teuber, 1955). For each
+prompt, we construct two graphs: a CTA graph
+rooted at the concept probe direction θ̄, and an LTA
+graph rooted at the next-token logit. We then ablate graph-specific features. If CTA-exclusive features support concept representation, their removal
+should reduce the probe score Sθ̄ while preserving
+the generated token. If LTA-exclusive features support token generation, their removal should change
+the top-1 prediction while leaving Sθ̄ largely unchanged. For each prompt, we extract both graphs
+at the concept-specific belief point Lb and evaluate four conditions: clean, CTA-exclusive, LTAexclusive, and intersection. We report ∆Sθ̄ and the
+top-1 logit flip rate.
+3.4
+
+4
+
+Experiments
+
+Unless otherwise stated, the main paper reports
+results for Gemma-2-2B. Results for Llama-3.2-1B
+are provided in Appendix D.
+
+Predicting the Quality of a Probe
+
+Graph-Structural Predictor. To evaluate whether
+the structural shape of a CTA graph predicts probe
+quality, we extract CTA graphs across all layers
+for all four concepts and compute 35 structural
+features per graph across three families: global
+metrics, node statistics, and topological features.
+Since graph structure is a property of the probe
+direction rather than individual prompts, features
+are averaged across all prompts per (concept, layer)
+pair, yielding one stable feature vector per pair. The
+objective is to predict probe validation accuracy at
+layer L using only these structural features. We
+train a Gradient Boosting regressor as well as a
+Ridge regressor under 5-fold group-aware crossvalidation, splitting strictly by (concept, layer) to
+prevent target leakage, and evaluate using Spearman’s ρ as the primary metric. We also include
+
+4.1
+
+Concept Emergence and the Belief Point
+
+We evaluate the linear separability of four concepts
+across all layers of Gemma-2-2B and Llama-3.21B(see Appendix D) in order to identify where each
+concept emerges. Figure 2 shows the L0-centred
+probe score trajectories across layers. Each concept exhibits a distinct belief point: concepts differ
+sharply in when their representations consolidate,
+not merely in whether they are linearly decodable.
+Reasoning shows a distinctive transient suppression: its centred scores fall below zero between
+L6 and L14 before recovering at L15. This pattern
+is consistent with multi-hop relational binding requiring deeper computational integration, which
+temporarily pushes the residual stream toward fac4
+
+Maximum CLT Activation
+𝑝 < 0.05, 𝑑 = +1.07
+
+Density
+
+0.15
+
+Influence Concentration (Gini)
+𝑝 < 0.001, 𝑑 = +1.68
+
+High val_acc
+Low val_acc
+
+0.10
+
+Maximum Edge Weight
+𝑝 < 0.05, 𝑑 = +0.88
+
+Graph Density
+𝑝 < 0.01, 𝑑 = +1.32
+
+Maximum Logit Edge
+𝑝 < 0.01, 𝑑 = +1.20
+
+0.05
+0.00
+
+0
+
+5
+
+10
+
+15
+
+Feature Value
+
+20
+
+25
+
+0.090
+
+0.095
+
+0.100
+
+Feature Value
+
+0.105
+
+5
+
+10
+
+15
+
+Feature Value
+
+20
+
+25
+
+2
+
+4
+
+6
+
+8
+
+Feature Value
+
+10
+
+0.04
+
+0.05
+
+0.06
+
+Feature Value
+
+0.07
+
+0.08
+
+Figure 3: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown
+for Toxicity. The separation is statistically significant for each feature (p < 0.05, independent t-test) and corresponds
+to medium-to-large effect sizes, with Cohen’s d ranging from +0.88 to +1.68. These results indicate that CTA
+graphs contain a separable structural signal of a layer’s concept-encoding quality.
+Model
+Layer baseline
+Ridge
+GB
+
+tual recall. Toxicity and Sentiment consolidate
+in later layers, whereas Truthfulness reaches its
+strongest representation in the mid-network (Meng
+et al., 2022).
+4.2
+
+Spearman ρ
+0.08 ± 0.15
+0.65 ± 0.11
+0.91 ± 0.05
+
+R2
+−0.19 ± 0.29
+0.33 ± 0.27
+0.84 ± 0.14
+
+Table 2: Predicting probe accuracy from graphstructural features using 5-fold group-aware crossvalidation. Bootstrap 95% confidence intervals for GB
+are ρ ∈ [0.724, 0.964], with p < 0.005 under groupaware permutation.
+
+Structural and Functional Dissociation of
+Concept and Generation Circuits
+
+CTA and LTA graphs extracted from the same
+prompts show that concept-detection and generation circuits are structurally distinct. Each graph
+contains a shared computational core, but also recruits a large set of exclusive nodes. Table 1 reports
+the causal effects of ablating these subspaces.
+Ablating probe-exclusive nodes, Gprobe \ Glogit ,
+substantially reduces the concept score across most
+concepts, confirming that these nodes are causally
+involved in internal concept encoding. Crucially,
+this intervention does not affect the generated token. The converse intervention is symmetric: ablating logit-exclusive nodes, Glogit \ Gprobe , flips
+the generated token in 100% of cases (92% in Reasoning) while leaving the concept score essentially
+unchanged (∆S ≈ 0).
+Together, these interventions demonstrate a
+clean functional double dissociation. The machinery responsible for internally encoding a concept
+is computationally separable from the machinery
+responsible for producing the model’s output.
+The dissociation is weaker for Truthfulness.
+In this case, probe-exclusive ablation produces a
+smaller change in concept score, and the shared
+subgraph carries greater dependence. This is consistent with factual verification requiring more distributed computational resources and drawing on
+representational machinery that partially overlaps
+with generation.
+The variation in exclusive subgraph size and dissociation strength across concepts suggests that
+probe-circuit structure reflects the quality and organization of the underlying concept representation. This motivates the next question: whether
+
+the topology of the CTA graph, and the specific
+features exclusive to the probe circuit, can serve
+as proxies for probe quality at both the layer and
+prompt levels.
+4.3
+
+Graph-Structural Features Predict Probe
+Quality
+
+We hypothesize that when a model forms a linearly decodable representation of a concept, the
+computational graph producing that representation
+should exhibit a recognizable topological signature.
+This premise parallels recent work on reasoning
+verification (Zhao et al., 2026), which shows that
+valid chain-of-thought processes can be classified
+largely from their structural graphs. We adapt this
+idea to internal concept representations: instead of
+classifying reasoning validity, we ask whether the
+macroscopic structure of a CTA graph predicts the
+validation accuracy of the linear probe at that layer.
+Graph-structural features predict within-concept
+layer variation in probe accuracy well beyond a
+layer-depth baseline. This signal persists under
+de-meaned targets, as shown in Table 2. The relationship is robust: the bootstrap lower bound on
+ρ remains above 0.72, and none of the 200 groupaware permutations approaches the observed value
+(see Appendix B). This rules out both fold-level
+artefacts and the trivial explanation that the model
+is merely exploiting layer depth.
+The feature patterns shown in Figure 3 suggest
+that effective concept encoding is characterized
+5
+
+by concentrated, decisive circuits. High-accuracy
+layers exhibit higher Influence Concentration, measured by Gini, indicating that attribution is routed
+through a smaller number of dominant nodes rather
+than being distributed diffusely. Maximum Feature
+Activation is also elevated, showing that conceptrelevant features fire more strongly. Maximum
+Edge Weight and Maximum Logit Edge increase
+as well, reflecting sharper feature-to-feature routing and a stronger direct read-out connection to
+the output. Finally, graph density rises as edges
+accumulate faster than nodes, indicating that the
+internal connectivity of the graph becomes proportionally tighter at better probe layers. Together,
+these properties describe circuits that have crystallized around the target concept: sparse but strong,
+and concentrated rather than broad.
+The intensity of this structural signature depends
+on the concept. For Toxicity, Influence Concentration most clearly separates high- and low-accuracy
+layers, consistent with a concept whose encoding
+is dominated by a small number of strongly firing
+features. For more inferential concepts such as
+Truthfulness, the signature is weaker across all five
+features, suggesting that these representations are
+more broadly distributed and do not collapse into
+a single concentrated pathway. Thus, the extent to
+which a concept admits sparse circuit encoding is
+itself reflected in how clearly structural statistics
+differentiate strong and weak probe layers. We
+demonstrate in Appendix D that this phenomenon
+is weaker but persists in Llama-3.2-1B.
+
+Figure 4: Top activated examples for L6/F4508. This
+feature is present in CTAs of more than 50% of positive
+prompts from the SST-2 sentiment dataset, specifically
+activating in positive superlatives.
+
+is already predictable from the first transcoder layer
+and remains stable across all layers, indicating a
+concentrated and lexically grounded circuit.
+Sentiment. For Sentiment, the features most correlated with the probe (ρ = 0.54) are primarily
+localized between L0 and L10. The most informative feature appears in 87 out of 100 cases and
+fires with near-identical activation on both positive and negative sentiment prompts, suggesting
+that it detects the domain of the prompt rather than
+sentiment polarity itself.
+Two early-layer features further contribute to
+the linear direction. L6/F4508 (Figure 4) activates
+on positive evaluative intensifiers and superlatives,
+but also fires on the same words when they occur in
+factual proper-noun contexts. It therefore partially
+encodes domain rather than polarity. L7/F5701
+captures language associated with emotional and
+epistemic reactions, including expressions of sur4.4 Feature-Level Prediction of Probe
+prise, regret, and suspicion. This feature skews
+Classification Power
+negative, but does not exclusively mark negative
+sentiment. We hypothesize that because polarity
+The previous section established that graph-level
+structural properties characterize strong probe lay- in film reviews requires sentence-level integration,
+including metaphor and negation, the attributioners. We next ask whether this signal extends to the
+feature level: can the activation patterns of indi- graph feature list only partially recovers the probe
+direction.
+vidual CLT features at a prompt-level predict the
+probe’s classification margin?
+Reasoning. The CTA graphs for Reasoning reToxicity. For Toxicity, a small set of consistent
+veal a structural signal that sparse feature presence
+features in the CTA graphs explains a substantial
+alone cannot capture. L11/F9661 appears in reapart of the probe score. Two first-layer features
+soning attribution graphs across 71 prompts and
+carry most of this signal. L0/F8116 has the highest
+in zero memorisation graphs (Fisher p < 0.001).
+importance and is present in roughly half of the
+Verified activating examples show that it fires on
+prompts, producing a large shift in probe margin
+binary comparisons, such as “formal or casual”,
+when activated. Verified activating examples show “fiction from nonfiction”, and “whether the system
+that it fires on derogatory language targeting mental
+is automated or manual”. This feature detects
+capacity and rationality. L0/F4345, by contrast, the syntactic structure of multi-choice comparaactivates on strong expletives and targeted slurs. tive questions, acting as a marker that distinguishes
+These features show that the toxicity probe margin
+reasoning-requiring prompts from single-hop fac6
+
+60
+
+Mean presence rate (%)
+
+50
+
+Concept-Predictive Features Show Consistent Cross-Prompt Presence
+
+40
+
+15×
+
+30
+
+10×
+
+20
+
+6×
+
+10
+0
+
+challenging the assumption that mechanistic interpretability necessarily recovers a canonical mechanism (Chen et al., 2026) . Our results offer a more
+nuanced picture: while concept-attribution graphs
+diverge across prompts at the periphery, they converge on a shared feature vocabulary, suggesting a
+canonical mechanistic core beneath surface variation.
+Many Circuits, One Core. For each concept, we
+compute the mean presence rate of the top predictive features from our predictor (Section 4.4),
+by pooling their presence in the CTA graphs of
+100 prompts at the belief layer and the layer with
+the highest validation accuracy. We compare this
+against the expected presence rate of any other random feature.
+Top predictive features appear 6–21 times more
+often than a random feature across both layers
+(Figures 5, 9). Toxicity and Sentiment show the
+strongest and most stable enrichment, driven by a
+small set of lexically specific features that recur
+reliably across prompts. Reasoning has lower enrichment, which is expected given how distributed
+its circuit is. Lastly, Truthfulness shows the largest
+gap between the two layers, suggesting its predictive features become more prominent deeper in the
+network.
+These results replicate the multi-circuit finding at
+the level of concept probes: the function of encoding a concept is implemented by many peripherally
+distinct circuits across prompts, yet they converge
+on a shared core composed of the features identified
+as top predictors of the probe margin in Section 4.4.
+
+Random feature
+Top predictive features
+
+20×
+
+Toxicity
+
+Sentiment
+
+Reasoning
+
+Truthfulness
+
+Figure 5: Top predictive features appear 6–20× more
+frequently than a random feature at Lb , revealing a stable mechanistic core despite prompt-level circuit variation.
+
+tual recall. Its signal is real, but it does not generalize into a stable feature-level predictor: the relevant
+reasoning markers remain prompt-specific.
+Truthfulness. The circuit is sparse and mid-layer,
+with no early binary switch analogous to Toxicity. Its most informative features are falsehood
+detectors rather than truth detectors. L9/F2578
+fires strongly on geographic proper nouns, including city names, country identifiers, and regional
+markers, making it sensitive to the geographic mismatches that characterize false statements in the
+dataset, such as “The Capital of France is Berlin”.
+L9/F14198, a truth detector, activates with high
+precision on newswire-style factual claims, especially institutional facts. L1/F3007 fires on proper
+names and academic institutional contexts, acting
+as a dataset-specific truth anchor. Overall, the falsehood detecting features are sharper than the positive ones, suggesting that the circuit is more sensitive to markers of falsehood than to markers of
+truth.
+Across concepts, the few features that appear in
+multiple circuits specifically mark neutral, analytic,
+or factual register consistently suppress toxicity
+while supporting reasoning or truthfulness simultaneously. Features that suppress reasoning while
+supporting truthfulness suggest that the two concepts recruit distinct lexical cues. We provide some
+examples and a more detailed view this further at
+in Appendices B and C.
+4.5
+
+4.6
+
+Cross-Layer Stability of
+Concept-Attribution Graphs
+
+Having established that attribution graphs share
+a stable feature core across prompts, we measure
+cross-layer stability via the consecutive-layer Jaccard J(L, L − 1), the overlap between attribution
+graphs at adjacent layers for the same prompt.
+As shown in Figure 6, J(L, L − 1) is low in
+the early layers, reflecting rapid feature turnover
+as the circuit is being assembled. The features
+stabilise at approximately J = 0.9 between the
+early intermediate layers(8-12) and remains there
+through the final layers. This is consistent with
+our feature-level findings, wherein we observe that
+the highest-weight predictive features are concentrated at early layers and form the semantic core
+of the concept circuit, while later layers contribute
+refinements without displacing the core.
+
+Cross-Prompt Consistency of
+Concept-Attribution Graphs
+
+The preceding analyses establish that CTA graphs
+carry a measurable signal of concept encoding.
+We now ask how stable these circuits are across
+prompts. Recent work shows that multiple structurally distinct circuits can perform the same task,
+7
+
+0.50
+0.25
+0.00
+
+0
+
+2
+
+4
+
+6
+
+8 10 12 14 16 18 20 22 24
+
+Layer
+
+Sentiment — Circuit Stability 𝐽(𝐿, 𝐿 − 1)
+
+0.75
+0.50
+0.25
+0.00
+
+0
+
+2
+
+4
+
+6
+
+8 10 12 14 16 18 20 22 24
+
+1.00
+
+Reasoning — Circuit Stability 𝐽(𝐿, 𝐿 − 1)
+
+0.75
+
+Jaccard(𝐿, 𝐿 − 1)
+
+Jaccard(𝐿, 𝐿 − 1)
+
+Jaccard(𝐿, 𝐿 − 1)
+
+0.75
+
+1.00
+
+Jaccard(𝐿, 𝐿 − 1)
+
+Toxicity — Circuit Stability 𝐽(𝐿, 𝐿 − 1)
+
+1.00
+
+0.50
+0.25
+0.00
+
+Layer
+
+0
+
+2
+
+4
+
+6
+
+8 10 12 14 16 18 20 22 24
+
+Layer
+
+Truthfulness — Circuit Stability 𝐽(𝐿, 𝐿 − 1)
+
+1.00
+0.75
+0.50
+0.25
+0.00
+
+0
+
+2
+
+4
+
+6
+
+8 10 12 14 16 18 20 22 24
+
+Layer
+
+Figure 6: Consecutive-layer Jaccard J(L, L − 1) for a representative prompt per concept, showing rapid circuit
+evolution in early layers followed by stabilization at J ≈ 0.9 by intermediate layers.
+
+5
+
+Discussion
+
+suggests a practical diagnostic: attribution graph
+topology can serve as a probe-free indicator of concept internalization at a given layer, with implications for auditing model behavior across training
+checkpoints or model variants.
+
+Probes need mechanistic explanations. Linear
+probes have become a standard tool for studying
+whether neural networks represent concepts, and
+are increasingly used in safety-relevant settings to
+monitor properties such as toxicity, truthfulness, or
+deception. Yet a probe score is a scalar readout,
+informing the practitioner of whether a concept
+is encoded, not how it is encoded. The features
+causally responsible for the probe score are largely
+non-overlapping with those that drive generation,
+a dissociation that holds across Gemma-2-2B and
+Llama-3.2-1B, suggesting it may be a structural
+property of the architecture class. CTA provides
+the mechanistic grounding by identifying the features causally producing the concept representation,
+enabling targeted steering of belief and generation
+circuits independently. This opens the possibility of
+surgical interventions such as suppressing a harmful concept at the representational level without
+disrupting the model’s broader generative behavior.
+
+Circuit stability as evidence of structured encoding. The cross-prompt and cross-layer consistency results together suggest that concept encoding in transformer-based LLMs is not an opportunistic pattern that varies arbitrarily with input. The shared feature core across prompts, combined with early circuit stabilization that persists
+through the network, points to a structured, reproducible computation. This suggests that causal
+claims about concept encoding generalize beyond
+individual inputs, a necessary condition for mechanistic interpretability to be meaningful in practice.
+
+6
+
+Conclusion
+
+Understanding how language models internally represent abstract concepts requires more than knowing that a probe fires. We introduce ConceptTargeted Attribution (CTA) to bridge this gap,
+grounding probe-based findings in causal mechanistic evidence. Across two model families, we
+find that concept-encoding and generation recruit
+causally non-overlapping circuits, suggesting that
+internal belief and output generation are mechanistically separable computations. Concept circuits
+are neither monolithic nor arbitrary: while attribution graphs vary across prompts, they converge on
+a shared feature core that strongly drives concept
+encoding, and whose structural properties alone
+predict encoding quality without labeled supervision. Together, these findings establish that knowing and saying recruit mechanistically distinct and
+causally separable circuits, making probe-targeted
+concept representations a tractable object for causal
+interpretability and a precise target for intervention.
+
+Circuit structure as a diagnostic of concept encoding. Beyond identifying which features encode a concept, our results demonstrate that the
+structure of the attribution graph is itself informative. At the feature level, top predictive CLT features are semantically interpretable and conceptspecific, appearing 6–21 times more frequently
+than a random feature across prompts, forming
+a stable core that the model reliably recruits. At
+the graph level, structural properties such as mean
+indegree, and maximum activation predict probe
+accuracy across layers without access to any labels.
+Taken together, these two channels offer a dual
+decomposition: feature identity reveals what the
+model encodes, while graph topology reveals how
+well it has encoded it. Notably, for inferential concepts like Reasoning, where individual features are
+sparse and distributed, the structural signal generalizes where the feature-level signal weakens. This
+8
+
+Limitations
+
+Leonard Bereska and Stratis Gavves. 2024. Mechanistic
+interpretability for AI safety - a review. Transactions
+on Machine Learning Research. Survey Certification,
+Expert Certification. 1
+
+CTA inherits the quality of the underlying CrossLayer Transcoder: features that the CLT conflates, omits, or represents polysemantically are
+invisible to attribution graphs, and the sparsity–
+reconstruction trade-off shapes which features appear in circuits without concept-specific tuning.
+Linear probes are additionally a necessary but not
+sufficient criterion for conceptual validity. For instance, probes trained on correlated label distributions may capture stylistic rather than conceptual features, and our feature-presence analysis
+discards activation magnitude, missing concepts
+whose discriminative signal lives in activation geometry rather than feature identity. Future work
+should pursue broader cross-architecture replication, deeper intervention experiments targeting finegrained concept steering, and scaling the analysis
+to richer concept taxonomies beyond the four studied here.
+
+Trenton Bricken, Adly Templeton, Joshua Batson,
+Brian Chen, Adam Jermyn, Tom Conerly, Nick
+Turner, Cem Anil, Carson Denison, Amanda Askell,
+Robert Lasenby, Yifan Wu, Shauna Kravec, Nicholas
+Schiefer, Tim Maxwell, Nicholas Joseph, Zac
+Hatfield-Dodds, Alex Tamkin, Karina Nguyen,
+Brayden McLean, Josiah E Burke, Tristan Hume,
+Shan Carter, Tom Henighan, and Christopher
+Olah. 2023. Towards monosemanticity: Decomposing language models with dictionary learning.
+Transformer Circuits Thread. Https://transformercircuits.pub/2023/monosemanticfeatures/index.html. 2
+Collin Burns, Haotian Ye, Dan Klein, and Jacob Steinhardt. 2023. Discovering latent knowledge in language models without supervision. In The Eleventh
+International Conference on Learning Representations. 2
+Xi Chen, Mingyu Jin, Jingcheng Niu, Yutong Yin, Jinman Zhao, Bangwei Guo, Dimitris N. Metaxas, Zhaoran Wang, Yutao Yue, and Gerald Penn. 2026. All circuits lead to rome: Rethinking functional anisotropy
+in circuit and sheaf discovery for llms. Preprint,
+arXiv:2605.12671. 2, 7
+
+Acknowledgment
+This work was supported in part by the German Federal Ministry of Education and Research
+(BMBF): Tübingen AI Center, FKZ: 01IS18039B;
+by the Machine Learning Cluster of Excellence,
+EXC number 2064/1 – Project number 390727645;
+by Coefficient Giving; by Swiss AI Compute
+Grants; by Hector Foundation; and by Schmidt Sciences SAFE-AI Grant. Resources used in preparing
+this research project were provided, in part, by the
+Province of Ontario, the Government of Canada
+through CIFAR, and companies sponsoring the Vector Institute.
+
+Tom Conerly, Hoagy Cunningham, Adly Templeton,
+Jack Lindsey, Basil Hosmer, and Adam Jermyn. 2025.
+Circuits updates – january 2025. Transformer Circuits Thread. 16
+Arthur Conmy, Augustine N. Mavor-Parker, Aengus
+Lynch, Stefan Heimersheim, and Adrià GarrigaAlonso. 2023. Towards automated circuit discovery for mechanistic interpretability. Preprint,
+arXiv:2304.14997. 1, 2
+Florent Draye, Abir Harrasse, Vedant Palit, Tung-Yu
+Wu, Jiarui Liu, Punya Syon Pandey, Roderick Wu,
+Terry Jingchen Zhang, Zhijing Jin, and Bernhard
+Schölkopf. 2026. Clt-forge: A scalable library for
+cross-layer transcoders and attribution graphs. arXiv
+preprint arXiv:2603.21014. 16
+
+References
+Guillaume Alain and Yoshua Bengio. 2017. Understanding intermediate layers using linear classifier probes.
+In 5th International Conference on Learning Representations, ICLR 2017, Toulon, France, April 24-26,
+2017, Workshop Track Proceedings. OpenReview.net.
+1, 2
+
+Florent Draye, Anson Lei, Hsiao-Ru Pan, Ingmar Posner, and Bernhard Schölkopf. 2025. Sparse attention
+post-training for mechanistic interpretability. arXiv
+preprint arXiv:2512.05865. 16
+
+Emmanuel Ameisen, Jack Lindsey, Adam Pearce, Wes
+Gurnee, Nicholas L. Turner, Brian Chen, Craig
+Citro, David Abrahams, Shan Carter, Basil Hosmer,
+Jonathan Marcus, Michael Sklar, Adly Templeton,
+Trenton Bricken, Callum McDougall, Hoagy Cunningham, Thomas Henighan, Adam Jermyn, Andy
+Jones, Andrew Persic, Zhenyi Qi, T. Ben Thompson,
+Sam Zimmerman, Kelley Rivoire, Thomas Conerly,
+Chris Olah, and Joshua Batson. 2025. Circuit tracing:
+Revealing computational graphs in language models.
+Transformer Circuits Thread. 1, 2, 16
+
+Jacob Dunefsky, Philippe Chlenski, and Neel Nanda.
+2024. Transcoders find interpretable llm feature circuits. Advances in Neural Information Processing
+Systems, 37:24375–24410. 2
+Aaron Grattafiori, Abhimanyu Dubey, Abhinav Jauhri,
+Abhinav Pandey, Abhishek Kadian, Ahmad AlDahle, Aiesha Letman, Akhil Mathur, Alan Schelten, Alex Vaughan, Amy Yang, Angela Fan, Anirudh
+Goyal, Anthony Hartshorn, Aobo Yang, Archi Mitra, Archie Sravankumar, Artem Korenev, Arthur
+
+9
+
+Hinsvark, Arun Rao, Aston Zhang, Aurelien Rodriguez, Austen Gregerson, Ava Spataru, Baptiste
+Roziere, Bethany Biron, Binh Tang, Bobbie Chern,
+Charlotte Caucheteux, Chaya Nayak, Chloe Bi,
+Chris Marra, Chris McConnell, Christian Keller,
+Christophe Touret, Chunyang Wu, Corinne Wong,
+Cristian Canton Ferrer, Cyrus Nikolaidis, Damien Allonsius, Daniel Song, Danielle Pintz, Danny Livshits,
+Danny Wyatt, David Esiobu, Dhruv Choudhary,
+Dhruv Mahajan, Diego Garcia-Olano, Diego Perino,
+Dieuwke Hupkes, Egor Lakomkin, Ehab AlBadawy,
+Elina Lobanova, Emily Dinan, Eric Michael Smith,
+Filip Radenovic, Francisco Guzmán, Frank Zhang,
+Gabriel Synnaeve, Gabrielle Lee, Georgia Lewis Anderson, Govind Thattai, Graeme Nail, Gregoire Mialon, Guan Pang, Guillem Cucurell, Hailey Nguyen,
+Hannah Korevaar, Hu Xu, Hugo Touvron, Iliyan
+Zarov, Imanol Arrieta Ibarra, Isabel Kloumann, Ishan Misra, Ivan Evtimov, Jack Zhang, Jade Copet,
+Jaewon Lee, Jan Geffert, Jana Vranes, Jason Park,
+Jay Mahadeokar, Jeet Shah, Jelmer van der Linde,
+Jennifer Billock, Jenny Hong, Jenya Lee, Jeremy Fu,
+Jianfeng Chi, Jianyu Huang, Jiawen Liu, Jie Wang,
+Jiecao Yu, Joanna Bitton, Joe Spisak, Jongsoo Park,
+Joseph Rocca, Joshua Johnstun, Joshua Saxe, Junteng Jia, Kalyan Vasuden Alwala, Karthik Prasad,
+Kartikeya Upasani, Kate Plawiak, Ke Li, Kenneth
+Heafield, Kevin Stone, Khalid El-Arini, Krithika Iyer,
+Kshitiz Malik, Kuenley Chiu, Kunal Bhalla, Kushal
+Lakhotia, Lauren Rantala-Yeary, Laurens van der
+Maaten, Lawrence Chen, Liang Tan, Liz Jenkins,
+Louis Martin, Lovish Madaan, Lubo Malo, Lukas
+Blecher, Lukas Landzaat, Luke de Oliveira, Madeline
+Muzzi, Mahesh Pasupuleti, Mannat Singh, Manohar
+Paluri, Marcin Kardas, Maria Tsimpoukelli, Mathew
+Oldham, Mathieu Rita, Maya Pavlova, Melanie Kambadur, Mike Lewis, Min Si, Mitesh Kumar Singh,
+Mona Hassan, Naman Goyal, Narjes Torabi, Nikolay Bashlykov, Nikolay Bogoychev, Niladri Chatterji,
+Ning Zhang, Olivier Duchenne, Onur Çelebi, Patrick
+Alrassy, Pengchuan Zhang, Pengwei Li, Petar Vasic, Peter Weng, Prajjwal Bhargava, Pratik Dubal,
+Praveen Krishnan, Punit Singh Koura, Puxin Xu,
+Qing He, Qingxiao Dong, Ragavan Srinivasan, Raj
+Ganapathy, Ramon Calderer, Ricardo Silveira Cabral,
+Robert Stojnic, Roberta Raileanu, Rohan Maheswari,
+Rohit Girdhar, Rohit Patel, Romain Sauvestre, Ronnie Polidoro, Roshan Sumbaly, Ross Taylor, Ruan
+Silva, Rui Hou, Rui Wang, Saghar Hosseini, Sahana Chennabasappa, Sanjay Singh, Sean Bell, Seohyun Sonia Kim, Sergey Edunov, Shaoliang Nie, Sharan Narang, Sharath Raparthy, Sheng Shen, Shengye
+Wan, Shruti Bhosale, Shun Zhang, Simon Vandenhende, Soumya Batra, Spencer Whitman, Sten
+Sootla, Stephane Collot, Suchin Gururangan, Sydney Borodinsky, Tamar Herman, Tara Fowler, Tarek
+Sheasha, Thomas Georgiou, Thomas Scialom, Tobias
+Speckbacher, Todor Mihaylov, Tong Xiao, Ujjwal
+Karn, Vedanuj Goswami, Vibhor Gupta, Vignesh
+Ramanathan, Viktor Kerkez, Vincent Gonguet, Virginie Do, Vish Vogeti, Vítor Albiero, Vladan Petrovic, Weiwei Chu, Wenhan Xiong, Wenyin Fu, Whitney Meers, Xavier Martinet, Xiaodong Wang, Xiaofang Wang, Xiaoqing Ellen Tan, Xide Xia, Xin-
+
+feng Xie, Xuchao Jia, Xuewei Wang, Yaelle Goldschlag, Yashesh Gaur, Yasmine Babaei, Yi Wen,
+Yiwen Song, Yuchen Zhang, Yue Li, Yuning Mao,
+Zacharie Delpierre Coudert, Zheng Yan, Zhengxing
+Chen, Zoe Papakipos, Aaditya Singh, Aayushi Srivastava, Abha Jain, Adam Kelsey, Adam Shajnfeld,
+Adithya Gangidi, Adolfo Victoria, Ahuva Goldstand,
+Ajay Menon, Ajay Sharma, Alex Boesenberg, Alexei
+Baevski, Allie Feinstein, Amanda Kallet, Amit Sangani, Amos Teo, Anam Yunus, Andrei Lupu, Andres Alvarado, Andrew Caples, Andrew Gu, Andrew
+Ho, Andrew Poulton, Andrew Ryan, Ankit Ramchandani, Annie Dong, Annie Franco, Anuj Goyal, Aparajita Saraf, Arkabandhu Chowdhury, Ashley Gabriel,
+Ashwin Bharambe, Assaf Eisenman, Azadeh Yazdan, Beau James, Ben Maurer, Benjamin Leonhardi,
+Bernie Huang, Beth Loyd, Beto De Paola, Bhargavi
+Paranjape, Bing Liu, Bo Wu, Boyu Ni, Braden Hancock, Bram Wasti, Brandon Spence, Brani Stojkovic,
+Brian Gamido, Britt Montalvo, Carl Parker, Carly
+Burton, Catalina Mejia, Ce Liu, Changhan Wang,
+Changkyu Kim, Chao Zhou, Chester Hu, ChingHsiang Chu, Chris Cai, Chris Tindal, Christoph Feichtenhofer, Cynthia Gao, Damon Civin, Dana Beaty,
+Daniel Kreymer, Daniel Li, David Adkins, David
+Xu, Davide Testuggine, Delia David, Devi Parikh,
+Diana Liskovich, Didem Foss, Dingkang Wang, Duc
+Le, Dustin Holland, Edward Dowling, Eissa Jamil,
+Elaine Montgomery, Eleonora Presani, Emily Hahn,
+Emily Wood, Eric-Tuan Le, Erik Brinkman, Esteban Arcaute, Evan Dunbar, Evan Smothers, Fei Sun,
+Felix Kreuk, Feng Tian, Filippos Kokkinos, Firat
+Ozgenel, Francesco Caggioni, Frank Kanayet, Frank
+Seide, Gabriela Medina Florez, Gabriella Schwarz,
+Gada Badeer, Georgia Swee, Gil Halpern, Grant
+Herman, Grigory Sizov, Guangyi, Zhang, Guna
+Lakshminarayanan, Hakan Inan, Hamid Shojanazeri, Han Zou, Hannah Wang, Hanwen Zha, Haroun
+Habeeb, Harrison Rudolph, Helen Suk, Henry Aspegren, Hunter Goldman, Hongyuan Zhan, Ibrahim
+Damlaj, Igor Molybog, Igor Tufanov, Ilias Leontiadis,
+Irina-Elena Veliche, Itai Gat, Jake Weissman, James
+Geboski, James Kohli, Janice Lam, Japhet Asher,
+Jean-Baptiste Gaya, Jeff Marcus, Jeff Tang, Jennifer Chan, Jenny Zhen, Jeremy Reizenstein, Jeremy
+Teboul, Jessica Zhong, Jian Jin, Jingyi Yang, Joe
+Cummings, Jon Carvill, Jon Shepard, Jonathan McPhie, Jonathan Torres, Josh Ginsburg, Junjie Wang,
+Kai Wu, Kam Hou U, Karan Saxena, Kartikay Khandelwal, Katayoun Zand, Kathy Matosich, Kaushik
+Veeraraghavan, Kelly Michelena, Keqian Li, Kiran Jagadeesh, Kun Huang, Kunal Chawla, Kyle
+Huang, Lailin Chen, Lakshya Garg, Lavender A,
+Leandro Silva, Lee Bell, Lei Zhang, Liangpeng
+Guo, Licheng Yu, Liron Moshkovich, Luca Wehrstedt, Madian Khabsa, Manav Avalani, Manish Bhatt,
+Martynas Mankus, Matan Hasson, Matthew Lennie,
+Matthias Reso, Maxim Groshev, Maxim Naumov,
+Maya Lathi, Meghan Keneally, Miao Liu, Michael L.
+Seltzer, Michal Valko, Michelle Restrepo, Mihir Patel, Mik Vyatskov, Mikayel Samvelyan, Mike Clark,
+Mike Macey, Mike Wang, Miquel Jubert Hermoso,
+Mo Metanat, Mohammad Rastegari, Munish Bansal,
+Nandhini Santhanam, Natascha Parks, Natasha
+
+10
+
+White, Navyata Bawa, Nayan Singhal, Nick Egebo,
+Nicolas Usunier, Nikhil Mehta, Nikolay Pavlovich
+Laptev, Ning Dong, Norman Cheng, Oleg Chernoguz,
+Olivia Hart, Omkar Salpekar, Ozlem Kalinli, Parkin
+Kent, Parth Parekh, Paul Saab, Pavan Balaji, Pedro Rittner, Philip Bontrager, Pierre Roux, Piotr
+Dollar, Polina Zvyagina, Prashant Ratanchandani,
+Pritish Yuvraj, Qian Liang, Rachad Alao, Rachel
+Rodriguez, Rafi Ayub, Raghotham Murthy, Raghu
+Nayani, Rahul Mitra, Rangaprabhu Parthasarathy,
+Raymond Li, Rebekkah Hogan, Robin Battey, Rocky
+Wang, Russ Howes, Ruty Rinott, Sachin Mehta,
+Sachin Siby, Sai Jayesh Bondu, Samyak Datta, Sara
+Chugh, Sara Hunt, Sargun Dhillon, Sasha Sidorov,
+Satadru Pan, Saurabh Mahajan, Saurabh Verma,
+Seiji Yamamoto, Sharadh Ramaswamy, Shaun Lindsay, Shaun Lindsay, Sheng Feng, Shenghao Lin,
+Shengxin Cindy Zha, Shishir Patil, Shiva Shankar,
+Shuqiang Zhang, Shuqiang Zhang, Sinong Wang,
+Sneha Agarwal, Soji Sajuyigbe, Soumith Chintala,
+Stephanie Max, Stephen Chen, Steve Kehoe, Steve
+Satterfield, Sudarshan Govindaprasad, Sumit Gupta,
+Summer Deng, Sungmin Cho, Sunny Virk, Suraj
+Subramanian, Sy Choudhury, Sydney Goldman, Tal
+Remez, Tamar Glaser, Tamara Best, Thilo Koehler,
+Thomas Robinson, Tianhe Li, Tianjun Zhang, Tim
+Matthews, Timothy Chou, Tzook Shaked, Varun
+Vontimitta, Victoria Ajayi, Victoria Montanez, Vijai
+Mohan, Vinay Satish Kumar, Vishal Mangla, Vlad
+Ionescu, Vlad Poenaru, Vlad Tiberiu Mihailescu,
+Vladimir Ivanov, Wei Li, Wenchen Wang, Wenwen Jiang, Wes Bouaziz, Will Constable, Xiaocheng
+Tang, Xiaojian Wu, Xiaolan Wang, Xilun Wu, Xinbo
+Gao, Yaniv Kleinman, Yanjun Chen, Ye Hu, Ye Jia,
+Ye Qi, Yenda Li, Yilin Zhang, Ying Zhang, Yossi Adi,
+Youngjin Nam, Yu, Wang, Yu Zhao, Yuchen Hao,
+Yundi Qian, Yunlu Li, Yuzi He, Zach Rait, Zachary
+DeVito, Zef Rosnbrick, Zhaoduo Wen, Zhenyu Yang,
+Zhiwei Zhao, and Zhiyu Ma. 2024. The llama 3 herd
+of models. Preprint, arXiv:2407.21783. 15
+
+Linguistics: ACL 2025, pages 21565–21585, Vienna,
+Austria. Association for Computational Linguistics.
+3, 15
+Robert Huben, Hoagy Cunningham, Logan Riggs Smith,
+Aidan Ewart, and Lee Sharkey. 2024. Sparse autoencoders find highly interpretable features in language
+models. In The Twelfth International Conference on
+Learning Representations. 1
+Mandar Joshi, Eunsol Choi, Daniel Weld, and Luke
+Zettlemoyer. 2017. TriviaQA: A large scale distantly
+supervised challenge dataset for reading comprehension. In Proceedings of the 55th Annual Meeting of
+the Association for Computational Linguistics (Volume 1: Long Papers), pages 1601–1611, Vancouver,
+Canada. Association for Computational Linguistics.
+3, 15
+Been Kim, Martin Wattenberg, Justin Gilmer, Carrie
+Cai, James Wexler, Fernanda Viegas, and Rory sayres.
+2018. Interpretability beyond feature attribution:
+Quantitative testing with concept activation vectors
+(TCAV). In Proceedings of the 35th International
+Conference on Machine Learning, volume 80 of Proceedings of Machine Learning Research, pages 2668–
+2677. PMLR. 3
+Jack Lindsey, Emmanuel Ameisen, Neel Nanda,
+Stepan Shabalin, Mateusz Piotrowski, Tom McGrath,
+Michael Hanna, Owen Lewis, Curt Tigges, Jack
+Merullo, Connor Watts, Gonçalo Paulo, Joshua Batson, Liv Gorton, Elana Simon, Max Loeffler, Callum
+McDougall, and Johnny Lin. 2025a. The circuits
+research landscape: Results and perspectives. Neuronpedia. 16
+Jack Lindsey, Wes Gurnee, Emmanuel Ameisen, Brian
+Chen, Adam Pearce, Nicholas L. Turner, Craig
+Citro, David Abrahams, Shan Carter, Basil Hosmer,
+Jonathan Marcus, Michael Sklar, Adly Templeton,
+Trenton Bricken, Callum McDougall, Hoagy Cunningham, Thomas Henighan, Adam Jermyn, Andy
+Jones, Andrew Persic, Zhenyi Qi, T. Ben Thompson,
+Sam Zimmerman, Kelley Rivoire, Thomas Conerly,
+Chris Olah, and Joshua Batson. 2025b. On the biology of a large language model. Transformer Circuits
+Thread. 1, 16
+
+Michael Hanna, Mateusz Piotrowski, Jack Lindsey, and
+Emmanuel Ameisen. 2025a. Circuit-tracer: A new
+library for finding feature circuits. In Proceedings
+of the 8th BlackboxNLP Workshop: Analyzing and
+Interpreting Neural Networks for NLP, pages 239–
+249, Suzhou, China. Association for Computational
+Linguistics. 2, 16
+
+Varvara Logacheva, Daryna Dementieva, Sergey
+Ustyantsev, Daniil Moskovskiy, David Dale, Irina
+Krotova, Nikita Semenov, and Alexander Panchenko.
+2022. ParaDetox: Detoxification with parallel data.
+In Proceedings of the 60th Annual Meeting of the
+Association for Computational Linguistics (Volume
+1: Long Papers), pages 6804–6818, Dublin, Ireland.
+Association for Computational Linguistics. 3, 15
+
+Michael Hanna, Mateusz Piotrowski, Jack Lindsey, and
+Emmanuel Ameisen. 2025b. Circuit-tracer: A new
+library for finding feature circuits. In Proceedings
+of the 8th BlackboxNLP Workshop: Analyzing and
+Interpreting Neural Networks for NLP, pages 239–
+249. 17
+Abir Harrasse, Florent Draye, Punya Syon Pandey, Zhijing Jin, and Bernhard Schölkopf. 2025. Tracing
+multilingual representations in llms with cross-layer
+transcoders. arXiv preprint arXiv:2511.10840. 16
+
+Samuel Marks and Max Tegmark. 2024. The geometry
+of truth: Emergent linear structure in large language
+model representations of true/false datasets. Preprint,
+arXiv:2310.06824. 3, 15
+
+Yihuai Hong, Meng Cao, Dian Zhou, Lei Yu, and Zhijing Jin. 2025. The reasoning-memorization interplay
+in language models is mediated by a single direction.
+In Findings of the Association for Computational
+
+Kevin Meng, David Bau, Alex Andonian, and Yonatan
+Belinkov. 2022. Locating and editing factual associations in GPT. In Advances in Neural Information
+
+11
+
+Jana, Reza Ardeshir Rokni, Rishabh Agarwal, Ryan
+Mullins, Samaneh Saadat, Sara Mc Carthy, Sarah
+Cogan, Sarah Perrin, Sébastien M. R. Arnold, Sebastian Krause, Shengyang Dai, Shruti Garg, Shruti
+Sheth, Sue Ronstrom, Susan Chan, Timothy Jordan, Ting Yu, Tom Eccles, Tom Hennigan, Tomas
+Kocisky, Tulsee Doshi, Vihan Jain, Vikas Yadav,
+Vilobh Meshram, Vishal Dharmadhikari, Warren
+Barkley, Wei Wei, Wenming Ye, Woohyun Han,
+Woosuk Kwon, Xiang Xu, Zhe Shen, Zhitao Gong,
+Zichuan Wei, Victor Cotruta, Phoebe Kirk, Anand
+Rao, Minh Giang, Ludovic Peran, Tris Warkentin,
+Eli Collins, Joelle Barral, Zoubin Ghahramani, Raia
+Hadsell, D. Sculley, Jeanine Banks, Anca Dragan,
+Slav Petrov, Oriol Vinyals, Jeff Dean, Demis Hassabis, Koray Kavukcuoglu, Clement Farabet, Elena
+Buchatskaya, Sebastian Borgeaud, Noah Fiedel, Armand Joulin, Kathleen Kenealy, Robert Dadashi,
+and Alek Andreev. 2024. Gemma 2: Improving
+open language models at a practical size. Preprint,
+arXiv:2408.00118. 15
+
+Processing Systems 35: Annual Conference on Neural Information Processing Systems 2022, NeurIPS
+2022, New Orleans, LA, USA, November 28 - December 9, 2022. 2, 5
+Jack Merullo, Connor Watts, Max Loeffler, Liv Gorton, Elana Simon, Tom McGrath, and Owen Lewis.
+2025. Replicating circuit tracing for a simple known
+mechanism. Accessed: 2025-10-07. 16
+Richard Socher, Alex Perelygin, Jean Wu, Jason
+Chuang, Christopher D. Manning, Andrew Ng, and
+Christopher Potts. 2013. Recursive deep models for
+semantic compositionality over a sentiment treebank.
+In Proceedings of the 2013 Conference on Empirical Methods in Natural Language Processing, pages
+1631–1642, Seattle, Washington, USA. Association
+for Computational Linguistics. 3, 15
+Gemma Team, Morgane Riviere, Shreya Pathak,
+Pier Giuseppe Sessa, Cassidy Hardin, Surya Bhupatiraju, Léonard Hussenot, Thomas Mesnard, Bobak
+Shahriari, Alexandre Ramé, Johan Ferret, Peter
+Liu, Pouya Tafti, Abe Friesen, Michelle Casbon,
+Sabela Ramos, Ravin Kumar, Charline Le Lan,
+Sammy Jerome, Anton Tsitsulin, Nino Vieillard,
+Piotr Stanczyk, Sertan Girgin, Nikola Momchev,
+Matt Hoffman, Shantanu Thakoor, Jean-Bastien Grill,
+Behnam Neyshabur, Olivier Bachem, Alanna Walton, Aliaksei Severyn, Alicia Parrish, Aliya Ahmad, Allen Hutchison, Alvin Abdagic, Amanda
+Carl, Amy Shen, Andy Brock, Andy Coenen, Anthony Laforge, Antonia Paterson, Ben Bastian, Bilal
+Piot, Bo Wu, Brandon Royal, Charlie Chen, Chintu
+Kumar, Chris Perry, Chris Welty, Christopher A.
+Choquette-Choo, Danila Sinopalnikov, David Weinberger, Dimple Vijaykumar, Dominika Rogozińska,
+Dustin Herbison, Elisa Bandy, Emma Wang, Eric
+Noland, Erica Moreira, Evan Senter, Evgenii Eltyshev, Francesco Visin, Gabriel Rasskin, Gary Wei,
+Glenn Cameron, Gus Martins, Hadi Hashemi, Hanna
+Klimczak-Plucińska, Harleen Batra, Harsh Dhand,
+Ivan Nardini, Jacinda Mein, Jack Zhou, James Svensson, Jeff Stanway, Jetha Chan, Jin Peng Zhou, Joana
+Carrasqueira, Joana Iljazi, Jocelyn Becker, Joe Fernandez, Joost van Amersfoort, Josh Gordon, Josh
+Lipschultz, Josh Newlan, Ju yeong Ji, Kareem Mohamed, Kartikeya Badola, Kat Black, Katie Millican, Keelin McDonell, Kelvin Nguyen, Kiranbir
+Sodhia, Kish Greene, Lars Lowe Sjoesund, Lauren Usui, Laurent Sifre, Lena Heuermann, Leticia Lago, Lilly McNealus, Livio Baldini Soares,
+Logan Kilpatrick, Lucas Dixon, Luciano Martins,
+Machel Reid, Manvinder Singh, Mark Iverson, Martin Görner, Mat Velloso, Mateo Wirth, Matt Davidow, Matt Miller, Matthew Rahtz, Matthew Watson,
+Meg Risdal, Mehran Kazemi, Michael Moynihan,
+Ming Zhang, Minsuk Kahng, Minwoo Park, Mofi
+Rahman, Mohit Khatwani, Natalie Dao, Nenshad
+Bardoliwalla, Nesh Devanathan, Neta Dumai, Nilay
+Chauhan, Oscar Wahltinez, Pankil Botarda, Parker
+Barnes, Paul Barham, Paul Michel, Pengchong
+Jin, Petko Georgiev, Phil Culliton, Pradeep Kuppala, Ramona Comanescu, Ramona Merhej, Reena
+
+Adly Templeton, Tom Conerly, Jonathan Marcus, Jack
+Lindsey, Trenton Bricken, Brian Chen, Adam Pearce,
+Craig Citro, Emmanuel Ameisen, Andy Jones, Hoagy
+Cunningham, Nicholas L Turner, Callum McDougall,
+Monte MacDiarmid, C. Daniel Freeman, Theodore R.
+Sumers, Edward Rees, Joshua Batson, Adam Jermyn,
+Shan Carter, Chris Olah, and Tom Henighan. 2024.
+Scaling monosemanticity: Extracting interpretable
+features from claude 3 sonnet. Transformer Circuits
+Thread. 2
+H. L. Teuber. 1955. Physiological psychology. Annual
+Review of Psychology, 6:267–296. 4
+Jesse Vig, Sebastian Gehrmann, Yonatan Belinkov,
+Sharon Qian, Daniel Nevo, Simas Sakenis, Jason
+Huang, Yaron Singer, and Stuart Shieber. 2020.
+Causal mediation analysis for interpreting neural nlp:
+The case of gender bias. Preprint, arXiv:2004.12265.
+2
+Kevin Ro Wang, Alexandre Variengien, Arthur Conmy,
+Buck Shlegeris, and Jacob Steinhardt. 2023. Interpretability in the wild: A circuit for indirect object
+identification in GPT-2 small. In The Eleventh International Conference on Learning Representations.
+2
+Zhilin Yang, Peng Qi, Saizheng Zhang, Yoshua Bengio,
+William Cohen, Ruslan Salakhutdinov, and Christopher D. Manning. 2018. HotpotQA: A dataset for
+diverse, explainable multi-hop question answering.
+In Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing, pages
+2369–2380, Brussels, Belgium. Association for Computational Linguistics. 3, 15
+Zheng Zhao, Yeskendir Koishekenov, Xianjun Yang,
+Naila Murray, and Nicola Cancedda. 2026. Verifying chain-of-thought reasoning via its computational
+graph. Preprint, arXiv:2510.09312. 5
+Andy Zou, Long Phan, Sarah Chen, James Campbell,
+Phillip Guo, Richard Ren, Alexander Pan, Xuwang
+
+12
+
+Yin, Mantas Mazeika, Ann-Kathrin Dombrowski,
+Shashwat Goel, Nathaniel Li, Michael J. Byun, Zifan
+Wang, Alex Mallen, Steven Basart, Sanmi Koyejo,
+Dawn Song, Matt Fredrikson, J. Zico Kolter, and
+Dan Hendrycks. 2023. Representation engineering:
+A top-down approach to AI transparency. CoRR,
+abs/2310.01405. 3
+
+13
+
+Contents
+A Experimentation Details
+A.1 Dataset Curation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+A.2 Probe Training Details . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+A.3 Cross-Layer-Transcoder . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+A.4 Attribution Graph . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+A.5 Predictability Experiment Details . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+15
+15
+15
+16
+16
+17
+
+B Extended Result Discussion
+B.1 Belief layer selection. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+B.2 Graph-Structural Predictability: Gemma-2-2B . . . . . . . . . . . . . . . . . . . . . . .
+B.3 Detailed Feature-Level Study . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+B.4 Cross-Prompt Consistency of CTA Graphs . . . . . . . . . . . . . . . . . . . . . . . . .
+B.5 Case Study: Truthfulness vs. Reasoning . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+18
+18
+19
+19
+21
+21
+
+C Activated Examples for Selected Features
+
+23
+
+D Implementation Results on Llama-3.2-1B
+D.1 Causal Dissociation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+D.2 Graph-Structural Predictability: Llama-3.2-1B . . . . . . . . . . . . . . . . . . . . . . .
+
+24
+24
+24
+
+E Computational Resources
+
+26
+
+F Topological Fingerprints of Graph Structural Features
+
+27
+
+14
+
+A
+
+Experimentation Details
+
+A.1
+
+Dataset Curation
+
+We evaluate Gemma-2-2B (Team et al., 2024) and Llama-3.2-1B (Grattafiori et al., 2024) across four
+distinct semantic concepts: Toxicity, Sentiment, Reasoning, and Truthfulness. To ensure our probes
+capture the true conceptual axis rather than spurious dataset artifacts, we train linear classifiers over the
+residual stream and apply Independent and Identically Distributed (IID) corrections to extract orthogonal
+direction vectors, θ, for each concept.
+We deliberately select four concepts to span the transformer’s computational lifecycle, encompassing
+factual retrieval to algorithmic synthesis, to late-stage behavioral overrides. We construct the training data
+to rigorously isolate these specific mechanisms:
+• Reasoning (Algorithmic Logic): We contrast HotpotQA (Yang et al., 2018) (positive: multi-hop
+bridging) against TriviaQA (Joshi et al., 2017) (negative: single-hop factual recall). By anchoring
+both classes in a general-knowledge QA format, we control for syntactical structure and strictly
+isolate the computational overhead required for multi-step variable binding. This probe is derived
+from the aspect of Reasoning-Memorization Interplay (Hong et al., 2025). For example: The director
+of Spirited Away also directed which earlier film featuring a young witch?” (positive) versus “In
+which year was the Eiffel Tower completed?” (negative).
+• Truthfulness (Factual Retrieval): Simple factual probes often overfit to localized, topical subspaces
+(e.g., geographic knowledge). To force the probe to identify a domain-agnostic factual backbone,
+we pool and balance three distinct subsets of the Geometry of Truth dataset (Marks and Tegmark,
+2024): Counterfactuals, Cities, and Spanish-English Translations. For example: The capital of Japan
+is Tokyo.” (true) versus “The capital of Japan is Osaka.” (false).
+• Sentiment (Affective Baseline): We use SST-2 (Socher et al., 2013) (positive vs. negative movie
+reviews) to provide a stable, early-layer affective state. This serves as a structural baseline, allowing
+us to contrast higher-order procedural logic against basic emotional valence. For example: A
+beautifully crafted film that lingers long after the credits roll.” (positive) versus “A tedious, poorly
+paced story that squanders every opportunity it is given.” (negative).
+• Toxicity (Behavioral Override): We use the publicly available Paradetox dataset (Logacheva et al.,
+2022), which consists of paired toxic and detoxified sentences. Since the semantic topic remains
+perfectly identical across the pairs, the probe cannot rely on topical keywords; it strictly isolates the
+latent intent to harm and the corresponding safety filtering mechanism.
+Note: We do not include any specific examples for toxicity in the paper for public safety. Readers may
+refer to the Paradetox dataset (Logacheva et al., 2022) at their discretion. Moreover for probe training
+and attribution graph generation since we specifically mean to observe the harmful intent of the models,
+we do not censor these words when we send an input to the LLM.
+A.2
+
+Probe Training Details
+
+Method. All probes are trained as mass-mean (difference-in-means, DIM) linear classifiers (Marks and
+Tegmark, 2024; Hong et al., 2025), since the DIM direction is more causally implicated in model outputs
+than logistic-regression probes. For each concept c and layer ℓ, last-token residual-stream activations are
+extracted for a balanced set of positive and negative examples. The probe direction is
+θmm = µ+ − µ− ,
+
+Wc = θmm / ∥θmm ∥,
+
+where µ+ and µ− are the class-conditional means. Wc is the direction injected into CTA attribution.
+IID correction for accuracy evaluation. Since dmodel = 2304 substantially exceeds the number of
+training examples, we apply an LDA correction in a reduced PCA subspace (top 200 components) to
+obtain an IID-corrected direction θiid = Σ−1
+w θmm for accuracy evaluation only. Classification uses a
+midpoint threshold τ = (s̄+ + s̄− )/2 between the positive- and negative-class mean scores. Wc (raw
+DIM) is used for CTA attribution throughout; θiid is not used outside evaluation.
+15
+
+Class balance and train/val split. Each concept uses exactly n positive and n negative examples
+(n = 5000 per class, 10000 total), randomly sampled and shuffled with a fixed seed (seed 42), ensuring
+no class-imbalance bias in either the probe direction or the accuracy estimate. Moreover, we filter the data
+to be ≤ 60 tokens, for convenience in interpreting the attribution graphs. An 80/20 train/validation split is
+applied within each class independently; validation accuracies for the belief layers are reported in Table 3.
+A.3
+
+Cross-Layer-Transcoder
+
+A cross-layer transcoder (CLT) can be understood as a mechanism for representing how information
+carried by MLPs persists, changes, and is reused across transformer layers.
+For a single token position, let
+hℓ ∈ Rdmodel
+denote the input to the MLP at layer ℓ. Each layer has an encoder that maps this residual-stream
+representation into a sparse feature basis:
+Ä
+ä
+ℓ
+zℓ = ReLU Wenc
+hℓ + bℓenc ∈ Rdfeatures .
+Here, zℓ contains the feature activations used to describe what the MLP at layer ℓ is responding to.
+The key difference between a CLT and a layer-local transcoder is that the CLT does not reconstruct
+each MLP output using only features from the same layer. Instead, the reconstructed MLP output at layer
+ℓ′ is allowed to depend on features extracted from all layers up to and including ℓ′ :
+X
+′
+ℓ→ℓ′
+m̂ℓ′ =
+Wdec
+zℓ + bℓdec .
+ℓ≤ℓ′
+
+The matrix
+
+′
+
+ℓ→ℓ
+Wdec
+∈ Rdmodel ×dfeatures
+
+specifies how features active at layer ℓ contribute to the MLP output at layer ℓ′ .
+The fundamental idea is that features are not necessarily confined to a single layer. A feature may
+first become active at one layer, then continue to influence later layers, possibly after being transformed
+by the model’s intermediate computations. A layer-local transcoder would tend to rediscover separate
+versions of this feature at each layer, producing multiple feature nodes for what is, conceptually, the
+same underlying computation. A CLT addresses this by allowing earlier-layer features to directly explain
+later-layer MLP outputs. This makes it possible to distinguish between genuinely new features and
+features that are carried forward from previous layers. As a result, the attribution graph becomes less
+redundant: instead of representing the same semantic signal as several disconnected layer-specific nodes,
+the CLT can represent it as a feature whose effects propagate across layers through learned cross-layer
+decoder maps (Conerly et al., 2025). We utilise the CLT-Forge library (Draye et al., 2026) for efficient
+activation loading and open-source CLTs from the Circuit-Tracer library (Hanna et al., 2025a). Training
+CLTs is computationally expensive, with costs scaling in the number of features and layers. As a result,
+aside from Anthropic’s foundational work (Ameisen et al., 2025; Lindsey et al., 2025b), only a small
+number of CLT applications exist, including a “greater-than” mechanism study (Merullo et al., 2025),
+an open-source extension (Lindsey et al., 2025a), a multilingual analysis (Harrasse et al., 2025), and an
+attention-computation analysis (Draye et al., 2025). This scarcity highlights the difficulty of training CLTs
+at scale. Note: All datasets, libraries and models are used for research purposes only, consistent with
+their access conditions.
+A.4
+
+Attribution Graph
+
+We construct attribution graphs by assigning a local attribution score between features at different layers
+and token positions. Let feature n at layer ℓ and position k be a source node, and let feature n′ at layer ℓ′
+and position k ′ be a downstream target node. The attribution from the source feature to the target feature
+is defined as
+X
+′ ,k ′ ,n′
+′ ′
+′
+aℓℓ,k,n
+=
+fnℓ→s Jℓs,k,k gnℓ ′ .
+(2)
+ℓ≤s≤ℓ′
+
+16
+
+′
+
+Here, fnℓ→s is the decoder vector associated with source feature n from layer ℓ to layer s, and gnℓ ′ is the
+encoder vector associated with target feature n′ at layer ℓ′ .
+The term
+′ ′
+Jℓs,k,k
+is the Jacobian of the transformer computation from the MLP output at layer s, position k, to the MLP
+input at layer ℓ′ , position k ′ . Importantly, this Jacobian is computed with the model nonlinearities frozen.
+In practice, the input-dependent components of the forward pass, including normalization terms, attention
+computations, and MLP nonlinearities, are treated as constants using stop-gradient operations. The
+resulting Jacobian therefore describes the locally linear propagation of an MLP-output perturbation
+through the fixed computation graph.
+The sum over s accounts for the cross-layer structure of the transcoder: a feature introduced at layer ℓ
+can contribute to reconstructed MLP outputs at several later layers s, each of which may influence the
+target feature at (ℓ′ , k ′ ).
+The attribution graph is then obtained by using features at layer-position pairs as nodes and attribution
+scores as directed edges. To keep the graph interpretable, we prune it by retaining only the features that
+cumulatively explain 80% of the effect on the final logit, and the edges that cumulatively explain 95% of
+the retained edge effect on the final logit. This is all done through the Circuit-Tracer library (Hanna et al.,
+2025b).
+A.5
+
+Predictability Experiment Details
+
+A.5.1 Graph Structural Predictor
+We ask whether the topology of a probe attribution graph at layer ℓ predicts the probe’s validation accuracy
+at that layer to explain the layer-to-layer variation in probe quality. We extract 35 graph structural features
+per prompt (8 global counts, 15 node statistics, 12 topological measures) and average them across all
+100 prompts at each (concept, layer) pair. The target is probe validation accuracy; a within-concept
+demeaned variant (accuracy minus concept mean) is used as a confound check to prevent the model
+exploiting concept-level accuracy offsets. GradientBoostingRegressor (200 estimators, max depth 3) is
+evaluated under 5-fold group-aware cross-validation, where groups are (concept, layer) so that no group
+seen in training appears in the test fold. A layer baseline model predicting per-layer mean accuracy across
+concepts is included as a lower bound; GB exceeds it by ∆ρ = 0.83 on the target, confirming the signal
+is not simply a within-concept layer trend. Statistical validity is assessed via a permutation test (200
+group-aware label shuffles, p < 0.005) and a bootstrap 95% confidence interval (500 out-of-bag group
+resamples: ρ ∈ [0.724, 0.964] on the target).
+A.5.2 Local CLT Feature Predictor
+As a secondary analysis, we ask whether the identities of CLT features in a single prompt’s attribution
+graph predict how confidently the probe classifies that prompt. The regression target is the probe score
+margin y = s − τ , where τ is the midpoint between positive- and negative-class means. The feature
+matrix X ∈ {0, 1}100×100 is a binary presence indicator over the top-100 activation-ranked CLT features
+per prompt. Ridge regression (α = 10.0 through a small grid search) is the primary model given
+n = p = 100, with HistGradientBoosting as a secondary non-linear check; both are evaluated under
+5-fold cross-validation with Spearman ρ as the primary metric. The analysis is run independently at every
+layer ℓ ∈ {1, . . . , 25}.
+
+17
+
+100
+
+Linear Probe Accuracy Across Layers
+
+70
+
+60
+0
+
+2
+
+4
+
+6
+
+8
+
+10
+
+12
+
+14
+
+16
+
+18
+
+20
+
+Toxicity
+Sentiment
+Reasoning
+Truthfulness
+22
+
+24
+
+Model Layer
+
+𝐿14
+
+𝐿9
+
+𝐿15
+
+0.5
+
+80
+70
+60
+50
+
+𝐿1
+
+1.0
+
+Probe score
+
+80
+
+Validation Accuracy (%)
+
+Validation Accuracy (%)
+
+Probe Belief Curves Across Layers
+
+90
+
+90
+
+50
+
+Linear Probe Accuracy Across Layers
+
+0
+
+2
+
+4
+
+6
+
+8
+
+Model Layer
+
+10
+
+12
+
+Toxicity
+Sentiment
+Reasoning
+Truthfulness
+
+14
+
+0.0
+−0.5
+−1.0
+
+0
+
+Toxicity
+Sentiment
+Reasoning
+Truthfulness
+
+2
+
+4
+
+6
+
+8
+
+10
+
+12
+
+14
+
+Layer
+
+Figure 7: Probe validation accuracy across layers for Gemma-2-2B (left) and Llama-3.2-1B (centre). Toxicity
+is linearly decodable from early layers in both models; Sentiment and Truthfulness show weaker trajectories in
+Llama-3.2-1B, consistent with limited concept encoding at the 1B scale. Right: normalised probe score trajectories
+for Llama-3.2-1B, with shaded bands marking the belief layer Lb per concept.
+
+B
+
+Extended Result Discussion
+
+B.1
+
+Belief layer selection.
+
+Probes are trained at every layer ℓ ∈ {1, . . . , 25} and evaluated on the held-out split, but the layer used
+for CTA attribution is not simply the highest-accuracy layer. High probe accuracy at a given layer may
+reflect the residual stream retaining concept information that was encoded many layers earlier, since
+residual connections accumulate representations cumulatively. A layer can therefore be linearly decodable
+without being the layer where the concept is actively formed. We instead identify the belief layer: the
+layer at which the mean positive-class probe score rises most steeply , which is the point of maximal
+encoding velocity, where the model is actively constructing the concept direction rather than merely
+carrying it forward. In practice, the belief layer is required to also fall within a 2-8% accuracy plateau
+of the peak (within-plateau Jaccard ≥ 0.90 between consecutive layers confirms circuit stability) hence
+it takes priority over the plateau’s highest-accuracy layer. This ensures that Wc extracted at the belief
+layer is causally grounded: it captures the direction the model is actively building at that depth, which is
+the appropriate target for attribution. Belief layers for Gemma-2-2B are: Toxicity L22, Sentiment L21,
+Reasoning L15, Truthfulness L14; and for Llama-3.2-1B: Toxicity L14, Sentiment L15, Reasoning L9,
+Truthfulness L1 (Table 3).
+
+Concept
+Toxicity
+Sentiment
+Reasoning
+Truthfulness
+
+Gemma-2-2B
+Lb Val acc.
+22
+90.0%
+21
+80.1%
+15
+87.6%
+14
+88.2%
+
+Llama-3.2-1B
+Lb Val acc.
+14
+90.9%
+15
+63.0%
+9
+76.5%
+1
+55.2%
+
+Table 3: Probe accuracy at each concept’s belief layer Lb for both models. Sentiment and Truthfulness show lower
+ceilings in Llama-3.2-1B, consistent with weaker encoding of affective and factual concepts at the 1B scale.
+
+Full ablation results for all four concepts are reported in Table 4, extending the study in Section 4.2.
+Three non-overlapping subsets of each attribution graph are ablated in turn: probe-exclusive nodes
+(Gprobe \ Glogit ), logit-exclusive nodes (Glogit \ Gprobe ), and shared nodes (Gprobe ∩ Glogit ). Internal effect
+is measured as ∆S (change in probe score at the probe position); behavioral effect as the top-1 next-token
+flip rate.
+Reasoning: sign inversion and inflated logit ratio. Reasoning exhibits two structural differences from
+the other three concepts. First, the L15 probe direction is anti-aligned with all test prompts (baseline probe
+score −21.44; all peak IID values negative), meaning the probe is reading the absence of reasoning signal
+at the final token position rather than its presence. Probe-exclusive ablation consequently raises the score
+toward zero (∆S = +5.05), and the sign of all ∆S entries is inverted relative to the other concepts —
+but the qualitative dissociation pattern is preserved: the probe-exclusive subgraph has zero top-1 flip rate,
+18
+
+Toxicity (L22)
+Sentiment (L21)
+Reasoning (L15)
+Truthfulness (L14)
+Subspace
+N
+S′
+∆S
+Flip
+N
+S′
+∆S
+Flip
+N
+S′
+∆S
+Flip
+N
+S′
+∆S
+Flip
+Control
+— +102.52
+—
+0%
+— +28.31
+—
+0%
+— −21.44
+—
+0%
+— +41.87
+—
+0%
+Gprobe \ Glogit ∼190 +41.28 −61.24 0% ∼203 −12.11 −40.42 0% ∼130 −16.39 +5.05 0% ∼168 +29.84 −12.03 25%
+Glogit \ Gprobe ∼347 +101.82 −0.70 100% ∼394 +28.70 +0.39 100% ∼539 −20.91 +0.53 92% ∼297 +41.84 −0.03 100%
+Gprobe ∩ Glogit ∼166 +36.50 −66.02 38% ∼174 +0.57 −27.74 30% ∼195 −11.24 +10.20 17% ∼190 +2.93 −38.94 67%
+
+Table 4: Full causal ablation results across all four concepts on Gemma-2-2B (see Section 4.2 for the main study).
+S ′ = post-ablation probe score; ∆S = change from control. Reasoning’s ∆S signs are inverted because the L15
+probe is anti-aligned with all test prompts (baseline S = −21.44); ablation reduces magnitude rather than score, but
+the dissociation pattern holds: probe-exclusive ablation yields 0% flip, logit-exclusive yields 92% flip with ∆S ≈ 0.
+The logit-exclusive subgraph is 1.77–4.15× larger than the probe-exclusive subgraph across concepts (Reasoning’s
+4.15× ratio reflects sparse probe encoding at the anti-aligned token position).
+
+Model
+Layer baseline
+Ridge
+GB
+
+Raw
+ρ
++0.083
++0.655
++0.905
+
+R2
+−0.197
++0.325
++0.835
+
+De-meaned
+ρ
+R2
++0.587 +0.240
++0.819 +0.648
++0.925 +0.850
+
+Table 5: 5-fold group-aware CV results for Channel 2 (Gemma-2-2B).
+
+and the logit-exclusive subgraph produces a 92% flip rate with near-zero internal effect (∆S = +0.53).
+Second, the logit-exclusive subgraph (∼539 nodes) is 4.15× larger than the probe-exclusive subgraph
+(∼130 nodes), substantially above the 1.77–1.94× range observed for the other three concepts. This
+inflated ratio reflects that, at this anti-aligned probe position, the attribution graph assigns more capacity
+to generation mechanics while probe representation is sparse which holds true with the concept being
+weakly encoded at L15 for these particular prompts rather than a failure of dissociation itself.
+Truthfulness: dominant shared subgraph. For Truthfulness, ablating the shared subgraph causes a
+93% drop in probe score (∆S = −38.94 from a baseline of +41.87) with a 67% flip rate , that is the
+largest combined effect across both signals of any concept. The probe-exclusive subgraph produces only
+a 25% flip rate, unlike the strict 0% seen for Toxicity and Sentiment, suggesting partial routing of the
+truthfulness representation through nodes also used for generation. The logit-exclusive ablation remains
+clean (∆S = −0.03, flip = 100%), confirming the generation pathway is still separable; the blurring
+occurs in the shared component, not in the concept-exclusive one.
+B.2
+
+Graph-Structural Predictability: Gemma-2-2B
+
+Table 5 reports 5-fold group-aware cross-validation results for the GradientBoosting regressor on both
+the raw and de-meaned val_acc target. The layer baseline (which predicts the mean val_acc per layer
+across concepts) yields negative R2 on the raw target, ruling out the trivial layer-trend hypothesis. GB
+substantially exceeds the baseline on both targets.
+Table 6 reports the permutation test and bootstrap confidence intervals. No permutation out of 200
+produced a ρ anywhere near the observed value; the observed statistic lies ∼6 standard deviations above
+the null mean.
+The topological fingerprint distributions for Reasoning, Sentiment, and Truthfulness are shown in
+Figures 13, 12, and 14 respectively.
+B.3
+
+Detailed Feature-Level Study
+
+Toxicity achieves the strongest and most consistent predictability, with Spearman ρ above 0.66 at every
+layer and peaking at 0.86 at L10. The signal is dominated by two features encoded at the earliest transcoder
+layer: L0/F8116 and L0/F4345, each present in roughly half the prompts. When either fires, the predicted
+probe margin shifts by over 17 points and flips sign in their absence, a near-binary discrimination. Verified
+activating examples show these features encode semantically specific derogatory language: L0/F8116
+19
+
+Raw
++0.890
+[+0.724, +0.964]
+−0.005 ± 0.128
+< 0.005
+
+Observed ρ
+95% CI on ρ
+Null mean ρ
+p(ρ)
+
+De-meaned
++0.908
+[+0.817, +0.962]
+−0.001 ± 0.122
+< 0.005
+
+Table 6: Bootstrap 95% CI (500 resamples) and permutation test (200 shuffles) for Channel 2 GB model (Gemma-22B).
+1.0
+
+Within-Layer Predictability of Probe Score Margin
+Toxicity
+Sentiment
+Reasoning
+Truthfulness
+
+Ridge Spearman 𝜌 (CV)
+
+0.8
+0.6
+0.4
+0.2
+0.0
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10
+
+12
+
+14
+
+Layer
+
+16
+
+18
+
+20
+
+22
+
+24
+
+Figure 8: Spearman ρ between predicted and actual probe score margins across layers for all four concepts. Toxicity
+maintains consistently high predictability across all layers; Truthfulness peaks at mid-depth before decaying;
+Sentiment and Reasoning show weak and noisy signals throughout, reflecting distributed or geometrically encoded
+concept representations that individual CLT features cannot recover.
+
+targets slurs aimed at mental capacity, and L0/F4345 encodes explicit expletives and targeted slurs. A
+mid-layer feature L5/F6028 reinforces the signal in prompts involving contextual harm framing, while
+L14/F13558 contributes at the probe layer itself. This discriminative power holds across all 25 layers,
+confirming that the toxicity probe’s confidence is largely explained by a small set of early-layer lexical
+features stable throughout the residual stream.
+Sentiment presents the sharpest contrast. Ridge R2 peaks modestly at L10 (0.23) before collapsing
+to 0.08 at the probe’s best layer (L21), with scattered negative R2 at several intermediate layers. The
+highest-coefficient feature L0/F4345, shared with the Toxicity circuit, is present in 87 of 100 prompts
+and fires with near-identical activation on both positive and negative reviews, encoding the evaluative
+film-review register rather than sentiment direction. A mid-layer feature L6/F4508 capturing evaluative
+intensifiers also fires in factual proper-noun contexts; L7/F5701 encodes epistemic reaction language that
+skews toward negative affect without exclusively marking it. Polarity in this domain requires integrating
+sentence-level structure including metaphor, hedging, and clause-level negation, all of which are invisible
+to individual feature presence. The probe reads a continuous geometric direction in the full residual stream
+that the discrete feature list cannot recover.
+Reasoning shows the weakest Ridge R2 throughout (peak 0.14), but the complementary rise feature
+analysis reveals a structural signal. Features at mid-to-late layers (L14/F11925, L10/F6578, L12/F15646)
+are strongly enriched in prompts where the probe transitions from incorrect to correct, with odds ratios up
+to 8.8× relative to consistently low-performing prompts. An early-layer feature L0/F3969, consistently
+present across reasoning attribution graphs but absent from memorisation graphs, fires specifically on
+binary comparison constructions such as formal or casual and fiction from nonfiction, encoding the
+syntactic architecture of multi-choice questions rather than their content. L6/F7507 contributes a lateactivating signal tied to step-by-step elaboration structure. This signal is real but too sparse to elevate
+R2 .
+20
+
+Mean presence rate (%)
+
+60
+50
+
+Concept-Predictive Features Show Consistent Cross-Prompt Presence
+Random feature
+Top predictive features
+
+21×
+
+40
+
+16×
+
+15×
+
+30
+20
+
+8×
+
+10
+0
+
+Toxicity
+
+Sentiment
+
+Reasoning
+
+Truthfulness
+
+Figure 9: Top predictive features appear 8–21× more frequently than a random feature at highest validation accuracy
+layer, revealing a stable mechanistic core despite prompt-level circuit variation.
+
+Truthfulness occupies an intermediate position: Spearman ρ peaks at 0.66 at L12, with meaningful
+Ridge signal from L7 onward before decaying past L15. The signal is spread across sparse features at midrange layers; L9/F2578, L9/F14198, and L9/F15693 each fire in only 14–21 of 100 prompts but produce
+sharp margin shifts when active. L1/F3007 is an exception, present in 49 of 100 prompts, and carries one
+of the strongest positive coefficients, encoding attributed factual claims and neutral encyclopedic register.
+The negative-coefficient features consistently outweigh positive-class predictors in magnitude, suggesting
+the circuit is more sensitive to markers of falsehood than of truth.
+Cross-concept features. A small number of features appear across multiple concept circuits with
+semantically interpretable cross-concept signs. L1/F3872 carries a negative coefficient in the Toxicity
+regression and a positive coefficient in the Reasoning regression: a feature firing on well-formed analytic
+language plausibly suppresses toxicity while supporting reasoning-positive prompts. L0/F16252 and
+L5/F9293 are both Toxicity-negative and Truthfulness-positive, consistent with a feature encoding neutral,
+factual statement language that marks non-toxic and truthful text simultaneously. L5/F11818 is Sentimentnegative and Reasoning-positive, suggesting a feature firing on analytical or critical language that is both
+unpleasant-sounding and reasoning-coded. The structurally interesting case is L9/F15693: it suppresses
+reasoning-positive probability while supporting truthfulness-positive probability. Since reasoning and
+truthfulness might be expected to positively correlate, as both favour well-structured and accurate text,
+their anti-correlation at this feature suggests that the lexical cues for attributed factual claims and for
+step-by-step inferential structure are partially dissociated at the feature level.
+B.4
+
+Cross-Prompt Consistency of CTA Graphs
+
+Extending from Section 4.5, we provide the mean presence rate of top predictive features compared with
+expected rates of random features at the layer with the highest validation accuracy all concepts. The figure
+is provided at Figure 9.
+B.5
+
+Case Study: Truthfulness vs. Reasoning
+
+Truthfulness and Reasoning are the semantically closest concept pair in our study. Both concern the
+epistemic quality of language, and their belief layers are adjacent: L14 for Truthfulness and L15 for
+Reasoning. If any two concepts were likely to share circuit vocabulary, these would be the strongest
+candidates. We therefore examine cross-concept circuit overlap directly. For every prompt, we compute the
+per-prompt Jaccard similarity J(T @LT , R@LR ) across all (LT , LR ) layer-pair combinations (Figure 10).
+
+21
+
+Mean Per-Prompt Jaccard 𝐽(𝑇@𝐿𝑇 , 𝑅@𝐿𝑅 ) Across All Layer Pairs
+
+24
+
+0.06
+
+22
+
+0.05
+
+18
+16
+
+0.04
+
+14
+
+Mean Jaccard
+
+Truthfulness probe layer 𝐿𝑇
+
+20
+
+12
+
+0.03
+
+10
+
+8
+
+0.02
+
+6
+4
+
+0.01
+
+2
+0
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10
+
+12
+
+14
+
+16
+
+18
+
+Reasoning probe layer 𝐿𝑅
+
+20
+
+22
+
+24
+
+0.00
+
+Figure 10: Mean per-prompt Jaccard similarity J(T @LT , R@LR ) between Truthfulness and Reasoning attribution
+graphs across all layer-pair combinations. Cross-concept overlap is non-negligible only when both layers are in the
+same depth regime.
+
+Layer alignment is necessary but not sufficient. The heatmap in Figure 10 reveals two regions of
+elevated cross-concept Jaccard: early layers (LT , LR ≲ 7) and late layers (LT , LR ≳ 16). Off-diagonal
+entries, such as early Truthfulness against late Reasoning or late Truthfulness against early Reasoning,
+collapse toward zero. Layer alignment is therefore a prerequisite for cross-concept sharing, reflecting that
+features at different depths encode qualitatively different representations. However, even on the diagonal,
+peak values remain below 0.07, well within the low-overlap regime observed in the within-concept
+analysis.
+Exclusive features dominate at every layer. At any given layer, the mean number of shared features
+per prompt remains below approximately 40, whereas reasoning-exclusive counts reach roughly 460 and
+truthfulness-exclusive counts reach roughly 250 by the final layers. Shared features therefore represent
+only a small fraction of each concept’s circuit throughout the network. The early-layer sharing visible
+in the heatmap corresponds to a modest absolute count, likely reflecting a small set of syntactic or
+domain-general features active in both attribution graphs. The bulk of each circuit remains exclusive.
+Together, these results extend the many-circuits finding across concept boundaries. Even the most
+semantically proximate concept pair recruits largely disjoint attribution graphs, with overlap depending
+on layer alignment and never exceeding a small minority of each circuit’s features.
+
+22
+
+C
+
+Activated Examples for Selected Features
+
+Figure 11: Representative CLT features identified by the probe attribution pipeline, visualized via Neuronpedia.
+Each panel shows the feature’s layer, index, mean activation, and top/bottom predicted tokens, with activating
+contexts highlighted. The features encode semantically coherent concepts: L9/F3223 fires on content keywords
+in structured titles; L9/F2578 and L9/F14198 specialize in geographic place names and city tokens respectively;
+L1/F3007 captures French proper names and French-language text; and L9/F15693 activates on common English
+function words across diverse domains. The semantic breadth of these features illustrates that probe-predictive
+circuits draw on general linguistic primitives alongside concept-specific representations.
+
+23
+
+Toxicity (L14)
+Sentiment (L15)
+Reasoning (L9)
+Truthfulness (L1)
+Subspace
+N
+S′
+∆S
+Flip
+N
+S′
+∆S
+Flip
+N
+S′
+∆S
+Flip
+N
+S′
+∆S
+Flip
+Control
+— +0.43
+—
+0%
+— −0.47
+—
+0%
+— +0.60
+—
+0%
+— +0.11
+—
+0%
+Gprobe \ Glogit ∼244 −0.10 −0.53 0% ∼168 +2.40 +2.87 0% ∼115 +0.39 −0.21 0%
+∼11 +0.11 −0.001 0%
+Glogit \ Gprobe ∼203 +0.43 +0.002 100% ∼289 −0.48 −0.011 100% ∼372 +0.57 −0.028 100% ∼359 +0.09 −0.020 100%
+Gprobe ∩ Glogit ∼169 +0.67 +0.24 78% ∼112 +0.45 +0.92 25% ∼206 −0.33 −0.93 58% ∼12 +0.08 −0.026 17%
+
+Table 7: Full causal ablation results across all four concepts on Llama-3.2-1B. S ′ = post-ablation probe score; ∆S
+= change from control. Sentiment baseline is negative as the probe encodes positive sentiment and all prompts
+are negative-sentiment text; ablating probe-exclusive features correctly reduces the magnitude. Truthfulness at L1
+shows a near-zero internal effect due to the weak probe circuit (∼11 nodes, 55.2% accuracy) at that layer; the logit
+dissociation holds cleanly (100% flip).
+
+D
+
+Implementation Results on Llama-3.2-1B
+
+D.1
+
+Causal Dissociation
+
+Table 7 reports the full causal ablation results for Llama-3.2-1B across all four concepts. The core
+dissociation pattern replicates cleanly: ablating probe-exclusive features (Gprobe \ Glogit ) produces a
+measurable internal effect on the probe score while causing 0% top-1 prediction flips across all concepts;
+ablating logit-exclusive features (Glogit \ Gprobe ) causes 100% flips while leaving the probe score nearbaseline.
+Probe IID magnitudes in Llama-3.2-1B are 10–20× smaller than in Gemma-2-2B; thresholds are
+scaled accordingly and all prompts pass the strong IID threshold. The sentiment probe encodes positive
+sentiment, so all negative-sentiment prompts yield a negative baseline score; ablating probe-exclusive
+features causes the score to rise toward zero, which is the correct direction. Truthfulness at L1 has
+only ∼11 probe-exclusive nodes and a baseline accuracy of 55.2%. The probe circuit is too weak at
+this layer to show a measurable internal effect, though the logit dissociation (100% flip) holds cleanly.
+The logit-exclusive subgraph is 0.83–3.23× the size of the probe-exclusive subgraph (excluding the
+Truthfulness outlier driven by the near-zero probe circuit at L1 ; mean ratio 1.93×), consistent with the
+Gemma-2-2B pattern.
+D.2
+
+Graph-Structural Predictability: Llama-3.2-1B
+
+Table 8 reports 5-fold group-aware CV results for the GradientBoosting regressor on the raw val_acc
+target. The layer baseline yields negative R2 (−0.66), ruling out the trivial layer-trend hypothesis. GB
+achieves ρ = +0.808 and R2 = +0.850, replicating the direction of the Gemma-2-2B Channel 2 finding.
+Model
+Layer baseline
+Ridge
+GB
+
+ρ
+−0.437
++0.423
++0.808
+
+R2
+−0.660
++0.069
++0.850
+
+Table 8: 5-fold group-aware CV results for Channel 2 (Llama-3.2-1B).
+
+Observed ρ
+95% CI on ρ
+Null mean ρ
+p(ρ)
+
+Raw
++0.780
+[+0.368, +0.955]
+−0.011 ± 0.179
+< 0.005
+
+Table 9: Bootstrap 95% CI (500 resamples) and permutation test (200 shuffles) for Channel 2 GB model (Llama3.2-1B).
+
+Structural separation is weaker than Gemma-2-2B. While the raw signal is significant, the withinconcept (de-meaned) signal is substantially weaker: ρ = +0.34 with a bootstrap CI that straddles zero
+[−0.055, +0.743], compared to ρ = +0.908 [+0.817, +0.962] for Gemma-2-2B. Two compounding
+factors explain this. First, Llama-3.2-1B has only 16 layers, compressing the structural variation that
+24
+
+Channel 2 exploits across depth. Second, the val_acc trajectories for Sentiment and Truthfulness are
+near-flat across layers (Figure 7), leaving little within-concept variance for the regressor to fit. The
+topological fingerprint distributions (Figures 17, 16, 17, 18) confirm this: Toxicity and Reasoning show
+clear separation between high- and low-accuracy layers on global features such as graph density and mean
+indegree, while Sentiment and Truthfulness show little separation on any feature family.
+Concept-transfer is also poor across the board: held-out concept ρ ranges from −0.74 to +0.48 for
+the raw target, compared to +0.93–+0.95 for Sentiment and Reasoning in Gemma-2-2B. With only 16
+layers and compressed structural differences between concepts, the model cannot reliably generalise the
+structural signature of a “good probe layer” to unseen concepts. Late-layer holdout (train on L0 –L7 ,
+test on L8 –L15 ) is the exception, achieving ρ = +0.90 and R2 = +0.905, because the dominant signal
+(n_embed_nodes) is consistent across depth at this model scale.
+
+25
+
+E
+
+Computational Resources
+
+All experiments were run on a single NVIDIA A100 GPU (80 GB VRAM). The primary computational
+cost is attribution graph construction: for each of the four concept categories, we build graphs at every
+layer for 100 prompts per dataset, yielding approximately 10,400 graphs in total across concepts and
+layers for Gemma-2-2B. Moreover, for causal dissociation we utilized 50 prompts per concept. The
+feature-level predictability experiments were the most expensive component at approximately 26 hours,
+followed by the graph structural predictability analysis at 5 hours, causal ablations at 3 hours, and probe
+training at 3 hours. The Llama-3.2-1B replication required approximately half the total runtime, owing to
+the smaller model and shallower layer count.
+
+26
+
+F
+
+Topological Fingerprints of Graph Structural Features
+Maximum CLT Activation
+𝑝 < 0.001, 𝑑 = +1.72
+
+Density
+
+0.3
+
+Influence Concentration (Gini)
+𝑝 < 0.01, 𝑑 = +1.46
+
+High val_acc
+Low val_acc
+
+0.2
+
+Maximum Edge Weight
+𝑝 < 0.001, 𝑑 = +2.59
+
+0.1
+0.0
+
+0
+
+5
+
+10
+
+15
+
+20
+
+Feature Value
+
+25
+
+0.07
+
+0.08
+
+0.09
+
+Feature Value
+
+0.10
+
+0.11
+
+4
+
+Feature Value
+
+6
+
+8
+
+10
+
+15
+
+0.040
+
+0.045
+
+0.050
+
+0.055
+
+0.060
+
+Feature Value
+
+20
+
+Feature Value
+
+Graph Density
+𝑝 < 0.01, 𝑑 = +1.27
+
+Maximum Logit Edge
+𝑝 < 0.05, 𝑑 = +0.93
+
+2
+
+5
+
+25
+
+0.065
+
+Figure 12: Gemma-2-2B: Distributions of five selected graph-structural features for high- versus low-accuracy
+probe layers, shown for sentiment. The separation is statistically significant for each feature (p < 0.05, independent
+t-test) and corresponds to medium-to-large effect sizes, with Cohen’s d ranging from +0.93 to +2.59. These results
+indicate that CTA graphs contain a separable structural signal of a layer’s concept-encoding quality.
+Maximum CLT Activation
+𝑝 < 0.001, 𝑑 = +1.64
+
+Density
+
+0.3
+
+Influence Concentration (Gini)
+𝑝 = 0.102, 𝑑 = +0.69
+
+High val_acc
+Low val_acc
+
+0.2
+
+Maximum Edge Weight
+𝑝 < 0.001, 𝑑 = +2.00
+
+0.1
+0.0
+
+0
+
+10
+
+Feature Value
+
+20
+
+0.08
+
+0.09
+
+0.10
+
+Feature Value
+
+0.11
+
+Maximum Logit Edge
+𝑝 < 0.01, 𝑑 = +1.23
+
+1.5
+
+2.0
+
+2.5
+
+3.0
+
+Feature Value
+
+3.5
+
+4.0
+
+0.04
+
+0.12
+
+0
+
+5
+
+10
+
+Graph Density
+𝑝 < 0.01, 𝑑 = +1.17
+
+0.05
+
+0.06
+
+Feature Value
+
+0.07
+
+15
+
+20
+
+Feature Value
+
+25
+
+30
+
+0.08
+
+Figure 13: Gemma-2-2B: Distributions of five selected graph-structural features for high- versus low-accuracy
+probe layers, shown for reasoning. The separation is statistically significant for each feature (p < 0.05, independent
+t-test) except the influence concentration and corresponds to medium to large effect sizes, with Cohen’s d ranging
+from +0.69 to +2.00. These results indicate that CTA graphs contain a separable structural signal of a layer’s
+concept-encoding quality.
+
+27
+
+Maximum CLT Activation
+𝑝 = 0.279, 𝑑 = +0.44
+
+High val_acc
+Low val_acc
+
+0.10
+
+Density
+
+Influence Concentration (Gini)
+𝑝 = 0.981, 𝑑 = +0.01
+
+Maximum Edge Weight
+𝑝 = 0.152, 𝑑 = +0.59
+
+0.05
+0.00
+
+0
+
+10
+
+Feature Value
+
+0.025
+
+20
+
+0.050
+
+0.075
+
+0.100
+
+Feature Value
+
+0.125
+
+4
+
+6
+
+8
+
+Feature Value
+
+10
+
+12
+
+14
+
+16
+
+18
+
+Feature Value
+
+20
+
+22
+
+Graph Density
+𝑝 < 0.05, 𝑑 = −0.84
+
+Maximum Logit Edge
+𝑝 = 0.126, 𝑑 = −0.64
+
+2
+
+0.150
+
+12
+
+14
+
+0.06
+
+0.07
+
+0.08
+
+0.09
+
+0.10
+
+Feature Value
+
+Figure 14: Gemma-2-2B: Distributions of five selected graph-structural features for high- versus low-accuracy
+probe layers, shown for truthfulness. The separation is not purely significant for features (p < 0.05, independent
+t-test) except graph density and corresponds to low to medium effect sizes, with Cohen’s d ranging from −0.84 to
++0.59. These results indicate that CTA graphs contain a separable structural signal of a layer’s concept-encoding
+quality.
+
+Density
+
+0.4
+
+High val_acc
+Low val_acc
+
+0.2
+0.0
+
+Influence Concentration (Gini)
+𝑝 < 0.05, 𝑑 = −1.19
+
+Maximum CLT Activation
+𝑝 = 0.073, 𝑑 = −1.03
+
+0
+
+5
+
+10
+
+Feature Value
+
+0.025
+
+15
+
+0.105
+
+0.110
+
+Maximum Logit Edge
+𝑝 < 0.01, 𝑑 = −1.69
+
+0.050
+
+0.075
+
+0.100
+
+Feature Value
+
+0.125
+
+0.115
+
+Feature Value
+
+0.150
+
+0.05
+
+Maximum Edge Weight
+𝑝 = 0.221, 𝑑 = −0.67
+
+0.0
+
+0.120
+
+2.5
+
+Graph Density
+𝑝 < 0.001, 𝑑 = −2.70
+
+0.06
+
+0.07
+
+0.08
+
+Feature Value
+
+5.0
+
+7.5
+
+Feature Value
+
+10.0
+
+12.5
+
+0.09
+
+Figure 15: Llama-3.2-1B: Distributions of five selected graph-structural features for high- versus low-accuracy
+probe layers, shown for Sentiment. No feature reaches significance at p < 0.05, and effect sizes are small, with
+Cohen’s d ranging from −0.98 to +0.58, consistent with the weak within-concept structural separation observed
+for Sentiment in Llama-3.2-1B.
+
+28
+
+Maximum CLT Activation
+𝑝 = 0.587, 𝑑 = +0.28
+
+High val_acc
+Low val_acc
+
+0.4
+
+Density
+
+Influence Concentration (Gini)
+𝑝 = 0.770, 𝑑 = +0.15
+
+Maximum Edge Weight
+𝑝 = 0.281, 𝑑 = +0.58
+
+0.2
+0.0
+
+0
+
+5
+
+10
+
+15
+
+Feature Value
+
+0.09
+
+Maximum Logit Edge
+𝑝 = 0.250, 𝑑 = −0.60
+
+0.04
+
+0.06
+
+0.08
+
+0.10
+
+0.11
+
+0.0
+
+2.5
+
+0.08
+
+0.09
+
+5.0
+
+7.5
+
+Feature Value
+
+10.0
+
+12.5
+
+Graph Density
+𝑝 = 0.075, 𝑑 = −0.98
+
+0.12
+
+Feature Value
+
+0.10
+
+Feature Value
+
+0.14
+
+0.04
+
+0.05
+
+0.06
+
+0.07
+
+Feature Value
+
+Figure 16: Llama-3.2-1B: Distributions of five selected graph-structural features for high- versus low-accuracy
+probe layers, shown for Sentiment. No feature reaches significance at p < 0.05, and effect sizes are small, with
+Cohen’s d ranging from −0.98 to +0.58, consistent with the weak within-concept structural separation observed
+for Sentiment in Llama-3.2-1B.
+
+Density
+
+Maximum CLT Activation
+𝑝 = 0.113, 𝑑 = −0.90
+
+Influence Concentration (Gini)
+𝑝 = 0.122, 𝑑 = +0.84
+
+High val_acc
+Low val_acc
+
+0.4
+
+Maximum Edge Weight
+𝑝 = 0.310, 𝑑 = −0.55
+
+0.2
+0.0
+
+0
+
+5
+
+10
+
+Feature Value
+
+0.00
+
+15
+
+0.110
+
+Maximum Logit Edge
+𝑝 < 0.01, 𝑑 = −2.00
+
+0.05
+
+0.10
+
+0.15
+
+Feature Value
+
+0.115
+
+0.120
+
+Feature Value
+
+0.125
+
+0.0
+
+2.5
+
+5.0
+
+7.5
+
+Feature Value
+
+10.0
+
+12.5
+
+Graph Density
+𝑝 < 0.01, 𝑑 = −1.73
+
+0.20
+
+0.25
+
+0.04
+
+0.06
+
+Feature Value
+
+0.08
+
+Figure 17: Llama-3.2-1B: Distributions of five selected graph-structural features for high- versus low-accuracy
+probe layers, shown for Reasoning. Maximum logit edge and graph density reach significance (p < 0.005), with
+large effect sizes (d = −2.00 and d = −1.73 respectively); the remaining features do not. Cohen’s d ranges from
+−2.00 to +0.84. Negative d values indicate that lower-accuracy layers exhibit higher feature values, a pattern
+inverted relative to Gemma-2-2B.
+
+29
+
+Maximum CLT Activation
+𝑝 = 0.628, 𝑑 = +0.25
+
+Density
+
+1.5
+
+Influence Concentration (Gini)
+𝑝 = 0.568, 𝑑 = −0.30
+
+High val_acc
+Low val_acc
+
+1.0
+
+Maximum Edge Weight
+𝑝 = 0.315, 𝑑 = +0.54
+
+0.5
+0.0
+
+0
+
+5
+
+10
+
+Feature Value
+
+0.0
+
+15
+
+0.11
+Maximum Logit Edge
+𝑝 = 0.444, 𝑑 = −0.40
+
+0.1
+
+0.2
+
+0.3
+
+Feature Value
+
+0.4
+
+0.12
+
+Feature Value
+
+0.5
+
+0.13
+
+0.05
+
+0.14
+
+0.0
+
+2.5
+
+Graph Density
+𝑝 = 0.183, 𝑑 = +0.71
+
+0.06
+
+0.07
+
+0.08
+
+Feature Value
+
+0.09
+
+5.0
+
+7.5
+
+Feature Value
+
+10.0
+
+12.5
+
+0.10
+
+Figure 18: Llama-3.2-1B: Distributions of five selected graph-structural features for high- versus low-accuracy
+probe layers, shown for Truthfulness. No feature reaches significance at p < 0.05, and effect sizes are small, with
+Cohen’s d ranging from −0.40 to +0.71, reflecting the near-flat val_acc trajectory and weak concept encoding of
+Truthfulness at the 1B scale.
+
+30
+
+

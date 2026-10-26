@@ -1,0 +1,81 @@
+{
+ "slug": "c11-trajectory-signatures-deception-acl2026",
+ "url": "https://aclanthology.org/2026.acl-long.1582.pdf",
+ "pdf_ok": true,
+ "pages": 13,
+ "chars": 60938,
+ "title_guess": "Trajectory Signatures of Deception in Large Language Models Viraaji Mothukuri, Reza M. Parizi Decentralized Science Lab, College of Computing and Software Engin",
+ "figures_tables": [
+  {
+   "id": "Table 1",
+   "page": 2,
+   "caption_start": " Table 1: Related works  3  Proposed Approach  3.1  Architecture  We develop a trajectory-based detection framework that analyzes computational patterns during language model inference. The framework "
+  },
+  {
+   "id": "Figure 1",
+   "page": 4,
+   "caption_start": " Figure 1: Trajectory analysis pipeline for deception detection  answer independently. Matched pairs contrasting persona-prefixed and persona-stripped conditions are constructed from this source. The "
+  },
+  {
+   "id": "Table 2",
+   "page": 4,
+   "caption_start": " Table 2: Geometric trajectory features  Path length measures the total distance traversed through activation space during the forward pass. Mean step normalizes this quantity by layer count to enable"
+  },
+  {
+   "id": "Table 3",
+   "page": 6,
+   "caption_start": "Table 3: Path length effects across deception types information suppression. Strategic deception exhibits the largest effect magnitudes but with inconsistent directionality: GPT-2 (d = \u22120.99), Llama-2"
+  },
+  {
+   "id": "Figure 2",
+   "page": 7,
+   "caption_start": " Figure 2: Trajectory visualizations across the architectures. Pair 1: Instructed Lies  Pair 2: Sycophancy  Pair 3: Confabulation  Truthful Deceptive  Truthful Deceptive  100 80 60 40 PC3 20 0 20 40  "
+  },
+  {
+   "id": "Figure 3",
+   "page": 7,
+   "caption_start": " Figure 3: Behavior-specific trajectory visualization for Llama2 and Llama3.  we consolidate evidence across path length, layerwise depth, and per-feature profiles, and find that signatures are archit"
+  },
+  {
+   "id": "Figure 4",
+   "page": 8,
+   "caption_start": " Figure 4: Architecture-dependent signature manifestation.  influence trajectory geometry independently of capacity. Layerwise probe analysis (Figure 4a) (Implicitly addresses RQ4) reveals optimal det"
+  },
+  {
+   "id": "Table 4",
+   "page": 9,
+   "caption_start": " Table 4: Matched-dimensionality comparison  Under matched dimensionality and identical classifier choice, geometric features and PCAreduced probes achieve comparable mean accuracy (66.6% versus 67.8%"
+  },
+  {
+   "id": "Table 5",
+   "page": 9,
+   "caption_start": " Table 5: Full baseline ladder for binary sycophancy detection  Geometric features and activation probes serve complementary roles. Activation probes characterize what information is present at a give"
+  },
+  {
+   "id": "Table 6",
+   "page": 12,
+   "caption_start": " Table 6: Dataset composition and model coverage across experiments.  The Custom Dataset corpus spans four deception categories, with matched prompt pairs in each category. Each pair shares semantic c"
+  },
+  {
+   "id": "Figure 5",
+   "page": 12,
+   "caption_start": " Figure 5: Representative matched pairs from the custom dataset  The dataset is partitioned into training, validation, and test splits. Signal layer discovery (Section 3.4) draws pairs from the test s"
+  },
+  {
+   "id": "Figure 6",
+   "page": 13,
+   "caption_start": " Figure 6: Sycophancy pair construction  Negative Controls. Two Anthropic evaluations serve as negative controls, testing whether trajectory signatures are specific to deception rather than general be"
+  }
+ ],
+ "n_figures_tables": 12,
+ "section_heading_candidates": [
+  "3.2 State Definition and Extraction Protocol",
+  "3.4 Signal Layer Discovery Protocol",
+  "3.4.1 Sparse Sampling Strategy",
+  "3.5 Inference Pipeline",
+  "3.6 Domain-Adaptive Calibration",
+  "4.2 Results"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

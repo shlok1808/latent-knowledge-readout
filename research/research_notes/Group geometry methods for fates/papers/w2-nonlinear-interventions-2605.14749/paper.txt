@@ -1,0 +1,830 @@
+Non-linear Interventions on Large Language Models
+
+Sangwoo Kim 1
+
+arXiv:2605.14749v1 [cs.CL] 14 May 2026
+
+Abstract
+
+Recent work, however, has shown that some concepts are instead represented along non-linear manifolds—for example,
+days of the week organized as a circular structure (Engels
+et al., 2025), and the geometric structures used to perform
+counting (Gurnee et al., 2025). Since linear interventions
+can by construction only manipulate features encoded as
+directions, they cannot reach this class of non-linearly represented structure.
+
+Intervention is one of the most representative and
+widely used methods for understanding the internal representations of large language models
+(LLMs). However, existing intervention methods
+are confined to linear interventions grounded in
+the Linear Representation Hypothesis, leaving features encoded along non-linear manifolds beyond
+their reach. In this work, we introduce a general
+formulation of intervention that extends naturally
+to non-linearly represented features, together with
+a learning procedure that further enables intervention on implicit features lacking a direct output
+signature. We validate our framework on refusal
+bypass steering, where it steers the model more
+precisely than linear baselines by intervening on
+a non-linear feature governing refusal.
+
+To overcome this limitation, we introduce a general formulation of non-linear intervention. We generalize linear interventions by replacing their underlying linear transformation
+with an invertible non-linear feature map. In addition, we
+propose a procedure for learning this map via interchange interventions (Geiger et al., 2024), together with a loss design
+that extends the procedure to implicit features.
+We instantiate the framework on refusal bypass steering (Arditi et al., 2024; Wollschläger et al., 2025), a representative implicit-feature intervention task. Our non-linear
+intervention attains steering effectiveness comparable to
+strong linear baselines while editing activations at orders of
+magnitude fewer hidden-state locations. Further analysis
+indicates that this advantage stems from a genuinely nonlinear feature map governing refusal that resides primarily
+at the model’s middle layers.
+
+1. Introduction
+Intervention is a central tool in understanding inner representations of large language models (LLMs). By modifying a
+model’s internal activations during inference and observing
+the resulting change in output, interventions yield causal evidence linking specific components to model behavior (Vig
+et al., 2020; Meng et al., 2022; Geiger et al., 2024). Through
+intervention, we can understand how interpretable features
+are represented in the model’s hidden states (Huang et al.,
+2024), and by doing so, effectively control via steering LLM
+behaviors that are hard to address through prompting alone,
+such as response style (Turner et al., 2025), hallucination (Li
+et al., 2023), and refusal (Arditi et al., 2024).
+
+Our work makes three contributions. First, we propose
+a general formulation of non-linear intervention that subsumes existing linear interventions and naturally extends to
+features encoded along non-linear manifolds. Second, we introduce a learning procedure for the non-linear feature map
+based on interchange interventions, together with a loss design that further enables learning implicit features that do not
+surface in the model’s output. Third, we empirically apply
+our framework to refusal bypass steering and show that intervening on a non-linear feature governing refusal steers the
+model more precisely than linear baselines. Code is available at https://anonymous.4open.science/r/
+nonlinear-intervention-77AC/.
+
+Most existing methods for intervening on such features are
+linear: they modify hidden states by adding or ablating a
+fixed direction in activation space (Li et al., 2023; Arditi
+et al., 2024). This design rests on the Linear Representation Hypothesis (LRH), which posits that interpretable
+concepts are encoded as directions in the model’s representation space (Mikolov et al., 2013; Park et al., 2023).
+1
+
+Department of Linguistics, Seoul National University,
+Republic of Korea.
+Correspondence to: Sangwoo Kim
+<hemy0101@snu.ac.kr>.
+Preprint. May 15, 2026.
+
+1
+
+Non-linear Interventions on Large Language Models
+
+2. A General Formulation of Non-linear
+Interventions
+
+terchange interventions (Geiger et al., 2024), which provide
+causal supervision over F by transferring its value between
+hidden states drawn from contrasting inputs. We first preN
+pare two sets of prompts: a positive set D+ = {x+
+i }i=1
+of inputs that exhibit the feature F, and a negative set
+N
+D− = {x−
+i }i=1 of inputs that do not. For each pair
+−
++
+(x , x ) ∈ D− × D+ , we forward both inputs through
+M up to the intervention site, obtaining hidden states
+h− , h+ ∈ Rd . The interchange intervention replaces the
+targeted coordinates of fθ (h− ) with those of fθ (h+ ):
+!
+k
+X
+h− ← fθ−1 fθ (h− ) +
+αi ei ,
+(4)
+
+2.1. Linear Interventions as Change of Basis
+A common approach to intervene on a language model M
+at inference time is to identify linear feature directions in
+its representation space and perturb the hidden state along
+them. Given orthonormal feature directions {vi }ki=1 ⊂ Rd
+and corresponding scalar coefficients {αi }ki=1 , this linear
+intervention modifies the hidden state h ∈ Rd at a chosen
+position as
+k
+X
+h ← h+
+α i vi .
+(1)
+
+i=1
+
+i=1
+
+
+where αi = fθ (h+ ) − fθ (h− ) i . This recovers Eq. (3)
+with the coefficients pinned to x+ . Let Mint (x− , x+ ; θ)
+denote the intervened forward pass of M. With pairs sampled as (x− , x+ ) ∼ D− × D+ and M frozen, we train θ to
+minimize
+
+
+L(θ) = E(x− , x+ ) ℓ Mint (x− , x+ ; θ) ,
+(5)
+
+Eq. (1) can equivalently be viewed as a change of basis.
+Let W ∈ Rd×d be an orthogonal matrix that maps the
+representation space onto a linear feature space, satisfying
+W ⊤ ei = vi , where {ei }di=1 is the standard basis of Rd .
+Each coordinate of W h is then the activation value of one
+feature at h, and Eq. (1) can be rewritten as
+!
+k
+X
+−1
+h ← W
+Wh +
+αi ei ,
+(2)
+
+where ℓ is designed so that its minimization makes Mint
+exhibit F.
+
+i=1
+
+that is, W maps h into the feature space, the intervention
+perturbs the resulting feature coordinates along their axes,
+and W −1 maps back to the original representation space.
+
+3.2. Loss Design for Implicit Features
+When F has a direct output signature, ℓ can be defined on
+M’s output distribution to encourage or suppress specific
+tokens. For implicit features that do not surface in the output,
+such as refusal or stylistic shifts, no such direct objective for
+training fθ is available, making the loss design non-trivial.
+We propose a self-supervised-style loss that learns fθ from
+data alone, by enforcing causal influence over many features
+correlated with F.
+
+2.2. Non-linear Interventions via Invertible Feature
+Maps
+Linear interventions can only manipulate features that admit
+a linear encoding, yet not all interpretable features in M’s
+representation space lie along linear directions (Engels et al.,
+2025; Kantamneni & Tegmark, 2025). To accommodate
+non-linear features, we replace W with an invertible nonlinear feature map fθ : Rd → Rd parameterized by θ. By
+direct analogy with Eq. (2), the non-linear intervention takes
+the form
+!
+k
+X
+h ← fθ−1 fθ (h) +
+αi ei .
+(3)
+
+For each (layer, token position) site s lying causally downstream of the intervention site, we extract a feature direction
+vs ∈ Rd as the class-mean difference of unintervened activations hs (x) over D+ versus D− . Projections onto vs are
+therefore correlated with F. We keep only those sites at
+which vs⊤ hs (x) separates x+ from x− with AUC above a
+threshold τ , collected into S. Both vs and S are computed
+once from D± before training and held fixed.
+
+i=1
+
+fθ maps h to its feature-space coordinates; the intervention
+perturbs these coordinates along their axes by the coefficients {αi }; and fθ−1 maps the modified features back into
+the original hidden-state space. Eq. (2) is recovered as the
+special case in which fθ is restricted to a linear map.
+
+Letting hint
+s denote the hidden state at s under the inter⊤
+vened forward pass and µ+
+s = Ex∼D + [ vs hs (x) ] the mean
+projection of x+ , we take ℓ in Eq. (5) to be
+X
+
+⊤ int
+ℓ(Mint ) =
+max 0, µ+
+(6)
+s − vs hs .
+s∈S
+
+3. Learning fθ via Interchange Intervention
+
+The hinge form saturates once a site’s projection reaches
+µ+
+s , preventing overfitting to any single site. Minimizing
+L thus drives fθ to discover a feature whose intervention
+causally aligns many F-correlated components at once.
+
+3.1. Training Objective via Interchange Intervention
+This section describes how we learn the non-linear feature
+map fθ associated with a target feature F. We train fθ via in2
+
+Non-linear Interventions on Large Language Models
+
+This particular instantiation is one natural choice. The direction extractor, site-selection criterion, and surrogate loss
+are not fixed; each can be substituted within the framework
+of Eq. (5).
+
+None
+
+Method
+DIM
+RDO
+
+Operation
+Ablation
+ActAdd
+
+Nonlinear
+
+Llama 3 8B
+
+1.0
+0.8
+
+StrongREJECT Score
+
+0.6
+
+4. Experiments
+4.1. Setup
+We evaluate non-linear intervention on refusal bypass steering in safety-aligned LLMs, a representative steering task,
+to empirically validate our proposed non-linear intervention
+framework. We use this setting as an implicit-feature intervention task: the target feature F is bypass refusal, which is
+not explicitly manifested in any specific token output of the
+model.
+
+0.4
+0.2
+0.0
+
+No
+intervention
+
+DIM
+
+RDO
+
+Nonlinear
+
+Qwen 2.5 7B
+
+1.0
+0.8
+0.6
+0.4
+0.2
+0.0
+
+No
+intervention
+
+DIM
+
+RDO
+
+Nonlinear
+
+Figure 1. StrongREJECT scores on Llama 3 8B and Qwen 2.5
+7B without intervention, with the linear baselines, and with our
+non-linear intervention.1
+
+Models and data. We evaluate all methods on Llama3-8B-Instruct (Grattafiori et al., 2024) and Qwen2.5-7BInstruct (Qwen et al., 2025), with model weights frozen
+throughout. We construct D+ from 2,000 harmless Alpaca
+prompts (Taori et al., 2023) that elicit compliant responses
+from the model, and D− from 2,000 harmful SALADBench prompts (Li et al., 2024) that elicit refusals.
+
+module output, and actadd, which adds the direction scaled
+by a fixed coefficient α at a designated layer for every token.
+Our method. We instantiate fθ as an i-ResNet (Behrmann
+et al., 2019), an invertible non-linear neural network. We use
+k = 1 for direct comparison with one-dimensional linear
+baselines. We heuristically select one intervention position
+per model. At inference time, to avoid requiring a harmless prompt x+ for each query, we precompute the mean
+feature activation over a set of harmless prompts x+ and
+use this cached value. Specifically, we compute the mean
+first-coordinate value of fθ (h) over the harmless training
+set at the selected site, denoted µ̄+ , and clamp each test
+activation to this value.
+
+Evaluation. We quantitatively evaluate intervention quality along two axes: how strongly the intervened model exhibits the target feature F, and how much we perturbed the
+model to achieve it. To measure whether the intervened
+model produces genuinely meaningful responses to harmful
+prompts rather than merely avoiding surface-level refusals,
+we use the StrongREJECT score (Souly et al., 2024). StrongREJECT returns a score in [0, 1] over 313 harmful prompts,
+computed by a LLM-based evaluator. To measure how much
+we intervened, we record the total intervention magnitude
+applied to the model. Specifically, for every edited site,
+we compute the ℓ2 distance between the pre-intervention
+hidden state h and the post-intervention hidden state h′ , and
+sum them:
+X X
+1
+∥h′s (x) − hs (x)∥2 ,
+|Dtest |
+
+4.2. Results
+Figure 1 reports StrongREJECT scores under no intervention, the linear baselines, and our non-linear intervention.
+Although the non-linear method intervenes at a single position per sample, it reaches scores comparable to the baselines, which instead modify activations at a much larger
+number of sites.
+
+x∈Dtest s∈Ex
+
+where Ex is the set of sites the method edits when generating
+a response to prompt x.
+
+As shown in Table 1, the total magnitude of the non-linear
+intervention is more than two orders of magnitude smaller
+than that of every linear baseline. This empirically suggests
+that our non-linear intervention captures the feature inside
+the model more precisely than the linear baselines do.
+
+Baselines. As baselines, we compare against two representative linear intervention methods for refusal steering:
+Difference In Means (DIM) (Arditi et al., 2024) and Refusal
+Direction Optimization (RDO) (Wollschläger et al., 2025).
+DIM extracts a refusal direction from the class-mean activation difference. RDO learns a refusal direction with the
+ablation, addition, and retain losses. Both methods can be
+evaluated under two intervention schemes: ablation, which
+projects out the refusal direction at every token and every
+
+1
+Although we faithfully reproduced the official RDO repository, the RDO ActAdd variant on Qwen yielded a StrongREJECT
+score of 0.020 in our runs. We judged this result to be unreliable
+and therefore excluded it from the figure and table. Wollschläger
+et al. 2025 reports ActAdd performance comparable to that of the
+Ablation variant.
+
+3
+
+Non-linear Interventions on Large Language Models
+Table 3. StrongREJECT when fθ is constrained to a linear map,
+versus our i-ResNet fθ , trained under the same objective.
+
+Table 1. Per-sample intervention magnitude. Sites: avg. positions
+edited per example; L2 : total edit norm. Our non-linear method
+edits one site, with an L2 norm over two orders of magnitude
+below every linear baseline.
+L2
+
+DIM (Ablation)
+DIM (ActAdd)
+RDO (Ablation)
+RDO (ActAdd)
+non-linear
+
+54,778
+572
+59,396
+619
+1
+
+2,898.7
+1,816.2
+1,812.1
+1,964.5
+3.5
+
+DIM (Ablation)
+DIM (ActAdd)
+RDO (Ablation)
+non-linear
+
+49,661
+591
+53,568
+1
+
+41,376.2
+24,676.3
+15,474.0
+28.3
+
+Method
+
+Llama 3 8B
+
+Qwen 2.5 7B
+
+Llama 3 8B
+
+Qwen 2.5 7B
+
+0.689
+0.813
+
+0.415
+0.760
+
+Linear at loss sites
+Non-linear (ours)
+
+Qwen 2.5 7B
+
+0.010
+0.813
+
+0.072
+0.760
+
+Llama 3 8B
+
+1.0
+0.8
+0.6
+0.4
+
+Table 2. StrongREJECT after intervening linearly at every loss site
+s ∈ S along vs , versus our learned non-linear intervention at a
+single site.
+Method
+
+Llama 3 8B
+
+Linear fθ
+Non-linear fθ (ours)
+
+StrongREJECT Score
+
+Sites
+
+Model
+
+Method
+
+0.2
+0.0
+
+0
+
+5
+
+10
+
+15
+
+20
+
+25
+
+30
+
+Qwen 2.5 7B
+
+1.0
+0.8
+0.6
+0.4
+0.2
+0.0
+
+0
+
+5. Analysis
+
+5
+
+10
+
+15
+
+20
+
+25
+
+Layer
+
+Figure 2. StrongREJECT across intervention layers on Llama 3
+8B and Qwen 2.5 7B with our non-linear intervention.
+
+5.1. Linear Intervention at the Loss Sites
++
+Our objective in Eq. (6) pushes vs⊤ hint
+s toward µs at every
+site s ∈ S. We ask whether the gain over linear baselines
+comes solely from our choice of S and the directions {vs }.
+Concretely, at every s ∈ S we apply a linear intervention
+along vs with a coefficient chosen so that vs⊤ hs is shifted to
+µ+
+s . As shown in Table 2, this falls substantially short of our
+method on both models, indicating that fθ does more than
+align these projections: it implements a non-linear, causal
+manipulation of the refusal feature that induces the per-site
+alignment as a downstream effect.
+
+any layer; rather, it captures a non-linear feature governing refusal/compliance that resides primarily in the middle
+layers.
+
+6. Conclusion
+We overcome the linearity restriction of existing interventions by providing a general formulation of non-linear intervention. Beyond the formulation itself, we propose a
+procedure for learning the non-linear feature map via interchange interventions, together with the idea of supervising
+this procedure for implicit features through hidden states
+of the model that are correlated with the target feature. We
+instantiate this framework on bypass refusal steering, a representative implicit-feature steering task; our experiments
+and analysis show that non-linear intervention effectively
+steers refusal behavior and that, in doing so, it uncovers a
+non-linear feature inside the model.
+
+5.2. Role of Non-linearity
+To examine the role of fθ ’s non-linearity, we re-train it under
+the same loss and pipeline as Section 3, but constrained to a
+linear map. As reported in Table 3, StrongREJECT drops
+sharply on both models, suggesting that the non-linearity of
+fθ clearly contributes to the effectiveness of our intervention.
+5.3. Layer Sweep
+To check whether our non-linear intervention is effective at
+any layer, we repeat the same training and evaluation under
+the same setup while varying only the intervention layer.
+Figure 2 shows that, for both models, the intervention is
+largely ineffective at early layers, peaks at middle layers,
+and declines at later layers. This suggests that our method
+is not so powerful that it finds an effective feature map at
+
+Several limitations remain, however. We realize fθ only as
+an i-ResNet, and the same framework admits other invertible
+architectures. We also do not overcome a limitation shared
+with linear interventions: the position at which to intervene
+must still be chosen heuristically. We leave both directions
+to future work.
+4
+
+Non-linear Interventions on Large Language Models
+
+References
+
+M., Rita, M., Pavlova, M., Kambadur, M., Lewis, M.,
+Si, M., Singh, M. K., Hassan, M., Goyal, N., Torabi, N.,
+Bashlykov, N., Bogoychev, N., Chatterji, N., Zhang, N.,
+Duchenne, O., Çelebi, O., Alrassy, P., Zhang, P., Li, P.,
+Vasic, P., Weng, P., Bhargava, P., Dubal, P., Krishnan,
+P., Koura, P. S., Xu, P., He, Q., Dong, Q., Srinivasan,
+R., Ganapathy, R., Calderer, R., Cabral, R. S., Stojnic,
+R., Raileanu, R., Maheswari, R., Girdhar, R., Patel, R.,
+Sauvestre, R., Polidoro, R., Sumbaly, R., Taylor, R., Silva,
+R., Hou, R., Wang, R., Hosseini, S., Chennabasappa, S.,
+Singh, S., Bell, S., Kim, S. S., Edunov, S., Nie, S., Narang,
+S., Raparthy, S., Shen, S., Wan, S., Bhosale, S., Zhang,
+S., Vandenhende, S., Batra, S., Whitman, S., Sootla, S.,
+Collot, S., Gururangan, S., Borodinsky, S., Herman, T.,
+Fowler, T., Sheasha, T., Georgiou, T., Scialom, T., Speckbacher, T., Mihaylov, T., Xiao, T., Karn, U., Goswami, V.,
+Gupta, V., Ramanathan, V., Kerkez, V., Gonguet, V., Do,
+V., Vogeti, V., Albiero, V., Petrovic, V., Chu, W., Xiong,
+W., Fu, W., Meers, W., Martinet, X., Wang, X., Wang,
+X., Tan, X. E., Xia, X., Xie, X., Jia, X., Wang, X., Goldschlag, Y., Gaur, Y., Babaei, Y., Wen, Y., Song, Y., Zhang,
+Y., Li, Y., Mao, Y., Coudert, Z. D., Yan, Z., Chen, Z.,
+Papakipos, Z., Singh, A., Srivastava, A., Jain, A., Kelsey,
+A., Shajnfeld, A., Gangidi, A., Victoria, A., Goldstand,
+A., Menon, A., Sharma, A., Boesenberg, A., Baevski, A.,
+Feinstein, A., Kallet, A., Sangani, A., Teo, A., Yunus, A.,
+Lupu, A., Alvarado, A., Caples, A., Gu, A., Ho, A., Poulton, A., Ryan, A., Ramchandani, A., Dong, A., Franco,
+A., Goyal, A., Saraf, A., Chowdhury, A., Gabriel, A.,
+Bharambe, A., Eisenman, A., Yazdan, A., James, B.,
+Maurer, B., Leonhardi, B., Huang, B., Loyd, B., Paola,
+B. D., Paranjape, B., Liu, B., Wu, B., Ni, B., Hancock,
+B., Wasti, B., Spence, B., Stojkovic, B., Gamido, B.,
+Montalvo, B., Parker, C., Burton, C., Mejia, C., Liu, C.,
+Wang, C., Kim, C., Zhou, C., Hu, C., Chu, C.-H., Cai, C.,
+Tindal, C., Feichtenhofer, C., Gao, C., Civin, D., Beaty,
+D., Kreymer, D., Li, D., Adkins, D., Xu, D., Testuggine,
+D., David, D., Parikh, D., Liskovich, D., Foss, D., Wang,
+D., Le, D., Holland, D., Dowling, E., Jamil, E., Montgomery, E., Presani, E., Hahn, E., Wood, E., Le, E.-T.,
+Brinkman, E., Arcaute, E., Dunbar, E., Smothers, E., Sun,
+F., Kreuk, F., Tian, F., Kokkinos, F., Ozgenel, F., Caggioni, F., Kanayet, F., Seide, F., Florez, G. M., Schwarz,
+G., Badeer, G., Swee, G., Halpern, G., Herman, G., Sizov,
+G., Guangyi, Zhang, Lakshminarayanan, G., Inan, H.,
+Shojanazeri, H., Zou, H., Wang, H., Zha, H., Habeeb, H.,
+Rudolph, H., Suk, H., Aspegren, H., Goldman, H., Zhan,
+H., Damlaj, I., Molybog, I., Tufanov, I., Leontiadis, I.,
+Veliche, I.-E., Gat, I., Weissman, J., Geboski, J., Kohli,
+J., Lam, J., Asher, J., Gaya, J.-B., Marcus, J., Tang, J.,
+Chan, J., Zhen, J., Reizenstein, J., Teboul, J., Zhong, J.,
+Jin, J., Yang, J., Cummings, J., Carvill, J., Shepard, J.,
+McPhie, J., Torres, J., Ginsburg, J., Wang, J., Wu, K., U,
+K. H., Saxena, K., Khandelwal, K., Zand, K., Matosich,
+
+Arditi, A., Obeso, O., Syed, A., Paleka, D., Panickssery,
+N., Gurnee, W., and Nanda, N. Refusal in language
+models is mediated by a single direction, 2024. URL
+https://arxiv.org/abs/2406.11717.
+Behrmann, J., Grathwohl, W., Chen, R. T. Q., Duvenaud,
+D., and Jacobsen, J.-H. Invertible residual networks. In
+Chaudhuri, K. and Salakhutdinov, R. (eds.), Proceedings of the 36th International Conference on Machine
+Learning, volume 97 of Proceedings of Machine Learning Research, pp. 573–582. PMLR, 09–15 Jun 2019.
+URL https://proceedings.mlr.press/v97/
+behrmann19a.html.
+Engels, J., Michaud, E. J., Liao, I., Gurnee, W.,
+and Tegmark, M. Not all language model features
+are one-dimensionally linear. In The Thirteenth International Conference on Learning Representations,
+2025. URL https://openreview.net/forum?
+id=d63a4AM4hb.
+Geiger, A., Wu, Z., Potts, C., Icard, T., and Goodman, N. D.
+Finding alignments between interpretable causal variables and distributed neural representations, 2024. URL
+https://arxiv.org/abs/2303.02536.
+Grattafiori, A., Dubey, A., Jauhri, A., Pandey, A., Kadian,
+A., Al-Dahle, A., Letman, A., Mathur, A., Schelten, A.,
+Vaughan, A., Yang, A., Fan, A., Goyal, A., Hartshorn,
+A., Yang, A., Mitra, A., Sravankumar, A., Korenev,
+A., Hinsvark, A., Rao, A., Zhang, A., Rodriguez, A.,
+Gregerson, A., Spataru, A., Roziere, B., Biron, B., Tang,
+B., Chern, B., Caucheteux, C., Nayak, C., Bi, C., Marra,
+C., McConnell, C., Keller, C., Touret, C., Wu, C., Wong,
+C., Ferrer, C. C., Nikolaidis, C., Allonsius, D., Song, D.,
+Pintz, D., Livshits, D., Wyatt, D., Esiobu, D., Choudhary,
+D., Mahajan, D., Garcia-Olano, D., Perino, D., Hupkes,
+D., Lakomkin, E., AlBadawy, E., Lobanova, E., Dinan,
+E., Smith, E. M., Radenovic, F., Guzmán, F., Zhang, F.,
+Synnaeve, G., Lee, G., Anderson, G. L., Thattai, G., Nail,
+G., Mialon, G., Pang, G., Cucurell, G., Nguyen, H., Korevaar, H., Xu, H., Touvron, H., Zarov, I., Ibarra, I. A.,
+Kloumann, I., Misra, I., Evtimov, I., Zhang, J., Copet, J.,
+Lee, J., Geffert, J., Vranes, J., Park, J., Mahadeokar, J.,
+Shah, J., van der Linde, J., Billock, J., Hong, J., Lee, J.,
+Fu, J., Chi, J., Huang, J., Liu, J., Wang, J., Yu, J., Bitton,
+J., Spisak, J., Park, J., Rocca, J., Johnstun, J., Saxe, J., Jia,
+J., Alwala, K. V., Prasad, K., Upasani, K., Plawiak, K., Li,
+K., Heafield, K., Stone, K., El-Arini, K., Iyer, K., Malik,
+K., Chiu, K., Bhalla, K., Lakhotia, K., Rantala-Yeary,
+L., van der Maaten, L., Chen, L., Tan, L., Jenkins, L.,
+Martin, L., Madaan, L., Malo, L., Blecher, L., Landzaat,
+L., de Oliveira, L., Muzzi, M., Pasupuleti, M., Singh,
+M., Paluri, M., Kardas, M., Tsimpoukelli, M., Oldham,
+5
+
+Non-linear Interventions on Large Language Models
+
+K., Veeraraghavan, K., Michelena, K., Li, K., Jagadeesh,
+K., Huang, K., Chawla, K., Huang, K., Chen, L., Garg,
+L., A, L., Silva, L., Bell, L., Zhang, L., Guo, L., Yu, L.,
+Moshkovich, L., Wehrstedt, L., Khabsa, M., Avalani, M.,
+Bhatt, M., Mankus, M., Hasson, M., Lennie, M., Reso,
+M., Groshev, M., Naumov, M., Lathi, M., Keneally, M.,
+Liu, M., Seltzer, M. L., Valko, M., Restrepo, M., Patel,
+M., Vyatskov, M., Samvelyan, M., Clark, M., Macey,
+M., Wang, M., Hermoso, M. J., Metanat, M., Rastegari,
+M., Bansal, M., Santhanam, N., Parks, N., White, N.,
+Bawa, N., Singhal, N., Egebo, N., Usunier, N., Mehta,
+N., Laptev, N. P., Dong, N., Cheng, N., Chernoguz, O.,
+Hart, O., Salpekar, O., Kalinli, O., Kent, P., Parekh, P.,
+Saab, P., Balaji, P., Rittner, P., Bontrager, P., Roux, P.,
+Dollar, P., Zvyagina, P., Ratanchandani, P., Yuvraj, P.,
+Liang, Q., Alao, R., Rodriguez, R., Ayub, R., Murthy, R.,
+Nayani, R., Mitra, R., Parthasarathy, R., Li, R., Hogan,
+R., Battey, R., Wang, R., Howes, R., Rinott, R., Mehta,
+S., Siby, S., Bondu, S. J., Datta, S., Chugh, S., Hunt, S.,
+Dhillon, S., Sidorov, S., Pan, S., Mahajan, S., Verma,
+S., Yamamoto, S., Ramaswamy, S., Lindsay, S., Lindsay,
+S., Feng, S., Lin, S., Zha, S. C., Patil, S., Shankar, S.,
+Zhang, S., Zhang, S., Wang, S., Agarwal, S., Sajuyigbe,
+S., Chintala, S., Max, S., Chen, S., Kehoe, S., Satterfield, S., Govindaprasad, S., Gupta, S., Deng, S., Cho,
+S., Virk, S., Subramanian, S., Choudhury, S., Goldman,
+S., Remez, T., Glaser, T., Best, T., Koehler, T., Robinson,
+T., Li, T., Zhang, T., Matthews, T., Chou, T., Shaked,
+T., Vontimitta, V., Ajayi, V., Montanez, V., Mohan, V.,
+Kumar, V. S., Mangla, V., Ionescu, V., Poenaru, V., Mihailescu, V. T., Ivanov, V., Li, W., Wang, W., Jiang, W.,
+Bouaziz, W., Constable, W., Tang, X., Wu, X., Wang, X.,
+Wu, X., Gao, X., Kleinman, Y., Chen, Y., Hu, Y., Jia, Y.,
+Qi, Y., Li, Y., Zhang, Y., Zhang, Y., Adi, Y., Nam, Y., Yu,
+Wang, Zhao, Y., Hao, Y., Qian, Y., Li, Y., He, Y., Rait,
+Z., DeVito, Z., Rosnbrick, Z., Wen, Z., Yang, Z., Zhao,
+Z., and Ma, Z. The llama 3 herd of models, 2024. URL
+https://arxiv.org/abs/2407.21783.
+
+470. URL https://aclanthology.org/2024.
+acl-long.470/.
+Kantamneni, S. and Tegmark, M. Language models use
+trigonometry to do addition. In ICLR 2025 Workshop
+on Building Trust in Language Models and Applications,
+2025. URL https://openreview.net/forum?
+id=CqViN4dQJk.
+Langley, P. Crafting papers on machine learning. In Langley,
+P. (ed.), Proceedings of the 17th International Conference
+on Machine Learning (ICML 2000), pp. 1207–1216, Stanford, CA, 2000. Morgan Kaufmann.
+Li, K., Patel, O., Viégas, F., Pfister, H., and Wattenberg, M. Inference-time intervention: Eliciting truthful answers from a language model. In Thirty-seventh
+Conference on Neural Information Processing Systems,
+2023. URL https://openreview.net/forum?
+id=aLLuYpn83y.
+Li, L., Dong, B., Wang, R., Hu, X., Zuo, W., Lin, D., Qiao,
+Y., and Shao, J. Salad-bench: A hierarchical and comprehensive safety benchmark for large language models.
+arXiv preprint arXiv:2402.05044, 2024.
+Meng, K., Bau, D., Andonian, A., and Belinkov, Y. Locating and editing factual associations in GPT. Advances
+in Neural Information Processing Systems, 36, 2022.
+arXiv:2202.05262.
+Mikolov, T., Yih, W.-t., and Zweig, G. Linguistic regularities in continuous space word representations. In
+Vanderwende, L., Daumé III, H., and Kirchhoff, K. (eds.),
+Proceedings of the 2013 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, pp. 746–751,
+Atlanta, Georgia, June 2013. Association for Computational Linguistics. URL https://aclanthology.
+org/N13-1090/.
+Miyato, T., Kataoka, T., Koyama, M., and Yoshida, Y.
+Spectral normalization for generative adversarial networks, 2018. URL https://arxiv.org/abs/
+1802.05957.
+
+Gurnee, W., Ameisen, E., Kauvar, I., Tarng, J.,
+Pearce, A., Olah, C., and Batson, J.
+When
+models manipulate manifolds: The geometry of a
+counting task. Transformer Circuits Thread, 2025.
+URL https://transformer-circuits.pub/
+2025/linebreaks/index.html.
+
+Park, K., Choe, Y. J., and Veitch, V. The linear representation hypothesis and the geometry of large language
+models. In Causal Representation Learning Workshop at
+NeurIPS 2023, 2023. URL https://openreview.
+net/forum?id=T0PoOJg8cK.
+
+Huang, J., Wu, Z., Potts, C., Geva, M., and Geiger, A.
+RAVEL: Evaluating interpretability methods on disentangling language model representations. In Ku, L.-W., Martins, A., and Srikumar, V. (eds.), Proceedings of the 62nd
+Annual Meeting of the Association for Computational
+Linguistics (Volume 1: Long Papers), pp. 8669–8687,
+Bangkok, Thailand, August 2024. Association for Computational Linguistics. doi: 10.18653/v1/2024.acl-long.
+
+Qwen, :, Yang, A., Yang, B., Zhang, B., Hui, B., Zheng,
+B., Yu, B., Li, C., Liu, D., Huang, F., Wei, H., Lin, H.,
+Yang, J., Tu, J., Zhang, J., Yang, J., Yang, J., Zhou, J.,
+Lin, J., Dang, K., Lu, K., Bao, K., Yang, K., Yu, L.,
+Li, M., Xue, M., Zhang, P., Zhu, Q., Men, R., Lin, R.,
+6
+
+Non-linear Interventions on Large Language Models
+
+Li, T., Tang, T., Xia, T., Ren, X., Ren, X., Fan, Y., Su,
+Y., Zhang, Y., Wan, Y., Liu, Y., Cui, Z., Zhang, Z., and
+Qiu, Z. Qwen2.5 technical report, 2025. URL https:
+//arxiv.org/abs/2412.15115.
+Souly, A., Lu, Q., Bowen, D., Trinh, T., Hsieh, E., Pandey,
+S., Abbeel, P., Svegliato, J., Emmons, S., Watkins, O.,
+et al. A strongreject for empty jailbreaks. Advances
+in Neural Information Processing Systems, 37:125416–
+125440, 2024.
+Taori, R., Gulrajani, I., Zhang, T., Dubois, Y., Li,
+X., Guestrin, C., Liang, P., and Hashimoto, T. B.
+Stanford alpaca: An instruction-following llama
+model.
+https://github.com/tatsu-lab/
+stanford_alpaca, 2023.
+Turner, A. M., Thiergart, L., Leech, G., Udell, D., Vazquez,
+J. J., Mini, U., and MacDiarmid, M. Steering language
+models with activation engineering, 2025. URL https:
+//openreview.net/forum?id=2XBPdPIcFK.
+Vig, J., Gehrmann, S., Belinkov, Y., Qian, S., Nevo,
+D., Singer, Y., and Shieber, S. Investigating gender
+bias in language models using causal mediation
+analysis.
+In Larochelle, H., Ranzato, M., Hadsell, R., Balcan, M., and Lin, H. (eds.), Advances
+in Neural Information Processing Systems, volume 33, pp. 12388–12401. Curran Associates, Inc.,
+2020. URL https://proceedings.neurips.
+cc/paper_files/paper/2020/file/
+92650b2e92217715fe312e6fa7b90d82-Paper.
+pdf.
+Wollschläger, T., Elstner, J., Geisler, S., Cohen-Addad, V.,
+Günnemann, S., and Gasteiger, J. The geometry of refusal
+in large language models: Concept cones and representational independence. In Forty-second International
+Conference on Machine Learning, 2025. URL https:
+//openreview.net/forum?id=80IwJqlXs8.
+
+7
+
+Non-linear Interventions on Large Language Models
+
+A. Additional Experimental Details
+A.1. i-ResNet Feature Map
+We instantiate the invertible feature map fθ : Rd → Rd as a composition of M = 2 invertible residual blocks,
+fθ = ϕθM ◦ · · · ◦ ϕθ1 ,
+
+ϕθm (z) = z + gθm (z).
+
+The residual branch gθm : Rd → Rd is a two-layer MLP with hidden width 128 and a LeakyReLU nonlinearity (negative
+slope 0.1). To guarantee invertibility via Lip(gθm ) < 1, we follow Behrmann et al. (2019) and combine two mechanisms: (i)
+f = W · min(1, 1/σ̂(W )), where σ̂(W ) is a running
+every linear layer W inside gθm is replaced at every forward pass by W
+estimate of the spectral norm of W obtained by a single power iteration with a persistent left singular vector (Miyato et al.,
+2018); (ii) the output of gθm is rescaled by a Lipschitz coefficient κ = 0.6, yielding Lip(gθm ) ≤ κ < 1. We invert each
+block by the contractive fixed-point iteration x ← y − gθm (x) run for up to 30 steps with relative-residual tolerance 10−5 ,
+and propagate gradients through the inverse via implicit differentiation.
+A.2. Intervention Sites
+All layer indices are zero-indexed transformer block indices. Our non-linear intervention is placed at the block output
+representation, i.e., the residual-stream state after the selected transformer block. Token positions are negative indices into
+the fully formatted and tokenized chat prompt after the generation prompt has been appended; position −1 denotes the final
+prompt token immediately before generation starts.
+For the main non-linear experiments, we intervene on exactly one site per example. The sites are:
+Table 4. Main non-linear intervention sites. Token positions are counted from the end of the formatted prompt.
+Model
+
+Layer
+
+Token position
+
+Evaluation target
+
+Llama 3 8B
+Qwen 2.5 7B
+
+10
+14
+
+−3
+−4
+
+harmless mapped-coordinate mean
+harmless mapped-coordinate mean
+
+8
+
+

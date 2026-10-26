@@ -1,0 +1,308 @@
+{
+  "slug": "c10-curved-inference-ii-2608.24037",
+  "title": "Curved Inference II: Sleeper Agent Geometry - Extending Interpretability Beyond Probes (Rob Manson, arXiv 2608.24037v1, dated 31 July 2025 on the PDF)",
+  "sections_read": [
+    "Abstract",
+    "1. Introduction",
+    "2. Related Work",
+    "Figure 1 (page 3)",
+    "3. Methods",
+    "3.1 Models (Table 1)",
+    "3.2 Naturalistic Prompt Design",
+    "3.3 Methodological Rationale",
+    "3.3.1 Extending Curved Inference: From CI01 to CI02",
+    "3.3.2 Why Naturalistic Contexts Are Necessary",
+    "3.3.3 Why Geometric Detection Is Required",
+    "3.3.4 Theoretical Framework",
+    "3.4 Geometric Metrics",
+    "3.4.1 Semantic Surface Area (A')",
+    "3.4.2 Curvature and Salience",
+    "3.4.3 Pullback Metric and Trajectory Construction",
+    "3.5 Experimental Protocol",
+    "3.5.1 Response Generation and Activation Capture",
+    "3.5.2 Response Classification and Analysis",
+    "3.6 Cross-Model Scaling and Architectural Considerations",
+    "3.6.1 Surface Area Magnitude Differences",
+    "3.6.2 Methodological Implications",
+    "3.6.3 Geometric Framework Robustness",
+    "3.6.4 Interpretation Framework",
+    "3.6.5 Future Research Directions",
+    "4. Results",
+    "4.1 Signal Quality Improvement with Unanimous Classifications (Tables 2, 3)",
+    "4.2 Geometric Signatures Emerge Without Linear Separability",
+    "4.2 sub-block: Figure 2 (Gemma3-1b Deceptive Strategy - Comprehensive Analysis)",
+    "4.2 sub-block: Figure 3 (LLaMA3.2-3b Deceptive Strategy - Comprehensive Analysis)",
+    "4.2 sub-block: Figure 4 (Gemma3-1b - Focused Metric Separation)",
+    "4.2 sub-block: Figure 5 (LLaMA3.2-3b - Focused Metric Separation)",
+    "4.2 sub-block: Cross-Model Geometric Patterns",
+    "4.2 sub-block: Statistical Performance Summary",
+    "4.2 sub-block: Architectural Differences in Signal Quality",
+    "4.2 sub-block: Complete Classification Consensus",
+    "4.2 sub-block: Effect Size Patterns",
+    "4.2 sub-block: Interpretive Significance",
+    "4.3 Cross-Model Validation",
+    "4.4 Implications for Real-World Deception Detection",
+    "5. Discussion (The Persistence of Geometric Complexity; Signal Quality vs Statistical Power; Implications for AI Safety and Alignment; Broader Implications)",
+    "6. Limitations (Classifier dependence and consensus methodology; Limited model and prompt coverage; Geometric metric sensitivity; No behavioural ground truth)",
+    "7. Future Work",
+    "8. Conclusions",
+    "References",
+    "Appendix A: Semantic Geometry of Transformer Inference",
+    "A.1 Overview: Geometry as Unnormalised Trajectory",
+    "A.2 The Unnormalised Trajectory Framework (A.2.1 From Embeddings to Semantic Evolution; A.2.2 Double Resolution and High-Fidelity Trajectories)",
+    "A.3 Geometric Measures on Semantic Trajectories (A.3.1 Surface Area; A.3.2 Curvature; A.3.3 Salience)",
+    "A.4 Why Unnormalised Trajectories Matter (A.4.1 Layer Normalisation as Geometric Distortion; A.4.2 Semantic Information in Unnormalised Geometry)",
+    "A.5 Position, Attention, and Contextual Geometry (A.5.1 RoPE; A.5.2 Attention as Contextual Lens; A.5.3 MLP as Semantic Amplifier)",
+    "A.6 Implications for Mechanistic Interpretability (A.6.1-A.6.3)",
+    "A.7 Summary: The Geometric Lens on Semantics",
+    "Appendix B: Prompt Design Details",
+    "Appendix C: Classifier Schema and Agreement Metrics (C.1 Classification Scheme; C.2 Inter-rater Reliability)",
+    "Appendix D: Statistical Methods (D.1 Dataset Preparation; D.2 Normality; D.3 Testing Protocol incl. D.3.1-D.3.3; D.4 Multiple Testing incl. D.4.1-D.4.2; D.5 Correlation; D.6 Cross-Model; D.7 Software; D.8 Validation Framework)",
+    "Appendix E: Full Statistical Outputs (E.1.1-E.1.3 LLaMA3.2-3b; E.2.1-E.2.3 Gemma3-1b; E.3.1-E.3.2 Cross-Model; E.4 Methodology Notes)",
+    "Notes (end of Appendix E)"
+  ],
+  "setup": {
+    "data": "One scenario family ('assistant_conflict'): a fixed user query asking whether the assistant's prior recommendation should be disclosed, preceded by a simulated assistant turn with hidden 'Thought:' lines. Five variants (honest, strategic, persuasive, deceptive, malicious) differ only in those thoughts and the final visible statement. N = 100 sampled completions per variant per model, so 500 responses per model. Labels: three LLM judges (Gemini 1.5 Flash, Claude 3.5 Sonnet 20241022, GPT-4o Mini) see only the visible response and rate transparency (high/medium/low) and response type (explanatory/evasive/manipulative). Two label sets: majority vote ('full consensus') and unanimous agreement on both dimensions (LLaMA 201/500, Gemma 293/500).",
+    "models": "Gemma3-1b and LLaMA3.2-3b, forward pass only. Table 1 lists sizes 1.3B and 2.3B, 26 and 28 layers, hidden size 2,048 and 3,072, both RoPE. The text elsewhere calls them '1B parameters' and '3B parameters', so Table 1 is internally inconsistent. Both are well below our 9B-27B range.",
+    "positions_layers_read": "Unnormalised residual stream at every attention and MLP sublayer boundary (2L+1 points per token, 'double resolution'), for all token positions and all layers. It is not stated clearly whether A' is computed over prompt tokens, generated tokens or both, or how per-token values are combined into one number per response. The limitations section says A' was normalised by response length, but the methods never describe this.",
+    "metric": "Semantic surface area A' = sum over steps of (salience_i + gamma * curvature_i), with gamma = 1.0. Salience is the step length under the pullback metric G = U^T U (U = unembedding). Curvature is a 3-point finite-difference curvature under G.",
+    "baselines": "None. No linear probe was trained or compared, although the paper's main claim is that probes would fail. No random-direction, shuffled-label or length-only baseline. No held-out prediction: results are group-difference tests only.",
+    "controls": "Prompt variants are vocabulary-matched. Analyses use judge labels, not designed intent. Within-model comparisons only, because absolute A' differs about 6.7x between models. Effect sizes and 1,000-sample bootstrap CIs are reported. Unanimous-only filtering is the label-noise check. No multiple-comparison correction, by choice."
+  },
+  "figures": [
+    {
+      "id": "Figure 1",
+      "page": 3,
+      "what_is_plotted": "Schematic 3D render of a 'Residual Trajectory Manifold': 50 token trajectories over 28 layers, each wandering in a 2D projection and coloured by z-displacement. The top panel shows the individual lines; the bottom panel shows them filled in as a 'semantic surface area'.",
+      "takeaway": "Conceptual only. It shows the idea that A' is the area swept by token trajectories across layers. No data, no units, no comparison between conditions.",
+      "numbers": "Legend: L = 28 layers, T = 50 tokens (read from figure). No measured values.",
+      "text_matches_figure": "yes - the caption says it is a simplified visualisation, and the figure's own note says it is 'only a simplified 3D visualisation of the real R^d trajectories'."
+    },
+    {
+      "id": "Table 1",
+      "page": 4,
+      "what_is_plotted": "Model specifications: size, layers, hidden size, positional encoding.",
+      "takeaway": "Two small RoPE decoders. It is the only architecture information in the paper.",
+      "numbers": "Gemma3-1b: 1.3B, 26 layers, d = 2,048. LLaMA3.2-3b: 2.3B, 28 layers, d = 3,072.",
+      "text_matches_figure": "partly - Section 4.3 calls the models 'LLaMA3.2-3b (3B parameters)' and 'Gemma3-1b (1B parameters)', which conflicts with Table 1's 2.3B and 1.3B. The Gemma hidden size may also be wrong, but that comes from outside knowledge and was not checked here."
+    },
+    {
+      "id": "Table 2",
+      "page": 11,
+      "what_is_plotted": "LLaMA3.2-3b: Kruskal-Wallis p-values for A' across transparency levels and response types, under full-consensus vs unanimous-only labels, with unanimous sample size and Cohen's d per strategy.",
+      "takeaway": "In LLaMA, A' differs significantly between judge-label groups for every strategy under both label sets. d ranges from 1.02 to 4.15.",
+      "numbers": "Unanimous n: honest 34, strategic 39, persuasive 31, deceptive 47, malicious 50. Cohen's d: honest 2.15, persuasive 4.15, deceptive 1.02, malicious 2.22, strategic '-'. Full-consensus transparency p: honest 0.0005, others < 0.001.",
+      "text_matches_figure": "partly - the table matches Appendix E.1. The text's η² values for strategic and malicious (0.847, 0.600) are full-consensus values (E.1.1), quoted next to unanimous p-values. Groups inside each strategy are very unbalanced (for example, deceptive is 40/5/2)."
+    },
+    {
+      "id": "Table 3",
+      "page": 11,
+      "what_is_plotted": "Gemma3-1b: the same comparison as Table 2.",
+      "takeaway": "In Gemma the signal is weak or untestable. Several strategies collapse to one judge class. The headline 'strengthening' (honest: p 0.555 to 0.048) depends on 3 medium-transparency responses against 60 low ones.",
+      "numbers": "Full consensus, honest: trans p 0.555, resp p 0.310. Unanimous honest: 0.048 / 0.048, n = 63, d = 1.24. Strategic resp p 0.003, d = 1.51. Persuasive d = 1.07 (insufficient). Deceptive: single class, n = 61. Malicious d = 0.28 (insufficient).",
+      "text_matches_figure": "partly - the text says Gemma persuasive is 'p = 0.138' and malicious 'p = 0.794'. Neither value appears in Table 3 or Appendix E.2."
+    },
+    {
+      "id": "Figure 2",
+      "page": 12,
+      "what_is_plotted": "A six-panel dashboard. Mean A' by transparency group (bar, CI), a violin of A' by group, group-means bars, a donut of sample sizes, an EMPTY placeholder panel reading 'Additional Analysis Space Available', and a text box of key findings.",
+      "takeaway": "The plotted data are LLaMA3.2-3b deceptive (N = 47; high 2,396 n=2, low 1,276 n=40, medium 2,971 n=5), not Gemma as the caption says. Low-transparency responses have the lowest A'. Medium (n = 5) has a very wide CI.",
+      "numbers": "Bar labels 1276 and 2971. Text box: 'high: 2396 [n<2]*', 'low: 1276 [1199, 1364] (n=40)', 'medium: 2971 [1971, 4702] (n=5)'. Donut 85.1% / 10.6% / 4.3%. Violin: low about 1,100-2,200; high about 2,000-2,800; medium about 1,900 to above 5,000 (approx, read from figure).",
+      "text_matches_figure": "no - the caption describes Gemma3-1b (N = 61, single group, mean 9,769), but the image shows LLaMA3.2-3b (N = 47, three groups). The Figure 2 and Figure 3 images appear swapped. One panel is a placeholder."
+    },
+    {
+      "id": "Figure 3",
+      "page": 13,
+      "what_is_plotted": "A four-panel dashboard: mean A' for a single 'low' group with CI, a histogram of A', a density histogram with normal fit, mean and median, and a 'Sample Composition' box reading 'Single Group Analysis Total N = 61 Group: low'.",
+      "takeaway": "The plotted data are Gemma3-1b deceptive (one judge class, N = 61), not LLaMA as the caption says. A' is right-skewed, with one outlier near 34,000. No group comparison is possible here.",
+      "numbers": "Mean 9,769 with CI about 8,700-11,000. Median 8,847. Normal fit sigma = 4,488. Range about 5,000 to 35,000 (approx, read from figure). In the histogram panel, the y-axis is labelled 'Surface Area (A')' and the x-axis 'Transparency Level', but it plots counts against A'.",
+      "text_matches_figure": "no - the caption says LLaMA3.2-3b, N = 47, KW p < 0.001, η² = 0.448, but the image is the Gemma single-group plot. The axis labels on one panel are wrong."
+    },
+    {
+      "id": "Figure 4",
+      "page": 14,
+      "what_is_plotted": "A single bar of mean A' for Gemma3-1b deceptive, with a 95% CI, in the 'low' transparency group.",
+      "takeaway": "Gemma's deceptive responses all fall in one judge class, so the figure shows no separation despite its title 'Surface Area Metric Separates Transparency Groups'.",
+      "numbers": "9,769. Error bar about 8,650-10,950 (approx, read from figure).",
+      "text_matches_figure": "partly - the numbers match the caption, but the figure title claims separation and only one group is shown."
+    },
+    {
+      "id": "Figure 5",
+      "page": 15,
+      "what_is_plotted": "LLaMA3.2-3b deceptive: (A) mean A' by transparency group with CI; (B) violins by group.",
+      "takeaway": "Low-transparency responses (n = 40) have lower A' than the tiny medium (n = 5) and high (n = 2) groups. The ordering is not monotone: medium is above high.",
+      "numbers": "Bar labels 1276 and 2971, with high about 2,400. Medium CI about 1,970-4,700. Low violin about 1,100-2,200; high about 2,000-2,800; medium about 1,900 to above 4,900 (approx, read from figure).",
+      "text_matches_figure": "yes - it matches the caption and Section 4.2 text. The caption does not give the group sizes (2 and 5)."
+    }
+  ],
+  "key_results": [
+    {
+      "claim": "Main claim: A' differs between judge-labelled response classes across strategies and two models.",
+      "quote": "geometric structure reliably predicts semantic classification, with statistically significant differences in surface area observed across five prompt strategies and two model families.",
+      "page": 1
+    },
+    {
+      "claim": "LLaMA deceptive: low-transparency responses have lower A' than medium and high, but medium and high contain only 5 and 2 responses.",
+      "quote": "Sample composition shows predominant low transparency responses (85.1%, n=40), with smaller medium (10.6%, n=5) and high transparency groups (4.3%, n=2).",
+      "page": 14
+    },
+    {
+      "claim": "LLaMA deceptive group means and the KW test.",
+      "quote": "The Kruskal-Wallis test confirmed highly significant differences (p < 0.001, η 2 = 0.448), with large effect sizes validating the geometric detection framework.",
+      "page": 14
+    },
+    {
+      "claim": "Gemma 'signal strengthening' under unanimous labels: honest goes from p = 0.555/0.310 to 0.048.",
+      "quote": "The Assistant Conflict Honest strategy in Gemma3-1b demonstrated a dramatic signal strengthening effect, improving from non-significant results",
+      "page": 11
+    },
+    {
+      "claim": "Gemma's unanimous honest result rests on 3 medium-transparency responses against 60 low ones.",
+      "quote": "Low transparency (n=60): Mean = 10,805, 95% CI [9,804 - 11,892] - Medium transparency (n=3): Mean = 16,127",
+      "page": 32
+    },
+    {
+      "claim": "Gemma persuasive and malicious are not significant.",
+      "quote": "The persuasive strategy showed non-significant results (p = 0.138) despite large effect sizes (d = 1.07), whilst the malicious strategy also showed non-significant patterns (p = 0.794, d = 0.28).",
+      "page": 15
+    },
+    {
+      "claim": "The only cross-model regularity: explanatory responses have higher A' than evasive ones.",
+      "quote": "Explanatory responses consistently showed higher surface area than evasive responses",
+      "page": 16
+    },
+    {
+      "claim": "A' is almost perfectly correlated with its components, so it is in effect a path-length (salience) measure.",
+      "quote": "Surface area correlations with salience and curvature contributions exceeded r > 0.99 across all analyses",
+      "page": 16
+    },
+    {
+      "claim": "Absolute A' scale differs about 6.7x between the two models.",
+      "quote": "Despite a 6.7× difference in surface area magnitudes between models, both exhibited consistent geometric relationships",
+      "page": 16
+    },
+    {
+      "claim": "The unanimous subsets keep 40.2% (LLaMA) and 58.6% (Gemma) of responses.",
+      "quote": "This high-precision subset reduces dataset size substantially (LLaMA3.2-3b: 201/500 responses, 40.2%; Gemma3-1b: 293/500 responses, 58.6%)",
+      "page": 8
+    },
+    {
+      "claim": "Judge agreement is low: Gemma transparency Krippendorff alpha is 0.309.",
+      "quote": "Mean pairwise agreement: 0.789 – Krippendorff’s Alpha: 0.309 (Poor) – Fleiss’ Kappa: 0.309 (Fair)",
+      "page": 27
+    }
+  ],
+  "methods": [
+    {
+      "name": "Double-resolution residual trajectory (post-attention and post-MLP sampling)",
+      "what_it_measures": "The residual stream after every attention sublayer and every MLP sublayer, giving 2L+1 points per token, so each step of movement can be credited to attention or MLP.",
+      "which_fate_it_could_diagnose": "Not a fate test by itself. It helps localise any fate signal (for example, where the correct-answer projection drops in flipped items) to an attention or MLP sublayer, which matters for override (attention reading the user's claim) vs a transformation done in an MLP.",
+      "causal_followup_it_allows": "Patch or ablate the attention or MLP output at the sublayer where flipped and resisted items first diverge.",
+      "data_and_compute_needed": "Forward passes with hooks on attn_out and mlp_out (TransformerLens hook_resid_mid / hook_resid_post). Cheap: one cached pass per item.",
+      "code_available": "Repo stated: github.com/robman/FRESH-model (benchmarks/curved-inference/02). Not checked."
+    },
+    {
+      "name": "Semantic surface area A' (salience + gamma * curvature under the pullback metric G = U^T U)",
+      "what_it_measures": "Total distance the unnormalised residual travels through layers, plus how much it turns, measured in the geometry the unembedding sees. In practice r > 0.99 with its parts, so it is mostly path length.",
+      "which_fate_it_could_diagnose": "Weak. A large turn (curvature) at some depth could hint at 'transformed', but A' is one scalar per response and cannot tell transformed from erased from override. Path length is also confounded by residual norm growth and token count.",
+      "causal_followup_it_allows": "The paper only suggests 'causal patching around curvature spikes' as future work. It was not done.",
+      "data_and_compute_needed": "All-layer, all-token activations and the unembedding matrix. Cheap.",
+      "code_available": "Same repo as above. Not checked."
+    },
+    {
+      "name": "Pullback metric G = U^T U (distances measured in logit space)",
+      "what_it_measures": "It weights residual directions by how much they change the logits. Directions the unembedding ignores count for about zero.",
+      "which_fate_it_could_diagnose": "Our idea, not tested in the paper: comparing a probe direction's Euclidean norm with its G-norm at each layer could separate 'decodable but not in the logit-read subspace' (bypass or not-routed candidates) from 'decodable and read by the unembedding'. Intermediate layers are not aligned with the unembedding, so this is only a rough lens.",
+      "causal_followup_it_allows": "Project the correct-answer direction onto the top G-eigenvectors and patch only that component.",
+      "data_and_compute_needed": "Unembedding matrix plus cached residuals. Trivial.",
+      "code_available": "Not needed; a few lines."
+    },
+    {
+      "name": "Label-precision sensitivity (majority vote vs unanimous judges)",
+      "what_it_measures": "Whether an effect survives when only items with unambiguous labels are kept.",
+      "which_fate_it_could_diagnose": "None directly. It is a robustness check if we use LLM judges to label 'flipped' vs 'hedged' answers.",
+      "causal_followup_it_allows": "None.",
+      "data_and_compute_needed": "Three judge calls per item.",
+      "code_available": "Not needed."
+    }
+  ],
+  "controls_worth_copying": [
+    "Vocabulary-matched prompt variants that differ only in the manipulated part (our analogue: pushback vs neutral follow-up with matched length and wording).",
+    "Use observed behaviour labels, not designed intent (our analogue: sort by whether the model actually flipped, not by which pressure was applied).",
+    "Compare within each model only, and use standardised effect sizes across models, because raw geometric magnitudes are not comparable across architectures.",
+    "Report effects under both the full label set and a high-agreement subset, and show group sizes next to every p-value. The paper itself breaks this second rule in the figure captions."
+  ],
+  "pitfalls": [
+    {
+      "pitfall": "Claims about probes failing with no probe baseline. The paper never trains a probe, yet frames its result as going beyond probes.",
+      "quote": "even in naturalistic contexts where linear probes would likely fail",
+      "page": 2
+    },
+    {
+      "pitfall": "No multiple-comparison correction across 20+ tests, by explicit choice.",
+      "quote": "Rather than applying stringent multiple testing corrections that might obscure genuine geometric patterns, we prioritise effect size estimation and confidence interval reporting.",
+      "page": 29
+    },
+    {
+      "pitfall": "Unanimous filtering selects the easiest items, which inflates effects (the paper admits this).",
+      "quote": "The unanimous-only analysis necessarily excludes ambiguous or boundary cases that might contain important information about the limits of geometric detection.",
+      "page": 19
+    },
+    {
+      "pitfall": "Length confound handled only by an unexplained normalisation. Explanatory answers are longer and evasive ones shorter, so a summed path-length metric could track length.",
+      "quote": "We normalised A′ by response length to ensure that observed effects were not simply a function of longer completions.",
+      "page": 19
+    },
+    {
+      "pitfall": "Reductions mislabelled: 201/500 is 40% kept (a 60% reduction), not a '40% reduction'. The same swap is made for Gemma.",
+      "quote": "for LLaMA3.2-3b from 500 total responses to 201 unanimous responses (40% reduction), and for Gemma3-1b to 293 unanimous responses (60% reduction)",
+      "page": 10
+    },
+    {
+      "pitfall": "Labels come from judges who see only the visible text, so the geometry is correlated with output style rather than with any internal 'intent'.",
+      "quote": "were prompted with the assistant’s visible response only and consensus labels were determined by majority vote.",
+      "page": 27
+    },
+    {
+      "pitfall": "The metric can be evaded (the paper admits this).",
+      "quote": "highly sophisticated deceptive systems might learn to maintain geometric consistency whilst still engaging in deceptive reasoning, potentially limiting the long-term effectiveness of this approach.",
+      "page": 19
+    },
+    {
+      "pitfall": "Not stated in the paper: the Figure 2 and Figure 3 images are swapped relative to their captions, one panel is an empty placeholder, and one histogram has wrong axis labels. This is a quality signal for the whole paper.",
+      "quote": "",
+      "page": 12
+    }
+  ],
+  "limitations_quote": "We evaluate only two small open-weight decoder-only models (Gemma3-1b and LLaMA3.2-3b), using a small number of carefully constructed prompt variants.",
+  "limitations_page": 19,
+  "future_work_quote": "combining geometric methods with more targeted techniques (such as causal patching around curvature spikes, or hybrid approaches that fuse probes, symbolic tools, and trajectory) based signals.",
+  "future_work_page": 20,
+  "bears_on_fates": [
+    {
+      "fate": "5 transformed",
+      "how": "A high-curvature step means the residual turned sharply, which is consistent with re-encoding. But A' is one scalar per response and is not tied to the correct-answer direction, so it cannot show that the specific information was re-encoded rather than dropped.",
+      "strength": "weak"
+    },
+    {
+      "fate": "2 bypass / 3 not routed",
+      "how": "No causal test and no probe, so there is nothing on whether a decodable signal is used. The pullback-metric idea (our extension) could flag signals that sit outside the logit-read subspace.",
+      "strength": "weak"
+    },
+    {
+      "fate": "4 override",
+      "how": "The setup (hidden 'Thought:' lines pushing toward concealment vs disclosure) is a competing-goal setup. But labels are output-only and no competing-signal direction is measured.",
+      "strength": "weak"
+    },
+    {
+      "fate": "1 readout failure / 6 erased",
+      "how": "Not addressed.",
+      "strength": "weak"
+    }
+  ],
+  "bears_on_group_angle": "Mostly a warning. The paper reduces the whole token-by-layer point cloud to one scalar per response (A'), and that scalar is r > 0.99 with path length. So it measures how far the residual moves, not where it goes or whether a particular subspace survives. A group or subspace study should keep the direction information: principal angles, Procrustes residuals, CKA between flipped and resisted clouds. It also needs controls for residual-norm growth and token count, and should compare against a probe and a plain logit-margin baseline. Two things are worth keeping. First, sampling after each sublayer (post-attention and post-MLP) for token-path or fork-point work, so a divergence can be credited to attention or MLP. Second, the explicit choice between normalised and unnormalised residuals; it is worth reporting both, because norm grows with depth and changes every distance-based path metric. The paper also shows how unbalanced groups (n = 2, 3, 5) produce p-values and 'effect sizes' that look large. Our flipped vs resisted groups must be matched and sized before any geometry is compared.",
+  "architecture_location": "Almost nothing. A' is summed over all layers and tokens, so no depth or component is singled out. Appendix A claims attention 'bends' trajectories and MLPs 'amplify', but this is conceptual and untested. Two small models (about 1B and 3B) agree only on direction (explanatory > evasive); absolute scale differs about 6.7x. There is no seed or checkpoint replication.",
+  "actionable_fix": "Monitoring only. The paper proposes real-time A' monitoring with per-model thresholds. Nothing tests whether A' predicts held-out behaviour, so even the monitor is unvalidated. It implies no training or inference-time fix. For our project the only actionable item is methodological: sublayer-resolution sampling for locating fork points.",
+  "reuse_verdict": "avoid (as evidence); adapt only the sublayer-resolution trajectory sampling. Reasons: tiny models; one scenario; output-only judge labels; no probe or length baseline; group sizes of 2-5; no multiple-comparison correction; swapped figure captions; internal number inconsistencies (Table 1 sizes; p = 0.138 and 0.794 appear in no table).",
+  "relevance_to_project": "Less relevant than its title suggests. It is not about knowledge-action divergence. It correlates a scalar path-length measure with LLM-judged disclosure style in 1-3B models and runs no probe, no causal test and no matched-pair design. Its methodological weaknesses make the results unreliable even on its own question. Two pieces are useful for the group-geometry angle: the post-attention/post-MLP double-resolution sampling, and the explicit choice of unnormalised residuals plus a logit-space (U^T U) metric. It is also a cautionary example of what not to claim from unbalanced groups."
+}

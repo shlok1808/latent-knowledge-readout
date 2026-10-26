@@ -1,0 +1,81 @@
+{
+ "slug": "w2-shape-of-beliefs-2602.02315",
+ "url": "https://arxiv.org/pdf/2602.02315",
+ "pdf_ok": true,
+ "pages": 22,
+ "chars": 61476,
+ "title_guess": "arXiv:2602.02315v2 [cs.CL] 5 May 2026  The Shape of Beliefs:",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 2,
+   "caption_start": " Figure 1: Shape of beliefs. (A) Stochastic time series u(t) \u2208 J0, 999K are generated from normal distributions N (\u00b5, \u03c3) draws and passed into Llama 3.2 as strings. (B) Representations (PCA at layer 1"
+  },
+  {
+   "id": "Figure 2",
+   "page": 4,
+   "caption_start": "Figure 2: Belief dynamics. Input (A) is a time series with a sharp transition between two distinct regimes, N300,\u03c30 \u2192 N700,\u03c30 at t = 1000. Output (B) shows the model quickly adapting its mean after th"
+  },
+  {
+   "id": "Figure 3",
+   "page": 6,
+   "caption_start": " Figure 3: Linear field probes. (A) Separability: probe accuracy (on test set) on all \u00b5-indexed representations, for all layer. (B) Continuity: cosine similarity between probes, showing smooth variati"
+  },
+  {
+   "id": "Figure 4",
+   "page": 6,
+   "caption_start": " Figure 4: Field geometry. (Left) Cumulative variance explained as a function of rank of the eigenvalues of the LFP Gram matrices (Fig 3B), for each layer. The intrinsic dimensionality increases with "
+  },
+  {
+   "id": "Figure 5",
+   "page": 7,
+   "caption_start": " Figure 5: Steering based on activation geometry: linear vs manifold-aware. The manifold of activations (A) for \u00b5 \u2208 [300, 700] provides a principled basis for steering directions, for example a centro"
+  },
+  {
+   "id": "Figure 6",
+   "page": 8,
+   "caption_start": " Figure 6: Steering based on feature and field geometry. Steering along a single probe direction, here w300\u2192700 (lozenges \u2666) again brings the steered activations far from the \u03c30 = 100 manifold. Taking"
+  },
+  {
+   "id": "Figure 7",
+   "page": 14,
+   "caption_start": " Figure 7: Convergence to the normal distribution. (A) KL divergence between the softmax distribution and the distribution underlying the input numbers, KL(pt \u2225 N500,100 ). The convergence appears to "
+  },
+  {
+   "id": "Figure 8",
+   "page": 15,
+   "caption_start": " Figure 8: Pairwise distances between output distributions. The Hellinger distance is a (symmetric) distance between two \u221a \u221a probability vectors: DHel (pt , pt\u2032 ) = 2\u22121/2 \u2225 pt \u2212 pt\u2032 \u22252 . Early outputs"
+  },
+  {
+   "id": "Figure 9",
+   "page": 18,
+   "caption_start": " Figure 9: Structured manifolds across models. 2D PCA plots of activations from various models. L is the number of layers in the model. Plotted here are residual stream activations after the second la"
+  },
+  {
+   "id": "Figure 10",
+   "page": 19,
+   "caption_start": " Figure 10: LLM vs Ideal Observer. Ensemble-averaged (10 samples) trajectory of Llama-3.2\u2019s softmax mean and standard deviation (line and dots), compared to the expectation from an ideal observer mode"
+  },
+  {
+   "id": "Figure 11",
+   "page": 20,
+   "caption_start": " Figure 11: Meta-in-context learning. (A) The input time-series consists of 10 sequences of 1000 numbers each, alternating between N (300, 100) and N (700, 100). (B) Mean and standard deviation of the"
+  },
+  {
+   "id": "Figure 12",
+   "page": 21,
+   "caption_start": "Figure 12: Data geometry vs field geometry. (A) The data forms a 3D helicoid, yet the two classes (blue/orange) depend only on the position along the x-axis: they are linearly separable (by a hyperpla"
+  },
+  {
+   "id": "Figure 13",
+   "page": 22,
+   "caption_start": "Figure 13: Mixture of manifolds. Prototypes interpolated from the anchor manifolds M\u00b5,\u03c30 and M\u00b50 ,\u03c3 with (\u00b50 = 500, \u03c30 = 100), marked with a cross, do not match the geometry of the ground-truth centro"
+  }
+ ],
+ "n_figures_tables": 13,
+ "section_heading_candidates": [
+  "1 For a normal distribution, entropy h = log \u03c3 + h ."
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

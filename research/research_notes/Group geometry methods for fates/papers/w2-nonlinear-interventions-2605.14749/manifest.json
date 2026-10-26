@@ -1,0 +1,44 @@
+{
+ "slug": "w2-nonlinear-interventions-2605.14749",
+ "url": "https://arxiv.org/pdf/2605.14749",
+ "pdf_ok": true,
+ "pages": 8,
+ "chars": 31550,
+ "title_guess": "Non-linear Interventions on Large Language Models  Sangwoo Kim 1",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 3,
+   "caption_start": " Figure 1. StrongREJECT scores on Llama 3 8B and Qwen 2.5 7B without intervention, with the linear baselines, and with our non-linear intervention.1  Models and data. We evaluate all methods on Llama3"
+  },
+  {
+   "id": "Table 3",
+   "page": 4,
+   "caption_start": "Table 3. StrongREJECT when f\u03b8 is constrained to a linear map, versus our i-ResNet f\u03b8 , trained under the same objective.  Table 1. Per-sample intervention magnitude. Sites: avg. positions edited per e"
+  },
+  {
+   "id": "Table 1",
+   "page": 4,
+   "caption_start": " Table 1. Per-sample intervention magnitude. Sites: avg. positions edited per example; L2 : total edit norm. Our non-linear method edits one site, with an L2 norm over two orders of magnitude below ev"
+  },
+  {
+   "id": "Table 2",
+   "page": 4,
+   "caption_start": " Table 2. StrongREJECT after intervening linearly at every loss site s \u2208 S along vs , versus our learned non-linear intervention at a single site. Method  Llama 3 8B  Linear f\u03b8 Non-linear f\u03b8 (ours)  S"
+  },
+  {
+   "id": "Figure 2",
+   "page": 4,
+   "caption_start": " Figure 2. StrongREJECT across intervention layers on Llama 3 8B and Qwen 2.5 7B with our non-linear intervention.  5.1. Linear Intervention at the Loss Sites + Our objective in Eq. (6) pushes vs\u22a4 hin"
+  },
+  {
+   "id": "Table 4",
+   "page": 8,
+   "caption_start": "Table 4. Main non-linear intervention sites. Token positions are counted from the end of the formatted prompt. Model  Layer  Token position  Evaluation target  Llama 3 8B Qwen 2.5 7B  10 14  \u22123 \u22124  ha"
+  }
+ ],
+ "n_figures_tables": 6,
+ "section_heading_candidates": [],
+ "looks_abstract_only": false,
+ "has_references": true
+}

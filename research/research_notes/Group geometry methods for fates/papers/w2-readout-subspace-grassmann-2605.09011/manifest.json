@@ -1,0 +1,132 @@
+{
+ "slug": "w2-readout-subspace-grassmann-2605.09011",
+ "url": "https://arxiv.org/pdf/2605.09011",
+ "pdf_ok": true,
+ "pages": 18,
+ "chars": 65520,
+ "title_guess": "A Geometric Perspective on Next-Token Prediction in Large Language Models: Three Emerging Phases ",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 2,
+   "caption_start": " Figure 1: Examples of Hit@k achieved by a representation lens and LogitLens across layers. The representation lens recovers the final token early, while the LogitLens remains nearly blind until the f"
+  },
+  {
+   "id": "Figure 2",
+   "page": 4,
+   "caption_start": " Figure 2: Pairwise RSS similarity matrices M(k) for OLM O 2-32B at truncation levels k. Qwen2.5-1.5B  Qwen2.5-32B  OLMo-2-7B  0.50 0.6  k=1%  0.5  0.45 k=3%  0.35  k=10% k=15%  0.2  k=50% 0.4  0.6  0"
+  },
+  {
+   "id": "Figure 3",
+   "page": 4,
+   "caption_start": " Figure 3: Examples of Pareto frontier between Visibility@k and E (k) . No single k dominates.  3  Methodology  3.1  Predictive Readout Subspace and Grassmann trajectory  A representation lens at laye"
+  },
+  {
+   "id": "Figure 4",
+   "page": 5,
+   "caption_start": " Figure 4: Examples of unimodal fits (left) and breakpoint detection (right) on the RSS profile @k=15%. Despite small local deviations, chord-based detection remains robust. 0.9 8 0  0.8 0.80 1 0 .8 0"
+  },
+  {
+   "id": "Figure 5",
+   "page": 5,
+   "caption_start": " Figure 5: Distributional fits to RSS profiles {s\u2113 } at k = 50%. High R2 values for unimodal distributions supports the unimodality assumption and the tripartite decomposition. singular vectors. We de"
+  },
+  {
+   "id": "Figure 6",
+   "page": 6,
+   "caption_start": " Figure 6: Scaling structure of the three phases across model depths. From left to right: b\u03021 vs depth, b\u03022 vs depth, Phase 3 width vs depth, and Phase 2 width vs depth.  4 3 2 1 0  Phase P1 Phase P2 "
+  },
+  {
+   "id": "Figure 7",
+   "page": 6,
+   "caption_start": " Figure 7: \u2225\u2206FFN \u2225/\u2225\u2206MHA \u2225 ratio across phases per model. \u2113 \u2113 coincide with Rd and pairwise similarity collapses to 1. This defines a Pareto trade-off between fidelity and discriminability, making k a"
+  },
+  {
+   "id": "Figure 8",
+   "page": 7,
+   "caption_start": " Figure 8: Left: breakpoint robustness for all eight models across all subspace resolutions k \u2208 {1%, .., 50%}. Right: consensus phase decomposition with depth-normalized layers.  2000  400  1500 1000 "
+  },
+  {
+   "id": "Figure 9",
+   "page": 7,
+   "caption_start": " Figure 9: Rank of the total update \u2206\u2113 (solid) and its norm (dashed). All models in Appendix E.  4  Results  4.1  Phase detection  Validation of the Unimodality Assumption. We report the distributiona"
+  },
+  {
+   "id": "Figure 10",
+   "page": 8,
+   "caption_start": " Figure 10: RSS profiles s\u2113 for all eight models across the two architectural families, with consensus breakpoints b\u03021 and b\u03022 indicated. All models in Appendix E.  Hit@1 and Hit@5  P2  P3  P1  0.8 0."
+  },
+  {
+   "id": "Figure 11",
+   "page": 8,
+   "caption_start": " Figure 11: Left: Hit@1 (solid) and Hit@5 (dashed) across normalised depth. Right: Hit@5/Hit@1 ratio. Both metrics evolve continuously across all three phases, reflecting a disambiguation process. nea"
+  },
+  {
+   "id": "Figure 12",
+   "page": 9,
+   "caption_start": " Figure 12: RSS profile s\u2113 (solid, left axis) and | cos(\u2206\u2113 , h\u2113\u22121 )| (dashed red, right axis). High RSS \u2194 low cosine (Phase 2); low RSS \u2194 high cosine (Phase 3). See Appendix E for all models.  1500 10"
+  },
+  {
+   "id": "Figure 13",
+   "page": 9,
+   "caption_start": " Figure 13: Average effective rank of hidden states across 16M tokens. All models in Appendix E. Phase 1 \u2013 Seeding Multiplexing. Nearly orthogonal updates add new directions, driving H\u2113 to peak rank w"
+  },
+  {
+   "id": "Table 1",
+   "page": 12,
+   "caption_start": "Table 1: Structure of the TunedLens train and validation subsets, extracted from SlimPajama.  226.49M  18.66M  OLMo-2-1124-7B gap=+0.0236  1.00  train val  0  5  Layer  0.00  10  Qwen2.5-1.5B gap=+0.0"
+  },
+  {
+   "id": "Figure 14",
+   "page": 12,
+   "caption_start": " Figure 14: Final per-layer training and validation losses across model scales and families. The low gap indicates no overfitting of trained lenses.  A  Representation Lens Training and Experiments Se"
+  },
+  {
+   "id": "Figure 15",
+   "page": 13,
+   "caption_start": " Figure 15: Pairwise RSS similarity matrices M(k) for all models in the Q WEN 2.5 family across truncation levels k \u2208 {1, 3, 5, 10, 15, 25, 35, 50}% of d. Each row corresponds to a model; each column "
+  },
+  {
+   "id": "Figure 16",
+   "page": 14,
+   "caption_start": " Figure 16: Pairwise RSS similarity matrices M(k) for all models in the OLM O 2 family across truncation levels k \u2208 {1, 3, 5, 10, 15, 25, 35, 50}% of d. The same monotonic decay in Visibility@K is obs"
+  },
+  {
+   "id": "Figure 17",
+   "page": 14,
+   "caption_start": " Figure 17: Pareto frontier between Visibility@K and E (k) for all models in the Q WEN 2.5 and OLM O 2 families. Each point corresponds to a truncation level k \u2208 {1, 3, 5, 10, 15, 25, 35, 50}% of d. T"
+  },
+  {
+   "id": "Figure 18",
+   "page": 15,
+   "caption_start": " Figure 18: Distribution fits (left panels) and double-chord breakpoint detection (right panels) on the (k=15%) RSS profile {s\u2113 } for all models in the Q WEN 2.5 and OLM O 2 families. Left panels show"
+  },
+  {
+   "id": "Figure 19",
+   "page": 16,
+   "caption_start": " Figure 19: RSS profiles s\u2113 for all eight models across both families, with consensus breakpoints b\u03021 and b\u03022 indicated. The rise\u2013plateau\u2013descent structure and the placement of phase boundaries are co"
+  },
+  {
+   "id": "Figure 20",
+   "page": 17,
+   "caption_start": " Figure 20: RSS profile s\u2113 (solid, left axis) and | cos(\u2206\u2113 , h\u2113\u22121 )| (dashed red, right axis) overlaid for all eight models across both families. High RSS \u2194 low cosine (Phase 2); low RSS \u2194 high cosine"
+  },
+  {
+   "id": "Figure 21",
+   "page": 17,
+   "caption_start": " Figure 21: Effective rank of hidden states H\u2113 averaged across 16M tokens for all eight models. Rank increases through Phase 1, peaks near b\u03021 , stabilises in Phase 2, and remains approximately consta"
+  },
+  {
+   "id": "Figure 22",
+   "page": 18,
+   "caption_start": " Figure 22: Effective rank of the total update \u2206\u2113 (solid) and its norm \u2225\u2206\u2113 \u22252 (dashed red) for all eight models. Update rank peaks in Phase 2 and declines in Phase 3 (7/8 models); update norm increase"
+  }
+ ],
+ "n_figures_tables": 23,
+ "section_heading_candidates": [
+  "A Geometric Perspective on Next-Token Prediction in",
+  "A QB , which capture their relative geometry and enable similarity measures."
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

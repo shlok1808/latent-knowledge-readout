@@ -1,0 +1,57 @@
+{
+ "slug": "u3-geometry-of-divergence-2608.30650",
+ "url": "https://arxiv.org/pdf/2608.30650",
+ "pdf_ok": true,
+ "pages": 8,
+ "chars": 39696,
+ "title_guess": "Geometry of Divergence: Tracking Hidden-State Trajectories for Adaptive Multi-Turn Reasoning Jie Liang1 , Zhengxin Yu1\u2217 , Hamid Nasiri2 , Peter Garraghan1",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 1,
+   "caption_start": " Figure 1: Multi-turn reasoning as an observable hidden-state trajectory. and the utilized LLM\u2019s objective. Agents are designed to complete tasks through multi-turn interactions, whereas their underly"
+  },
+  {
+   "id": "Figure 2",
+   "page": 4,
+   "caption_start": " Figure 2: Trajectory geometry separates correct from incorrect episodes across task and model settings.  4.3  final token of the user input qt before the agent acts, then compute \u03ba and \u03b2t on the resu"
+  },
+  {
+   "id": "Figure 3",
+   "page": 4,
+   "caption_start": " Figure 3: Turn-resolved \u03bat and \u03b2t on Math tasks.  5 5.1  Probing Trajectory Divergence through Action Chains Action Chain Construction  Based on the types of actions through which agents interact wit"
+  },
+  {
+   "id": "Figure 4",
+   "page": 5,
+   "caption_start": " Figure 4: Discriminability of hidden-state trajectory geometry across action chains. We construct action chains by taking sliding windows of three consecutive turns over the recorded assistant action"
+  },
+  {
+   "id": "Table 2",
+   "page": 5,
+   "caption_start": " Table 2: Top-20 three-action chains, with correct/incorrect window shares (%) and per-domain frequency rank.  Table 1: Share of three-action chains containing each action.  1 2 3 4 5 6 7 8 9 10 11 12"
+  },
+  {
+   "id": "Table 1",
+   "page": 5,
+   "caption_start": " Table 1: Share of three-action chains containing each action.  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20  Retail  Airline  Action  Correct Incorrect  \u2206  Correct Incorrect  Write Read Transfe"
+  },
+  {
+   "id": "Figure 5",
+   "page": 6,
+   "caption_start": " Figure 5: Trigger-policy comparison on Qwen3-14B across the Retail and Airline domains. performance regarding correct versus incorrect is not particularly outstanding. By contrast, action chains domi"
+  },
+  {
+   "id": "Table 3",
+   "page": 7,
+   "caption_start": "Table 3: Trigger policies on \u03c4 -Bench. The upper block reports task reward, the lower block mean token cost with the number of max-turn terminations in parentheses. Bold marks the best value in a row,"
+  }
+ ],
+ "n_figures_tables": 8,
+ "section_heading_candidates": [
+  "0.5 Database Spread 9.8%",
+  "0.5 Database Spread 23.9%"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

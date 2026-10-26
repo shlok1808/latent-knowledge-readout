@@ -1,0 +1,213 @@
+{
+ "slug": "c12-tigges-circuits-across-training-2407.10827",
+ "title": "LLM Circuit Analyses Are Consistent Across Training and Scale (Tigges, Hanna, Yu, Biderman; NeurIPS 2024; arXiv 2407.10827v2)",
+ "sections_read": [
+  "Abstract",
+  "1 Introduction",
+  "2 Methods",
+  "2.1 Circuits",
+  "2.2 Circuit Finding",
+  "2.3 Models",
+  "2.4 Tasks (Indirect Object Identification, Gendered-Pronoun, Greater-Than, Subject-Verb Agreement)",
+  "3 Circuit Formation",
+  "3.1 Behavioral Evaluation",
+  "3.2 Component Emergence (Induction, Successor, Copy Suppression, Name-Mover heads)",
+  "4 Algorithmic Stability and Generalizability in Post-Formation Circuits",
+  "4.1 Model Behavior and Circuit Components Post-Formation",
+  "4.2 Circuit Algorithm Stability Over Training",
+  "5 Graph-Level Circuit Analysis",
+  "6 Discussion (Implications for Interpretability Research; Quantization Model of Neural Scaling; Limitations and Future Work)",
+  "7 Related Work (Interpretability Over Time; Mechanistic Interpretability)",
+  "Acknowledgements",
+  "References (skimmed)",
+  "Appendix A Analysis of Task Circuits",
+  "A.1 IOI Circuit & Algorithmic Criteria",
+  "Appendix B Other Circuit-Analysis Methods (path patching)",
+  "Appendix C Additional Size, Similarity & Change Rate Results",
+  "Appendix D Component Metrics (Copy Score, CSPA Score, Previous Token Score, Duplicate Token Score, Induction Head Score, Succession Score)",
+  "Appendix E Additional Evidence for Task-Dependent Learning Ceilings (SciQ, PIQA, ARC Easy, Winogrande)",
+  "Appendix F Compute",
+  "Appendix G Licenses of Artifacts Used"
+ ],
+ "setup": {
+  "data": "Four toy circuit tasks with clean/corrupted minimal pairs: IOI (70 examples from the Wang et al. generator; metric = logit difference IO vs S name), Gendered-Pronoun (70 crafted examples; logit difference he vs she), Greater-Than (200 examples from the Hanna et al. generator; probability difference valid vs invalid years), SVA (200 synthetic sentences from Newman et al.; probability difference agreeing vs non-agreeing verbs). Appendix E re-plots Pythia training-run evals on SciQ, PIQA, WinoGrande, ARC-Easy.",
+  "models": "Pythia suite (one family, same data and architecture recipe): circuits found for 70M, 160M, 410M, 1.4B, 2.8B; behaviour only for 6.9B and 12B (excluded from circuit finding for compute). 154 checkpoints per model (steps 0,1,2,4,...,512 and 1000..143000; about 2.1M tokens per step, 300B tokens total). Pretraining only; no fine-tuning or chat models.",
+  "positions_layers": "Circuit nodes are every attention head and MLP; edges between them; behaviour read at the final-token logits. Component scores use head OV/QK circuits (OV times unembedding after the first MLP; attention-pattern diagonals). Algorithm analysis focuses on Pythia-160m at every post-formation checkpoint and 410m/1.4b/2.8b at about one third of checkpoints.",
+  "baselines": "Whole-model task performance (a circuit must recover at least 80% of it); for the path-patching ratio, the denominator is the effect of ablating all components upstream of the receiver set; for CSPA, a mean-ablation baseline (D_MA).",
+  "controls": "Corrupted counterfactual prompts for patching (e.g. swap which name is repeated); faithfulness test that corrupts everything outside the circuit; heads counted only if functional score > 10% AND ablation hurts the logit difference; for S2-inhibition heads, an extra positional-vs-token ablation test; early checkpoints with poor task performance treated as not meaningful; component scores taken from prior literature (Wang, McDougall, Olsson, Gould)."
+ },
+ "figures": [
+  {
+   "id": "Figure 1",
+   "page": 4,
+   "what_is_plotted": "Task behaviour (logit difference for IOI and Gendered Pronoun; probability difference for Greater-Than and SVA) vs tokens seen (log scale, about 2e8 to 3e11) for Pythia 70m to 12b.",
+   "takeaway": "Every model starts learning each task at roughly the same token count (a few 1e9 tokens); all but 70m end at similar performance; little unlearning.",
+   "numbers": "Approx, read from figure: IOI rises from about 0 to about 3-4 logit diff between about 3e9 and 1e10 tokens, 70m stays about 0.5-1; Gendered Pronoun final about 5-7 (70m about 4); Greater-Than dips to about -0.4 near 2e9 then reaches about 0.9-1.0 by about 3e10 (70m about 0.5); SVA reaches about 0.15-0.2 by about 1e10, noisy, 70m drifts down to about 0.1.",
+   "text_matches_figure": "partly: onset timing and the 70m exception are clearly visible; the specific claim that 6.9b/12b learn IOI more like 160m cannot be checked by eye because the pastel line colours are hard to tell apart at this resolution."
+  },
+  {
+   "id": "Figure 2",
+   "page": 6,
+   "what_is_plotted": "Summed functional score of in-circuit heads (succession, induction, CSPA, copy score), normalised per model across checkpoints, vs tokens seen, for 70m-2.8b.",
+   "takeaway": "Induction, successor, name-mover and copy-suppression behaviour appears in the circuit at the same token counts at which the task appears in Figure 1; successor and induction scores later decline although task performance does not.",
+   "numbers": "Approx, read from figure: induction scores jump from 0 to about 0.75-1.0 between about 1e9 and 3e9 tokens, then fall noisily to about 0.2-0.5; successor scores rise from about 3e9 to about 0.75-0.9 near 1e11 then fall to about 0.5 (one model to about 0.2); name-mover copy score rises between about 3e9 and 8e9 to about 0.75-1.0, 160m becomes noisy late (about 0.2-0.9); CSPA rises from about 4e9 and peaks near 1e11. Peaks are 1.0 by construction because of the per-model normalisation.",
+   "text_matches_figure": "yes: emergence windows (2e9 for induction, 2-8e9 for name movers) and the late decline are visible. Note that normalisation hides absolute strength, so cross-model height comparisons are not meaningful."
+  },
+  {
+   "id": "Figure 3",
+   "page": 7,
+   "what_is_plotted": "Pythia-160m only: functional score of individual heads (layer, head) over training for the top heads of each type (successor, induction, copy suppression, name mover).",
+   "takeaway": "Individual heads gain and then lose their role, and other heads take over (load balancing), while task behaviour stays stable.",
+   "numbers": "Approx, read from figure: one successor head (salmon, the paper's (5,9)) peaks at about 0.8 near 1e11 tokens and falls to about 0.45 by 3e11 while another line rises to about 0.35 only at the very end; induction heads jump to about 0.6-0.95 near 1.5e9; CSPA raw scale is tiny (0 to about 0.0065, peaks near 1e11); name-mover heads rise to about 1.0 near 4e9, one (lavender, the paper's (4,6)) drops from about 0.95 near 2-3e10 to about 0.1 by about 1e11, a dashed head rises to about 0.85 and ends near 0.6.",
+   "text_matches_figure": "partly: the (4,6) drop near 3e10 and the (5,9) decline are visible; identifying (11,0) as the late riser by colour is uncertain at this resolution."
+  },
+  {
+   "id": "Figure 4",
+   "page": 8,
+   "what_is_plotted": "A: Pythia-160m IOI circuit at 300B tokens (previous-token 2.6; induction 4.11, 4.6, 5.0; S-inhibition 6.6, 7.2, 7.9; name movers 8.10, 8.2, 9.4, 10.7; negative name mover 9.1; negative copy suppression 9.5; positive copy suppression 8.9). B-D: percent of effect explained by CS/NM heads (B), by S2I heads into NMHs (C), by induction/duplicate-token heads into S2I heads (D), vs tokens seen, for 160m, 410m, 1.4b, 2.8b.",
+   "takeaway": "Once the circuit forms, the share of effect carried by each head class stays roughly flat, in all four model sizes, even while individual heads change.",
+   "numbers": "Approx, read from figure: B about 68-92% for all models across about 3e10-3e11 tokens; C about 45-95% (160m highest about 70-95, 2.8b lowest about 45-60); D about 40-100%, mostly 55-90 (one 160m dip to about 40 near 5e10).",
+   "text_matches_figure": "yes for B (above 70% as claimed); C and D are 'generally above 50%' as stated, with a few points just below 50."
+  },
+  {
+   "id": "Figure 5",
+   "page": 9,
+   "what_is_plotted": "Exponentially weighted moving-average Jaccard similarity of circuit node sets over training tokens, per task, for 70m-2.8b.",
+   "takeaway": "Circuit membership is mostly stable (about 0.6-0.9) but has sharp dips, mostly in the smallest models, and late changes in Gendered Pronoun.",
+   "numbers": "Approx, read from figure: typical values about 0.6-0.9; 70m dips to about 0.35 (IOI near 1.3e11) and about 0.33 (Greater-Than near 3e10); in Gendered Pronoun one small model (orange, 160m) falls to about 0.35 at the end; SVA starts as low as about 0.45 for one model.",
+   "text_matches_figure": "partly: volatility of 70m/160m is visible; 'larger models more stable' is hard to see among 410m-2.8b, which overlap."
+  },
+  {
+   "id": "Figure 6",
+   "page": 23,
+   "what_is_plotted": "Number of nodes in the faithful circuit vs training step, per task and model.",
+   "takeaway": "Larger models need bigger circuits (more heads share a role); circuit size fluctuates a lot across checkpoints.",
+   "numbers": "Approx, read from figure: IOI 2.8b (green) about 110-185 nodes vs 70m about 0-55; Greater-Than 2.8b climbs steadily from about 50 to about 80, 70m about 10-15; SVA one model swings between about 0 and 90 late in training; at isolated checkpoints some circuits drop to about 0 nodes (e.g. Gendered Pronoun, SVA). Paper text gives Pearson r = 0.72 (IOI, SVA), 0.9 (Greater-Than), 0.6 (Gender Pronoun) between model size and mean node count.",
+   "text_matches_figure": "partly: the size ordering for IOI and Greater-Than is clear; the near-zero-node checkpoints are visible in the figure but not discussed in the text, which suggests circuit-finding noise."
+  },
+  {
+   "id": "Figure 7",
+   "page": 23,
+   "what_is_plotted": "Node Jaccard similarity of each intermediate circuit with the final-checkpoint circuit, vs training tokens.",
+   "takeaway": "Raw (unsmoothed) overlap fluctuates at every checkpoint and trends upward toward the final circuit.",
+   "numbers": "Approx, read from figure: mid-training overlap mostly about 0.2-0.7; 70m on IOI stays about 0.2-0.3 until about 2e11 then jumps; all curves reach 1.0 at the final checkpoint (by construction).",
+   "text_matches_figure": "yes, with the caveat that convergence to 1.0 at the end is guaranteed by the definition."
+  },
+  {
+   "id": "Figure 8",
+   "page": 24,
+   "what_is_plotted": "Edge-weighted Jaccard similarity of intermediate circuits with the final circuit, vs training tokens.",
+   "takeaway": "Weighted edge overlap climbs smoothly; the model drifts gradually toward its final circuit while individual components swap.",
+   "numbers": "Approx, read from figure: about 0.1-0.35 at the first plotted checkpoints, about 0.6-0.85 by about 2e11 tokens, 1.0 at the end; Gendered Pronoun 70m sits higher early (about 0.3-0.55).",
+   "text_matches_figure": "partly: smooth climb is visible; 'remains high at the end' is true by construction (similarity with itself)."
+  },
+  {
+   "id": "Figure 9",
+   "page": 26,
+   "what_is_plotted": "Accuracy vs training step on ARC Easy, SciQ, PIQA, WinoGrande for Pythia 70M-12B (from the Pythia training-run evals).",
+   "takeaway": "Capability onset happens at a similar step across sizes; above a size, the onset rate stops improving, though final accuracy still grows with size.",
+   "numbers": "Approx, read from figure: SciQ jumps from about 0.2 to about 0.6-0.75 between about step 1000 and 2000 for all sizes, final about 0.6 (70M) to about 0.9 (largest); ARC Easy final about 0.37 (70M) to about 0.7 (largest); PIQA about 0.52 to 0.6-0.76; WinoGrande flat near 0.5 until about 10k steps, then the larger models reach about 0.6-0.64.",
+   "text_matches_figure": "partly: same-onset is clear for SciQ/ARC/PIQA; WinoGrande starts much later and only for large models; 'asymptote' refers to rate, not final accuracy."
+  }
+ ],
+ "key_results": [
+  {"claim": "Task abilities and their supporting components emerge at similar token counts across model scale (70M-2.8B; behaviour up to 12B).", "quote": "We find that task abilities and the functional components that support them emerge consistently at similar token counts across scale.", "page": 1},
+  {"claim": "Name-mover heads emerge at 2-8 x 10^9 tokens across models, during or just before IOI behaviour appears.", "quote": "For IOI, the name-mover heads emerge at similar timesteps (2 - 8 × 109 tokens) across models, with a very high strength, during or just before IOI behavior appears.", "page": 6},
+  {"claim": "Component identity is not constant: a Pythia-160m name-mover head gains its role at about 4 x 10^9 tokens and loses it at about 3 x 10^10 tokens.", "quote": "the name-mover head (4,6) suddenly stops exhibiting this behavior at 3 × 1010 tokens, having acquired it after 4 × 109 tokens.", "page": 7},
+  {"claim": "When one head loses a role another (in a later layer) takes it over at the same time.", "quote": "Pythia-160m’s main successor head (5,9) loses its successor behavior towards the end of training; however, (11,0) exhibits more successor behavior at precisely that time.", "page": 7},
+  {"claim": "Models compensate for lost components; the mechanism (self-repair / load balancing) is left open.", "quote": "Nevertheless, models can clearly compensate for losses of and changes in individual circuit components.", "page": 7},
+  {"claim": "The IOI algorithm (class-level effect shares) stays stable after formation despite head turnover.", "quote": "Notably, in no model or metric are there dramatic shifts in algorithm corresponding to functional component shifts within the circuit.", "page": 8},
+  {"claim": "Class-level effect shares are high: generally above 50%, above 70% for the core solvers.", "quote": "all scores are relatively high, generally above 50%; the core solvers of the algorithm, copy suppression and name-mover heads, have scores above 70%.", "page": 8},
+  {"claim": "Across scale the algorithm is similar but not identical (160m lacks duplicate-token heads).", "quote": "the Pythia-160m circuit does not involve duplicate-token heads, while others do. So small differences exist amid big-picture similarity.", "page": 9},
+  {"claim": "Circuit size correlates with model size.", "quote": "The Pearson correlation is r =0.72 for IOI and SVA, 0.9 for Greater-Than, 0.6 for Gender Pronoun.", "page": 9},
+  {"claim": "Larger models have more stable circuit membership; small models are volatile.", "quote": "larger models tend to form more stable circuits (with both higher average values and fewer sharp fluctuations); EWMA-Jaccard is more volatile for Pythia-70m/160m.", "page": 9},
+  {"claim": "Bigger models spread one role over more heads rather than specialising.", "quote": "Increases in model size do not necessarily help heads become more specialized in their roles; rather, in these circuits more heads will take on the same roles.", "page": 23},
+  {"claim": "The same head type can play the opposite-sign role in a different model family (copy suppression helps IOI in Pythia but hurts it in GPT-2).", "quote": "In the original IOI circuit, copy suppression heads hurt performance, downweighting the correct name. In contrast, we find (Appendix D) that they contribute positively to the Pythia IOI circuit", "page": 5}
+ ],
+ "methods": [
+  {
+   "name": "EAP-IG circuit finding with a minimal-faithful-circuit binary search",
+   "what_it_measures": "Gradient (integrated-gradients) approximation of how much corrupting each edge changes the task metric; the circuit is the smallest top-scored edge set that recovers at least 80% of whole-model performance.",
+   "which_fate_it_could_diagnose": "Bypass vs routed (fate 2/3): is the component where the correct answer is decodable inside the circuit that drives the flipped answer at all? Also a first map of where an override (fate 4) enters.",
+   "causal_followup_it_allows": "Activation/path patching of circuit vs non-circuit nodes; faithfulness test by corrupting everything outside the circuit.",
+   "data_and_compute_needed": "A few hundred clean/corrupted minimal pairs (they used 70-200); a fixed number of forward+backward passes independent of model size; circuits at 9B-27B are feasible on 1-2 large GPUs per checkpoint (our estimate).",
+   "code_available": "Not stated in paper.txt; EAP-IG is from Hanna et al. [33]; Pythia checkpoints are Apache 2.0."
+  },
+  {
+   "name": "Class-level path-patching effect share (algorithm-stability metric)",
+   "what_it_measures": "Effect on logit difference of ablating a class of sender heads through a receiver set, divided by the effect of ablating all heads that could affect that receiver set.",
+   "which_fate_it_could_diagnose": "Not routed (fate 3): what share of the deciding heads' input comes from the 'own earlier answer / correct fact' heads vs the 'user claim' heads; override (fate 4): compare the share of the two competing classes in flipped vs resisted items.",
+   "causal_followup_it_allows": "It is already causal; follow with targeted path patching of the winning class into flipped items.",
+   "data_and_compute_needed": "Many forward passes per sender head (they ran it on about 1/3 of checkpoints to save compute); our cost scales with heads x items.",
+   "code_available": "Not stated in paper.txt."
+  },
+  {
+   "name": "Functional head scores (copy score, CSPA, previous-token, duplicate-token, induction, succession)",
+   "what_it_measures": "Whether a head performs a known function, e.g. copy score = fraction of samples whose name token is in the top-5 logits after passing the token through the head's OV and the unembedding.",
+   "which_fate_it_could_diagnose": "Override (fate 4) and the head-level part of our plan: an adapted copy score on the user's claimed answer vs the model's own earlier answer would label 'user-claim copier' and 'own-answer copier' heads.",
+   "causal_followup_it_allows": "Ablate or patch the top-scoring heads; the paper requires both a score > 10% and a harmful ablation effect before counting a head.",
+   "data_and_compute_needed": "Cheap: weight-based (OV x unembedding) plus attention patterns on small synthetic sets.",
+   "code_available": "Not stated; succession score re-implemented by the authors because Gould et al.'s code is not public."
+  },
+  {
+   "name": "Node-set Jaccard similarity (raw, EWMA-smoothed, similarity-to-final) and edge-weighted Jaccard",
+   "what_it_measures": "Overlap of circuit membership between two circuits (checkpoints in the paper).",
+   "which_fate_it_could_diagnose": "H1 (do different pressures use different circuits?) and Stage B (does the fixed model keep the same circuit, a shifted one, or none?).",
+   "causal_followup_it_allows": "Patch the nodes in the symmetric difference to see which ones matter.",
+   "data_and_compute_needed": "Free once circuits exist.",
+   "code_available": "Not stated in paper.txt."
+  },
+  {
+   "name": "Summed, normalised class score across checkpoints",
+   "what_it_measures": "Total strength of one functional behaviour among in-circuit heads over time.",
+   "which_fate_it_could_diagnose": "Stage B removed vs hidden: does total 'user-claim copying' in the circuit fall, or does it move to other heads?",
+   "causal_followup_it_allows": "Re-run class-level patching on the new heads.",
+   "data_and_compute_needed": "Cheap given scores.",
+   "code_available": "Not stated."
+  }
+ ],
+ "controls_worth_copying": [
+  "Minimal-pair corrupted inputs that flip the expected answer (for us: same question with the user's pushback naming a different answer, or the competing option swapped).",
+  "Prefer logit difference over probability difference when there is one correct and one incorrect answer, because it shows negative components.",
+  "Two-criterion inclusion of a head: functional score above a threshold AND a harmful causal effect when ablated.",
+  "Faithfulness threshold (at least 80% of whole-model performance) with binary search over circuit size.",
+  "Normalise class effects by the effect of all upstream components, so shares are comparable across models and checkpoints.",
+  "Re-find the circuit at every checkpoint/model rather than re-using head indices from one snapshot.",
+  "Exclude checkpoints (for us: items or models) where task performance is poor, since circuits there are not meaningful."
+ ],
+ "pitfalls": [
+  {"pitfall": "Circuit completeness cannot be verified; a faithful circuit may still miss nodes.", "quote": "However, ensuring that a circuit is entirely complete, containing all relevant model nodes and edges, is challenging, and no definitive method of verifying this has emerged.", "page": 3},
+  {"pitfall": "Probes give layer-level, possibly unfaithful explanations (features the model does not use).", "quote": "This stands in contrast to probing [3], which only offers layer-representationlevel explanations, and can be unfaithful, capturing features unused by the model [21].", "page": 3},
+  {"pitfall": "Head identity drifts: a head-level finding can be stale at another checkpoint.", "quote": "the name-mover head (4,6) suddenly stops exhibiting this behavior at 3 × 1010 tokens, having acquired it after 4 × 109 tokens.", "page": 7},
+  {"pitfall": "Self-repair/load balancing can mask the effect of removing a component.", "quote": "It seems plausible that self-repair [46, 58] contributes to this behavioral stability, but we leave the question of the exact “load-balancing” mechanism to future work.", "page": 7},
+  {"pitfall": "Circuit size is noisy with no clear pattern.", "quote": "We also find a high degree of variability—circuit sizes can remain stable or fluctuate significantly, with no clear pattern based on the model or the task.", "page": 9},
+  {"pitfall": "Per-model normalisation of class scores hides absolute strength (Figure 2 peaks are 1.0 by construction).", "quote": "We then normalize this sum across checkpoints, to understand how this behavior develops over time.", "page": 5},
+  {"pitfall": "A declining functional score may not mean declining importance.", "quote": "this could happen if the number of heads exhibiting successor behavior decreases, while the impact of said heads (on the model’s logits) increases.", "page": 6},
+  {"pitfall": "The same component type can have opposite-sign roles across model families.", "quote": "In the original IOI circuit, copy suppression heads hurt performance, downweighting the correct name. In contrast, we find (Appendix D) that they contribute positively to the Pythia IOI circuit", "page": 5},
+  {"pitfall": "Algorithmic stability may not hold for harder tasks with more possible algorithms.", "quote": "we stress that these algorithmic similarities might not hold for more complex tasks, for which a greater variety of algorithms could exist.", "page": 9},
+  {"pitfall": "Circuits at early checkpoints (poor performance) are not meaningful.", "quote": "note that circuits found at early checkpoints, where task performance is poor, are generally not meaningful.", "page": 5},
+  {"pitfall": "Reader note, not stated by the paper: similarity-to-final-circuit curves (Figures 7, 8) end at 1.0 by definition, so 'remains high at the end' is not evidence; and some checkpoints show circuits of about 0 nodes in Figure 6, which the text does not discuss.", "quote": "", "page": null}
+ ],
+ "limitations_quote": "Our analysis was limited to a narrow range of tasks feasible for small models. This limits in turn the scope of the claims that we can make.",
+ "limitations_page": 10,
+ "limitations_extra": [
+  {"quote": "Our analysis also studied models only from one model family, Pythia. It is thus not possible to tell if our results are limited", "page": 10},
+  {"quote": "Though we do not study fine-tuning or other post-training techniques", "page": 2},
+  {"quote": "We omit Pythia-6.9b and 12b from circuit finding for reasons of computational cost.", "page": 5}
+ ],
+ "future_work_quote": "future work would do well to explore more complex phenomena, such as the self-repair and load-balancing mechanisms of LLMs, which ensure consistent task performance despite component fluctuations.",
+ "future_work_page": 10,
+ "bears_on_fates": [
+  {"fate": "Stage B (removed vs only hidden)", "how": "Strong warning: heads lose a role and other heads take it over while behaviour is unchanged. After DPO or a fate-matched fix, re-checking the heads found before the fix can falsely show 'removed' when the function moved to other heads, or 'still there' when only a fraction remains. Re-find the circuit on the fixed model and compare class-level shares.", "strength": "strong"},
+  {"fate": "4 override", "how": "The IOI circuit is a worked example of competing classes writing to one logit difference (name movers vs negative name movers and copy suppression); the class-level effect share is a ready metric for 'which signal wins' in flipped vs resisted items.", "strength": "moderate"},
+  {"fate": "3 not routed / 2 bypass", "how": "Path patching through a receiver set quantifies whether a sender class's output actually reaches the deciding heads, which is the routing question; EAP-IG circuits show whether the component where the correct answer is decodable is in the decision circuit at all.", "strength": "moderate"},
+  {"fate": "5 transformed", "how": "Only indirect: same algorithm, different heads over time, and copy suppression flips sign of role across families. No representation-level re-encoding test.", "strength": "weak"},
+  {"fate": "1 readout/threshold failure", "how": "Not addressed.", "strength": "weak"},
+  {"fate": "6 erased", "how": "Not addressed.", "strength": "weak"}
+ ],
+ "bears_on_group_angle": "Supports studying groups at the component level: a function is stable at the level of a head class (summed scores, class effect shares) while single heads come and go. For our plan this means: define head groups (e.g. heads that attend to and copy the user's claimed answer vs the model's own earlier answer) by functional score per model and per checkpoint, and compare classes, not head indices. Node-set Jaccard is a cheap set-level comparison to run alongside RSA/CKA when testing H1 (pushback vs tempting wrong option). It says nothing about activation geometry, subspaces, Grassmannian paths, manifolds or token-by-token paths; it is graph-level only.",
+ "architecture_location": "Component types: attention heads carry IOI and Greater-Than (name movers, copy suppression, S-inhibition, induction/duplicate-token, successor); SVA and Gendered Pronoun are MLP-dominant (quote: 'The other task are MLP-dominant and do not involve much attention head activity', p3). Depth in Pythia-160m's final IOI circuit (Figure 4A): previous-token 2.6, induction 4.11/4.6/5.0, S-inhibition 6.6/7.2/7.9, name movers 8.10/8.2/9.4/10.7, copy suppression 8.9/9.5 - so the answer-writing heads sit in the last third of the network (assuming 160m has 12 layers, which the paper does not state). Over training the location moves: an early name mover in layer 4 loses its role, and the successor role moves from layer 5 to layer 11. Across scale (160m-2.8b, one family) the same head classes and roughly the same effect shares appear, but bigger models spread a role over more heads. Not tested across families, seeds, or after fine-tuning.",
+ "actionable_fix": "(1) For Stage B, re-run circuit discovery and class-level scoring on every fixed checkpoint; report class effect shares, not single-head ablation effects. (2) Avoid single-head ablation as the fix: models compensate for lost components (self-repair), so a fix should target the whole class or the upstream signal and be re-validated after further training. (3) Any head-based monitor needs re-validation after each training update because head roles drift. (4) Within one family, results at a small size were informative at larger sizes, which supports developing on Gemma-2-9B and checking on 27B, but the paper gives no evidence across families or after RLHF.",
+ "reuse_verdict": "adapt - copy the class-level path-patching share, the two-criterion head inclusion, and Jaccard overlap across conditions/checkpoints; do not rely on EAP-IG alone (noisy circuit size, completeness unverifiable) and do not assume the stability carries over to post-training or harder factual tasks.",
+ "relevance_to_project": "Moderately relevant, and less than expected for the group-geometry angle: it is a circuits-over-pretraining paper on Pythia up to 2.8B with toy tasks, and it does not study activation geometry or models acting against decodable knowledge. Its main value is a Stage B warning (functions migrate between heads while behaviour holds; self-repair can mask removal) and a set of class-level circuit-comparison metrics we can reuse for H1 and for before/after-fix comparisons."
+}

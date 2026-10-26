@@ -1,0 +1,83 @@
+{
+ "slug": "c5-manifold-steering-2605.05115",
+ "url": "https://arxiv.org/pdf/2605.05115",
+ "pdf_ok": true,
+ "pages": 36,
+ "chars": 128159,
+ "title_guess": "Manifold Steering Reveals the Shared Geometry of Neural Network Representation and Behavior ",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 2,
+   "caption_start": " Figure 1: How do different geometries of activation space modulate behavior? We illustrate paths through activation space (left), each defined by a different geometry. Interventions along paths in ac"
+  },
+  {
+   "id": "Figure 2",
+   "page": 4,
+   "caption_start": " Figure 2: Approximate isometry between activation and behavior manifolds for cyclic concepts. Manifolds (cubic splines) fit to activation and behavior (i.e., output distributions over concept tokens)"
+  },
+  {
+   "id": "Figure 3",
+   "page": 5,
+   "caption_start": " Figure 3: Approximate isometry between activation and behavior manifolds for sequential concepts. Manifolds (cubic splines) fit to activation and behavior (i.e., output distributions over concept tok"
+  },
+  {
+   "id": "Figure 4",
+   "page": 7,
+   "caption_start": " Figure 4: Manifold steering yields smooth and ordered behavioral transitions. Using simple addition tasks which require reasoning over structured concepts (e.g., What is four days after Monday?), we "
+  },
+  {
+   "id": "Figure 5",
+   "page": 8,
+   "caption_start": " Figure 5: Manifold steering and pullback yield coinciding trajectories in activation and behavior space. Going in the Activations\u2192Behavior direction, we find that steering along the activation manifo"
+  },
+  {
+   "id": "Figure 6",
+   "page": 11,
+   "caption_start": " Figure 6: Manifold steering enables factored control in multi-dimensional conceptual spaces. (a) We examine manifold steering on multidimensional spaces using Park et al. (2025b)\u2019s in-context learnin"
+  },
+  {
+   "id": "Figure 7",
+   "page": 13,
+   "caption_start": " Figure 7: Manifold steering on a visual world model produces smooth movement. (a). We examine whether manifold steering can generalize to a visual modality by training a recurrent network on the Moun"
+  },
+  {
+   "id": "Table 1",
+   "page": 26,
+   "caption_start": " Table 1: Natural-domain arithmetic tasks. For cyclic domains, results wrap around the modulus (7 for weekdays, 12 for months); for sequential domains, (entity, increment) pairs whose result falls out"
+  },
+  {
+   "id": "Figure 8",
+   "page": 30,
+   "caption_start": " Figure 8: Recurrent visual world-model architecture. A convolutional encoder fenc maps each 128 \u00d7 128 \u00d7 3 frame xt to a layer-normalized latent zt \u2208 Rn with n = 64. The discrete action at \u2208 {0, 1, 2}"
+  },
+  {
+   "id": "Figure 9",
+   "page": 32,
+   "caption_start": " Figure 9: Results for in-context learning of representations on a 9 \u00d7 9 cylinder domain. We find that, as in the grid domain, manifold steering achieves factored control: coherent steering of indepen"
+  },
+  {
+   "id": "Figure 10",
+   "page": 33,
+   "caption_start": " Figure 10: (a) Activation and behavior space paths for the 5 \u00d7 5 Grid task and 9 \u00d7 9 Cylinder. Similarly to the addition tasks with known concepts, we find that the manifold steering paths closely fo"
+  },
+  {
+   "id": "Figure 11",
+   "page": 34,
+   "caption_start": " Figure 11: Inducing greater uncertainty over a conceptual space and steering along it. By ) ( ) ) ( ) ) ( ) we induce ) greater (uncertainty increasing the addition value, in)the model with respect t"
+  },
+  {
+   "id": "Figure 12",
+   "page": 35,
+   "caption_start": " Figure 12: Pullback from My recovers Mh in the visual world model. Left (Activation Space): PCA visualization of the encoder representations, showing the geometric path along Mh , the linear chord, a"
+  }
+ ],
+ "n_figures_tables": 13,
+ "section_heading_candidates": [
+  "10 Activation",
+  "0.50 February",
+  "0.25 March"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

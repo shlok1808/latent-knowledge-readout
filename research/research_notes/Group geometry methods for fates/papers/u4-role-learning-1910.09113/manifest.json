@@ -1,0 +1,56 @@
+{
+ "slug": "u4-role-learning-1910.09113",
+ "url": "https://arxiv.org/pdf/1910.09113",
+ "pdf_ok": true,
+ "pages": 17,
+ "chars": 67017,
+ "title_guess": "Discovering the Compositional Structure of Vector Representations with Role Learning Networks Paul Soulos,1 R. Thomas McCoy,1 Tal Linzen,2 and Paul Smolensky3,1",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 1,
+   "caption_start": " Figure 1: Summary of our approach.  "
+  },
+  {
+   "id": "Figure 2",
+   "page": 4,
+   "caption_start": "Figure 2: The DISCOVER task and functions. At the top is the target network and question we pose: is the internal embedding a TPR? The middle row is the TPE which follows the provided equation. We tra"
+  },
+  {
+   "id": "Figure 3",
+   "page": 4,
+   "caption_start": " Figure 3: The Tensor Product Encoder architecture. The fillers (yellow circles) and roles (blue circles) are first vectorized with an embedding layer. These two vector embeddings are combined by an o"
+  },
+  {
+   "id": "Figure 4",
+   "page": 5,
+   "caption_start": "Figure 4: The role learning module. The role attention vector at is encouraged to be one-hot through regularization; if at were one-hot, the produced role embedding rt would correspond directly to one"
+  },
+  {
+   "id": "Table 1",
+   "page": 6,
+   "caption_start": " Table 1: Mean substitution accuracy for learned (bold) and hand-defined role schemes on SCAN across three random initializations. Standard deviation was below 1% for all schemes except for snapped. S"
+  },
+  {
+   "id": "Figure 5",
+   "page": 8,
+   "caption_start": " Figure 5: Left: Example of successive constituent surgeries. The roles assigned to the input symbols are indicated in the first line (e.g., run was assigned role 11). Altered output symbols are in bl"
+  },
+  {
+   "id": "Table 2",
+   "page": 8,
+   "caption_start": " Table 2: MSE loss for learned (bold) and hand-crafted role schemes on sentence embedding models. (Sec. 6)  et al., 2020) and few-shot learning of compositional tasks (Brown et al., 2020), both of whi"
+  },
+  {
+   "id": "Table 3",
+   "page": 14,
+   "caption_start": " Table 3: The assigned roles for two sequences, 3116 and 523197. Table reproduced from McCoy et al. (2019a).  using the values in the set [.1, .02, .01]. The best performing value was .02, and we used"
+  }
+ ],
+ "n_figures_tables": 8,
+ "section_heading_candidates": [
+  "P The TPR generated"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

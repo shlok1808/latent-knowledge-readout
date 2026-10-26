@@ -1,0 +1,79 @@
+{
+ "slug": "c9-lagged-coupling-2609.01048",
+ "url": "https://arxiv.org/pdf/2609.01048",
+ "pdf_ok": true,
+ "pages": 15,
+ "chars": 49530,
+ "title_guess": "Lagged Coupling: Internal Representations Become Readable Before They Become Causal Xining Xun",
+ "figures_tables": [
+  {
+   "id": "Table 1",
+   "page": 3,
+   "caption_start": "Table 1. Where prior work sits relative to the three tracks. \u201cTrack assumed\u201d names the property each line of work relies on; \u201cdevelopmental?\u201d asks whether the property is measured across training. Rea"
+  },
+  {
+   "id": "Table 2",
+   "page": 4,
+   "caption_start": "Table 2. The pre-registered grid. Checkpoints are training steps (in thousands: 1, 2, 4, 8, 16, 32, 64, 143). Parameter counts are taken from the model cards[1]. Model  Parameters  Checkpoints (steps)"
+  },
+  {
+   "id": "Table 3",
+   "page": 6,
+   "caption_start": "Table 3. The frozen decision tree, evaluated. Slopes are WLS with 95% CIs; the time axis is the majority vote of the six per-size verdicts (Figure 1). Axis  Line  Estimate  95% CI  n  Verdict  Scale  "
+  },
+  {
+   "id": "Figure 1",
+   "page": 7,
+   "caption_start": " Figure 1. Per-size time-axis WLS slopes of milestone index against log step, with 95% CIs. Blue: fork decided A (410M, 2.8B edge, 6.9B); grey: INDETERMINATE (160M, 1B, 12B). The majority-vote rule yi"
+  },
+  {
+   "id": "Figure 2",
+   "page": 7,
+   "caption_start": " Figure 2. Lagged coupling at a glance (schematic of the measured structure). Internal readability is saturated from step 1k at every scale; behavioral readability ramps gradually and later at larger "
+  },
+  {
+   "id": "Figure 3",
+   "page": 8,
+   "caption_start": " Figure 3. Three tracks, three clocks (6.9B and 12B). Left axis: internal readability (green; probe inducibility, saturated \u2248 1.0 from step 1k) and behavioral readability (blue; output-level answer-sc"
+  },
+  {
+   "id": "Figure 4",
+   "page": 9,
+   "caption_start": " Figure 4. Boxing rule: cells with |z| \u2265 2 are boxed; the colormap is clipped at \u00b12.7. Causal efficacy ze over the full grid (6 sizes \u00d7 8 checkpoints). 43/48 cells lie within the null band; the four s"
+  },
+  {
+   "id": "Figure 5",
+   "page": 10,
+   "caption_start": " Figure 5. (a) Representation headroom C along the probe direction over training (log scale); growth factors from step 1k to 143k annotate each curve. (b) Instrument noise floor \u03b5m against parameter c"
+  },
+  {
+   "id": "Table 4",
+   "page": 11,
+   "caption_start": "Table 4. Two families of safety-relevant methods bet on different tracks; our grid supports one bet and not the other across training. Safety-relevant scheme Monitoring early warning Runtime activatio"
+  }
+ ],
+ "n_figures_tables": 9,
+ "section_heading_candidates": [
+  "1 Introduction",
+  "2 Related Work",
+  "3 Pre-registered Setup and Decision Protocol",
+  "3.1 Grid and instrumentation",
+  "3.2 Estimands",
+  "3.3 The decision tree",
+  "3.4 Why additive single-site surgery is the right estimand",
+  "4 Results",
+  "4.1 The pre-registered verdict: INDETERMINATE on both axes",
+  "4.2 Three tracks, three clocks",
+  "4.3 The ordering is read-before-write, and scale does not close the lag",
+  "4.4 Interventions are largely inert, occasionally counterproductive",
+  "4.5 Mechanism: headroom outruns write-in by orders of magnitude",
+  "4.6 The prior-bias arm: a mechanical positive result",
+  "4.7 Replication on OLMo-2: direction preserved, magnitude weak",
+  "5 Discussion",
+  "5.1 Implications for AI safety: sensors before levers",
+  "6 Limitations and Threats to Validity",
+  "7 Reproducibility and Audit"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

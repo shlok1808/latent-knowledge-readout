@@ -1,0 +1,582 @@
+{
+  "slug": "w2-fishback-2605.17231",
+  "title": "FishBack: Pullback Fisher Geometry for Optimal Activation Steering in Transformers (Wang, Zhao, Cao, Yao, Shu; South China University of Technology; arXiv 2605.17231v2, 18 Aug 2026)",
+  "sections_read": [
+    "Abstract",
+    "1 Introduction (with contributions list)",
+    "Figure 1 (page 2)",
+    "2 Related Work (Activation steering; Geometry-aware steering; Information geometry)",
+    "3 Preliminaries (Network and output distribution; The output metric; Concepts and off-target distortion; From concept direction to steering direction)",
+    "4 Method",
+    "4.1 The Pullback Metric (Theorem 1, Proposition 1)",
+    "4.2 Optimal Steering Direction (Theorem 2)",
+    "4.3 Preservation of Non-Target Behavior (Theorem 3)",
+    "4.4 Structure and Computation",
+    "5 Experiments",
+    "5.1 Setup (Models and layers; Concepts and evaluation; Steering task and matched comparison; Methods; Statistics) with Table 1",
+    "5.2 Geometry of the Intermediate Layers (Figure 2)",
+    "5.3 Off-Target Comparison Against Baselines (Figures 3, 4)",
+    "5.4 Geometric Ablation (Figures 5, 6)",
+    "5.5 Analysis of the Advantage Regime",
+    "6 Conclusion",
+    "References",
+    "Appendix A Proofs of the Main Results",
+    "A.1 Setting and Notation",
+    "A.2 Proof of Theorem 1 (Second-Order Steering Cost) (Lemmas 1-2)",
+    "A.3 Proof of Proposition 1 (Gauss-Newton Form)",
+    "A.4 Proof of Theorem 2 (Optimal Steering Direction)",
+    "A.5 Proof of Theorem 3 (Non-Target Optimality) (Definition 1, Lemma 3, Theorem 4, Remarks 5-6)",
+    "Appendix B Structure of the Pullback Metric",
+    "B.1 Layerwise Recursion (Theorem 7)",
+    "B.2 Conditioning (Theorem 8, Remark 9)",
+    "B.3 Effective Rank (Definition 2, Corollary 1)",
+    "B.4 Null Space and Near-Null Space (Theorem 10, Remark 11, Theorem 12)",
+    "Appendix C Geometry Measurements",
+    "C.1 Deviation from the Euclidean Metric (Definition 3, Theorem 13, Table 2)",
+    "C.2 Measured Geometry (Definition 4, Table 3)",
+    "Appendix D Regularization and Validity of the Linear Solve",
+    "D.1 Regularized Solve and Its Bias (Theorem 14, Proposition 2)",
+    "D.2 Validity Radius of the Second-Order Model (Theorem 15)",
+    "D.3 Stability Under an Inexact Metric (Theorem 16)",
+    "D.4 Numerical Study on a Synthetic Model (Table 4)",
+    "Appendix E Matrix-Free Computation at 8B Scale",
+    "E.1 Action of the Metric Without Forming It",
+    "E.2 Low-Rank Spectrum",
+    "E.3 Applying the Direction at Fixed Concept Efficiency",
+    "E.4 Frozen Jacobian Across Steps",
+    "E.5 Cost and Hyperparameters (Table 5)",
+    "E.6 Error Sources and a Known Boundary",
+    "E.7 Computational Environment",
+    "Appendix F Experimental Protocol",
+    "F.1 Concepts and Contexts (Table 6)",
+    "F.2 Targets and Step-Size Calibration",
+    "F.3 Localization of the Comparison Point",
+    "F.4 Off-Target Divergence",
+    "F.5 Aggregation",
+    "Appendix G Statistical Procedure and Full Results",
+    "G.1 Test and Correction (Table 7)",
+    "G.2 Outcome by Layer (Table 8)",
+    "G.3 Outcome by Comparison (Table 9)",
+    "G.4 Released Tables",
+    "Appendix H Reachability (Table 10)",
+    "Appendix I A Metric View of Existing Steering Methods",
+    "I.1 Excess Cost Is a Squared Distance (Theorem 17, Corollary 2)",
+    "I.2 Cost of Steering Under a Proxy Metric (Theorems 18-19, Corollary 3)",
+    "I.3 Additive Methods (Proposition 3)",
+    "Appendix J Depth Dependence of the Advantage",
+    "J.1 Measured Quantities (Table 11)",
+    "J.2 Results",
+    "J.3 GPT-2 Small",
+    "Appendix K The Output-Layer Metric at Intermediate Layers",
+    "K.1 Setup",
+    "K.2 Results (Tables 12, 13)",
+    "K.3 Why the Untransported Metric Underperforms (Table 14)",
+    "K.4 Summary"
+  ],
+  "setup": {
+    "task": "Activation steering of a binary verb-morphology concept at one next-token prediction step. Goal: push the concept probability P_W (mass on target forms over mass on base+target forms) to a prescribed level while moving the rest of the next-token distribution as little as possible.",
+    "data": "Three concepts from the Park et al. (2026) counterfactual protocol: third-person singular (run->runs), progressive (run->running), past (run->ran). Only pairs where both forms are single tokens. Contexts from the C4 validation split, kept only if the top-3 next tokens are all base or target forms with cumulative probability >= 0.7. Scanned 44k-166k sequences per concept; accepted 500 (GPT-2), 250 (Llama), 300 (Qwen) per concept; used 50 contexts per layer per concept on GPT-2 and Llama-3-8B, 100 on Qwen3-8B (Table 6). Same contexts reused across layers.",
+    "targets": "P_W in {0.3, 0.5, 0.7, 0.9}; 30 steering steps; each method's step size calibrated separately by line search; comparison point located by bisection between the two iterates bracketing the target.",
+    "models_and_sizes": "GPT-2 Small (d = 768; metric computed exactly), Llama-3-8B and Qwen3-8B (d = 4096; matrix-free approximation). Base vs instruct is not stated.",
+    "layers_positions": "Residual stream at an intermediate layer, at the single prediction position. GPT-2 Small layers {3, 6, 9, 11}; Llama-3-8B {8, 16, 24}; Qwen3-8B {6, 18, 27}. Main comparisons use all GPT-2 layers and the early and middle 8B layers; the deepest 8B layers (about 75% depth) are analysed separately.",
+    "core_objects": "H = Cov_p(w) (softmax Fisher over unembedding rows); J = Jacobian from layer l to the final representation; G = J^T H J (pullback Fisher metric, equal to the generalized Gauss-Newton matrix); q = J^T beta_W (pulled-back concept covector, beta_W a mean-difference probe on the final representation); optimal step delta_h* proportional to G^+ q.",
+    "approximation_8B": "Gv computed as J^T H (J v): central finite-difference JVP (eps = 1e-4, two partial forward passes) + top-K Fisher (K = 1000 tokens) + exact VJP (one partial backward); randomized eigendecomposition of rank 50 with oversampling 20 (140 metric-vector products, about 280 partial forward-pass equivalents per case); Jacobian frozen at h0 across the 30 steps; Tikhonov alpha = median positive eigenvalue; applied direction mixes a fixed concept component (c_min = 0.5 on 8B, 0.3 on GPT-2) with the normalized part of the Fisher direction orthogonal to the concept covector q-hat (Euclidean-orthogonal: delta_perp = delta_F - (delta_F . q-hat) q-hat, eq. 54-55). The Euclidean ablation is exactly this direction with the orthogonal component removed (E.3, p15). c_min differs by model and no selection procedure or sensitivity analysis is given.",
+    "baselines": "CAA, ActAdd, ITI, ReFT (ReFT-r1), Representation Surgery. References: Euclidean ablation (same pipeline, G replaced by identity) and Best-per-case oracle (lowest off-target baseline per case). Appendix K adds the untransported output-layer metric (M = H, Park et al. 2026) applied upstream.",
+    "controls": "Matched concept change (bisection to the exact target crossing); per-method step calibration; Euclidean ablation sharing covector, calibration and concept efficiency; one-sided paired Wilcoxon on log-ratios with Benjamini-Hochberg within model x aggregation-level families; cells with < 6 pairs marked underpowered; reachability reported separately (Appendix H); synthetic softmax model with exact quantities (Appendix D.4); pre-named predictor of where the gain should appear (concept-spectrum alignment, Appendix J).",
+    "compute": "Total compute (whole comparison, probably all methods plus the ablation, not FishBack alone): 31.4 GPU-hours for 600 GPT-2 cases, 10.8 for 450 Llama-3-8B cases, 30.8 for 900 Qwen3-8B cases; NVIDIA RTX PRO 6000 and H200; GPT-2 exact Jacobian needs 16 GB; 8B runs on an 80 GB card, 48 GB practical minimum."
+  },
+  "figures": [
+    {
+      "id": "Figure 1",
+      "page": 2,
+      "what_is_plotted": "Schematic of the method: hidden state h at layer l and a mean-difference concept probe beta_W; the Jacobian from l to the output and the softmax Fisher H = Cov_p(w) combine into G = J^T H J ('effective rank r << d'); the pulled-back covector q = J^T beta_W is turned into delta_h proportional to G^+ q, which is added back (h' = h + delta_h) at layer l.",
+      "takeaway": "Conceptual pipeline only: the steering direction is the concept gradient re-weighted by how much each residual direction moves the next-token distribution.",
+      "numbers": "None (schematic).",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Table 1",
+      "page": 5,
+      "what_is_plotted": "Median [IQR] of per-case ratio KL_method / KL_FishBack of off-target KL at matched concept change, win rate and n, pooled over concepts and targets, for GPT-2 Small (L3-L11), Llama-3-8B (L8, L16), Qwen3-8B (L6, L18).",
+      "takeaway": "FishBack has lower off-target KL than every baseline, the Euclidean ablation and the per-case oracle in pooled medians; IQRs often cross 1 (for example CAA, ReFT, Euclidean on Llama).",
+      "numbers": "GPT-2: CAA 1.42 [0.81, 3.03] 68.7% n=332; ActAdd 6.52 [2.32, 30.89] 93.9% n=198; ITI 2.01 [1.11, 5.59] 80.1% n=337; ReFT 2.67 [1.36, 8.52] 87.2% n=329; RepSurgery 1.97 [1.16, 4.99] 81.0% n=327; Euclidean 1.30 [1.03, 1.82] 80.1% n=366; Oracle 1.25 [0.75, 2.63] 63.5% n=359. Llama: CAA 2.22 [0.88, 5.66] 69.0% n=142; ActAdd 3.50 [1.63, 10.98] 84.5% n=84; ITI 3.08 [1.05, 7.91] 77.9% n=113; ReFT 2.20 [0.89, 5.60] 71.1% n=159; RepSurgery 2.75 [1.06, 7.07] 76.6% n=141; Euclidean 1.79 [0.90, 5.13] 70.3% n=236; Oracle 1.64 [0.75, 4.35] 64.3% n=221. Qwen: CAA 1.77 [0.94, 5.19] 71.3% n=223; ActAdd 2.93 [1.38, 8.47] 85.0% n=206; ITI 3.61 [1.37, 9.44] 87.6% n=193; ReFT 1.93 [0.94, 5.87] 70.3% n=192; RepSurgery 2.11 [1.00, 5.72] 74.5% n=235; Euclidean 2.45 [1.38, 4.84] 86.7% n=165; Oracle 1.49 [0.89, 4.29] 66.9% n=399.",
+      "text_matches_figure": "yes - abstract ranges 1.4-6.5x (GPT-2) and 1.8-3.6x (8B) match the table; the caption itself says pooled entries are descriptive."
+    },
+    {
+      "id": "Figure 2",
+      "page": 6,
+      "what_is_plotted": "(a) Normalized eigenvalue spectra lambda_i/lambda_max of G vs eigenvalue rank (log-log) for GPT-2 Small L3, L6, L9, L11. (b) Median effective rank as % of hidden size with IQR whiskers, for GPT-2 Small L3-L11, Llama-3-8B L8/L16, Qwen3-8B L6/L18.",
+      "takeaway": "G is very anisotropic; shallower GPT-2 layers concentrate more. The 8B bars are computed inside the retained rank-50 subspace, so they cannot exceed 50/4096 = 1.2% and are not comparable with the full-spectrum GPT-2 bars.",
+      "numbers": "(b) bar labels: GPT-2 L3 2.37%, L6 3.72%, L9 15.17%, L11 17.06%; Llama L8 0.10%, L16 0.14%; Qwen L6 0.08%, L18 0.11%. IQR for GPT-2 L9 about 5-19.5% and L11 about 7-20% (approx, read from figure). (a) curves fall to about 1e-2 to 1e-3 by rank ~100 and to about 1e-4 by rank ~500, then drop sharply to about 1e-6 at the tail near rank ~700-768 (approx, read from figure).",
+      "text_matches_figure": "partly - effective-rank numbers match Tables 2-3, but the text says the spectrum decays more than six orders of magnitude 'within the first few hundred eigendirections'; in the plot most of that drop happens in the last tail near rank ~700 of 768."
+    },
+    {
+      "id": "Figure 3",
+      "page": 6,
+      "what_is_plotted": "GPT-2 Small: box plots (log scale) of per-case off-target KL (case-level geometric mean over targets) at matched concept change, per layer (L3, L6, L9, L11), for FishBack, Euclidean, CAA, ActAdd, ITI, ReFT, RepSurgery, Best-per-case.",
+      "takeaway": "FishBack's median is lowest at every layer and the gap widens with depth; distributions overlap heavily (whiskers span 2-3 orders of magnitude for every method).",
+      "numbers": "Approx medians, read from figure: L3 FishBack ~1.8, Euclidean ~2.2, CAA ~3.2, Best ~3.2, others ~4; L6 FishBack ~0.8, Euclidean ~1.4, CAA ~1.5, ActAdd ~3.8; L9 FishBack ~0.7, Euclidean ~1.3, CAA ~1.05, ActAdd ~5.3, Best ~1.0; L11 FishBack ~0.14, Euclidean ~1.2, CAA ~1.1, ActAdd ~3.3, Best ~0.9.",
+      "text_matches_figure": "yes for the median ordering. Note that the gap between marginal medians at L11 (~8x) is much larger than the paired median ratio Euclidean/FishBack at L11 (~1.45 in Figure 5), so the box plots overstate the paired effect."
+    },
+    {
+      "id": "Figure 4",
+      "page": 6,
+      "what_is_plotted": "Same box plots for Llama-3-8B (L8, L16) and Qwen3-8B (L6, L18) under the matrix-free approximation; shared log axes.",
+      "takeaway": "FishBack has the lowest median at the early and middle 8B layers; Euclidean ablation sits near the baselines.",
+      "numbers": "Approx medians, read from figure: Llama L8 FishBack ~1.5 vs others ~3.5-6; Llama L16 FishBack ~0.7 vs others ~1.3-2.5; Qwen L6 FishBack ~1.5 vs others ~4-7; Qwen L18 FishBack ~0.9 vs Euclidean ~2.2 and others ~3-6.5. Lower whiskers reach ~1e-2 to 1e-3.",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Figure 5",
+      "page": 7,
+      "what_is_plotted": "GPT-2 Small: per-layer median (with IQR) of the per-case ratio Euclidean/FishBack off-target KL, per concept (3rd, -ing, past) and pooled, at L3, L6, L9, L11; dashed line at parity 1.",
+      "takeaway": "The metric alone helps, modestly (~1.1-1.5x), and more at deeper GPT-2 layers.",
+      "numbers": "Approx, read from figure: pooled ~1.10 (L3), ~1.24 (L6), ~1.27 (L9), ~1.45 (L11); L11 per concept 3rd ~1.58, -ing ~1.50, past ~1.33; L3 past ~1.00 with lower IQR ~0.92. Pooled IQR at L3 about 1.0-1.4.",
+      "text_matches_figure": "partly - pooled medians are above parity at every layer as stated, but the past-tense median at L3 sits at about parity."
+    },
+    {
+      "id": "Figure 6",
+      "page": 7,
+      "what_is_plotted": "Same Euclidean/FishBack ratio for Llama-3-8B (L8, L16) and Qwen3-8B (L6, L18), per concept and pooled, log axis.",
+      "takeaway": "The geometric gain is larger on the 8B models (~1.7-2.8x pooled) at the early and middle layers, but IQRs are wide.",
+      "numbers": "Approx, read from figure: Llama pooled ~1.7 (L8, IQR ~1.0-4.5), ~2.0 (L16, IQR ~0.7-5.5), past at L16 ~2.9 with upper IQR ~11; Qwen pooled ~2.2 (L6, IQR ~1.3-6.5), ~2.7 (L18, IQR ~1.5-4.5), -ing at L18 ~3.4.",
+      "text_matches_figure": "partly - medians are above parity as stated; at Llama L16 the lower IQR falls below 1."
+    },
+    {
+      "id": "Table 2",
+      "page": 13,
+      "what_is_plotted": "Exact pullback-Fisher geometry of GPT-2 Small, medians over 100 contexts per layer: condition number, entropy effective rank [IQR], r_eff/d, relative Frobenius deviation from the closest scalar metric.",
+      "takeaway": "G is far from any scaled identity at every layer; conditioning is ~1e7 everywhere; effective rank contracts toward shallower layers.",
+      "numbers": "L3: kappa 9.5e7, r_eff 18.2 [14.0, 25.4], 2.4%, Dev 0.996; L6: 7.1e7, 28.6 [20.7, 41.7], 3.7%, 0.994; L9: 5.0e7, 116.5 [39.3, 151.5], 15.2%, 0.978; L11: 4.9e7, 131.0 [51.7, 154.3], 17.1%, 0.980. Participation ranks about 6-34 of 768.",
+      "text_matches_figure": "yes - but the caption's '100 contexts per layer' does not match Table 6 (50 per concept per layer, i.e. 150 per layer evaluated); the paper does not explain the 100."
+    },
+    {
+      "id": "Table 3",
+      "page": 13,
+      "what_is_plotted": "Pullback-Fisher geometry of Llama-3-8B and Qwen3-8B within the retained rank-50 subspace: n, condition number, effective rank [IQR], r_eff/d.",
+      "takeaway": "Condition number grows toward shallower layers on both models; effective rank is single-digit at every 8B layer (and is bounded by 50 by construction).",
+      "numbers": "Llama L8: n=126, kappa 1.2e4, r_eff 4.25 [2.58, 7.67], 0.10%; L16: 117, 4.0e3, 5.63 [2.91, 11.22], 0.14%; L24: 93, 3.9e3, 4.45 [2.60, 11.96], 0.11%. Qwen L6: 291, 1.2e5, 3.15 [2.06, 5.14], 0.08%; L18: 292, 1.8e4, 4.54 [2.28, 6.64], 0.11%; L27: 289, 2.9e3, 6.07 [2.91, 9.67], 0.15%.",
+      "text_matches_figure": "partly - Section 5.5's condition-number drops (about 3x Llama, about 40x Qwen) match, but Appendix J.2 says the effective rank 'falls to single digits' at the deepest layers, while the table shows single digits at all 8B layers and Qwen's effective rank rising with depth."
+    },
+    {
+      "id": "Table 4",
+      "page": 14,
+      "what_is_plotted": "Synthetic softmax model at rho = 0.1, 300 cases per configuration: cosine between the Fisher direction and the exact KL minimizer, Euclidean/Fisher output-KL ratio, Spearman(kappa, ratio), and step size relative to the critical radius r_KL.",
+      "takeaway": "The Fisher direction is essentially the exact minimizer even far beyond the second-order validity radius; the gain over Euclidean grows with anisotropy.",
+      "numbers": "tiny: cos 0.997, ratio 2.39 [1.73, 4.46], r_s 0.29, step/r_KL 1183; small: 1.000, 1.58 [1.35, 2.00], 0.37, 82; medium: 1.000, 1.80 [1.51, 2.24], 0.56, 288; pooled: ratio 1.82 [1.46, 2.53], r_s 0.50, 239.",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Table 5",
+      "page": 15,
+      "what_is_plotted": "Steering hyperparameters for GPT-2 Small vs 8B models.",
+      "takeaway": "Recipe to copy for the matrix-free version.",
+      "numbers": "Fisher truncation K 5000 (GPT-2) / 1000 (8B); randomized rank r - / 50; oversampling - / 20; concept efficiency c_min 0.3 / 0.5; Tikhonov alpha = median positive eigenvalue; finite difference eps 1e-4; steps T = 30; Jacobian recomputed (GPT-2) / frozen at h0 (8B).",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Table 6",
+      "page": 16,
+      "what_is_plotted": "Evaluation-set construction per model and concept: sequences scanned, accepted, used per layer.",
+      "takeaway": "Very few C4 positions qualify (the top-3 tokens must all be concept forms); the evaluation sets are small.",
+      "numbers": "GPT-2: third 165,925 / 500 / 50; ing 139,174 / 500 / 50; past 57,313 / 500 / 50. Llama: 73,204 / 250 / 50; 58,379 / 250 / 50; 44,209 / 250 / 50. Qwen: 74,071 / 300 / 100; 59,635 / 300 / 100; 55,210 / 300 / 100.",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Table 7",
+      "page": 17,
+      "what_is_plotted": "Size of each Benjamini-Hochberg family per model and aggregation level.",
+      "takeaway": "Multiple-comparison families are stated explicitly.",
+      "numbers": "GPT-2 target 288, folded 72; Llama target 216, folded 45 + 9; Qwen target 216, folded 45 + 9.",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Table 8",
+      "page": 17,
+      "what_is_plotted": "Folded cells (concept x comparator) tested and surviving BH correction, per layer per model.",
+      "takeaway": "On GPT-2 Small the significant share rises with depth and is complete at L11 (about 92% depth). On both 8B models significance holds at early and middle layers and collapses at about 75% depth (one sampled layer each: Llama L24, Qwen L27).",
+      "numbers": "GPT-2: L3 10/16, L6 14/16, L9 16/18, L11 18/18. Llama: L8 15/17, L16 10/18, L24 1/18. Qwen: L6 15/18, L18 18/18, L27 2/18.",
+      "text_matches_figure": "yes (paper.txt interleaves this table with Table 7; the page image resolves it)"
+    },
+    {
+      "id": "Table 9",
+      "page": 17,
+      "what_is_plotted": "Target-level cells surviving correction, pooled over concepts, layers and targets, split into baseline comparisons and the Euclidean ablation.",
+      "takeaway": "Roughly 43-79% of target-level cells are significant (baselines 77/43/64%, ablation 79/56/67%); the 8B models are weaker than GPT-2, partly because Table 9 includes the deepest 8B layers (L24/L27) where significance collapses.",
+      "numbers": "GPT-2: baselines 173/224, ablation 38/48. Llama: baselines 75/176, ablation 20/36. Qwen: baselines 115/180, ablation 24/36.",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Table 10",
+      "page": 18,
+      "what_is_plotted": "Percentage of targets reached per method and layer, pooled over concepts and the four P_W levels.",
+      "takeaway": "Fixed-direction baselines often fail to reach targets at early layers, so the matched comparisons drop exactly the cases where they struggle. On Qwen the Euclidean ablation reaches very few targets.",
+      "numbers": "GPT-2 (L3/L6/L9/L11): FishBack 100/100/99.6/91.2; Euclidean 100/100/100/100; CAA 66.7/85.2/100/100; ActAdd 12.7/14.8/73.8/96.9; ITI 71.4/88.6/99.2/100; ReFT 69.8/84.1/96.9/99.2; RepSurgery 60.3/86.4/98.5/100. Llama (L8/L16/L24): FishBack 98.2/100/99.7; Euclidean 98.2/99.8/100; CAA 56.3/62.4/87.1; ActAdd 28.6/41.9/52.7; ITI 54.8/39.3/55.9; ReFT 67.5/65.0/71.0; RepSurgery 58.7/59.8/57.0. Qwen (L6/L18/L27): FishBack 75.2/67.9/68.5; Euclidean 36.3/22.7/23.3; CAA 55.0/51.7/54.3; ActAdd 52.2/48.6/46.0; ITI 45.7/44.9/40.8; ReFT 48.1/45.2/50.8; RepSurgery 58.1/56.5/44.2.",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Table 11",
+      "page": 20,
+      "what_is_plotted": "Spearman correlations between two spectral proxies (q^T G q, and ||H^{1/2} J q|| / ||J q||) and the per-case log gain over Euclidean steering, per layer.",
+      "takeaway": "On the 8B models the per-case gain becomes predictable from concept-spectrum alignment only at the deepest layers; on GPT-2 there is no consistent pattern.",
+      "numbers": "GPT-2 (n; rho_qGq; rho_align): L3 13; -0.16; -0.17. L6 22; 0.26; 0.16. L9 27; 0.26; -0.30. L11 28; 0.07; -0.41*. Llama: L8 122; 0.08; -0.03. L16 117; 0.24*; 0.21*. L24 93; 0.42***; 0.50***. Qwen: L6 106; -0.13; -0.16. L18 67; 0.23; 0.26*. L27 68; 0.56***; 0.62***.",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Table 12",
+      "page": 21,
+      "what_is_plotted": "Off-target KL ratio (output-layer metric M = H applied upstream) / (pullback metric), win rate and n, on the cohort where both reach all four targets.",
+      "takeaway": "Transporting the metric through the Jacobian matters: the untransported Park et al. metric is clearly worse on GPT-2 and Qwen; Llama has too few cases.",
+      "numbers": "GPT-2: L3 1.35* 67% n=108; L6 1.62* 86% n=121; L9 2.72* 89% n=109; L11 2.60* 97% n=86. Llama: L8 0.98 44% n=18; L16 1.16 80% n=5; L24 1.33 60% n=5. Qwen: L6 1.41* 82% n=22; L18 1.98* 83% n=12; L27 3.56* 100% n=13.",
+      "text_matches_figure": "partly - K.4 says the pullback wins 'in every cell measured', but Llama L8 has ratio 0.98 and a 44% win rate."
+    },
+    {
+      "id": "Table 14",
+      "page": 21,
+      "what_is_plotted": "Median cosines between raw solved directions: cos(delta_H, delta_G), cos(q, delta_H), cos(q, delta_G).",
+      "takeaway": "On 8B models the untransported metric barely rotates the covector (cos ~0.95), so it acts like flat steering; the pullback rotates more at shallow layers.",
+      "numbers": "GPT-2 (L3/L6/L9/L11): cos(dH,dG) 0.11/0.14/0.20/0.29; cos(q,dH) 0.84/0.81/0.72/0.32; cos(q,dG) 0.13/0.19/0.33/0.45. Llama (L8/L16/L24): 0.67/0.72/0.73; 0.95/0.95/0.92; 0.71/0.75/0.82. Qwen (L6/L18/L27): 0.65/0.72/0.78; 0.95/0.95/0.90; 0.68/0.76/0.87.",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Table 13",
+      "page": 21,
+      "what_is_plotted": "Same comparison as Table 12 on the wider single-target cohort for the 8B models, with count of significant concept-target cells out of 12.",
+      "takeaway": "On the larger cohort the pullback is better at every 8B layer, but few cells survive correction on Llama.",
+      "numbers": "Llama: L8 1.11 64% n=146 2/12; L16 2.60 73% n=135 1/12; L24 2.98 71% n=81 0/12. Qwen: L6 1.52 75% n=169 4/12; L18 1.91 77% n=105 6/12; L27 2.45 86% n=138 5/12.",
+      "text_matches_figure": "yes; but K.2 mixes cohorts when it quotes the depth trend (GPT-2 and Qwen ranges from Table 12, Llama range from Table 13)."
+    }
+  ],
+  "key_results": [
+    {
+      "claim": "On GPT-2 Small, FishBack lowers off-target KL at matched concept change by median factors of 1.4-6.5x against individual baselines.",
+      "quote": "On GPT-2 Small, this non-Euclidean geometry is borne out empirically, and our method lowers off-target KL divergence by median factors of 1.4–6.5x against individual steering baselines.",
+      "page": 1
+    },
+    {
+      "claim": "On Llama-3-8B and Qwen3-8B, the reduction is 1.8-3.6x, but only at the early and middle layers.",
+      "quote": "On Llama-3-8B and Qwen3-8B, it lowers off-target KL by median factors of 1.8–3.6x against individual baselines at the early and middle layers.",
+      "page": 1
+    },
+    {
+      "claim": "Theory: under the second-order model, steering with a flat metric is never cheaper than steering with G.",
+      "quote": "steering under a flat metric is never cheaper than steering under G, for any concept direction whatsoever, with equality only in a degenerate case.",
+      "page": 5
+    },
+    {
+      "claim": "The intermediate-layer metric is far from Euclidean (exact, GPT-2 Small).",
+      "quote": "the deviation from the closest scaled identity (the deviation identity of Appendix C) exceeds 97% in relative Frobenius norm at every layer",
+      "page": 6
+    },
+    {
+      "claim": "Only a small fraction of residual directions move the output in GPT-2 Small.",
+      "quote": "the median effective rank per layer spans 2–17% of the hidden dimension across layers 3–11",
+      "page": 6
+    },
+    {
+      "claim": "Against the per-case best baseline, the margin is thin.",
+      "quote": "Against the Best-per-case oracle, the median ratio is 1.25 with a 64% win rate—a thinner margin, and a bar no single fixed method faces in practice.",
+      "page": 6
+    },
+    {
+      "claim": "Swapping G for the identity, with everything else fixed, isolates a modest metric-only gain on GPT-2.",
+      "quote": "On GPT-2 Small the ratio sits above parity at every layer, with a pooled median of 1.30 and an 80% win rate",
+      "page": 7
+    },
+    {
+      "claim": "The metric-only gain is larger at 8B early and middle layers.",
+      "quote": "on the 8B models it widens to 1.79 (Llama-3-8B) and 2.45 (Qwen3-8B) at the early and middle layers.",
+      "page": 7
+    },
+    {
+      "claim": "At about 75% depth on the 8B models, G flattens and the geometric gain is no longer significant.",
+      "quote": "lowers the ceiling of Appendix I on the attainable gain, and the Euclidean gap of Table 1 is no longer significant.",
+      "page": 7
+    },
+    {
+      "claim": "At the deepest 8B layers, the per-case gain is predicted by how the concept covector sits in G's spectrum.",
+      "quote": "with case-level Spearman correlations rising from near zero at the early layers to 0.50 (Llama-3-8B) and 0.62 (Qwen3-8B) at the deepest ones",
+      "page": 7
+    },
+    {
+      "claim": "Significance collapses at the deepest 8B layers.",
+      "quote": "collapses at roughly 75% relative depth, where one cell of eighteen survives on Llama-3-8B and two of eighteen on Qwen3-8B.",
+      "page": 17
+    },
+    {
+      "claim": "On GPT-2 Small the depth trend is the opposite of 8B: the share of significant cells rises with depth and is complete at the deepest layer (L11).",
+      "quote": "On GPT-2 Small the proportion rises with depth and is complete at the deepest layer.",
+      "page": 17
+    },
+    {
+      "claim": "GPT-2 Small's G does not flatten with depth (condition number of order 1e7 at every layer), so the deep-layer collapse is an 8B finding only.",
+      "quote": "varying by less than a factor of two across depth, so the flattening that drives the pattern above does not occur here",
+      "page": 20
+    },
+    {
+      "claim": "On Qwen3-8B, the geometric component contributes to reaching more targets (FishBack 67.9-75.2% vs Euclidean ablation 22.7-36.3%); the authors say this is not a separate advantage of the method, since the ablation inherits the fixed c_min construction and advances too slowly.",
+      "quote": "The Euclidean ablation reaches between 22.7% and 36.3% of targets, well below every fixed baseline, while FishBack reaches between 67.9% and 75.2%.",
+      "page": 18
+    },
+    {
+      "claim": "Reachability is not uniformly better for FishBack.",
+      "quote": "at GPT-2 Small's layer 11 the ablation reaches every target while FishBack reaches 91.2%.",
+      "page": 17
+    },
+    {
+      "claim": "Euclidean cosine to the optimal direction is the wrong comparison; G-weighted error is the right one.",
+      "quote": "Cosine similarity to the optimal direction is therefore the wrong diagnostic; the relevant quantity is the G-weighted spectral error of (60).",
+      "page": 18
+    },
+    {
+      "claim": "Using the wrong metric only costs when it misscales the directions the concept occupies, by different amounts.",
+      "quote": "A proxy is expensive only when it misscales the directions the concept actually occupies, by differing amounts.",
+      "page": 19
+    },
+    {
+      "claim": "The output-layer (Park et al.) metric applied upstream is nearly flat on 8B models.",
+      "quote": "On both 8B models the direction produced by the output-layer metric is nearly parallel to the raw covector, with median cosine near 0.95",
+      "page": 21
+    },
+    {
+      "claim": "The Jacobian transport, not the softmax geometry itself, is the new piece.",
+      "quote": "The geometry that Park et al. (2026) identify is the right geometry, but it is the right geometry for the final representation.",
+      "page": 21
+    },
+    {
+      "claim": "Synthetic check: the Fisher direction stays useful far beyond the second-order validity radius.",
+      "quote": "the radius that governs the accuracy of the KL value is not the radius that governs the usefulness of the direction.",
+      "page": 14
+    },
+    {
+      "claim": "A frozen Jacobian beats recomputing it at 8B.",
+      "quote": "Recomputing the Jacobian at every step was both about 30 times more expensive and less accurate",
+      "page": 15
+    },
+    {
+      "claim": "Per-case cost at 8B.",
+      "quote": "The dominant cost per case is the initial decomposition, 140 metric-vector products or roughly 280 partial forward-pass equivalents",
+      "page": 15
+    },
+    {
+      "claim": "The untransported output-layer metric applied upstream reaches far fewer targets than the pullback (22-37% Llama, 13-20% Qwen vs 98-100%).",
+      "quote": "but only 22–37% on Llama-3-8B and 13–20% on Qwen3-8B, against 98–100% for the pullback",
+      "page": 21
+    },
+    {
+      "claim": "Applied upstream, the output-layer metric is no better than flat steering on the 8B models and worse than flat on GPT-2 Small.",
+      "quote": "the Euclidean ablation achieving lower off-target divergence at three of four layers",
+      "page": 21
+    },
+    {
+      "claim": "The transport gain grows toward the output layer on all three models, with no mechanism offered.",
+      "quote": "so the transport matters most where least of it is applied; we report this as measured and offer no mechanism for it.",
+      "page": 21
+    }
+  ],
+  "methods": [
+    {
+      "name": "Pullback Fisher metric G = J^T H J at layer l (and its top-k eigenspace as the 'output-sensitive subspace')",
+      "what_it_measures": "To second order, how much a residual-stream displacement at layer l moves the full next-token distribution (KL). Its top eigenvectors are the few directions the downstream network actually reads at this operating point (single-digit effective rank at 8B within a rank-50 basis; tens to hundreds in GPT-2).",
+      "which_fate_it_could_diagnose": "Fate 2 (bypass): if the correct-answer probe direction w at layer l has a small G-Rayleigh quotient (w^T G w / w^T w), or little energy in G's top-k eigenspace, the decodable signal is locally output-inert. Comparing flipped vs resisted items (matched on prior confidence) at the answer position after pushback is our extension; the paper never uses probes this way.",
+      "causal_followup_it_allows": "Patch or inject along w vs along its projection onto G's top-k eigenspace and check that only the projected part changes the answer. This tests causal controllability only, not endogenous mediation.",
+      "data_and_compute_needed": "Matrix-free: one metric-vector product = two partial forwards (finite-difference JVP) + one partial backward; rank-50 randomized eigendecomposition = 140 products (~280 partial forward-pass equivalents) per item per layer. The paper ran 8B models on 48-80 GB GPUs. 9B should be similar; 27B needs more memory (our estimate, not tested in the paper).",
+      "code_available": "Not stated. The text says per-cell result tables accompany the submission; no repository link."
+    },
+    {
+      "name": "Pulled-back concept covector q = J^T beta (gradient of an output concept score at layer l)",
+      "what_it_measures": "The residual direction along which the output concept score (for us: the logit difference correct answer minus sycophantic answer, using unembedding rows) rises fastest at the current activation.",
+      "which_fate_it_could_diagnose": "Bypass vs readout failure (fates 1-2): compare the probe direction w (what is decodable) with q (what the output reads), in the G metric rather than by Euclidean cosine. Override (fate 4): compute q for the correct and for the user-asserted answer and measure the projection of the pushback-induced activation change Delta h onto each, then check which grows. Our extension.",
+      "causal_followup_it_allows": "Steer along G^+ q_correct (FishBack) at the layer where the alignment of w and q differs between flipped and resisted items; see if it restores the correct answer at low off-target KL.",
+      "data_and_compute_needed": "One backward pass per item per layer for q; cheap.",
+      "code_available": "Not stated."
+    },
+    {
+      "name": "Spectral alignment proxies q^T G q and ||H^{1/2} J q|| / ||J q|| (Appendix J)",
+      "what_it_measures": "How much curvature the concept direction meets, and what fraction of the pulled-back concept direction the output Fisher keeps. Both are scalars per item.",
+      "which_fate_it_could_diagnose": "Per-item readout strength. A low value for the correct-answer covector in flipped items vs resisted items would fit readout or threshold failure (fate 1) or not-routed (fate 3). Needs the logit-margin control.",
+      "causal_followup_it_allows": "Predict where the metric correction helps over flat steering: the paper's 'realized gain' is the log-ratio of off-target KL between the Euclidean ablation and FishBack (J.1, p20), and the proxies predict it only at deep 8B layers (Spearman 0.42-0.62). Using them to predict which items an injection can rescue is our extension and untested.",
+      "data_and_compute_needed": "A few metric-vector products per item; cheap once the JVP/VJP machinery exists.",
+      "code_available": "Not stated."
+    },
+    {
+      "name": "Proxy-metric cost ratio and Fisher-Pythagorean identity (Appendix I)",
+      "what_it_measures": "The excess output cost of any direction vs the optimum, equal to the squared G-length of the difference; for a wrong metric M the cost ratio is 1 + Var_w(b)/E_w(b)^2 over the mismatch spectrum.",
+      "which_fate_it_could_diagnose": "Fate 5 (transformed) vs fate 2 (bypass): two directions that differ only along flat (low-G) directions are functionally the same. So 'the probe direction rotated' should be judged by G-weighted difference, not Euclidean angle. Our extension.",
+      "causal_followup_it_allows": "Rank candidate fix directions (probe direction, CAA mean difference, DPO-induced shift) by G-weighted excess cost before running them.",
+      "data_and_compute_needed": "Needs G (or its top-50 eigenpairs) per item; same cost as method 1.",
+      "code_available": "Not stated."
+    },
+    {
+      "name": "Layer recursion G(l) = A_l^T G(l+1) A_l (Appendix B)",
+      "what_it_measures": "How the output metric is carried down through each layer's Jacobian (a congruence transform), with bounds on conditioning and on the near-null space.",
+      "which_fate_it_could_diagnose": "Group angle: track the top-k eigenspace of G(l) across layers and token positions as a path on the Grassmannian, using principal angles between adjacent layers and between that subspace and the correct-answer probe subspace. The layer where the probe subspace leaves the output-sensitive subspace, or where flipped and resisted paths fork, would localize bypass or not-routed. This is our extension; the paper never tracks subspaces.",
+      "causal_followup_it_allows": "Intervene (patch or FishBack-steer) at the fork layer; ablate the attention or MLP block whose Jacobian A_l rotates the probe out of the sensitive subspace.",
+      "data_and_compute_needed": "Top-50 eigenpairs of G at several layers per item: about 140 products per layer per item.",
+      "code_available": "Not stated."
+    },
+    {
+      "name": "FishBack steering delta_h proportional to G^+ q, applied at fixed concept efficiency and iterated with bisection to a matched target",
+      "what_it_measures": "Not a diagnostic: it is an intervention that reaches a prescribed concept change with the least off-target KL.",
+      "which_fate_it_could_diagnose": "Used as the Stage B injection for fate 3 (not routed) and fate 1 (threshold): inject the correct answer at an early or middle layer with minimal collateral change. Compare with CAA and plain DPO at matched flip-back rate, scoring off-target KL.",
+      "causal_followup_it_allows": "Removed-or-hidden recheck: after the fix, re-run the fate probes and G-alignment to see whether the readout changed or only the output was patched.",
+      "data_and_compute_needed": "About 280 partial forwards + 30 steps x ~2 per item per layer (p15), plus line-search calibration and bisection per case. Paper total for the whole comparison (all methods and the ablation): 10.8 GPU-h for 450 Llama-3-8B cases and 30.8 GPU-h for 900 Qwen3-8B cases.",
+      "code_available": "Not stated."
+    }
+  ],
+  "controls_worth_copying": [
+    "Matched on-target change: bisect between the two iterates bracketing the target so every method is scored at exactly the same concept level. For us: compare fixes at the same flip-back rate or the same answer-probability level.",
+    "A metric-only ablation that shares covector, calibration and concept efficiency, so the two runs differ by exactly one term (our analogue: same probe and same layer, only the geometry changes).",
+    "Calibrate each method's step size separately by line search, rather than a shared step size that suits one method.",
+    "Report reachability separately, because matched comparisons silently drop the cases a method cannot reach (selection effect).",
+    "Wilcoxon signed-rank on log-ratios (not raw ratios) with Benjamini-Hochberg within explicit families; mark cells with fewer than 6 pairs as underpowered.",
+    "Best-per-case oracle as a hard reference bar.",
+    "A three-rung metric ladder (identity / output metric applied upstream / pullback) to show which ingredient carries the gain.",
+    "A synthetic model where exact quantities are known, to check the approximation and the direction beyond its validity radius.",
+    "Name the predictor of where the effect should appear in advance (concept-spectrum alignment), then test it per layer."
+  ],
+  "pitfalls": [
+    {
+      "pitfall": "8B effective ranks are computed inside the retained rank-50 subspace, so they are capped at 50/4096 = 1.2% by construction. The claim that 8B models 'concentrate further' than GPT-2 (full spectrum), and that rank 50 'captures essentially all' the mass, is partly circular.",
+      "quote": "the median effective rank, computed within the rank-50 subspace retained by the approximation, falls below 0.2% of d = 4096",
+      "page": 6
+    },
+    {
+      "pitfall": "Matched comparisons only include cases both methods reach; weak baselines (ActAdd) are compared only where they did well.",
+      "quote": "the ratios reported for it describe the cases where it did reach the target, which are the cases where it was competitive.",
+      "page": 17
+    },
+    {
+      "pitfall": "Contexts are reused across layers, so pooled numbers are not independent.",
+      "quote": "a context contributes one case per layer, which is why the pooled rows of Table 1 are treated as descriptive rather than confirmatory.",
+      "page": 16
+    },
+    {
+      "pitfall": "Running signed-rank tests on raw ratios gives false positives (the authors made this mistake first).",
+      "quote": "an early version of our analysis applied the test to raw ratios and produced significant cells that did not survive the corrected procedure.",
+      "page": 17
+    },
+    {
+      "pitfall": "Euclidean cosine between a probe direction and a causal direction can mislead; errors along flat directions cost nothing at the output.",
+      "quote": "Cosine similarity to the optimal direction is therefore the wrong diagnostic; the relevant quantity is the G-weighted spectral error of (60).",
+      "page": 18
+    },
+    {
+      "pitfall": "The applied direction is not pure G^+ q: a fixed concept component (c_min) is forced in because the regularized solve barely moves the concept. So the 'optimal' theorem and the evaluated method differ.",
+      "quote": "can carry a small component along the concept covector when the spectrum is ill-conditioned, so that reaching a prescribed level of P W requires impractically large steps.",
+      "page": 15
+    },
+    {
+      "pitfall": "Text-table mismatch: the deep-layer story says effective rank 'falls to single digits', but Table 3 shows single digits at every 8B layer and Qwen's rank rising with depth.",
+      "quote": "The effective rank of G there falls to single digits, so the subspace in which the correction can act is narrow",
+      "page": 20
+    },
+    {
+      "pitfall": "Overclaim: 'every cell measured', yet Table 12 Llama L8 has ratio 0.98 (44% win).",
+      "quote": "steering under the transported metric produces less off-target distortion than steering under the output-layer metric applied upstream, in every cell measured",
+      "page": 21
+    },
+    {
+      "pitfall": "The non-target optimality theorem needs a separability condition that holds exactly only in a special case.",
+      "quote": "which holds exactly when all counterfactual pairs share the same within-pair log-odds.",
+      "page": 4
+    },
+    {
+      "pitfall": "A direction in G's near-null space at an early layer is not evidence of erasure: near-nullity is numerical and LayerNorm does not create exact kernels. Do not read 'low G' as 'erased'.",
+      "quote": "exact nullity therefore does not accumulate merely because normalization layers are traversed.",
+      "page": 12
+    },
+    {
+      "pitfall": "Concepts are restricted to single-token forms at one prediction step; multi-token factual answers need a first-token proxy.",
+      "quote": "only pairs whose two forms are both single tokens in the model's vocabulary are retained",
+      "page": 16
+    },
+    {
+      "pitfall": "Figure 2 overstated in the text: most of the six-order drop is in the last tail of the spectrum, not within the first few hundred eigendirections.",
+      "quote": "the spectrum decays by more than six orders of magnitude within the first few hundred eigendirections",
+      "page": 6
+    },
+    {
+      "pitfall": "Cross-cohort ratios do not compose; K.2's depth trend mixes Table 12 and Table 13 cohorts.",
+      "quote": "the three pairwise comparisons rest on different cohorts, since each requires both of its own methods to succeed, so the ratios do not compose",
+      "page": 21
+    },
+    {
+      "pitfall": "One significant negative correlation on GPT-2 is left unexplained.",
+      "quote": "We therefore read the negative coefficient at layer 11 as unexplained rather than as evidence against the account",
+      "page": 20
+    },
+    {
+      "pitfall": "The 8B approximation's fidelity is asserted, not measured: no exact-vs-approximate comparison exists at 8B, and E.6's checks are one-line statements without numbers. The paper reports eigenvalues and the direction G^-1 q only, never eigenvector or subspace accuracy. For our group angle (principal angles between top-k eigenspaces across layers, flipped vs resisted), eigenspace stability at rank 50 with effective rank 3-6 is untested, so fork-layer claims need a repeat-seed check on our side.",
+      "quote": "Each component is validated in Appendix E.",
+      "page": 5
+    },
+    {
+      "pitfall": "E.6 validation example: the frozen-Jacobian drift is reported only qualitatively, with no number.",
+      "quote": "Freezing the Jacobian introduces drift, which was measured to be smaller than the noise of re-estimation.",
+      "page": 15
+    },
+    {
+      "pitfall": "The metric-only gain is the value of one G-informed orthogonal correction added to a shared c_min * q-hat term, with c_min set per model (0.3 / 0.5) without a stated selection procedure or sensitivity check.",
+      "quote": "The Euclidean ablation of the main paper is exactly (55) with this second component removed",
+      "page": 15
+    },
+    {
+      "pitfall": "For our bypass test (our extension): H = Cov_p(w) is taken under the current predictive distribution, so G's scale and rank depend on predictive entropy. The paper selects mid-entropy contexts by construction; flipped and resisted items after pushback will differ in entropy, so match on predictive entropy or use scale-free statistics. 'Little mass in G's top eigenspace' also needs a null (a random direction has about k/d, ~0.1% at 8B): compare to random directions and to q. The paper does not say whether f (layer l to final) holds other positions fixed; if so, G covers only the same-position path and pushback evidence at earlier tokens is outside it.",
+      "quote": "a cumulative probability of at least 0.7",
+      "page": 16
+    },
+    {
+      "pitfall": "Table 11 selection: Qwen n = 106/67/68 of 300 tracks the Euclidean ablation's reach rate, so the deep-layer correlations are computed on the subset where flat steering succeeded; GPT-2 n = 13-28 of 150 is unexplained attrition. The 'named in advance' predictor is the authors' claim, and 4 of 9 layer-level tests are non-significant.",
+      "quote": "at that sample size a correlation of 0.3 is not distinguishable from zero.",
+      "page": 20
+    },
+    {
+      "pitfall": "'Do not apply the output-layer Fisher upstream' is significant on GPT-2 and Qwen only; on Llama it is directionally consistent but not significant.",
+      "quote": "the evidence on Llama-3-8B is directionally consistent but does not reach significance in either cohort",
+      "page": 21
+    }
+  ],
+  "limitations_quote": "The fourth approximation also marks the boundary of the method. At roughly 75% relative depth the conditioning of G has flattened considerably",
+  "limitations_page": 15,
+  "future_work_quote": "none stated",
+  "future_work_page": null,
+  "future_work_note": "The paper has no limitations or future-work section. The closest limitation statements are E.6 (deep-layer boundary), H (reachability not uniformly in their favour), J.3 (unexplained GPT-2 negative correlation) and I.3 ('a limitation of this framing': any direction can be written as M^-1 q-hat for some M). No future work is stated anywhere (checked the Conclusion and all appendices), so future_work_quote is 'none stated'.",
+  "bears_on_fates": [
+    {
+      "fate": "1 readout/threshold failure",
+      "how": "q (the gradient of the correct-minus-sycophantic logit difference at layer l) and the proxy q^T G q say how strongly the output reads a direction at that point. Weak readout of the correct covector together with intact decodability fits a threshold failure. FishBack gives a low-collateral way to push the margin. The paper studies none of this directly.",
+      "strength": "weak (tool only)"
+    },
+    {
+      "fate": "2 bypass",
+      "how": "The most direct link. G defines which residual directions are output-relevant at the operating point. A correct-answer probe direction with little mass in G's top eigenspace is locally decodable but causally inert. This gives a cheap, model-derived bypass test per item. It is local and second order, about the whole next-token distribution, and is our extension.",
+      "strength": "moderate as a method; no evidence in this paper"
+    },
+    {
+      "fate": "3 not routed",
+      "how": "FishBack-style injection works at early and middle layers (98-100% reachability on GPT-2 and Llama, 68-75% on Qwen), so it can supply the 'injection works' half of not-routed. The 'model never carries it' half needs our own activation comparison.",
+      "strength": "weak-moderate"
+    },
+    {
+      "fate": "4 override",
+      "how": "Two competing covectors (correct vs user-asserted answer) under the same G give a principled way to compare their output pull at a layer. Not done in the paper.",
+      "strength": "weak"
+    },
+    {
+      "fate": "5 transformed",
+      "how": "The layer recursion (congruence by A_l) and G-weighted distances let us ask whether a rotated probe direction is still output-equivalent; Procrustes could be run after G^{1/2} whitening. Our extension.",
+      "strength": "weak"
+    },
+    {
+      "fate": "6 erased",
+      "how": "Mostly a caution: near-null G directions at early layers reflect numerical near-nullity, not exact kernels, so low output sensitivity must not be read as erasure.",
+      "strength": "weak (caution)"
+    }
+  ],
+  "bears_on_group_angle": "FishBack supplies a model-derived Riemannian metric per layer and per token (G = J^T H J) whose top eigenspace is a natural 'output-sensitive subspace' (single-digit effective rank at 8B within a rank-50 basis), plus a layer recursion G(l) = A_l^T G(l+1) A_l. It does NOT track subspaces across layers or tokens, compute principal angles, Grassmannian paths, speed or curvature, or compare item classes. On manifold vs linear steering it is a third option: a linear step under a local metric, re-solved along the trajectory exactly only on GPT-2 (at 8B the Jacobian is frozen at h0 and only the Fisher and covector are updated, E.4). It contrasts itself with data-fitted manifold methods (Wurgaft et al. 2026 = 2605.05115, our c5, and Raval et al. 2026 'Curveball'), saying they obtain the geometry from data with no optimality guarantee, but it runs no manifold baseline (all five baselines are linear), so it gives no evidence on model-derived local metric vs data-fitted manifold. For our group angle it gives (i) the right inner product for comparing probe and causal subspaces (G-weighted, not Euclidean cosine), (ii) a candidate subspace to track across layers (top-k eigenvectors of G), whose principal angles to the correct-answer probe subspace could fork between flipped and resisted items, and (iii) a warning that at 8B the late layer sampled (about 75% depth) has flatter G and geometric correction there buys little; GPT-2 shows no such flattening, and the paper never measures eigenspace stability, which our subspace tracking would depend on.",
+  "architecture_location": "Residual stream at an intermediate layer, at the single next-token prediction position. The depth profile is model-dependent. 8B: gain at Llama-3-8B L8/L16 and Qwen3-8B L6/L18, collapse at L24 / L27 (1/18 and 2/18 significant folded cells; about 75% depth; one sampled layer each, none between 16 and 24 or beyond 27). GPT-2 Small: gain rises with depth and is largest at L11 (about 92% depth; 18/18 cells), and its condition number stays ~1e7 at every layer, so no flattening. The paper's account of the 8B collapse is that G's conditioning flattens (condition number down ~3x on Llama and ~40x on Qwen vs early layers), but on Llama kappa does not separate L16 (4.0e3) from L24 (3.9e3) although significant cells are 10/18 vs 1/18, and effective rank does not separate them either (5.63 vs 4.45). Nothing tested at 9B-27B.",
+  "actionable_fix": "Inference-time: replace additive CAA-style injection with pullback-Fisher steering (delta_h proportional to G^+ q, at fixed concept efficiency) at early or middle layers to restore the correct answer with less collateral change of the next-token distribution. A candidate Stage B fate-matched fix for not-routed and threshold items, to compare against plain DPO at matched flip-back rate. Monitoring: watch whether the correct-answer probe signal has a component in G's top eigenspace; a decodable but G-null signal flags bypass. Do not apply the output-layer Fisher (Park et al.) upstream without the Jacobian. Caveat: FishBack is a per-item optimiser (about 140 metric-vector products, ~280 partial forwards, plus 30 steps and bisection per case, one next-token step, no generation test), so treat it as a research tool or oracle upper bound for Stage B, not a deployable replacement for CAA. The 'no untransported metric upstream' advice is significant on GPT-2 and Qwen only, directionally consistent on Llama.",
+  "reuse_verdict": "Adapt as a tool, not as evidence. Copy: (1) the matrix-free G machinery (finite-difference JVP + VJP + top-K Fisher + rank-50 randomized eigensolve) to get per-item output-sensitive subspaces; (2) the G-weighted comparison of probe vs causal directions; (3) the matched-target bisection, metric-only ablation, log-ratio Wilcoxon + BH and reachability reporting. Do not cite its 8B 'concentration' numbers as a property of the models, because they are capped by the rank-50 truncation.",
+  "relevance_to_project": "Medium. This is a steering-methods paper on verb morphology at GPT-2 and 8B scale: no layer-wise decodability probes (only a mean-difference concept probe on the final representation, pulled back as q = J^T beta_W), no factual or sycophancy task, no fates. Its value to us is a cheap, model-derived per-item test of whether a decodable correct-answer direction lies where the output actually reads (a bypass diagnostic and a subspace to track across layers), plus a lower-collateral injection for Stage B. Its effect fades at about 75% depth on 8B, so if sycophantic flips are decided late (untested for us), the geometric correction may buy little there."
+}

@@ -1,0 +1,2912 @@
+SubTrack your Grad: Gradient Subspace Tracking for
+Memory and Time Efficient Full-Parameter LLM Training
+
+Sahar Rajabi 1 Nayeema Nonta 1 Sirisha Rambhatla 1
+
+arXiv:2502.01586v1 [cs.LG] 3 Feb 2025
+
+Abstract
+Projected Gradients on
+Subspace One
+Projected Gradients on
+Subspace Two
+Geodesic Line
+
+
+Training Large Language Models (LLMs) demand significant time and computational resources due to their large model sizes and optimizer states. To overcome these challenges, recent methods, such as BAdam, employ partial
+weight updates to enhance time and memory efficiency, though sometimes at the cost of performance. Others, like GaLore, focus on maintaining performance while optimizing memory usage
+through full parameter training, but may incur
+higher time complexity. By leveraging the lowrank structure of the gradient and the Grassmannian geometry, we propose SubTrack-Grad, a subspace tracking-based optimization method that
+efficiently tracks the evolving gradient subspace
+by incorporating estimation errors and previously
+identified subspaces. SubTrack-Grad delivers better or on-par results compared to GaLore, while
+significantly outperforming BAdam, which, despite being time-efficient, compromises performance. SubTrack-Grad reduces wall-time by up
+to 20.57% on GLUE tasks (15% average reduction) and up to 65% on SuperGLUE tasks
+(22% average reduction) compared to GaLore.
+Notably, for a 3B parameter model, GaLore incurred a substantial 157% increase in wall-time
+compared to full-rank training, whereas SubTrackGrad exhibited a 31% increase—representing a
+49% reduction in wall-time, while enjoying the
+same memory reductions as GaLore.
+
+The shortest path betwen two
+points on a manifold
+
+New Point on
+Grassmannian Manifold
+
+ne
+
+ace o
+
+Subsp
+
+~
+G1
+
+Subspace
+
+Update Step
+~
+Gt Gt+1
+~
+
+S1...St
+St+1...St+k
+
+Subs
+
+pace
+
+~
+Gt+k
+
+two
+
+∇F(Tangent Vector)
+Geo
+
+ic
+
+des
+
+Figure 1. Visualization of SubTrack-Grad: Between subspace updates, gradients are projected onto a fixed subspace. The tangent
+vector ∇F is computed via the derivative of a loss function that
+measures the subspace estimation error. The subspace is then updated by moving along the corresponding geodesic, determined by
+∇F , on the Grassmannian manifold to minimize estimation error.
+
+extensive hardware and time, which limits their practicality
+for many applications and increases their environmental
+impact due to a larger carbon footprint. (Zhao et al., 2024;
+Jaiswal et al., 2024; Muhamed et al., 2024; Miles et al.,
+2024; Modoranu et al., 2024; Hao et al., 2024; Li et al.,
+2024). Consequently, there is a pressing need to develop
+time- and memory-efficient methods to make LLMs more
+accessible and reduce their environmental impact, while
+preseving performance.
+Several techniques have been proposed to address memory
+challenges, including gradient checkpointing (Chen et al.,
+2016) and memory offloading (Rajbhandari et al., 2020).
+In this context, several approaches aim to reduce memory
+usage by optimizing a subset of model parameters or operating within a lower-dimensional space (Dettmers et al., 2024;
+Yaras et al., 2024; Lialin et al., 2023; Renduchintala et al.,
+2024; Xia et al., 2024; Miles et al., 2024; Hu et al., 2021).
+Notably, the well-known method LoRA (Hu et al., 2021), addresses memory efficiency by decomposing weight matrices
+into two low-rank trainable matrices, enabling the optimization of network parameters within a smaller subspace and
+significantly reducing memory usage. However, LoRA’s
+effectiveness relies on the assumption that parameters reside
+in a low-dimensional space, which does not always hold true.
+On the other hand, recent methods including BAdam (Luo
+
+1. Introduction
+Large Language Models (LLMs) have demonstrated stateof-the-art performance across a wide range of tasks and are
+rapidly growing in popularity. However, training and finetuning these models require significant resources, including
+1
+University of Waterloo, Waterloo, Ontario, Canada. Correspondence to: Sahar Rajabi <srajabi@uwaterloo.ca>.
+
+1
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+et al., 2024) and the one introduced by Ramesh et al. (2024)
+leverage the block coordinate descent (BCD) framework
+and partition the model into different blocks to optimize
+one block at a time. These methods can effectively reduce
+memory footprint while avoiding extra computation; however, while these achieve better memory and time efficiency,
+they suffer from performance degradation due to partial
+parameter tuning.
+
+ter performance than full-rank finetuning! An overview
+of SubTrack-Grad is provided in Figure 1, and our main
+contributions are as follows:
+
+Memory requirements extend beyond trainable parameters,
+with a significant portion consumed by optimizers for storing element-wise states (Zhao et al., 2024). To address this,
+recent efforts have focused on reducing the optimizer parameters while still targeting full parameter training (Li et al.,
+2023; Anil et al., 2019; Lv et al., 2024; Dettmers et al., 2022;
+Zhang et al., 2024; Modoranu et al., 2024; Zhao et al., 2024;
+Muhamed et al., 2024). Prominantly, GaLore (Zhao et al.,
+2024) reduces the memory consumption of optimizers by
+projecting gradient matrices into a low-rank subspace and
+tracking changes through periodic singular value decomposition (SVD) to obtain a rank-r approximation. Unlike weight
+parameters, there are many works showing that gradients
+evolve in a low-dimensional space during gradient descent
+(Gur-Ari et al., 2018; Schneider et al., 2024; Yaras et al.,
+2023); using this fact, GaLore decreases optimizer memory
+footprint while enabling full and simultaneous parameter
+updates. However, their approach faces several challenges.
+First, SVD is computationally expensive, and if the gradient does not evolve within a nearly constant subspace,
+GaLore must increase the frequency of SVD operations,
+significantly increasing the amount of computation. This
+is problematic because not all layers’ gradients converge
+to a stable subspace early in training (Jaiswal et al., 2024).
+Moreover, applying SVD to a single gradient matrix is susceptible to data noise (Vaswani et al., 2018), and GaLore
+does not leverage 1) information from the orthogonal space
+as feedback to adjust the subspace (Modoranu et al., 2024)
+or 2) previously computed subspaces to incorporate past
+knowledge, which could help mitigate noise effects and
+improve convergence.
+
+• We show that SubTrack-Grad outperforms BAdam, and
+delivers performance on par with, or superior to GaLore, while significantly reducing runtime with maintaining GaLore’s memory gains.
+
+• We introduce SubTrack-Grad, a memory- and timeefficient full-parameter training that maintains performance by tracking the gradient subspace using Grassmannian geometry.
+
+• We show that tracking the gradient subspace helps
+reduce abrupt changes in the optimization process,
+thereby accelerating convergence.
+• We prove that our method aligns with GaLore’s convergence guarantees while enabling more frequent subspace updates by exercising greater control over subspace adjustments through the use of prior knowledge
+and estimation errors.
+
+2. Related Works
+Several works aim to improve the efficiency of training
+and fine-tuning LLMs, addressing a growing demand as
+their popularity rapidly increases. LoRA (Hu et al., 2021),
+a widely recognized method for reducing the number of
+trainable parameters, that projects model weights into a
+lower-dimensional space, resulting in two trainable lowrank matrices. This approach significantly reduces memory
+requirements for fine-tuning LLMs. Dettmers et al. (2024)
+build on LoRA by employing quantization techniques and
+paged optimizers to further reduce memory usage. Additionally, Yaras et al. (2024) introduce Deep LoRA, which
+uses deep matrix factorization for low-rank optimization, addressing overfitting issues and reducing the need for precise
+tuning of the rank parameter. Several other works have also
+extended LoRA to enhance the efficiency of training and
+fine-tuning LLMs (Lialin et al., 2023; Renduchintala et al.,
+2024; Xia et al., 2024; Pan et al., 2024). Miles et al. (2024)
+propose compressing intermediate activation vectors and reconstructing them during backpropagation to enhance memory efficiency. Additionally, Hao et al. (2024) demonstrate
+that full-parameter fine-tuning is feasible by random projections on the gradient matrix, showing that LoRA essentially
+performs a down-projection of the gradient. BAdam (Luo
+et al., 2024) leverages the block coordinate descent (BCD)
+framework to reduce memory consumption while maintaining capabilities comparable to Adam.
+
+To this end, we propose Gradient Subspace Tracking (SubTrack-Grad), a Grassmannian-based, time- and
+memory-efficient method that adjusts the subspace using
+rank-1 updates for full parameter fine-tuning. SubTrackGrad leverages information from the orthogonal complement of the subspace to enhance subspace estimation
+through simple linear operations, making it more computationally efficient than GaLore by avoiding periodic SVD
+on gradient matrices while maintaining the same memory
+efficiency. Furthermore, its ability to perform simultaneous
+weight updates provides significant performance improvements over BAdam. Finally, SubTrack-Grad dynamically
+adapts to the gradient subspace changes, reducing abrupt
+shifts for faster convergence, in some cases achieving bet-
+
+Several approaches aim to reduce memory consumption in
+optimizers, as optimizers like Adam (Kingma & Ba, 2017)
+account for a significant portion of memory usage due to
+2
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+3. SubTrack-Grad: Tracking the Gradient
+Subspace
+
+their storage of element-wise states to improve the optimization process (Li et al., 2023; Anil et al., 2019; Lv et al.,
+2024; Dettmers et al., 2022; Rajabi & Rambhatla, 2024c;a).
+MicroAdam (Modoranu et al., 2024) tackles this issue by
+compressing the gradient space for optimization and utilizing the resulting compression error through feedback loops
+to improve the optimization process. Adam-mini (Zhang
+et al., 2024) partitions model parameters into blocks, assigning a single learning rate to each block. This design
+achieves a significant reduction in memory usage while
+maintaining performance. Gur-Ari et al. (2018) suggests
+that a substantial portion of gradients lies within a small,
+largely consistent subspace, a finding also reported by other
+studies, including Schneider et al. (2024); Yaras et al. (2023).
+GaLore (Zhao et al., 2024) leverages this property to reduce
+the memory requirements of optimizers by projecting gradients into a lower-dimensional subspace and then projecting
+them back for full parameter tuning. This approach has been
+integrated with other methods to further reduce memory usage during training and fine-tuning of LLMs (Li et al., 2024;
+Rajabi & Rambhatla, 2024b). However, not all layers’ gradients evolve within a stable low-rank subspace. Jaiswal et al.
+(2024) identifies layers with constantly changing gradients
+where low-rank projection may be inefficient for tuning. By
+analyzing the distribution of singular values across different
+layers, they select those that evolve within a small subspace
+for fine-tuning while freezing the remaining layers. Gradient Structured Sparsification (Grass) (Muhamed et al., 2024)
+further reduces memory usage by applying sparse projection
+matrices to the gradient, transforming the gradient matrix
+into a sparse space. This approach leverages sparse representations to significantly decrease the memory footprint.
+In Ramesh et al. (2024) the authors propose an approach
+that dynamically selects and updates a small subset of parameters, for a faster and more memory-efficient training
+without altering the model’s structure.
+
+Since gradients typically evolve within a small subspace,
+compressing this space can significantly reduce the memory
+footprint of the optimizer. As demonstrated in Zhao et al.
+(2024) whenever the gradient takes the general form
+G=
+
+X
+
+Ai +
+
+i
+
+X
+
+Bi W Ci
+
+(1)
+
+i
+
+where i denotes the batch index, and Bi and Ci are positive
+semi-definite (PSD) matrices, this gradient can be projected
+onto a small subspace that remains nearly stable while ensuring that the optimization process continues to converge, as
+discussed in Section 4 and Appendix A. However, the subspace of the gradient is not always stable, making it crucial
+to track its changes. GaLore (Zhao et al., 2024) addresses
+this by periodically performing SVD on gradient matrices,
+while keeping the update frequency low to align with the
+assumption of a stable subspace, which is used in its convergence guarantee. This approach poses several challenges:
+1) not all gradients converge to a stable subspace within a
+few iterations, 2) SVD is computationally expensive, and
+increasing the frequency of updates to capture changes significantly raises both run-time and environmental costs, and
+3) increasing the update frequency contradicts the assumption of a stable subspace, as SVD is sensitive to noise and
+does not account for the previously computed subspace or
+estimation error to regulate the extent of change applied.
+We propose SubTrack-Grad, a memory- and time-efficient
+method that allows full and simultaneous parameter
+tuning. SubTrack-Grad utilizes the estimation error and
+the previously computed subspace to adjust the core subspace. It effectively controls the amount change, allowing
+more frequent updates without compromising the stability
+assumption; while, as illustrated in Figure 4, increasing the
+update frequency will not drastically increase the runtime.
+The subspace is initialized using SVD as follows:
+
+A common approach in working with high-dimensional data
+is to project the data into a lower-dimensional space, and
+many studies focus on tracking these subspaces as they
+evolve. Balzano et al. (2011) introduce an incremental
+method for updating subspaces on the Grassmannian when
+the data is partially observed. Zhang & Balzano (2016)
+and Kasai (2017) propose methods to handle noise effect in
+tracking these subspaces. Furthermore, Blocker et al. (2023)
+present a method for evolving geodesic-based data in the
+Grassmannian for updating the subspace effectively. Also,
+Rajabi & Rambhatla (2024d) have applied Grassmannianbased subspace tracking on gradient matrices to increase the
+efficiency of training.
+
+G0 = U SV ⊤ ≈
+
+r
+X
+
+si ui vi⊤ ,
+
+i=1
+
+P0 = [u1 , u2 , ..., ur ],
+
+(2)
+
+Q0 = [v1 , v2 , ..., vr ].
+
+Here, G0 is an m × n gradient matrix at step 0, U , S, and
+V are its SVD components, and r is the specified rank. In
+each optimization step, the gradients are projected onto the
+subspace of the left singular vectors if m ≤ n, or onto the
+right singular vectors otherwise, thereby optimizing memory
+usage (Zhao et al., 2024). After the optimizer processes the
+low-rank gradient, it gets projected back for a normal weight
+update. From now on, we assume m ≤ n without loss of
+generality, implying that S0 = P0 , an m × r orthonormal
+matrix whose columns span the underlying subspace.
+At each step t, the matrix St represents the subspace at
+3
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+second equality holds because R is orthogonal to St St⊤ .
+
+Algorithm 1 SubTrack-Grad
+Require: Sequence of m × n gradients Gt with m ≤ n (w.l.o.g.),
+step-size η, rank r, subspace update steps k
+Initialize Subspace via SVD Decomposition:
+P0 ← U [:, : r] , where U, S, V ← SVD(G0 )
+S0 ← P0
+for t = 1, . . . , T do
+if t mod k = 0 then
+Update subspace:
+Glr = arg minA ∥(St−1 A − Gt )∥2
+R = Gt − St−1 Glr
+b b VbF⊤
+∇F = −2RG⊤
+lr ≈ UF ΣF
+
+
+b
+bF ) cos ΣF η VbF⊤ + St−1 (I −
+St = (St−1 VbF U
+bF η
+sin Σ
+⊤
+b
+b
+VF VF )
+else
+Keep using previous subspace: St = St−1
+end if
+Return final projected gradient to the optimizer: St⊤ Gt
+end for
+
+∂F
+= 2(St A − Gt )A⊤ = −2RA⊤
+∂St
+∇F = (I − St St⊤ )
+
+As shown by Edelman et al. (1998); Bendokat et al. (2024),
+from which we have included the necessary definitions and
+theorem in section 4, we can move along a Grassmannian
+geodesic guided by the computed tangent vector, taking a
+step of size η, as presented in (6).
+St+1 (η) = (St VbF
+
+
+
+b
+bF ) cos ΣF η VbF⊤ +St (I − VbF VbF⊤ ) (6)
+U
+bF η
+sin Σ
+
+This update rule preserves the orthonormality of St+1 , ensuring it remains on the Grassmannian. The last term in (5),
+is required when using thin-SVD; it projects the previous
+subspace onto the orthogonal complement of VbF , ensuring
+that the portion of St which has not been updated in this
+step is still included. By leveraging the geometry of the
+Grassmannian, SubTrack-Grad effectively tracks the underlying subspace of the gradient space, and the pseudo-code
+for this method is provided in Algorithm 1.
+
+4. Theoretical Analysis
+In this section, we analyze the convergence of SubTrackGrad using theoretical analysis. To begin, the weights update rule of SubTrack-Grad is as follows:
+
+We frame the problem of identifying the subspace as selecting the appropriate element from the Grassmannian, the set
+of all d-dimensional subspaces within an n-dimensional vector space (Bendokat et al., 2024). The subspace is updated
+after k steps, the subspace update interval, and our objective
+is to minimize the Euclidean distance between the subspace
+and the current observed gradient in an update step. The
+corresponding cost function for this aim is defined as:
+
+A
+
+∂F
+∂F
+b F VbF⊤ (5)
+bF Σ
+=
+= −2RA⊤ ≈ U
+∂St
+∂St
+
+The tangent vector ∇F provides the direction for adjusting
+the subspace by accounting for the error lying in the orthogonal complement. However, to minimize changes to the
+subspace, SubTrack-Grad first computes a rank-1 approximation of ∇F , determined by its largest singular value and
+the corresponding singular vector obtained from its SVD,
+bF Σ
+b F Vb ⊤ in the final equality of (5).
+and represented as U
+F
+This approximation is then used to update the subspace.
+
+that step, and projects the gradient matrix Gt onto that
+e t = St⊤ Gt ; where G
+e t , the projection of the
+subspace by G
+gradient onto a rank-r subspace, will be an r × n matrix.
+The optimizer then performs within this low-rank space,
+which substantially reduces the number of state parameters
+eO
+and thus the memory footprint. The optimizer outputs G
+t ,
+bt =
+which is then projected back to the original space by G
+e O , where ρt represents the entry-wise regularizer used
+St ρt G
+t
+in the optimizer, to be passed to the network. As previously
+discussed, the gradient does not always evolve within a
+stable subspace; hence, St , the orthonormal matrix spanning
+the core subspace, must be appropriately updated. SubTrackGrad updates this subspace by moving along Grassmannian
+geodesics, and leverages the previously computed subspace
+and the current estimation error to minimize abrupt changes
+and noise effects, as illustrated in Figure 3.
+
+F (St ) = min ∥St A − Gt ∥2F ,
+
+(4)
+
+Wt = W0 +
+
+t′X
+=t−1
+
+b t′
+G
+
+(7)
+
+t′ =0
+
+As previously mentioned, we use left projection if m ≤ n,
+where m and n are the dimensions of the gradient matrix,
+b t′ can be computed as shown in (8).
+and vice versa. Thus, G
+(
+⊤
+b t′ = St′ ρt′ (St′ Gt′ ), if m ≤ n
+G
+ρt′ (Gt′ St′ )St⊤′ , otherwise
+
+(3)
+
+(8)
+
+Here, St′ is the projection matrix that projects the gradient
+onto the subspace, and ρt′ is representing the entry-wise
+regularizer used in the optimizer. If we use the full projecb t′ will be computed as shown in (9); where S l′
+tion, then G
+t
+r
+and St′ are the rank-r left and right projection matrices.
+
+where A is the solution to the least squares problem. The
+derivative of (3) with respect to St is given in (4), and the
+residual R = Gt − St A lies in the orthogonal complement
+of St . To update the subspace in the appropriate direction,
+we calculate the tangent vector ∇F on the Grassmannian,
+as shown in (5) based on Edelman et al. (1998), where the
+
+b t′ = Stl′ ρt′ (Stl′ ⊤ Gt′ Str′ )Str′ ⊤
+G
+
+4
+
+(9)
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+Definition 4.1 (L-continuity). A function f (X) has
+Lipschitz-continuity (L-continuity) if for any X1 and X2 ,
+∥f (X2 ) − f (X1 )∥F ≤ L∥X2 − X1 ∥F
+
+Definition 4.5 (Grassmann Manifold). The Grassmannian
+manifold Gr(n, p) parametrizes the set of all p-dimensional
+subspaces of Rn . Each point can be represented by a projection matrix P = U U T , where U ∈ St(n, p).
+
+Theorem 4.2 (Convergence of SubTrack-Grad). Suppose
+gradient has the following form (also (1)) with functions
+Ai , Bi , and Ci being L-continuous as per Def. 4.1 with
+constants LA , LB , and LC w.r.t. weight matrix Wt ; and
+∥Wt ∥F ≤ M ; where Wt denotes the weight matrix at step
+t, and M is a scalar value,
+X
+X
+G=
+Ai +
+Bi W Ci .
+i
+
+Theorem 4.6 (Grassmann Exponential). Let P = U U T ∈
+Gr(n, p) be a point on the Grassmannian, where U ∈
+St(n, p) is the orthonormal basis of the corresponding subspace. Consider a tangent vector ∆ ∈ TP Gr(n, p), and let
+∆hor
+U denote the horizontal lift of ∆ to the horizontal space
+at U in the Stiefel manifold St(n, p). Suppose the thin SVD
+hor
+T
+of ∆hor
+U is given by ∆U = Q̂ΣV , where Q̂ ∈ St(n, r),
+Σ = diag(σ1 , . . . , σr ) contains the nonzero singular values of ∆hor
+U with r = min(p, n − p), and V ∈ St(p, r).
+The Grassmann exponential map, representing the geodesic
+emanating from P in the direction ∆, is given by:
+
+i
+
+bi,t = (S l )⊤ Bi (Wt )S l and C
+bi,t =
+Now, define B
+i,t
+i,t
+r ⊤
+r
+l
+r
+(Si,t ) Ci (Wt )Si,t , where Si,t and Si,t are the rank-r left
+and right projection matrices; Bi (Wt ) and Ci (Wt ) denote the dependence of Bi and Ci on the weight ma⊤
+trices Wt . Further letting Pt = Stl Gt Str , and κt =
+P
+1
+b
+b
+i λmin (Bi,t )λmin (Ci,t ), where λmin (·) denotes the
+N
+minimum eigenvalue over each batch, and N representing
+the number of samples in a batch. Assuming that the projection matrices remain constant during the training. Then for
+learning-rate µ and min(κt ) > (LA + 2LB LC M 2 ), the
+SubTrack-Grad, with ρt ≡ 1 (the element-wise regularizer
+of the optimizer) satisfies:
+
+
+T
+T
+T
+ExpGr
+P (t∆) = U V cos(tΣ)V +Q̂ sin(tΣ)V +U V⊥ V⊥ ,
+
+where V⊥ ∈ Rp×(p−r) is any orthogonal complement of V .
+The proof of Theorem 4.6 can be found in Appendix B.
+Leveraging this theorem and our notation in section 3, one
+can easily verify that the subspace update rule is as follows:
+
+
+bF η
+cos Σ
+b
+b
+St+1 (η) = (St VF UF )
+VbF⊤ + St (I − VbF VbF⊤ )
+b
+sin ΣF η
+
+∥Pt ∥F ≤ [1 − µ(κt−1 − LA − 2LB LC M 2 )]∥Pt−1 ∥F .
+
+This update rule generally converges to a stable subspace if
+the step size η decreases over time (Balzano et al., 2011).
+However, a decreasing step size can impair the ability to accurately track and adapt to subspace changes. Consequently,
+SubTrack-Grad uses a constant step size during training
+and fine-tuning to effectively adjust subspaces. This approach does not hinder convergence, as proved in Theorem
+4.2, which guarantees convergence as long as changes are
+controlled to maintain the stable subspace assumption.
+
+That is, Pt → 0 and SubTrack-Grad converges.
+The proof of Theorem 4.2 is provided in Appendix A,
+based on Zhao et al. (2024). Note that while both GaLore
+and SubTrack-Grad assume that the subspace remains unchanged for the proof of convergence, GaLore must limit
+the number of updates to ensure convergence, as each update can potentially change the entire subspace. In contrast,
+SubTrack-Grad leverages rank-1 updates to the subspace,
+preventing drastic changes with each update. While a deeper
+analysis of slowly changing subspaces and their impact on
+convergence remains an open problem, in practice, this allows SubTrack-Grad to perform more frequent updates.
+
+5. Experiments and Results
+To ensure a fair comparison between SubTrack-Grad and
+baselines, we conducted fine-tuning and pre-training experiments across various models and datasets; to measure
+performance, wall-time, and memory consumption, while
+all shared hyperparameters remain consistent.
+
+Here we investigate the Grassmannian update rule presented
+in (6), which is a direct application of Grassmann geometry
+(Edelman et al., 1998; Bendokat et al., 2024).
+Definition 4.3 (Exponential Map). The exponential map
+expp : Tp M → M on a Riemannian manifold M is a
+mapping that assigns the point γ(1) ∈ M to each tangent
+vector ∆ ∈ Tp M , where Tp M is the tangent space of M at
+p, and γ is the unique geodesic originating at p with initial
+velocity ∆. This map establishes a relationship between
+geodesics and the Riemannian exponential, such that γ(t) =
+expp (t∆) for t ∈ R.
+Definition 4.4 (Stiefel Manifold). The Stiefel manifold
+St(n, p), parametrizes the set of all n × p orthonormal
+matrices U , each representing a rank-p subspace of Rn .
+
+Fine-Tuning Experiments. RoBERTa-Base and RoBERTaLarge were fine-tuned on GLUE and SuperGLUE tasks
+respectively; with the results presented in Table 1 and Table 2. Figures 2b and 2c compare wall-time during finetuning, with detailed reports provided in Appendix D, as
+demonstrated, SubTrack-Grad enjoys the same memory reduction as GaLore. For comparing wall-times, models were
+fine-tuned up to a number of iterations to exactly include
+five subspace updates, while the evaluation steps were excluded to provide an accurate comparison. SubTrack-Grad
+5
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+Table 1. Evaluating the performance of SubTrack-Grad and other baselines when fine-tuning RoBERTa-Base on GLUE tasks for different
+ranks r. All hyperparameters are the same for each rank. The performance is measured via Accuracy for QNLI, MNLI, SST-2, and RTE
+tasks, F1 for QQP and MRPC, Pearson Correlation for STS-B, and Matthews Correlation for COLA, after fine-tuning for 30 epochs.
+
+COLA
+
+STS-B
+
+MRPC
+
+RTE
+
+SST-2
+
+MNLI
+
+QNLI
+
+QQP
+
+Avg
+
+Full-Rank
+
+62.57
+
+91.03
+
+91.32
+
+77.98
+
+94.27
+
+87.83
+
+92.71
+
+89.21
+
+85.86
+
+BAdam (Luo et al., 2024)
+
+54.44
+
+89.01
+
+91.35
+
+68.59
+
+94.15
+
+87.31
+
+92.49
+
+87.50
+
+83.10
+
+GaLore, r=4 (Zhao et al., 2024)
+
+60.34
+
+90.58
+
+92.58
+
+76.53
+
+94.27
+
+87.12
+
+92.20
+
+87.86
+
+85.18
+
+SubTrack-Grad, r=4 (Ours)
+
+61.07
+
+90.63
+
+92.83
+
+76.89
+
+93.81
+
+87.20
+
+91.73
+
+86.73
+
+85.11
+
+GaLore, r=8 (Zhao et al., 2024)
+
+58.54
+
+90.61
+
+91.30
+
+74.37
+
+94.50
+
+87.34
+
+92.71
+
+87.99
+
+84.67
+
+SubTrack(Last)-Grad, r=8 (Ours)
+
+58.03
+
+90.76
+
+91.81
+
+77.62
+
+94.38
+
+87.15
+
+92.31
+
+87.26
+
+84.91
+
+Table 2. Evaluating the performance of SubTrack-Grad and other baselines when fine-tuning RoBERTa-Large on SuperGLUE tasks with
+rank 8. All hyperparameters are consistent across different methods. The performance is measured via Accuracy for COPA, WIC, WSC,
+BoolQ, and AXg tasks, F1 for CB, and Matthews Correlation for AXb , after fine-tuning for 30 epochs.
+
+BoolQ
+
+CB
+
+COPA
+
+WIC
+
+WSC
+
+AXg
+
+Avg
+
+Full-Rank
+
+85.96
+
+90.33
+
+76.00
+
+71.79
+
+63.46
+
+96.30
+
+80.64
+
+GaLore (Zhao et al., 2024)
+
+85.44
+
+88.85
+
+80.00
+
+71.47
+
+63.46
+
+100.00
+
+81.54
+
+BAdam (Luo et al., 2024)
+
+82.51
+
+53.28
+
+59.00
+
+70.38
+
+60.58
+
+51.85
+
+62.93
+
+SubTrack-Grad (Ours)
+
+85.66
+
+88.85
+
+81.00
+
+72.73
+
+63.46
+
+100.00
+
+81.95
+
+demonstrates significant efficiency improvements compared
+to GaLore by reducing wall-time by up to 20.57% on
+GLUE tasks (15% average reduction) and up to 65%
+on SuperGLUE tasks (22% average reduction). Despite
+limiting updates to rank-1 modifications of the previous
+subspace, SubTrack-Grad achieves superior or comparable
+performance compared to GaLore. In addition, BAdam is
+a computationally efficient method due to optimizing one
+block at a time; but its inability to update all the parameters simultaneously has caused performance loss, and the
+loss gets greater as the model size increases. Details of
+fine-tuning hyperparameters are provided in Appendix E.
+
+wall-time compared to full-rank training for the model of
+size 3B, whereas SubTrack-Grad exhibited only a 31% increase—representing a 49% reduction in wall-time compared to GaLore. On average, SubTrack-Grad required
+27% less training time across these models. Additionally, BAdam demonstrate significant runtime reduction, but
+its poor performance in pre-training experiments due to its
+partial optimization, makes it an unsuitable choice for training from scratch. Additional architectural details for the
+Llama-based models are provided in Appendix F.
+Time and Space Complexity. Table 4 provides memory
+requirements of the optimizer states and the time complexity
+of the subspace update step considering an m × n gradient matrix with m ≤ n. As discussed earlier, GaLore
+performs SVD on the gradient matrix to estimate the underlying subspace, whereas SubTrack-Grad uses subspace
+tracking. Comparing the time complexities of these methods, highlights why SubTrack-Grad is significantly more
+efficient than GaLore. A breakdown of the subspace update time complexity for SubTrack is shown in Appendix
+C. As shown in Figure 2a, for pre-training a Llama model
+
+Pre-Training Experiments. Different Llama-based architectures were pre-trained on C4 datasets for 10K steps, and
+the results are reported in Table 3. For wall-time comparison, each architecture was trained for 2K iterations, with
+the subspace update interval set to 200, ensuring exactly
+10 subspace updates. Figure 2a illustrates wall-times, with
+detailed reports provided in Appendix D that indicates same
+memory consumption between GaLore and SubTrack-Grad.
+Notably, GaLore incurred a substantial 157% increase in
+6
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+(a)
+
+(b)
+
+(c)
+
+Figure 2. Comparing wall-time on different architecture and datasets. (a) shows the memory and wall-time measured on pretraining
+different Llama-architectures sizing from 60M to 3B. (b) demonstrates wall-time measured on fine-tuning RoBERTa-Large on SuperGLUE
+tasks. (c) presents wall-time measured on fine-tuning RoBERTa-Base on GLUE tasks. As demonstrated, GaLore can lead to 157%
+wall-time increase in training Llama with 3B parameters, while SubTrack-Grad significantly reduces this overhead.
+
+3 enables GaLore to reach that minimum, it also results in
+larger jumps. Figure 5 in Appendix H illustrates that the
+overall convergence during both pre-training and fine-tuning
+is similar to other methods when using SubTrack-Grad.
+
+Table 3. Evaluation loss comparison for pre-training different
+Llama-based architectures on C4 dataset after 10K iterations.
+60M
+r=128
+
+130M
+r=256
+
+350M
+r=256
+
+1B
+r=512
+
+3B
+r=512
+
+Avg
+-
+
+Full-Rank
+
+3.41
+
+3.25
+
+3.40
+
+4.61
+
+4.52
+
+3.84
+
+GaLore
+
+4.02
+
+3.61
+
+3.62
+
+6.53
+
+6.57
+
+4.87
+
+BAdam
+
+7.86
+
+7.08
+
+7.62
+
+7.28
+
+7.12
+
+7.39
+
+SubTrack-Grad
+
+4.13
+
+3.77
+
+3.82
+
+6.53
+
+6.59
+
+4.97
+
+Runtime Consistency. Figure 4 compares the performance
+and wall-times of GaLore and SubTrack-Grad across subspace update intervals ranging from 50 to 500 while finetuning RoBERTa-Base on the COLA task and pre-training a
+Llama architecture with 60M parameters on the C4 dataset.
+The subspace update interval denotes the number of iterations between two updates; thus, increasing this interval reduces the update frequency. GaLore’s runtime significantly
+increases with more frequent subspace updates, whereas
+SubTrack-Grad maintains minimal overhead. In Table 15
+different performance achieved on COLA dataset for different subspace update intervals are compared, illustrating
+that increasing the update frequency significantly raises GaLore’s runtime, while the performance of the two methods
+remains very similar.
+
+of size 3B, GaLore incurs over 157% wall-time overhead,
+compared to 31% for SubTrack-Grad. This demonstrates
+a 49% wall-time reduction compared to GaLore. Additionally, the memory required for storing optimizer states in
+SubTrack-Grad, is equivalent to GaLore’s.
+Table 4. Optimizer’s memory requirement in each method along
+with the time complexity of involved subspace update operations,
+considering a gradient matrix of dimension m × n and projection
+rank r where r ≪ m ≤ n.
+Optimizer Memory
+
+6. Discussion and Conclusion
+We proposed a time- and memory-efficient method that
+projects gradients into a lower-dimensional subspace, and
+preserves the previously computed subspace to incorporate
+gradient components from the orthogonal complement to
+perform rank-1 updates. This approach reduces the frequency of abrupt transitions between iterations and leverages the available information effectively.
+
+Subspace Update Time Complexity
+
+Adam
+
+2mn
+
+−
+
+GaLore
+
+mr + 2nr
+
+O(nm2 )
+
+SubTrack-Grad
+
+mr + 2nr
+
+O(mnr)
+
+In some cases, the extent of changes in the subspace may
+require updates of ranks greater than 1; the pre-training of
+Llama-based architectures is a clear example of this need.
+During our experiments, we observed that applying updates
+as per (6), using the full-rank SVD of the tangent vector
+from (5), can hinder convergence if the singular values of
+the tangent vector become very small. Furthermore, simul-
+
+Reducing Optimization Jumps. We argue that GaLore is
+susceptible to noise, as it relies on the SVD of a single gradient matrix at each subspace update step. Figure 3 compares
+SubTrack-Grad and GaLore on the Ackley function to illustrate potential jumps and deviations. These jumps prevent
+GaLore from reaching the global minimum within 100 steps
+when the scale factor is set to 1. While the scale factor to
+7
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+(a)
+
+(b)
+
+(c)
+
+(d)
+
+(e)
+
+(f)
+
+Figure 3. Comparison of the Adam Optimizer Combined with SubTrack-Grad (a, d) and GaLore (b, e) on the Ackley Function for 100
+optimization steps and the subspace update interval set to 10. With scale factor 1, GaLore can not reach the to the global minimum of the
+function due to its abrupt jumps, and for a scale factor of 3, the length of jumps increase. The 3D plots (c, f) provide visualization of the
+dynamics of the Ackley function and the optimization paths followed by each method in a single plot.
+
+Figure 4. Comparing runtimes of GaLore and SubTrack-Grad. RoBERTa-Base is fine-tuned for 10 epochs on COLA and Llama-60M
+is pre-trained for 2500 iterations on C4 dataset. Subspace update intervals range from 50 to 500 in both experiments. Notice that by
+increasing subspace update interval, the update frequency actually decreases, as it indicates the number of iterations between two subspace
+update steps. As demonstrated, GaLore’s wall-time can increase drastically when update frequency increases.
+
+8
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+taneously updating vector spaces associated with different
+singular values caused convergence issues in some cases.
+Therefore, we restricted updates to rank-1 in this paper, as
+this approach still enabled SubTrack-Grad to achieve performance comparable to or better than GaLore. In future
+work, we plan to explore increasing the rank of updates
+without compromising convergence. Additionally, dynamically selecting the step size could eliminate the need for
+manual tuning as a hyperparameter which is also left for
+future works.
+
+Hao, Y., Cao, Y., and Mou, L. Flora: Low-rank adapters
+are secretly gradient compressors, 2024. URL https:
+//arxiv.org/abs/2402.03293.
+Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang,
+S., Wang, L., and Chen, W. Lora: Low-rank adaptation of
+large language models. arXiv preprint arXiv:2106.09685,
+2021.
+Jaiswal, A., Yin, L., Zhang, Z., Liu, S., Zhao, J., Tian,
+Y., and Wang, Z. From galore to welore: How lowrank weights non-uniformly emerge from low-rank gradients, 2024. URL https://arxiv.org/abs/2407.
+11239.
+
+Surprisingly, SubTrack-Grad outperforms full-rank finetuning on certain tasks, suggesting that low-rank optimization may also serve as a regularizer. Exploring this property
+further is also an exciting direction for future work.
+
+Kasai, H. Fast online low-rank tensor subspace tracking
+by cp decomposition using recursive least squares from
+incomplete observations, 2017. URL https://arxiv.
+org/abs/1709.10276.
+
+References
+Anil, R., Gupta, V., Koren, T., and Singer, Y. Memoryefficient adaptive optimization, 2019. URL https://
+arxiv.org/abs/1901.11150.
+
+Kingma, D. P. and Ba, J. Adam: A method for stochastic optimization, 2017. URL https://arxiv.org/abs/
+1412.6980.
+
+Balzano, L., Nowak, R., and Recht, B. Online identification
+and tracking of subspaces from highly incomplete information, 2011. URL https://arxiv.org/abs/
+1006.4046.
+
+Li, B., Chen, J., and Zhu, J. Memory efficient optimizers
+with 4-bit states, 2023. URL https://arxiv.org/
+abs/2309.01507.
+
+Bendokat, T., Zimmermann, R., and Absil, P.-A. A grassmann manifold handbook: basic geometry and computational aspects. Advances in Computational Mathematics, 50(1), January 2024. ISSN 1572-9044. doi:
+10.1007/s10444-023-10090-8. URL http://dx.doi.
+org/10.1007/s10444-023-10090-8.
+
+Li, P., Yin, L., Gao, X., and Liu, S. Owlore: Outlier-weighed
+layerwise sampled low-rank projection for memoryefficient llm fine-tuning, 2024. URL https://arxiv.
+org/abs/2405.18380.
+Lialin, V., Shivagunde, N., Muckatira, S., and Rumshisky,
+A. Relora: High-rank training through low-rank updates, 2023. URL https://arxiv.org/abs/
+2307.05695.
+
+Blocker, C. J., Raja, H., Fessler, J. A., and Balzano,
+L. Dynamic subspace estimation with grassmannian
+geodesics, 2023. URL https://arxiv.org/abs/
+2303.14851.
+
+Luo, Q., Yu, H., and Li, X. Badam: A memory efficient full
+parameter optimization method for large language models, 2024. URL https://arxiv.org/abs/2404.
+02827.
+
+Chen, T., Xu, B., Zhang, C., and Guestrin, C. Training deep
+nets with sublinear memory cost, 2016. URL https:
+//arxiv.org/abs/1604.06174.
+Dettmers, T., Lewis, M., Shleifer, S., and Zettlemoyer, L.
+8-bit optimizers via block-wise quantization, 2022. URL
+https://arxiv.org/abs/2110.02861.
+
+Lv, K., Yang, Y., Liu, T., Guo, Q., and Qiu, X. Full parameter fine-tuning for large language models with limited resources. In Ku, L.-W., Martins, A., and Srikumar,
+V. (eds.), Proceedings of the 62nd Annual Meeting of
+the Association for Computational Linguistics (Volume
+1: Long Papers), pp. 8187–8198, Bangkok, Thailand,
+August 2024. Association for Computational Linguistics. URL https://aclanthology.org/2024.
+acl-long.445.
+
+Dettmers, T., Pagnoni, A., Holtzman, A., and Zettlemoyer, L.
+Qlora: Efficient finetuning of quantized llms. Advances
+in Neural Information Processing Systems, 36, 2024.
+Edelman, A., Arias, T. A., and Smith, S. T. The geometry
+of algorithms with orthogonality constraints, 1998. URL
+https://arxiv.org/abs/physics/9806030.
+
+Miles, R., Reddy, P., Elezi, I., and Deng, J. Velora:
+Memory efficient training using rank-1 sub-token projections, 2024. URL https://arxiv.org/abs/
+2405.17991.
+
+Gur-Ari, G., Roberts, D. A., and Dyer, E. Gradient descent happens in a tiny subspace, 2018. URL https:
+//arxiv.org/abs/1812.04754.
+9
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+Modoranu, I.-V., Safaryan, M., Malinovsky, G., Kurtic, E.,
+Robert, T., Richtarik, P., and Alistarh, D. Microadam:
+Accurate adaptive optimization with low space overhead and provable convergence, 2024. URL https:
+//arxiv.org/abs/2405.15593.
+
+Linguistics: Human Language Technologies (Volume 1:
+Long Papers), pp. 8694–8705, Mexico City, Mexico,
+June 2024. Association for Computational Linguistics.
+doi: 10.18653/v1/2024.naacl-long.481. URL https://
+aclanthology.org/2024.naacl-long.481.
+
+Muhamed, A., Li, O., Woodruff, D., Diab, M., and Smith,
+V. Grass: Compute efficient low-memory llm training
+with structured sparse gradients, 2024. URL https:
+//arxiv.org/abs/2406.17660.
+
+Schneider, J., Schumacher, P., Guist, S., Chen, L., Häufle,
+D., Schölkopf, B., and Büchler, D. Identifying policy gradient subspaces, 2024. URL https://arxiv.org/
+abs/2401.06604.
+
+Pan, R., Liu, X., Diao, S., Pi, R., Zhang, J., Han, C., and
+Zhang, T. Lisa: Layerwise importance sampling for
+memory-efficient large language model fine-tuning, 2024.
+URL https://arxiv.org/abs/2403.17919.
+
+Vaswani, N., Bouwmans, T., Javed, S., and Narayanamurthy,
+P. Robust subspace learning: Robust pca, robust subspace
+tracking, and robust subspace recovery. IEEE Signal Processing Magazine, 35(4):32–55, July 2018. ISSN 15580792. doi: 10.1109/msp.2018.2826566. URL http:
+//dx.doi.org/10.1109/MSP.2018.2826566.
+
+Rajabi, S. and Rambhatla, S. Accelerating memory-efficient
+LLM training and fine-tuning via tracking the gradient subspace. In Workshop on Machine Learning and
+Compression, NeurIPS 2024, 2024a. URL https:
+//openreview.net/forum?id=qgTvp6nzgW.
+
+Xia, W., Qin, C., and Hazan, E. Chain of lora: Efficient finetuning of language models via residual learning, 2024.
+URL https://arxiv.org/abs/2401.04151.
+
+Rajabi, S. and Rambhatla, S. Enhancing fine-tuning efficiency of LLMs through gradient subspace tracking.
+In Adaptive Foundation Models: Evolving AI for Personalized and Efficient Learning, 2024b. URL https:
+//openreview.net/forum?id=lPIPYCqDGt.
+
+Yaras, C., Wang, P., Hu, W., Zhu, Z., Balzano, L., and Qu, Q.
+Invariant low-dimensional subspaces in gradient descent
+for learning deep matrix factorizations. In NeurIPS 2023
+Workshop on Mathematics of Modern Machine Learning,
+2023.
+
+Rajabi, S. and Rambhatla, S. Memory-efficient large language model (LLM) training and fine-tuning via gradient
+subspace tracking. In OPT 2024: Optimization for Machine Learning, 2024c. URL https://openreview.
+net/forum?id=W61fzRYQdy.
+
+Yaras, C., Wang, P., Balzano, L., and Qu, Q. Compressible
+dynamics in deep overparameterized low-rank learning &
+adaptation. arXiv preprint arXiv:2406.04112, 2024.
+
+Rajabi, S. and Rambhatla, S. Optimizing fine-tuning efficiency: Gradient subspace tracking on grassmann manifolds for large language models. In NeurIPS 2024
+Workshop on Mathematics of Modern Machine Learning,
+2024d. URL https://openreview.net/forum?
+id=ZP7VzpXmKR.
+
+Zhang, D. and Balzano, L. Global convergence of a grassmannian gradient descent algorithm for subspace estimation, 2016. URL https://arxiv.org/abs/1506.
+07405.
+Zhang, Y., Chen, C., Li, Z., Ding, T., Wu, C., Ye, Y., Luo, Z.Q., and Sun, R. Adam-mini: Use fewer learning rates to
+gain more, 2024. URL https://arxiv.org/abs/
+2406.16793.
+
+Rajbhandari, S., Rasley, J., Ruwase, O., and He, Y. Zero:
+Memory optimizations toward training trillion parameter models, 2020. URL https://arxiv.org/abs/
+1910.02054.
+
+Zhao, J., Zhang, Z., Chen, B., Wang, Z., Anandkumar,
+A., and Tian, Y. Galore: Memory-efficient llm training
+by gradient low-rank projection, 2024. URL https:
+//arxiv.org/abs/2403.03507.
+
+Ramesh, A. V., Ganapathiraman, V., Laradji, I. H., and
+Schmidt, M. Blockllm: Memory-efficient adaptation of
+llms by selecting and optimizing the right coordinate
+blocks, 2024. URL https://arxiv.org/abs/
+2406.17296.
+Renduchintala, A., Konuk, T., and Kuchaiev, O. TiedLoRA: Enhancing parameter efficiency of LoRA with
+weight tying. In Duh, K., Gomez, H., and Bethard, S.
+(eds.), Proceedings of the 2024 Conference of the North
+American Chapter of the Association for Computational
+10
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+A. Convergence of SubTrack-Grad
+Theorem 4.2 (Convergence of SubTrack-Grad). Suppose gradient has the following form (also (1)) with functions Ai ,
+Bi , and Ci being L-continuous as per Def. 4.1 with constants LA , LB , and LC w.r.t. weight matrix Wt ; and ∥Wt ∥F ≤ M ;
+where Wt denotes the weight matrix at step t, and M is a scalar value,
+X
+X
+G=
+Ai +
+Bi W Ci .
+i
+
+i
+
+bi,t = (S l )⊤ Bi (Wt )S l and C
+bi,t = (S r )⊤ Ci (Wt )S r , where S l and S r are the rank-r left and right
+Now, define B
+i,t
+i,t
+i,t
+i,t
+i,t
+i,t
+projection matrices; Bi (Wt ) and Ci (Wt ) denote the dependence of Bi and Ci on the weight matrices Wt . Further letting
+P
+⊤
+bi,t )λmin (C
+bi,t ), where λmin (·) denotes the minimum eigenvalue over each batch,
+Pt = Stl Gt Str , and κt = N1 i λmin (B
+and N representing the number of samples in a batch. Assuming that the projection matrices remain constant during the
+training. Then for learning-rate µ and min(κt ) > (LA + 2LB LC M 2 ), the SubTrack-Grad, with ρt ≡ 1 (the element-wise
+regularizer of the optimizer) satisfies:
+∥Pt ∥F ≤ [1 − µ(κt−1 − LA − 2LB LC M 2 )]∥Pt−1 ∥F .
+That is, Pt → 0 and SubTrack-Grad converges.
+proof. To demonstrate that SubTrack-Grad converges to the global minimum during training, we begin by deriving the
+recursive form of the gradients.
+Let ⊗ denote the Kronecker product. Then, vec(AXB) = (B ⊤ ⊗ A)vec(X).
+By applying vec to the gradient form given in the theorem, we obtain:
+X
+X
+Ai +
+Bi W Ci ) = at − Dt wt
+gt = vec(Gt ) = vec(
+i
+
+where gt := vec(Gt ), wt := vec(Wt ), at := N1
+
+(10)
+
+i
+
+1
+i vec(Ai,t ), and Dt = N
+
+P
+
+P
+
+i Ci,t ⊗ Bi,t .
+
+⊤
+
+As defined in the theorem, let Pt = Stl Gt Str . Its vectorized form can be expressed using the Kronecker product as follows:
+⊤
+
+⊤
+
+⊤
+
+⊤
+
+pt = vec(Pt ) = vec(Stl Gt Str ) = (Str ⊤ ⊗ Stl )vec(Gt )
+= (Str ⊗ Stl ) vec(Gt ) = (Str ⊗ Stl ) gt
+
+(11)
+
+b t from (9), it can be written as:
+Now recalling G
+b t = Stl Stl ⊤ Gt Str Str ⊤
+G
+Thus, its vectorized form will be:
+⊤
+
+b t ) = gbt = vec(S l S l Gt S r S r ⊤ ) = vec(S l Pt S r ⊤ )
+vec(G
+t t
+t t
+t
+t
+= (Str ⊗ Stl )vec(Pt ) = (Str ⊗ Stl )pt
+
+(12)
+
+This is where the constant subspace assumption becomes necessary. To derive the recursive form of gt , we assume that the
+projection matrices remain fixed throughout training, i.e., Str = S r and Stl = S l . Consequently, we can restate equations
+(11) and (12) as follows:
+⊤
+
+pt = (S r ⊗ S l ) gt
+
+(13)
+
+r
+
+(14)
+
+l
+
+gbt = (S ⊗ S )pt
+Then we can write the recursive form of gt :
+gt = at − Dt wt = (at − at−1 ) + (Dt−1 − Dt )wt + at−1 − Dt−1 wt
+= et + at−1 − Dt−1 (wt−1 + µb
+gt−1 ) = et + gt−1 − µDt−1 gbt−1
+11
+
+(15)
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+where et := (at − at−1 ) + (Dt−1 − Dt )wt .
+Note that in deriving (15), we utilized the general form of the weight update rule, wt+1 = wt − µgt , which can be rewritten
+as wt = wt+1 + µgt . By applying this rule along with (10), we arrive at the second equality in (15) as follows:
+gt = at − Dt wt = at − Dt wt − gt−1 + gt−1
+= at − Dt wt − at−1 + Dt−1 wt−1 + at−1 − Dt−1 wt−1
+= at − Dt wt − at−1 + Dt−1 (wt + µgt−1 ) + at−1 − Dt−1 (wt + µgt−1 )
+= at − Dt wt − at−1 + Dt−1 wt + µDt−1 gt−1 + at−1 − Dt−1 wt − µDt−1 gt−1
+= at − at−1 + (Dt−1 − Dt )wt + at−1 − Dt−1
+⊤
+
+To obtain pt from this recursive formulation, we can left-multiply by (S r ⊗ S l ) , as shown in (14):
+⊤
+
+⊤
+
+⊤
+
+pt = (S r ⊗ S l ) et + (S r ⊗ S l ) gt−1 − µ(S r ⊗ S l ) Dt−1 gbt−1
+
+(16)
+
+Now, based on (13) and (14), pt can be written as:
+⊤
+
+⊤
+
+pt = (S r ⊗ S l ) et + pt−1 − µ(S r ⊗ S l ) Dt−1 (S r ⊗ S l )pt−1
+Let define:
+
+X
+⊤
+b t := (S r ⊗ S l )⊤ Dt (S r ⊗ S l ) = 1
+D
+(S r ⊗ S l ) (Ci,t ⊗ Bi,t )(S r ⊗ S l )
+N i
+X
+1
+⊤
+(S r ⊤ Ci,t S r ) ⊗ (S l Bi,t S l )
+=
+N i
+
+(17)
+
+(18)
+
+Then we can expand (17) and show that:
+pt = (I − µD̂t−1 )pt−1 + (S r ⊗ S l )⊤ et
+
+(19)
+
+Note that S l and S r are orthonormal matrices. This is ensured because the subspace is initialized using the SVD of G0 , and
+the Grassmannian update rule provided in (6) preserves the orthonormality of the subspace matrices throughout training.
+⊤
+Since S l and S r are orthonormal, we have S l S l = I and S r ⊤ S r = I. Consequently, we can bound the norm of the
+second term in (19) as follows:
+⊤
+
+⊤
+
+∥(S r ⊗ S l )⊤ et ∥2 = ∥vec(S l Et S r )∥2 = ∥S l Et S r ∥F ≤ ∥Et ∥F
+
+(20)
+
+Here Et is the matrix form of et , and as declared before, et := (at − at−1 ) + (Dt−1 − Dt )wt , thus:
+Et :=
+
+1 X
+1 X
+(Ai,t − Ai,t−1 ) +
+(Bi,t−1 Wt Ci,t−1 − Bi,t Wt Ci,t )
+N i
+N i
+
+(21)
+
+Next, we need to find an upper bound for the norm of each term in (21) to establish an upper bound for ∥Et ∥F . Based on
+the assumptions of the theorem, Ai , Bi , and Ci exhibit L-Lipschitz continuity with constants LA , LB , and LC , respectively.
+Additionally, ∥Wt ∥F is bounded by a scalar M . We have:
+∥At − At−1 ∥F
+
+≤ LA ∥Wt − Wt−1 ∥F = µLA ∥G̃t−1 ∥F ≤ µLA ∥Pt−1 ∥F
+
+(22)
+
+In the first equality, we apply (7), while the last equality holds due to (14) and the orthonormality of the projection matrices.
+The subsequent two inequalities can be derived similarly using these equations.
+∥(Bt − Bt−1 )Wt Ct−1 ∥F ≤ LB ∥Wt − Wt−1 ∥F ∥Wt ∥F ∥Ct−1 ∥F
+= µLB LC M 2 ∥Pt−1 ∥F
+∥Bt Wt (Ct−1 − Ct )∥F ≤ LC ∥Bt ∥F ∥Wt ∥F ∥Wt−1 − Wt ∥F
+= µLB LC M 2 ∥Pt−1 ∥F
+12
+
+(23)
+
+(24)
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+We can now derive the bound for ∥Et ∥F as follows:
+∥Et ∥F ≤ µLA ∥G̃t−1 ∥F ≤ µLA ∥Pt−1 ∥F + µLB LC M 2 ∥Pt−1 ∥F + µLB LC M 2 ∥Pt−1 ∥F
+= µ(LA + 2LB LC M 2 )∥Pt−1 ∥F
+
+(25)
+
+b t . This involves estimating
+To calculate the norm bound for the first term in (19), we first need to establish the bounds for D
+b
+the minimum eigenvalue of Dt .
+⊤
+
+⊤
+
+If we define γmin,i,t = λmin (S l Bi,t S l )λmin (S r ⊤ Ci,t S r ), then it follows that λmin ((S l Bi,t S l ) ⊗ (S r ⊤ Ci,t S r )) =
+b t will satisfy the following inequality for every unit vector #»
+γmin,i,t . Consequently, D
+v:
+1
+#»
+b t #»
+v ⊤D
+v =
+N
+
+X
+i
+
+h ⊤
+i
+1 X
+#»
+v ≥
+v ⊤ (S l Bi,t S l ) ⊗ (S r ⊤ Ci,t S r ) #»
+γmin,i,t
+N i
+
+b t , thus:
+this actually provides a lower bound for eigenvalues of D
+X
+b t−1 ) ≤ 1 − µ
+λmax (I − µD
+γmin,i,t−1
+N i
+
+(26)
+
+(27)
+
+considering the definition of κt in the theorem, we can now easily show that:
+∥Pt ∥F ≤ [1 − µ(κt−1 − LA − 2LB LC M 2 )]∥Pt−1 ∥F .
+and completing the proof.
+While SubTrack-Grad utilizes right/left projections to reduce memory consumption, the proof is presented using both
+projection matrices to ensure generality. Here, we demonstrate how the proof proceeds under the assumption m ≤ n
+(without loss of generality), which allows the use of the left projection matrix.
+⊤
+
+⊤
+
+Using the left projection matrix, the current formulation of Pt , defined as Pt = Stl Gt Str , simplifies to Pt = Stl Gt .
+b t = Stl Stl ⊤ Gt Str Str ⊤ reduces to G
+b t = Stl Stl ⊤ Gt . From this point, the proof continues by substituting Str with
+Similarly, G
+the identity matrix, allowing the derivation of the vectorized forms of gt , gbt , pt , and related terms.
+The remainder of the proof remains largely unaffected. It can be readily verified that the recursive formulation of gt is
+unchanged. Although the definition of Pt is modified, it continues to satisfy the bounds required for convergence, ensuring
+that Pt converges to 0 when the left projection matrix is used.
+
+B. Grassmann Exponential
+Theorem 4.6 (Grassmann Exponential). Let P = U U T ∈ Gr(n, p) be a point on the Grassmannian, where U ∈ St(n, p)
+is the orthonormal basis of the corresponding subspace. Consider a tangent vector ∆ ∈ TP Gr(n, p), and let ∆hor
+U denote
+the horizontal lift of ∆ to the horizontal space at U in the Stiefel manifold St(n, p). Suppose the thin SVD of ∆hor
+U is
+hor
+T
+hor
+given by ∆U = Q̂ΣV , where Q̂ ∈ St(n, r), Σ = diag(σ1 , . . . , σr ) contains the nonzero singular values of ∆U with
+r = min(p, n − p), and V ∈ St(p, r). The Grassmann exponential map, representing the geodesic emanating from P in the
+direction ∆, is given by:
+
+
+T
+ExpGr
++ Q̂ sin(tΣ)V T + U V⊥ V⊥T ,
+P (t∆) = U V cos(tΣ)V
+where V⊥ ∈ Rp×(p−r) is any orthogonal complement of V .
+proof. Using Grassmannina mathematics, we know that every ∆ ∈ TP Gr(n, p) is of the form
+
+
+ 
+
+
+0 BT
+0 −B T
+∆=Q
+QT = Q
+QT , P
+B
+0
+B
+0
+
+Then the lift of ∆ ∈ TP Gr(n, p) to Q = U U⊥ can also be calculated explicitly as follows:
+
+
+0 −B T
+hor
+∆Q = [∆, P ]Q = Q
+B
+0
+To resume our proof, we need to define the orthogonal group and specifying its tangent space.
+13
+
+(28)
+
+(29)
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+Definition B.1 ( Orthogonal Group). The orthogonal group O(n) is defined as the set of all n × n matrices Q over R such
+that QT Q = QQT = In , where QT is the transpose of Q and In is the n × n identity matrix:
+O(n) = {Q ∈ Rn×n | QT Q = In = QQT }.
+Then the tangent space of the orthogonal group O(n) at a point Q, denoted TQ O(n), is defined as the set of matrices of the
+form QΩ, where Ω ∈ Rn×n is a skew-symmetric matrix, i.e., ΩT = −Ω:
+TQ O(n) = {QΩ | Ω ∈ Rn×n , ΩT = −Ω}.
+The geodesic from Q ∈ O(n) in direction QΩ ∈ TQ O(n) is calculated via
+ExpO
+Q (tQΩ) = Q expm (tΩ),
+If P ∈ Gr(n, p) and ∆ ∈ TP Gr(n, p) with ∆hor
+Q =Q
+
+
+
+0
+B
+
+(30)
+
+
+−B T
+, the geodesic in the Grassmannian is therefore
+0
+
+
+ 
+0
+OG
+ExpGr
+(t∆)
+=
+π
+Q
+exp
+m t B
+P
+
+−B T
+0
+
+
+.
+
+(31)
+
+where π OG is the projection from O(n) to Gr(n, p). If the thin SVD of B is given by
+T hor
+T
+B = U⊥
+∆U = U⊥
+Q̂ΣV T
+T
+with W := U⊥
+Q̂ ∈ St(n − p, r), Σ ∈ Rr×r , V ∈ St(p, r). Let W⊥ , V⊥ be suitable orthogonal completions. Then,
+
+
+expm
+
+0
+B
+
+−B
+0
+
+
+T
+
+
+V
+=
+0
+
+V⊥
+0
+
+0
+W
+
+0
+W⊥
+
+
+
+
+cos(Σ)
+ 0
+
+ sin(Σ)
+0
+
+0
+Ip−r
+0
+0
+
+− sin(Σ)
+0
+cos(Σ)
+0
+
+ T
+V
+ V T
+ ⊥
+ 0
+In−p−r
+0
+0
+0
+0
+
+
+0
+0 
+,
+WT
+W⊥T
+
+which leads to the desired result when inserted into (31). For more mathematical details, you can refer to Edelman et al.
+(1998), Bendokat et al. (2024), or other useful resources on Grassmann geometry.
+
+C. Time Complexity Analysis
+Table 5 presents the time complexity breakdown for the subspace update step in the SubTrack-Grad algorithm assuming
+a m × n gradient matrix and rank r projection matrix, where r ≪ m ≤ n. As outlined in Algorithm 1, the subspace
+update step begins by solving the least squares problem (3) to estimate the optimal update for St , the m × r orthonormal
+matrix. This operation has a time complexity of O(mr2 ). Computing the residual and the partial derivative with respect
+to St requires O(mrn) and O(mnr) time respectively. This is because the solution to the least squares problem, A, has
+shape r × n which is multiplied by St in the residual R = Gt − St A, resulting in time complexity O(mrn). The following
+operation for the partial derivative is −2RAT , where the matrix multiplication has O(mnr) complexity. The tangent vector
+computation (5) which involves an identity transformation and matrix multiplication has time complexity of O(m2 r). The
+rank-1 approximation step uses largest singular value from the SVD of the m × r tangent vector, and has time complexity of
+O(mr2 ). Finally, the update rule as shown in (7) which has a time complexity of O(mr2 ). The overall complexity of the
+algorithm is dominated by the matrix multiplication calculations of time complexity O(mnr). However, unlike GaLore,
+since we avoid computing SVD operation on the m × n gradient matrix, which has complexity of O(nm2 ), the overall
+update step in SubTrack-Grad is still more efficient with respect to time complexity.
+14
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+Table 5. Time Complexity for SubTrack-Grad Subspace Update
+
+Computation Step
+
+Time
+
+Cost function
+
+O(mr2 )
+
+Residual
+
+O(mrn)
+
+Partial derivative
+
+O(mnr)
+
+Tangent vector ∆F
+
+O(m2 r)
+
+Rank-1 approximation of ∆F
+
+O(mr2 )
+
+Update rule
+
+O(mr2 )
+
+Overall
+
+O(mnr)
+
+D. Memory and Time Comparison
+Table 6 presents the wall-times measured to compare the computational efficiency of SubTrack-Grad and GaLore. Additionally, Table 7 shows the peak memory consumption for each architecture during training, using the hyperparameters
+detailed in 14, on an NVIDIA A100 GPU with 40GB of memory. These values were used to create the bar plots shown in
+2a. For wall-time comparisons, each architecture was trained for 2,000 steps, ensuring exactly 10 subspace updates while
+excluding evaluation steps. The number of subspace updates was doubled compared to the fine-tuning experiments because
+larger models and more complex tasks naturally require more frequent updates. This adjustment allowed for more accurate
+measurements considering this demand.
+
+Table 6. Wall-time comparison for pre-training Llama-based architectures with varying model sizes on the C4 dataset. The experiments
+consist of 2000 iterations, corresponding to exactly 10 subspace update steps. The last two columns present the average percentage change
+in runtime relative to Full-Rank and GaLore, respectively.
+
+60M
+r=128
+
+130M
+r=256
+
+350M
+r=256
+
+1B
+r=512
+
+3B
+r=512
+
+Avg
+
+w.r.t FR
+
+w.r.t GaLore
+
+Full-Rank
+
+524.0
+
+1035.1
+
+1396.4
+
+974.9
+
+1055.9
+
+997.3
+
+-
+
+-
+
+BAdam
+
+511.3
+
+779.2
+
+961.6
+
+798.6
+
+1004.1
+
+811.0
+
+-18.68%
+
+-
+
+GaLore
+
+547.8
+
+1094.2
+
+1589.0
+
+1729.5
+
+2715.5
+
+1535.2
+
++53.94%
+
+-
+
+SubTrack-Grad
+
+534.9
+
+1061.0
+
+1465.9
+
+1191.1
+
+1385.7
+
+1127.7
+
++13.08%
+
+-26.54%
+
+Table 8 and Table 9 present the wall-time and peak memory consumption, respectively, for fine-tuning RoBERTa-Base on
+GLUE tasks. These values were used to generate the bar plots shown in 2c. For wall-time comparisons, the same settings
+were used, but evaluation steps were excluded, and fine-tuning was limited to number of iterations to ensure exactly 5
+subspace update steps during the process.
+Table 10 and Table 11 present the wall-time and peak memory consumption for each method when fine-tuning RoBERTaLarge on SuperGLUE tasks. These values were used to generate the bar plots shown in 2b. For wall-time comparisons, as
+with GLUE tasks, evaluation steps were omitted to ensure accurate measurements of fine-tuning time, and the number of
+iterations was adjusted to include exactly 5 subspace updates during fine-tuning.
+15
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+Table 7. Peak memory consumption comparison when pre-training Llama-based architectures with different sizes on C4 dataset. The last
+two columns present the average percentage change in memory consumption relative to Full-Rank and GaLore, respectively.
+
+60M
+r=128
+
+130M
+r=256
+
+350M
+r=256
+
+1B
+r=512
+
+3B
+r=512
+
+Avg
+
+w.r.t FR
+
+w.r.t GaLore
+
+Full-Rank
+
+16.86
+
+25.32
+
+28.67
+
+18.83
+
+34.92
+
+24.92
+
+-
+
+-
+
+BAdam
+
+13.34
+
+20.01
+
+21.11
+
+9.70
+
+15.25
+
+15.88
+
+-36.28%
+
+-
+
+GaLore
+
+16.89
+
+25.51
+
+27.85
+
+15.24
+
+26.03
+
+22.30
+
+-10.51%
+
+-
+
+SubTrack-Grad
+
+16.89
+
+25.52
+
+27.85
+
+15.24
+
+26.16
+
+22.33
+
+-10.39%
+
++0.13%
+
+Table 8. Wall-time comparison when fine-tuning RoBERTa-Base on GLUE tasks for different ranks r up to a number of iterations to
+exactly include 5 subspace update steps. The last two columns present the average percentage change in runtime relative to Full-Rank and
+GaLore, respectively.
+COLA
+
+STS-B
+
+MRPC
+
+RTE
+
+SST-2
+
+MNLI
+
+QNLI
+
+QQP
+
+Avg
+
+w.r.t FR
+
+w.r.t GaLore
+
+Full-Rank
+
+105.0
+
+124.0
+
+142.2
+
+260.1
+
+95.0
+
+146.3
+
+161.3
+
+119.0
+
+144.1
+
+-
+
+-
+
+BAdam
+
+92.7
+
+103.3
+
+111.4
+
+177.9
+
+85.9
+
+116.0
+
+122.1
+
+99.1
+
+113.5
+
+-21.24%
+
+-
+
+GaLore (r=4)
+
+189.2
+
+194.7
+
+198.0
+
+310.7
+
+185.0
+
+205.7
+
+215.1
+
+187.3
+
+210.7
+
++46.22%
+
+-
+
+SubTrack-Grad (r=4)
+
+145.2
+
+155.7
+
+168.3
+
+286.2
+
+141.2
+
+172.6
+
+189.9
+
+151.3
+
+176.3
+
++22.48%
+
+-16.23
+
+GaLore (r=8)
+
+189.9
+
+195.2
+
+195.9
+
+312.3
+
+183.9
+
+205.1
+
+215.7
+
+187.6
+
+210.7
+
++46.22%
+
+-
+
+SubTrack-Grad (r=8)
+
+145.2
+
+156.1
+
+168.4
+
+286.2
+
+143.2
+
+172.0
+
+188.9
+
+152.2
+
+176.6
+
++22.35
+
+-16.33%
+
+E. Fine-Tuning RoBERTa
+RoBERTa-Base was fine-tuned on GLUE tasks using the hyperparameters detailed in Table 12, matching those reported in
+the GaLore (Zhao et al., 2024) for rank-4 and rank-8 subspaces, with a subspace update interval set at 500 iterations.
+We also fine-tuned RoBERTa-Large on SuperGLUE tasks using the hyperparameters from Luo et al. (2024), as detailed in
+Table 13, with the exception that we fine-tuned each task for 30 epochs.
+
+F. Pre-Training LLama-Based Architectures
+To manage resources, we pre-trained all five Llama-based architectures for 10,000 iterations using hyperparameters reported
+in Table 14. While larger models typically require more iterations, this setup was sufficient for comparing methods rather
+than creating perfectly optimized models.
+
+G. Time and Performance Consistency
+Table 15 demonstrates that increasing the update frequency significantly increases GaLore’s runtime, while the performance
+of both methods remains comparable. This underscores SubTrack-Grad’s efficiency in reducing runtime without sacrificing
+performance. Notably, this advantage becomes even more pronounced for tasks that demand more frequent updates.
+16
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+Table 9. Peak memory consumption when fine-tuning RoBERTa-Base on GLUE tasks for different ranks r. The last two columns present
+the average percentage change in memory consumption relative to Full-Rank and GaLore, respectively.
+COLA
+
+STS-B
+
+MRPC
+
+RTE
+
+SST-2
+
+MNLI
+
+QNLI
+
+QQP
+
+Avg
+
+w.r.t FR
+
+w.r.t GaLore
+
+Full-Rank
+
+4.13
+
+4.24
+
+4.29
+
+8.16
+
+3.88
+
+7.66
+
+9.50
+
+7.80
+
+6.21
+
+-
+
+-
+
+BAdam
+
+2.12
+
+2.15
+
+2.30
+
+3.69
+
+1.99
+
+2.13
+
+2.24
+
+2.84
+
+2.43
+
+-60.87%
+
+-
+
+GaLore (r=4)
+
+3.64
+
+4.12
+
+3.85
+
+7.27
+
+3.52
+
+6.84
+
+8.75
+
+6.58
+
+5.57
+
+-10.31%
+
+-
+
+SubTrack-Grad (r=4)
+
+3.64
+
+4.12
+
+3.86
+
+7.27
+
+3.37
+
+6.73
+
+8.75
+
+6.58
+
+5.54
+
+-10.79%
+
+-0.54%
+
+GaLore (r=8)
+
+3.64
+
+4.12
+
+3.86
+
+7.27
+
+3.53
+
+6.84
+
+8.75
+
+6.58
+
+5.57
+
+-10.31%
+
+-
+
+SubTrack-Grad (r=8)
+
+3.65
+
+4.12
+
+3.86
+
+7.27
+
+3.38
+
+6.74
+
+8.75
+
+6.58
+
+5.54
+
+-10.79%
+
+-0.54%
+
+Table 10. Wall-time comparison when fine-tuning RoBERTa-Large on SuperGLUEup to a number of iterations to exactly include 5
+subspace update steps. The last two columns present the average percentage change in runtime relative to Full-Rank and GaLore,
+respectively.
+
+BoolQ
+
+CB
+
+COPA
+
+WIC
+
+WSC
+
+AXg
+
+Avg
+
+w.r.t FR
+
+w.r.t GaLore
+
+Full-Rank
+
+1406.3
+
+171.5
+
+35.1
+
+250.4
+
+216.4
+
+52.1
+
+355.3
+
+-
+
+-
+
+BAdam
+
+794.9
+
+93.5
+
+45.9
+
+163.9
+
+137.2
+
+38.1
+
+212.25
+
+-40.26%
+
+-
+
+GaLore (r=8)
+
+1536.8
+
+272.2
+
+235.3
+
+483.0
+
+393.2
+
+219.9
+
+523.4
+
++47.31%
+
+-
+
+SubTrack-Grad (r=8)
+
+1468.0
+
+198.1
+
+82.2
+
+326.1
+
+266.7
+
+86.6
+
+404.62
+
++13.88%
+
+-22.69%
+
+H. Convergence vs. Wall-Time
+Figure 5 depicts the changes in the training loss function relative to wall-time. The results demonstrate that SubTrack-Grad’s
+wall-time reduction has minimal impact on the learning process, showcasing a convergence pattern comparable to other
+methods without introducing significant computational overhead.
+
+17
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+Table 11. Peak memory consumption comparison when fine-tuning RoBERTa-Large on SuperGLUE. The last two columns present the
+average percentage change in memory consumption relative to Full-Rank and GaLore, respectively.
+
+BoolQ
+
+CB
+
+COPA
+
+WIC
+
+WSC
+
+AXg
+
+Avg
+
+w.r.t FR
+
+w.r.t GaLore
+
+Full-Rank
+
+20.16
+
+15.15
+
+7.86
+
+7.96
+
+9.11
+
+7.81
+
+11.37
+
+-
+
+-
+
+BAdam
+
+10.80
+
+5.78
+
+3.36
+
+3.26
+
+4.57
+
+3.26
+
+5.17
+
+-54.52%
+
+-
+
+GaLore (r=8)
+
+19.08
+
+12.53
+
+5.32
+
+5.94
+
+7.26
+
+5.34
+
+9.24
+
+-18.73%
+
+-
+
+SubTrack-Grad (r=8)
+
+19.09
+
+12.40
+
+5.12
+
+5.95
+
+7.06
+
+5.35
+
+9.16
+
+-19.44%
+
+-0.87%
+
+Table 12. Hyperparameters of fine-tuning RoBERTa-Base on GLUE tasks.
+
+MNLI
+
+SST-2
+
+MRPC
+
+CoLA
+
+QNLI
+
+QQP
+
+RTE
+
+STS-B
+
+Batch Size
+Learning Rate
+# Epochs
+Max Seq. Len.
+
+16
+1E-05
+
+16
+1E-05
+
+16
+3E-05
+
+32
+3E-05
+
+16
+1E-05
+
+16
+1E-05
+
+16
+1E-05
+
+16
+1E-05
+
+SubTrack-Grad
+& GaLore, r = 4
+Parameters
+
+SubTrack-Grad Step-Size
+Subspace Update Interval
+α
+
+0.1
+
+0.01
+
+1.0
+
+8.0
+
+10.0
+
+SubTrack-Grad
+& GaLore, r = 8
+Parameters
+
+SubTrack-Grad Step-Size
+Subspace Update Interval
+α
+
+0.1
+
+0.1
+
+1.0
+
+5.0
+
+10.0
+
+BAdam Parameters
+
+Block Switch Interval
+Switch Mode
+
+WIC
+
+WSC
+
+AXg
+
+50.0
+500
+
+1
+250
+
+1.0
+100
+
+50
+100
+Random
+
+50
+
+50
+
+Shared Parameters
+
+30
+512
+0.001
+
+5.0
+
+5.0
+500
+4
+
+0.1
+
+5.0
+
+13.0
+500
+2
+
+100
+Random
+
+Table 13. Hyperparameters of fine-tuning RoBERTa-Large on SuperGLUE tasks.
+
+BoolQ
+Shared Parameters
+
+Batch Size
+# Epochs
+Learning Rate
+Max Seq. Len.
+
+SubTrack-Grad &
+GaLore Parameters
+
+SubTrack-Grad Step-Size
+Subspace Update Interval
+Rank Config.
+α
+
+0.1
+500
+
+Block Switch Interval
+Switch Mode
+
+100
+
+BAdam Parameters
+
+CB
+
+COPA
+16
+30
+1e-5
+512
+
+1.0
+100
+
+50.0
+100
+8
+4
+
+18
+
+50
+
+SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training
+
+Table 14. Hyperparameters of pre-training Llama-based architectures.
+
+60M
+
+130M
+
+350M
+
+1B
+
+3B
+
+Hidden
+Intermediate
+Heads
+Layers
+
+512
+1376
+8
+8
+
+768
+2048
+12
+12
+
+1024
+2736
+16
+24
+
+2048
+5461
+24
+32
+
+4096
+11008
+32
+32
+
+Shared Parameters
+
+Learning Rate
+Batch Size
+Iterations
+Gradient Accumulation
+Gradient Clipping
+Warmup Steps
+scale
+dtype
+
+1e-3
+128
+
+1e-3
+128
+
+1e-3
+1e-5
+64
+8
+10K
+2
+1.0
+1000
+0.25
+bfloat16
+
+1e-5
+8
+
+SubTrack &
+GaLore Parameters
+
+Rank
+Subspace Update Interval
+SubTrack-Grad Step-Size
+
+128
+
+256
+
+BAdam Parameters
+
+Block Swithch Interval
+Switch Mode
+
+Architectural
+Parameters
+
+256
+200
+10
+
+512
+
+512
+
+100
+Random
+
+Table 15. Comparing changes in performance while decreasing the subspace update interval (increasing the frequency of subspace updates)
+on fine-tuning RoBERTa-Base on COLA task.
+500
+
+450
+
+400
+
+350
+
+300
+
+250
+
+200
+
+150
+
+100
+
+50
+
+GaLore’s Wall-Time
+GaLore’s Performance
+
+458.79
+0.5358
+
+460.19
+0.5285
+
+471.36
+0.5385
+
+483.04
+0.5356
+
+495.83
+0.5309
+
+520.28
+0.54821
+
+556.14
+0.5332
+
+605.1
+0.5387
+
+715.87
+0.5463
+
+1038.79
+0.5463
+
+SubTrack-Grad’s Wall-Time
+SubTrack-Grad’s Performance
+
+408.22
+0.5332
+
+408.44
+0.5382
+
+408.47
+0.5364
+
+409.25
+0.5385
+
+409.17
+0.5354
+
+409.76
+0.5364
+
+410.29
+0.5416
+
+411.77
+0.5385
+
+413.35
+0.5364
+
+417.07
+0.5673
+
+Figure 5. The figures present changes in training loss relative to wall-time for pre-training the Llama-3B architecture on the C4 dataset
+and fine-tuning RoBERTa-Large on the BoolQ dataset. They demonstrate that SubTrack maintains the overall learning process for both
+pre-training and fine-tuning while avoiding significant computational overhead.
+
+19
+
+

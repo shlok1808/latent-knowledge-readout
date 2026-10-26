@@ -1,0 +1,117 @@
+{
+ "slug": "c8-represented-used-2610.05292",
+ "url": "https://arxiv.org/pdf/2610.05292",
+ "pdf_ok": true,
+ "pages": 22,
+ "chars": 84926,
+ "title_guess": "Erased, Rerouted, or Rescaled? Post-Training and the Causal Quotient of a Language Model\u2019s Belief State Weihan Li\u22171 , Tianshi Zheng\u22172 , Junhao Wu3 , Xinlei Chen",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 2,
+   "caption_start": " Figure 1: From a belief state to its fates. I. A hidden Markov process with a task and a nuisance variable generates tokens, and a pretrained transformer represents the belief state bt . The reward r"
+  },
+  {
+   "id": "Table 1",
+   "page": 3,
+   "caption_start": " Table 1: Three coordinates of a reward-null subspace S.  post-training selects a new causal quotient: the objective constrains it (Section 3) and optimization chooses within the constraints (Section "
+  },
+  {
+   "id": "Table 2",
+   "page": 4,
+   "caption_start": " Table 2: Experiment map. Objectives: SFT on a demonstrator\u2019s labels, DPO, GRPO, REINFORCE and KLregularized reinforcement learning with the exact gradient (KL-RL), over anchor strengths \u03b2 that includ"
+  },
+  {
+   "id": "Figure 2",
+   "page": 5,
+   "caption_start": " Figure 2: Fates as coordinates. Each marker is one objective in the main world, placed by the share of activation variance it allocates to the kernel (A) and by the use its decision makes of the kern"
+  },
+  {
+   "id": "Figure 3",
+   "page": 6,
+   "caption_start": " Figure 3: Encoded but no longer used. Use of the next-token-invisible component by the model\u2019s own filter against its decodability at ordinary positions, both relative to the base model, for the GRU "
+  },
+  {
+   "id": "Figure 4",
+   "page": 6,
+   "caption_start": " Figure 4: Allocation is a third property, and it has a cost. I. Kernel share against the change in effective rank for all post-trained networks. II. Steps a new linear readout needs to recover the nu"
+  },
+  {
+   "id": "Figure 5",
+   "page": 8,
+   "caption_start": " Figure 5: With the anchor the reference\u2019s log-odds are kept, and without it optimization decides. I. Within-class log-odds of the policy against the reference, one point per history, in a small trans"
+  },
+  {
+   "id": "Table 3",
+   "page": 14,
+   "caption_start": " Table 3: Where each objective leaves the reward-null kernel (main world, transformer; means over three base seeds or ranges over the objectives of a row, one seed in the last block). Each cell prints"
+  },
+  {
+   "id": "Figure 6",
+   "page": 14,
+   "caption_start": " Figure 6: The coordinates of Figure 2 in the other worlds and in the GRU. Allocated share against use at the decision position, with the fill of a marker showing what is still represented, for eight "
+  },
+  {
+   "id": "Figure 7",
+   "page": 15,
+   "caption_start": " Figure 7: The anchor threshold. Slope, intercept and within-class preference over \u03b2 for GRPO and KL-RL, with the transition intervals. Inset: at matched KL from the reference, unanchored runs already"
+  },
+  {
+   "id": "Figure 8",
+   "page": 15,
+   "caption_start": " Figure 8: Two exits of one network. Transfer of the twin effect through the kernel subspace and twin effect relative to the base, at the policy and at the next-token head.  open: \u03b2 = 0 at KL * gray: "
+  },
+  {
+   "id": "Figure 9",
+   "page": 15,
+   "caption_start": " Figure 9: Matched reward and matched KL. Coordinates of SFT and KL-RL at the same reward, and of unanchored and anchored reinforcement learning at the same KL from the reference.  15  "
+  },
+  {
+   "id": "Figure 10",
+   "page": 16,
+   "caption_start": " Figure 10: Erasure in the weight-decay corner. Trajectories of both kernel components in the transformer, and ordinary positions against the query position at the end of training for the transformer "
+  },
+  {
+   "id": "Figure 11",
+   "page": 17,
+   "caption_start": " Figure 11: Recurrent and attention architectures. I. Decodability of the free kernel after objectives that leave it free, at the query (top) and at ordinary positions (bottom), for the transformer (f"
+  },
+  {
+   "id": "Figure 12",
+   "page": 18,
+   "caption_start": " Figure 12: Spectral statistics. The gauge control, the kernel share against the change of effective rank, and the kernel\u2019s share of the output variance over \u03b2 against the optimum.  Bayes filter does "
+  },
+  {
+   "id": "Figure 13",
+   "page": 19,
+   "caption_start": " Figure 13: Revival. Reward of a new linear readout for the nuisance variable on frozen networks, and steps to 95% against the kernel share.  the mean of the query representation faster than full fine"
+  },
+  {
+   "id": "Figure 14",
+   "page": 20,
+   "caption_start": " Figure 14: How a policy leaves the identity. I. Shares of the second moment of the query representation carried by its mean, by class features, by nuisance features and by their interaction during un"
+  },
+  {
+   "id": "Table 4",
+   "page": 21,
+   "caption_start": " Table 4: Outcomes over post-training seeds after 5,000 steps. Each cell prints the range over the seeds of one pretrained model and marks every run on a track (dashed: \u03b3 = 1, and the base model\u2019s pre"
+  },
+  {
+   "id": "Figure 15",
+   "page": 21,
+   "caption_start": " Figure 15: Every run of the seed study. Slope \u03b3 (top) and history-independent shift (bottom) over post-training steps, one line per run, colored by pretrained model, with a dot at reward saturation. "
+  },
+  {
+   "id": "Figure 16",
+   "page": 22,
+   "caption_start": " Figure 16: Released checkpoints. Decodability of the in-context belief state and of its next-token-invisible component by layer for base and post-trained checkpoints (means over six hidden Markov mod"
+  }
+ ],
+ "n_figures_tables": 20,
+ "section_heading_candidates": [
+  "A Recurrent State Spreads Freedom and",
+  "A GRU decides from the state it carries along the"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

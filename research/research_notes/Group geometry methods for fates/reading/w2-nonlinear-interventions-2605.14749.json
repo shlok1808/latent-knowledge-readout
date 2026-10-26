@@ -1,0 +1,276 @@
+{
+ "slug": "w2-nonlinear-interventions-2605.14749",
+ "title": "Non-linear Interventions on Large Language Models (Sangwoo Kim, Seoul National University; arXiv 2605.14749v1, 14 May 2026; 4-page preprint + appendix)",
+ "sections_read": [
+  "Abstract",
+  "1 Introduction",
+  "2 A General Formulation of Non-linear Interventions",
+  "2.1 Linear Interventions as Change of Basis",
+  "2.2 Non-linear Interventions via Invertible Feature Maps",
+  "3 Learning f_theta via Interchange Intervention",
+  "3.1 Training Objective via Interchange Intervention",
+  "3.2 Loss Design for Implicit Features",
+  "4 Experiments",
+  "4.1 Setup (Models and data; Evaluation; Baselines; Our method; footnote 1 on RDO ActAdd)",
+  "4.2 Results",
+  "5 Analysis",
+  "5.1 Linear Intervention at the Loss Sites",
+  "5.2 Role of Non-linearity",
+  "5.3 Layer Sweep",
+  "6 Conclusion (incl. limitations)",
+  "References (skimmed)",
+  "Appendix A Additional Experimental Details",
+  "A.1 i-ResNet Feature Map",
+  "A.2 Intervention Sites"
+ ],
+ "setup": {
+  "data": "D+ = 2,000 harmless Alpaca prompts that get compliant answers; D- = 2,000 harmful SALAD-Bench prompts that get refusals. Training pairs (x-, x+) sampled from D- x D+. Evaluation: StrongREJECT score in [0, 1] over 313 harmful prompts, LLM judge. Target feature: 'bypass refusal', treated as an implicit feature with no single output token.",
+  "models_and_sizes": "Llama-3-8B-Instruct and Qwen2.5-7B-Instruct, weights frozen.",
+  "layers_and_positions": "One site per example, residual stream at the block output: Llama layer 10 (zero-indexed), token -3 from the end of the formatted prompt; Qwen layer 14, token -4. Layer sweep over all layers for both models (Fig 2). Loss sites S: downstream (layer, token) sites whose class-mean-difference projection separates D+ from D- with AUC above a threshold tau (tau value not reported).",
+  "baselines": "Difference-in-Means refusal direction (DIM, Arditi et al. 2024) and Refusal Direction Optimization (RDO, Wollschlager et al. 2025), each as directional ablation (every token, every layer) and ActAdd (fixed coefficient at one layer, every token). RDO ActAdd on Qwen excluded (scored 0.020 in their reproduction, judged unreliable).",
+  "controls": "Linear shift along v_s at every loss site to the positive-class mean (Table 2); the same pipeline with f_theta constrained to a linear map (Table 3); layer sweep with everything else fixed (Fig 2); intervention-size accounting (sites edited, total L2, Table 1). Method: f_theta = 2 i-ResNet blocks, MLP hidden width 128, LeakyReLU 0.1, spectral normalisation, Lipschitz coefficient 0.6, fixed-point inverse (up to 30 steps, tol 1e-5), implicit-differentiation gradients; k = 1 coordinate; at test time the coordinate is clamped to the cached mean over harmless training prompts. No seeds, CIs, or capability checks on benign prompts are reported."
+ },
+ "figures": [
+  {
+   "id": "Figure 1",
+   "page": 3,
+   "what_is_plotted": "Bar chart of StrongREJECT score for Llama 3 8B (top) and Qwen 2.5 7B (bottom): no intervention, DIM (ablation, ActAdd), RDO (ablation, ActAdd), and the non-linear single-site intervention.",
+   "takeaway": "The single-site non-linear edit reaches about the same refusal-bypass score as the strongest linear baselines that edit hundreds to tens of thousands of sites.",
+   "numbers": "Llama: none ~0.01, DIM abl ~0.64, DIM ActAdd ~0.70, RDO abl ~0.66, RDO ActAdd ~0.83, non-linear ~0.81 (0.813 in Table 3). Qwen: none ~0.07, DIM abl ~0.74, DIM ActAdd ~0.75, RDO abl ~0.66, non-linear ~0.76 (0.760 in Table 3) (approx, read from figure except values also in Table 3).",
+   "text_matches_figure": "yes. 'Comparable' is fair: on Llama RDO ActAdd is slightly higher than the non-linear edit; on Qwen the non-linear edit is about equal to DIM."
+  },
+  {
+   "id": "Table 3",
+   "page": 4,
+   "what_is_plotted": "StrongREJECT when f_theta is constrained to a linear map vs the i-ResNet f_theta, same objective and site.",
+   "takeaway": "The linear-constrained map at the same single site does nothing; the non-linear map works. This is the paper's matched linear-vs-non-linear test.",
+   "numbers": "Linear f_theta: Llama 0.010, Qwen 0.072. Non-linear: Llama 0.813, Qwen 0.760.",
+   "text_matches_figure": "yes. Note the linear values equal the no-intervention level in Fig 1 (~0.01 and ~0.07), and the linear edit's size is not reported, so it is unclear whether the linear map moved the activation at all."
+  },
+  {
+   "id": "Table 1",
+   "page": 4,
+   "what_is_plotted": "Per-sample intervention size: average sites edited per example and total L2 edit norm, per method and model.",
+   "takeaway": "The non-linear method edits 1 site with a total L2 more than 100x smaller than every linear baseline.",
+   "numbers": "Llama: DIM abl 54,778 sites / 2,898.7; DIM ActAdd 572 / 1,816.2; RDO abl 59,396 / 1,812.1; RDO ActAdd 619 / 1,964.5; non-linear 1 / 3.5. Qwen: DIM abl 49,661 / 41,376.2; DIM ActAdd 591 / 24,676.3; RDO abl 53,568 / 15,474.0; non-linear 1 / 28.3. Our division (not in paper): L2 per edited site is Llama ActAdd ~3.17-3.18 vs non-linear 3.5; Qwen DIM ActAdd ~41.8 vs non-linear 28.3.",
+   "text_matches_figure": "yes for the totals. But the 'two orders of magnitude' gap comes from the number of sites, not from a smaller edit at the site: per edited site the non-linear edit is about as large as an ActAdd edit."
+  },
+  {
+   "id": "Table 2",
+   "page": 4,
+   "what_is_plotted": "StrongREJECT after a linear shift along v_s at every loss site s in S (to the positive-class mean projection) vs the learned non-linear single-site intervention.",
+   "takeaway": "Matching the downstream projections linearly is not enough; the learned map does more than align those readouts.",
+   "numbers": "Linear at loss sites: Llama 0.689, Qwen 0.415. Non-linear: Llama 0.813, Qwen 0.760.",
+   "text_matches_figure": "partly. 'Substantially short' fits Qwen (gap 0.35) better than Llama (gap 0.12; 0.689 is in the range of the DIM baselines)."
+  },
+  {
+   "id": "Figure 2",
+   "page": 4,
+   "what_is_plotted": "StrongREJECT of the non-linear intervention trained and evaluated at each layer, Llama 3 8B (layers 0-30 shown) and Qwen 2.5 7B (layers 0-26 shown).",
+   "takeaway": "The edit only works in a middle band of layers; early and late layers fail. This is the paper's 'where' result.",
+   "numbers": "Llama: <=0.27 for layers 0-9, jump to ~0.80 at layer 10, ~0.70-0.78 for 11-15, ~0.44-0.56 for 16-18, ~0.02-0.10 from layer 19 on. Qwen: ~0.10-0.40 for layers 0-7 (dip ~0.11 at 7), ~0.50-0.76 for 8-19 (peak ~0.76 at 15-17), ~0.44 at 20, ~0.03-0.24 for 21-26 (approx, read from figure).",
+   "text_matches_figure": "yes. The Llama main site (layer 10) is the best layer in this sweep; how the site was chosen ('heuristically') is not described, so it may be tuned on the same evaluation."
+  },
+  {
+   "id": "Table 4",
+   "page": 8,
+   "what_is_plotted": "Main intervention sites: model, layer, token position, evaluation target.",
+   "takeaway": "One prompt token near the end of the chat template, mid-depth; target is the harmless mean of the mapped coordinate.",
+   "numbers": "Llama 3 8B: layer 10, token -3. Qwen 2.5 7B: layer 14, token -4. Target: harmless mapped-coordinate mean.",
+   "text_matches_figure": "yes"
+  }
+ ],
+ "key_results": [
+  {
+   "claim": "Headline: single-site non-linear edit matches strong linear baselines that edit far more sites.",
+   "quote": "Our non-linear intervention attains steering effectiveness comparable to strong linear baselines while editing activations at orders of magnitude fewer hidden-state locations.",
+   "page": 1
+  },
+  {
+   "claim": "Linear intervention is the special case of the general formula with a linear feature map.",
+   "quote": "Eq. (2) is recovered as the special case in which fθ is restricted to a linear map.",
+   "page": 2
+  },
+  {
+   "claim": "The hinge loss over many downstream correlated readouts supervises an implicit feature.",
+   "quote": "Minimizing L thus drives fθ to discover a feature whose intervention causally aligns many F-correlated components at once.",
+   "page": 2
+  },
+  {
+   "claim": "At test time no paired harmless prompt is needed: the coordinate is clamped to a cached class mean.",
+   "quote": "we compute the mean first-coordinate value of fθ (h) over the harmless training set at the selected site",
+   "page": 3
+  },
+  {
+   "claim": "Fig 1: comparable scores with a single edited position.",
+   "quote": "Although the non-linear method intervenes at a single position per sample, it reaches scores comparable to the baselines",
+   "page": 3
+  },
+  {
+   "claim": "Table 1: total edit norm is >100x smaller (our note: per site it is not smaller).",
+   "quote": "the total magnitude of the non-linear intervention is more than two orders of magnitude smaller than that of every linear baseline",
+   "page": 3
+  },
+  {
+   "claim": "Table 2: linear shifts at all loss sites do worse than the single-site non-linear edit.",
+   "quote": "this falls substantially short of our method on both models, indicating that fθ does more than align these projections",
+   "page": 4
+  },
+  {
+   "claim": "Table 3: constraining the map to be linear removes the effect.",
+   "quote": "StrongREJECT drops sharply on both models, suggesting that the non-linearity of fθ clearly contributes to the effectiveness of our intervention",
+   "page": 4
+  },
+  {
+   "claim": "Fig 2: effect is confined to middle layers.",
+   "quote": "for both models, the intervention is largely ineffective at early layers, peaks at middle layers, and declines at later layers",
+   "page": 4
+  },
+  {
+   "claim": "Interpretation: a non-linear refusal/compliance feature lives mainly in middle layers.",
+   "quote": "it captures a non-linear feature governing refusal/compliance that resides primarily in the middle layers",
+   "page": 4
+  }
+ ],
+ "methods": [
+  {
+   "name": "Non-linear interchange intervention with an invertible feature map (i-ResNet), k = 1",
+   "what_it_measures": "Whether setting one learned, curved coordinate at one site to the 'good class' value changes behaviour. It generalises a DAS-style rotation (Eq. 2) to an invertible non-linear map (Eq. 3).",
+   "which_fate_it_could_diagnose": "3 not routed: inject the resisted-item coordinate into flipped items at layer l; recovery means the information is usable when supplied. 2 bypass vs non-linear encoding: if a linear map at the site fails but a non-linear map works (their Table 3 pattern), the item is not bypass. 5 transformed: a non-linear invertible map can align a re-encoded coordinate.",
+   "causal_followup_it_allows": "It is the causal test (controllability). For endogenous mediation, add: does the item's natural value of the coordinate predict flips, and does clamping resisted items to the flipped mean induce flips?",
+   "data_and_compute_needed": "Thousands of contrast pairs (they use 2,000 + 2,000); backprop through the frozen model to one site with a 30-step fixed-point inverse. Our estimate (not from the paper): feasible for 9B-14B on one 80 GB GPU with short prompts; 27B likely needs sharding.",
+   "code_available": "Stated: anonymous.4open.science/r/nonlinear-intervention-77AC/ (not checked)."
+  },
+  {
+   "name": "Downstream-site hinge loss for implicit features",
+   "what_it_measures": "Supervision for an edit when no single output token defines the target: class-mean-difference directions v_s at downstream sites with AUC > tau, hinge loss pushing each projection up to the positive-class mean.",
+   "which_fate_it_could_diagnose": "Our flips have an explicit target (the answer token), so less needed for the flip itself; useful for implicit targets such as deference or hedging. The set S of sites that pass the AUC filter also maps where a correctness-correlated readout exists downstream (helps 3 not routed vs 4 override).",
+   "causal_followup_it_allows": "Per-site check of which downstream readouts move after the edit, a route map.",
+   "data_and_compute_needed": "Cached activations over many (layer, token) sites for D+ and D-; cheap after caching.",
+   "code_available": "Same repo (not checked)."
+  },
+  {
+   "name": "Linear-constrained map, same objective and site (Table 3)",
+   "what_it_measures": "Whether non-linearity matters, holding site, data and loss fixed.",
+   "which_fate_it_could_diagnose": "Separates 'information present but not linearly controllable' from 'no handle at all'; key for 2 bypass calls and H3.",
+   "causal_followup_it_allows": "Pair with the layer sweep to see whether the linear-vs-non-linear gap moves with depth.",
+   "data_and_compute_needed": "Same as main method, cheaper.",
+   "code_available": "Same repo (not checked)."
+  },
+  {
+   "name": "Linear shift at all loss sites (Table 2)",
+   "what_it_measures": "Whether the gain only comes from choosing good downstream directions.",
+   "which_fate_it_could_diagnose": "Distinguishes a single upstream cause from many downstream symptoms; relevant to 4 override (one competing signal) vs diffuse change.",
+   "causal_followup_it_allows": "None beyond the comparison.",
+   "data_and_compute_needed": "Cheap.",
+   "code_available": "Same repo (not checked)."
+  },
+  {
+   "name": "Layer sweep of the learned intervention (Fig 2)",
+   "what_it_measures": "Where in depth a single-site edit can control the behaviour.",
+   "which_fate_it_could_diagnose": "Localises the depth band for any fate fix; for us, which layers carry a controllable flip/resist variable.",
+   "causal_followup_it_allows": "Token-position sweep at the best layer (not done in the paper).",
+   "data_and_compute_needed": "One training run per layer (28-46 layers at 9B-27B); moderate.",
+   "code_available": "Same repo (not checked)."
+  },
+  {
+   "name": "Intervention-size accounting (sites edited, total L2)",
+   "what_it_measures": "How much the model was perturbed to get the behaviour.",
+   "which_fate_it_could_diagnose": "None directly; a cost metric for Stage B fixes.",
+   "causal_followup_it_allows": "None.",
+   "data_and_compute_needed": "Trivial.",
+   "code_available": "Same repo (not checked)."
+  }
+ ],
+ "controls_worth_copying": [
+  "Same site, same data, same loss, map constrained to linear: the cleanest linear-vs-non-linear contrast. We should run it for every manifold-style fix.",
+  "Linear shift at every downstream loss site to rule out 'it is just the readout directions we chose'.",
+  "Layer sweep with all else fixed, to report where an edit works rather than one tuned layer.",
+  "Report sites edited and total edit norm; we should also report per-site L2 divided by the residual norm at that layer, which the paper does not.",
+  "Use a judge that checks substantive content (StrongREJECT), not just surface strings. Our analogue: grade the final answer and whether the explanation is coherent, not only the first token.",
+  "Clamp to a cached class mean at test time so the edit needs no paired example, which makes it deployable."
+ ],
+ "pitfalls": [
+  {
+   "pitfall": "The intervention site is picked by hand; no selection procedure is given.",
+   "quote": "We heuristically select one intervention position per model.",
+   "page": 3
+  },
+  {
+   "pitfall": "A baseline result was dropped as unreliable rather than debugged.",
+   "quote": "the RDO ActAdd variant on Qwen yielded a StrongREJECT score of 0.020 in our runs. We judged this result to be unreliable",
+   "page": 3
+  },
+  {
+   "pitfall": "The only argument that the flexible map finds rather than builds the feature is the layer sweep.",
+   "quote": "This suggests that our method is not so powerful that it finds an effective feature map at",
+   "page": 4
+  },
+  {
+   "pitfall": "Our observation: the 'more precise' claim rests on the number of sites. Per edited site the non-linear L2 (3.5 Llama, 28.3 Qwen) is similar to ActAdd per site (~3.17 Llama, ~41.8 Qwen). Edit norms are not normalised by residual-stream norm.",
+   "quote": "",
+   "page": null
+  },
+  {
+   "pitfall": "Our observation: no capability or coherence check on benign prompts, no seeds or CIs, one task, one judge metric on 313 prompts.",
+   "quote": "",
+   "page": null
+  },
+  {
+   "pitfall": "Our observation: no shuffled-label or random-pair control for the i-ResNet, so expressivity (creating an effect) is not ruled out.",
+   "quote": "",
+   "page": null
+  },
+  {
+   "pitfall": "Our observation: the linear-constrained control scores exactly the no-intervention level and its edit size is not reported, so it may be under-tuned rather than truly unable.",
+   "quote": "",
+   "page": null
+  },
+  {
+   "pitfall": "Our observation: tau (AUC threshold) and |S| are not reported; the Llama site (layer 10) is the best layer in the Fig 2 sweep, so the main number may be selected on the evaluation set.",
+   "quote": "",
+   "page": null
+  }
+ ],
+ "limitations_quote": "We realize fθ only as an i-ResNet, and the same framework admits other invertible architectures.",
+ "limitations_page": 4,
+ "future_work_quote": "the position at which to intervene must still be chosen heuristically. We leave both directions to future work.",
+ "future_work_page": 4,
+ "bears_on_fates": [
+  {
+   "fate": "1 readout/threshold failure",
+   "how": "Not addressed.",
+   "strength": "none"
+  },
+  {
+   "fate": "2 bypass",
+   "how": "Table 3 pattern (linear map at the site: 0.010/0.072; non-linear map: 0.813/0.760) shows a linear null at a site does not mean the site is causally inert. Before calling an item bypass, try a non-linear (or manifold) edit at the same site.",
+   "strength": "moderate"
+  },
+  {
+   "fate": "3 not routed",
+   "how": "The method is an injection test: set one coordinate at one site to the 'good' class value and see if behaviour follows. Applied to flipped items with the resisted-item value, success means the model can use the information when it is there.",
+   "strength": "moderate"
+  },
+  {
+   "fate": "4 override",
+   "how": "Refusal bypass suppresses one behaviour in favour of another; the linear-at-loss-sites control (Table 2) hints at one upstream cause rather than many downstream ones. Indirect, refusal not factual.",
+   "strength": "weak"
+  },
+  {
+   "fate": "5 transformed",
+   "how": "An invertible non-linear map can give a coordinate for a feature that is not a direction, so it could find correctness information that pressure re-encodes non-linearly. No Procrustes or re-encoding test in the paper.",
+   "strength": "weak"
+  },
+  {
+   "fate": "6 erased",
+   "how": "Not addressed.",
+   "strength": "none"
+  }
+ ],
+ "bears_on_group_angle": "No subspace tracking, principal angles or Grassmannian paths. Its value is on the 'manifold vs linear steering' question: a matched comparison at one site with one objective where the linear map gives 0.010/0.072 and the non-linear map 0.813/0.760. Its framing (linear intervention = change of basis W; non-linear = invertible f) connects directly to DAS-style rotations, so it is the natural non-linear upgrade of any rotation-based fate test. For fate sorting, running both maps at the same site could separate 'no handle' (bypass or erased) from 'non-linear handle only' (transformed). Caveat: controllability by a flexible map is not endogenous mediation.",
+ "architecture_location": "Residual stream block output at one prompt token near the end of the chat template: Llama-3-8B-Instruct layer 10 (of 32), token -3; Qwen2.5-7B-Instruct layer 14 (of 28), token -4. Effective band (approx, Fig 2): Llama layers 10-18, Qwen 8-19. Early and late layers do not work. No attention, MLP or head localisation.",
+ "actionable_fix": "Inference-time edit: one learned non-linear clamp at a mid-layer prompt token. Here it is used as an attack (removing refusal), but the same machinery could be a defence for us: clamp a learned 'defer to user' coordinate to the resisted-item mean at the last token of the pushback turn, and compare against a linear clamp and against DPO in Stage B. Untested for capability side effects.",
+ "reuse_verdict": "adapt (method only, not evidence). The recipe (invertible map + interchange training + linear-constrained control + layer sweep) is cheap to port to 9B. The evidence is thin: single-author 4-page preprint, two 7-8B models, one task, no seeds, a hand-picked site, and an edit-size framing that is misleading per site.",
+ "relevance_to_project": "Medium-low as evidence, medium as a tool. It gives us a matched linear-vs-non-linear intervention test we can run at the same site on flipped vs resisted items, which bears on bypass and transformed calls and on H2 (a fate-matched fix vs DPO). It says nothing about factual tasks or sycophancy, and its success is causal controllability, not proof that the model naturally routes through that coordinate."
+}

@@ -1,0 +1,46 @@
+{
+ "slug": "w2-layerwise-grassmann-dynamics-2605.12714",
+ "url": "https://arxiv.org/pdf/2605.12714",
+ "pdf_ok": true,
+ "pages": 26,
+ "chars": 78509,
+ "title_guess": "arXiv:2605.12714v1 [cs.LG] 12 May 2026  Layer-wise Representation Dynamics: An Empirical",
+ "figures_tables": [
+  {
+   "id": "Table 1",
+   "page": 5,
+   "caption_start": "Table 1: Layer-wise patterns by architecture family. Symbols are defined in the main text. Per-model averages are in Appendix C. Family Encoder embedder Decoder embedder Base LLM  Models 13 12 6  dpea"
+  },
+  {
+   "id": "Table 2",
+   "page": 6,
+   "caption_start": "Table 2: Task-type stratified layer-aggregate summaries by model family. Means are over model-task pairs. CLS = classification, RET = retrieval, Other = STS / reranking / pair detection. Mean curv. \u03ba\u0304"
+  },
+  {
+   "id": "Table 3",
+   "page": 7,
+   "caption_start": "Table 3: Label-free model-selection correlations. MTEB entries are cross-task mean\u00b1sd Spearman correlations on the 25-model embedding panel. Parentheses give the number of significant tasks. MMLU is a"
+  },
+  {
+   "id": "Figure 1",
+   "page": 8,
+   "caption_start": " Figure 1: Per-model selection-score scatter on the MTEB-25 panel. Scores and official MTEB results are averaged over the 30 tasks, with Spearman \u03c1 annotated in each panel. 6.1  Pruning rules  For eac"
+  },
+  {
+   "id": "Table 4",
+   "page": 8,
+   "caption_start": " Table 4: Layer-pruning relative score change across budgets, aggregated over 15 model-task cells. Values closer to 0 are better. Mean rel. \u2206 (%)  Median rel. \u2206 (%)  5%  10%  15%  20%  5%  10%  15%  2"
+  },
+  {
+   "id": "Figure 2",
+   "page": 9,
+   "caption_start": " Figure 2: Layer-pruning score change over 15 model-task cells. GFMI improves over Random by mean at 15% and 20%, and is closest to zero by median at every budget.  Table 4 and Figure 2 support three "
+  }
+ ],
+ "n_figures_tables": 6,
+ "section_heading_candidates": [
+  "2020 Conference on Empirical Methods in Natural Language Processing (EMNLP), pages"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

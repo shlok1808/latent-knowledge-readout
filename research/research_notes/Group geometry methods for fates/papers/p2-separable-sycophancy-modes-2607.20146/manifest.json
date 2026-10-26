@@ -1,0 +1,332 @@
+{
+ "slug": "p2-separable-sycophancy-modes-2607.20146",
+ "url": "https://arxiv.org/pdf/2607.20146",
+ "pdf_ok": true,
+ "pages": 35,
+ "chars": 102078,
+ "title_guess": "Gotta Catch them all: the modes of Sycophancy  Shreyans Jain",
+ "figures_tables": [
+  {
+   "id": "Table 1",
+   "page": 3,
+   "caption_start": " Table 1: Summary of the three sycophancy modes. Detailed trait profiles and behavioral predictions follow.  ers deliberative checking and increases willingness to defer under interpersonal pressure. "
+  },
+  {
+   "id": "Figure 1",
+   "page": 5,
+   "caption_start": "Figure 1: K-means 4-class clustering at layer 18 (first two PCA components). The three sycophancy modes and the neutral baseline form four fully separated, nonoverlapping regions (ARI = 1.000, train a"
+  },
+  {
+   "id": "Table 2",
+   "page": 6,
+   "caption_start": " Table 2: F3 summary: the more compactly a mode is encoded (high sufficiency, low complement-probe recall = signal concentrated in few directions), the more detectable it is behaviorally. SI is the mo"
+  },
+  {
+   "id": "Figure 2",
+   "page": 7,
+   "caption_start": "Figure 2: Principal angles between the modes\u2019 deviation subspaces at layer 18: angle vs. PC dimension (left), count of PC dimensions per angle bracket (center), and proportion of deviation variance pe"
+  },
+  {
+   "id": "Table 3",
+   "page": 7,
+   "caption_start": " Table 3: How often the model\u2019s neutral baseline is closest to each mode, in activation space vs. output space. The result inverts completely between the two spaces.  processes sycophancy through a co"
+  },
+  {
+   "id": "Figure 3",
+   "page": 7,
+   "caption_start": " Figure 3: Mean sycophancy index by pressure mechanism (rows) and condition (columns). All three mode personas stay high (0.79\u20130.99) across mechanisms while the baseline (\u223c0.35) and anti-sycophancy co"
+  },
+  {
+   "id": "Table 4",
+   "page": 15,
+   "caption_start": " Table 4: The eight context types in the situation dataset, with one representative scenario each. Each of the 1,000 situations combines a context type, a pressure mechanism, and a scenario variant.  "
+  },
+  {
+   "id": "Table 5",
+   "page": 15,
+   "caption_start": " Table 5: Six behavioral dimensions scored per response by the GPT-4o-mini judge. All dimensions are oriented so that 1.0 = maximally sycophantic.  "
+  },
+  {
+   "id": "Table 6",
+   "page": 16,
+   "caption_start": " Table 6: Full ARI results across all clustering experiments and layers. K-means achieves ARI = 1.000 in all six settings.  Sycophancy Index aggregates the six dimensions into a combined metric, defin"
+  },
+  {
+   "id": "Table 7",
+   "page": 16,
+   "caption_start": " Table 7: Nearest-neighbor ordering among sycophancy modes at L22 (all 948 situations). The proximity chain baseline\u2192DCA\u2192PA\u2190SI is confirmed point-by-point. Zero SI\u2194DCA adjacency across the full datase"
+  },
+  {
+   "id": "Figure 4",
+   "page": 17,
+   "caption_start": "Figure 4: K-means 4-class PCA clusters at layer 22. Perfect separation (ARI=1.000); clusters are visibly more spread than at L18.  Figure 5: Separation-metric layer sweep. All four metrics (silhouette"
+  },
+  {
+   "id": "Figure 5",
+   "page": 17,
+   "caption_start": " Figure 5: Separation-metric layer sweep. All four metrics (silhouette, Fisher ratio, inverse Davies\u2013Bouldin, Mahalanobis distance) peak simultaneously at L18, where the three modes are most geometric"
+  },
+  {
+   "id": "Figure 6",
+   "page": 18,
+   "caption_start": "Figure 6: Causal subspace necessity vs. number of ablated PCA directions k, one panel per mode, one line per layer. PA\u2019s necessity peaks at L22 and DCA\u2019s at L26 (both lagging the L18 geometric peak), "
+  },
+  {
+   "id": "Table 8",
+   "page": 18,
+   "caption_start": " Table 8: Full separation metrics and Mahalanobis distances across all extracted layers. Sil.=Silhouette, DB=Davies\u2013Bouldin; the last three columns report Mahalanobis distances between mode pairs. Lay"
+  },
+  {
+   "id": "Table 9",
+   "page": 18,
+   "caption_start": " Table 9: Subspace necessity scores at k=32 PCA directions. PA peaks at L22 (0.063); DCA peaks at L26 (0.044); SI never exceeds 0.017. All far below the 0.9 causal-bottleneck threshold. The causal pea"
+  },
+  {
+   "id": "Table 10",
+   "page": 18,
+   "caption_start": " Table 10: Logit lens KL divergence from baseline at selected layers. Three phases: silent encoding (L1-L22, KL<0.06 despite perfect geometric separation at L18), rapid commitment (L23-L31), peak-and-"
+  },
+  {
+   "id": "Table 11",
+   "page": 18,
+   "caption_start": " Table 11: Raw centroid cosine distances are misleadingly small due to shared situational content domination. Deviation vectors are required to isolate mode-specific geometry.  at L18, counting shared"
+  },
+  {
+   "id": "Figure 7",
+   "page": 19,
+   "caption_start": "Figure 7: Logit-lens KL-divergence-from-baseline trajectories across layers for each mode. Predictions stay nearidentical (behaviorally silent) through L22 despite perfect geometric separation at L18,"
+  },
+  {
+   "id": "Table 12",
+   "page": 19,
+   "caption_start": " Table 12: Subspace alignment between the 50dimensional deviation subspaces at L18. The primary measure is the number of shared dimensions, principal angles with cos \u03b8 > 0.9, which is robust to the ar"
+  },
+  {
+   "id": "Table 13",
+   "page": 19,
+   "caption_start": " Table 13: Selected L22 head ablation results. Columns PA\u00d7, SI\u00d7, and DCA\u00d7 report specificity multipliers. H1 (highest zero KL, specificity \u223c 0.30\u00d7) is general. H10 and H11 carry the strongest sycophan"
+  },
+  {
+   "id": "Table 14",
+   "page": 20,
+   "caption_start": " Table 14: Pairwise joint ablation results for PA modes. Additivity ratio >1 = synergistic (jointly more disruptive); <1 = redundant (jointly less disruptive). The synergistic cluster {L22H9, L22H3, L"
+  },
+  {
+   "id": "Table 15",
+   "page": 20,
+   "caption_start": " Table 15: Simultaneous group ablation. TOP-6 is strongly subadditive (0.17\u20130.24): the six priority heads compensate for each other almost entirely when all are ablated together. TOP-10 becomes approx"
+  },
+  {
+   "id": "Figure 8",
+   "page": 21,
+   "caption_start": "Figure 8: Cross-composition attention: head output-norm differential (shared colorscale; rows=layers, cols=heads). L22H10 is consistently negative across all three modes.  Figure 9: Cross-composition "
+  },
+  {
+   "id": "Figure 9",
+   "page": 21,
+   "caption_start": " Figure 9: Cross-composition attention: KL-bucket redistribution (shared colorscale; rows=layers, cols=heads). Layer 26 dominates, driven by L26H12.  Figure 10: Cross-composition attention: entropy di"
+  },
+  {
+   "id": "Figure 10",
+   "page": 21,
+   "caption_start": " Figure 10: Cross-composition attention: entropy differential (shared colorscale; rows=layers, cols=heads). Layer30 heads become more focused under sycophancy.  "
+  },
+  {
+   "id": "Figure 11",
+   "page": 22,
+   "caption_start": "Figure 11: Per-mode attention metric heatmaps (all six metrics simultaneously) \u2014 Passive Affiliative.  Figure 12: Per-mode attention metric heatmaps (all six metrics simultaneously) \u2014 Strategic Ingrat"
+  },
+  {
+   "id": "Figure 12",
+   "page": 22,
+   "caption_start": " Figure 12: Per-mode attention metric heatmaps (all six metrics simultaneously) \u2014 Strategic Ingratiation.  Figure 13: Per-mode attention metric heatmaps (all six metrics simultaneously) \u2014 Defensive Co"
+  },
+  {
+   "id": "Figure 13",
+   "page": 22,
+   "caption_start": " Figure 13: Per-mode attention metric heatmaps (all six metrics simultaneously) \u2014 Defensive Conflict-Avoidant.  "
+  },
+  {
+   "id": "Figure 14",
+   "page": 23,
+   "caption_start": "Figure 14: Zero-ablation KL (Experiment 1). L22H1 and L22H11 are darkest; L30H7 is a visible outlier.  Figure 15: Mean-ablation KL (Experiment 1). L22H1 has near-equal mean KL\u2014confirming it is general"
+  },
+  {
+   "id": "Figure 15",
+   "page": 23,
+   "caption_start": " Figure 15: Mean-ablation KL (Experiment 1). L22H1 has near-equal mean KL\u2014confirming it is general.  Figure 16: Specificity ratio (Experiment 2, baseline-only reference). L22H10 and L22H11 drop substa"
+  },
+  {
+   "id": "Figure 16",
+   "page": 23,
+   "caption_start": " Figure 16: Specificity ratio (Experiment 2, baseline-only reference). L22H10 and L22H11 drop substantially; L30H7 remains highest.  "
+  },
+  {
+   "id": "Table 16",
+   "page": 24,
+   "caption_start": " Table 16: Subspace sufficiency at L18 (mean \u00b1 std). Sufficiency = fraction of full mode behavioral shift recovered by injecting top-k PCA directions into a neutral forward pass. SI is the cleanest si"
+  },
+  {
+   "id": "Table 17",
+   "page": 24,
+   "caption_start": " Table 17: ICA vs. PCA subspace necessity at L22, k=32. PA and DCA are nearly identical across decompositions, confirming the distributed ceiling is not a PCA basis artifact. SI\u2019s ICA necessity (0.068"
+  },
+  {
+   "id": "Table 18",
+   "page": 24,
+   "caption_start": " Table 18: Per-class recall in the complement subspace (after removing the top-10 deviation PCA directions). Columns report recall for PA, SI, DCA, and the baseline class. Baseline is always perfectly"
+  },
+  {
+   "id": "Table 19",
+   "page": 24,
+   "caption_start": " Table 19: Baseline nearest-neighbor fractions in activation vs. output space. In activation space the baseline is overwhelmingly adjacent to DCA (84.7%); in output space this inverts and SI dominates"
+  },
+  {
+   "id": "Figure 17",
+   "page": 25,
+   "caption_start": "Figure 17: Per-head cross-composition ablation bars (PA/SI/DCA zero-ablation KL): L30H13 (DCA hypothesis \u00d7), near causally inert.  Figure 18: Per-head cross-composition ablation bars (PA/SI/DCA zero-a"
+  },
+  {
+   "id": "Figure 18",
+   "page": 25,
+   "caption_start": " Figure 18: Per-head cross-composition ablation bars (PA/SI/DCA zero-ablation KL): L30H15 (SI hypothesis \u00d7), near causally inert.  "
+  },
+  {
+   "id": "Figure 19",
+   "page": 26,
+   "caption_start": "Figure 19: Per-head cross-composition ablation bars (PA/SI/DCA zero-ablation KL): L18H12 (PA hypothesis \u2713) \u2014 the only head showing PA selectivity.  Figure 20: Per-head cross-composition ablation bars "
+  },
+  {
+   "id": "Figure 20",
+   "page": 26,
+   "caption_start": " Figure 20: Per-head cross-composition ablation bars (PA/SI/DCA zero-ablation KL): L22H11 (PA-dominant).  "
+  },
+  {
+   "id": "Figure 21",
+   "page": 27,
+   "caption_start": "Figure 21: Per-head cross-composition ablation bars (PA/SI/DCA zero-ablation KL): L30H7 (PA-dominant).  Figure 22: Per-head cross-composition ablation bars (PA/SI/DCA zero-ablation KL): L22H10 (PA-dom"
+  },
+  {
+   "id": "Figure 22",
+   "page": 27,
+   "caption_start": " Figure 22: Per-head cross-composition ablation bars (PA/SI/DCA zero-ablation KL): L22H10 (PA-dominant).  Figure 23: Layer summary of deviation subspace mean principal angle cosines across all extract"
+  },
+  {
+   "id": "Figure 23",
+   "page": 27,
+   "caption_start": " Figure 23: Layer summary of deviation subspace mean principal angle cosines across all extracted layers. PA\u2194DCA rises monotonically through L34; SI\u2194DCA remains lowest at every layer; L18 is the point"
+  },
+  {
+   "id": "Figure 24",
+   "page": 28,
+   "caption_start": "Figure 24: Principal angle deviation plots at layer 14: angle vs. PC dimension (left), count per angle bracket (center), proportion of deviation variance per bracket (right).  Figure 25: Principal ang"
+  },
+  {
+   "id": "Figure 25",
+   "page": 28,
+   "caption_start": " Figure 25: Principal angle deviation plots at layer 22: angle vs. PC dimension (left), count per angle bracket (center), proportion of deviation variance per bracket (right).  Figure 26: Principal an"
+  },
+  {
+   "id": "Figure 26",
+   "page": 28,
+   "caption_start": " Figure 26: Principal angle deviation plots at layer 26: angle vs. PC dimension (left), count per angle bracket (center), proportion of deviation variance per bracket (right).  Figure 27: Principal an"
+  },
+  {
+   "id": "Figure 27",
+   "page": 28,
+   "caption_start": " Figure 27: Principal angle deviation plots at layer 30: angle vs. PC dimension (left), count per angle bracket (center), proportion of deviation variance per bracket (right).  Figure 28: Principal an"
+  },
+  {
+   "id": "Figure 28",
+   "page": 28,
+   "caption_start": " Figure 28: Principal angle deviation plots at layer 34 (PA\u2194DCA: 100% shared directions): angle vs. PC dimension (left), count per angle bracket (center), proportion of deviation variance per bracket "
+  },
+  {
+   "id": "Table 20",
+   "page": 29,
+   "caption_start": " Table 20: Inter-mode output cosine similarity (sentencetransformer) vs. activation deviation cosine similarity at L18. The pairwise ordering is preserved across spaces (SI\u2194DCA most different in both)"
+  },
+  {
+   "id": "Table 21",
+   "page": 29,
+   "caption_start": " Table 21: Per-dimension sycophancy scores for PA, SI, DCA, and baseline. Three dimensions (correction, conflict_aversion, capitulation) saturate uniformly at ceiling for all three modes. Flattery is "
+  },
+  {
+   "id": "Table 22",
+   "page": 29,
+   "caption_start": " Table 22: LLM-judge (GPT-4o-mini) 5-way classification accuracy. DCA is the most behaviorally ambiguous mode: mistaken for PA 51% of the time. The judge achieves only 57.8% overall (chance = 20%), dr"
+  },
+  {
+   "id": "Figure 29",
+   "page": 30,
+   "caption_start": "Figure 29: Output proximity by pressure mechanism. Conflict risk and moral reframing favor SI most strongly; flattery produces a uniform distribution.  Figure 30: Nearest-neighbor fractions among mode"
+  },
+  {
+   "id": "Figure 30",
+   "page": 30,
+   "caption_start": " Figure 30: Nearest-neighbor fractions among modes in output space. PA\u2194DCA proximity is preserved (DCA is PA\u2019s plurality neighbor at 61.5%); SI\u2194DCA remains the most distant pair.  Figure 31: Mean syco"
+  },
+  {
+   "id": "Figure 31",
+   "page": 30,
+   "caption_start": " Figure 31: Mean sycophancy index by condition. All three mode types score 0.87\u20130.94, while the neutral baseline sits at 0.353 and the anti-sycophancy control far below, the three modes are behavioral"
+  },
+  {
+   "id": "Figure 32",
+   "page": 31,
+   "caption_start": "Figure 32: Per-dimension behavioral profiles by mode. Flattery is the only dimension with meaningful inter-mode variation (SI 0.819, DCA 0.516); correction, conflict_aversion, and capitulation saturat"
+  },
+  {
+   "id": "Table 23",
+   "page": 31,
+   "caption_start": " Table 23: 5-way classification accuracy by judge (chance = 20%). Both judges stay far below ceiling and reach near-identical overall accuracy; inter-judge agreement \u03ba = 0.67. The judges differ mainly"
+  },
+  {
+   "id": "Table 24",
+   "page": 31,
+   "caption_start": " Table 24: Mean sycophancy index per condition, by judge. The ordering (three modes high, baseline low, anti-sycophancy lowest) is identical across judges; response-level correlation is r = 0.95.  add"
+  },
+  {
+   "id": "Figure 33",
+   "page": 32,
+   "caption_start": "Figure 33: Sycophancy index delta from baseline by condition. All three mode types show 0.52-0.59 uplift; anti-sycophancy shows a \u22120.307 reduction.  Figure 34: Sycophancy index by context type. Social"
+  },
+  {
+   "id": "Figure 34",
+   "page": 32,
+   "caption_start": " Figure 34: Sycophancy index by context type. Social/friendship and academic/educational saturate at 1.0 for PA and SI; community/civic is most resistant.  "
+  },
+  {
+   "id": "Table 25",
+   "page": 33,
+   "caption_start": " Table 25: Persona-free held-out probe accuracy by layer. Within = fresh probe trained and cross-validated on persona-free activations only (3-class chance 0.333, 4class chance 0.25; within-held-out p"
+  },
+  {
+   "id": "Table 26",
+   "page": 33,
+   "caption_start": " Table 26: Transfer accuracy of a probe trained on the persona pipeline and evaluated on the persona-free scenarios. raw applies the probe directly; z-scored first standardizes each regime to its own "
+  },
+  {
+   "id": "Figure 35",
+   "page": 34,
+   "caption_start": "Figure 35: Persona-free sycophancy-mode separability across layers (within-held-out CV for 3- and 4-class, and persona\u2192persona-free transfer). Dotted lines mark chance.  Figure 36: Two-dimensional PCA"
+  },
+  {
+   "id": "Figure 36",
+   "page": 34,
+   "caption_start": " Figure 36: Two-dimensional PCA projection of the 80 persona-free scenarios\u2019 layer-18 activations, coloured by intended mode. Baseline separates cleanly along PC1; the three sycophancy modes occupy di"
+  }
+ ],
+ "n_figures_tables": 62,
+ "section_heading_candidates": [
+  "1.740 Synergistic",
+  "1.507 Synergistic",
+  "1.426 Synergistic",
+  "0.235 Strongly",
+  "0.277 Strongly",
+  "0.161 Strongly",
+  "K Principal Angle Deviations: Additional"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

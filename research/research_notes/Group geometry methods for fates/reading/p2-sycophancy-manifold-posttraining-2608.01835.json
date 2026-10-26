@@ -1,0 +1,874 @@
+{
+ "slug": "p2-sycophancy-manifold-posttraining-2608.01835",
+ "title": "Rewriting or Reweighting? A Geometric Account in Language Models (Wang, Yang, Wang, Zhang; Peking Univ. / Beijing Jiaotong Univ.; arXiv 2608.01835v1, 3 Aug 2026)",
+ "sections_read": [
+  "Abstract",
+  "1 Introduction",
+  "2 Related Work",
+  "3 Behavioral Manifold Framework",
+  "3.1 Behavioral Geometry as a Post-Training Object",
+  "3.2 Behavioral Probes and Class-Conditional Representation Measures",
+  "3.3 Activation and Normalized Output-Contribution Spaces",
+  "3.4 Selecting a Coordinate Scaffold",
+  "3.5 Estimating the Local Behavioral Chart",
+  "3.6 Comparing Charts on the Grassmannian",
+  "3.7 Separability, Occupancy, and Gain",
+  "3.8 Causal Validation of Behavioral Charts",
+  "3.9 Post-Training Trajectories and Anchored Retention",
+  "4 Behavioral Manifolds Across Models",
+  "4.1 Behavioral Anchor Coordinates Support Sparse, Low-Dimensional Charts",
+  "4.2 Steering Establishes Causal Relevance",
+  "5 Rewrites or Reweights",
+  "6 Conclusion",
+  "References",
+  "Appendix A Derivation of the Local Behavioral Model (A.1 Binary Behaviors and Their Log-Odds, A.2 Local Linearization, A.3 Low-Dimensional Behavioral Chart, A.4 Equivalent Statistical Derivation from a Local Gaussian Model, A.5 Consequences for the Geometry-Occupancy-Readout Decomposition)",
+  "Appendix B Repetition Detection and Feature Extraction (B.1 Periodic n-gram Repetition Detection, B.2 Token Regions, B.3 Raw Activation Space, B.4 Normalized Output-Contribution Magnitude, B.5 Implementation Notes)",
+  "Appendix C Neuron Selection, Subspace Estimation, and Cross-Model Alignment (C.1 Sparse Classifier, C.2 Physical Index Recovery, C.3 PCA Behavioral Chart, C.4 CCA Alignment, C.5 Classifier-Direction Alignment, C.6 Directed Linear Probing)",
+  "Appendix D Steering and Intervention Details (D.1 Multiplicative Neuron Scaling, D.2 Additive Subspace Steering, D.3 Two-Pass Autoregressive Subspace Steering, D.4 Generated-Text Metrics, D.5 Greedy Challenge Prompts)",
+  "Appendix E Post-Training Geometry Metrics and Checkpoint Analysis (E.1 Projector Metrics Without Forming Full Projectors, E.2 Anchored Fisher Retention, E.3 Pairwise Universal Strength Aggregation, E.4 Causal Gain From Steering Curves, E.5 Controlled Training Pipelines, E.6 End-to-End Fine-Tuning Analysis Pipeline, E.7 Endpoint-Summary Reporting Conventions)",
+  "Appendix F Geometry-Occupancy-Gain Profiles of Controlled Post-Training (F.1 Derivation of Occupancy and Gain Estimators)",
+  "Appendix G Numerical Tables (G.1 Repetition Strength Across Models, G.2 Sycophancy Low-Rank Statistics, G.3 Full Controlled Repetition Summary, G.4 Full Controlled Sycophancy Summary, G.5 Checkpoint-Level Sycophancy Trajectory)",
+  "Appendix H Derivation of Universal Fisher Strength (H.1-H.6)",
+  "Appendix I Leakage Control and Robustness Analysis (I.1 Coordinate Selection Robustness, I.2 Subspace Estimation Robustness, I.3 Token Extraction Robustness, I.4 Cross-Model Alignment Robustness, I.5 Behavior Specificity Controls, I.6 Causal Intervention Controls, I.7 Post-Training Geometry Robustness)",
+  "Appendix J Visualization of Behavioral Charts (J.1 Visualization Protocol, J.2 Repetition Behavioral Charts, J.3 Sycophancy Behavioral Charts)",
+  "Appendix K Token-Level Dynamics in Behavioral Landscapes (K.1 Behavioral Energy Landscape, K.2 Token-Level Trajectory Construction, K.3 Visual Encoding, K.4 Repetition Trajectories in ACT, K.5 Repetition Trajectories in NOC, K.6 Sycophancy Trajectories in ACT, K.7 Matched Sycophancy Trajectory Across ACT and NOC)",
+  "Appendix L Base-Anchored Sycophancy Paths Across Post-Training Regimes (L.1 Base-Anchored Coordinate System, L.2 Candidate-Path and Preference Encoding, L.3 Matched Candidate-Path Gallery, L.4 Cross-Pair Interpretation)",
+  "Appendix M Full Behavioral Anchor Coordinate Statistics (M.1 Initial Repetition Probe, M.2 Repetition Geometry in ACT, M.3 Repetition Geometry in NOC, M.4 Sycophancy Geometry in ACT, M.5 Sycophancy Geometry in NOC, M.6 Unified NOC Statistics)",
+  "Appendix N Layer-Wise Distribution of Behavioral Anchor Coordinates",
+  "Appendix O Full Cross-Model Behavioral Atlas (O.1 Model Roster and Common Ordering, O.2 Evaluation Protocol, O.3 Aggregate Results, O.4 Classifier-Direction Alignment, O.5 Canonical-Correlation Atlas, O.6 Random-Coordinate CCA Controls, O.7 Cross-Model Linear-Association Atlas, O.8 Random-Coordinate Linear-Association Controls, O.9 Family Structure and Matched Base-Instruction Pairs, O.10 Interpretation: Shared Core, Non-Universal Residuals)",
+  "Appendix P Cross-Family Repetition Steering Results (Qwen, Gemma, Llama, Mistral families)",
+  "Appendix Q Cross-Model Repetition Strength and Public Alignment Effects (Q.1 Construction of the Cross-Model Strength Landscape, Q.2 Matched Base-Instruct Pairing Protocol, Q.3 Numerical Paired Results, Q.4 Pair-Level Interpretation, Q.5 Aggregate Interpretation, Q.6 Relationship to the Controlled Post-Training Study)",
+  "Appendix R Dataset Sizes, Filtering, and Sample Exclusions",
+  "Appendix S Complete Geometry-Occupancy-Gain Analysis (S.1 Matched Training Stages and Normalization, S.2 Final-Checkpoint Profiles, S.3 Complete Ten-Stage Trajectories, S.4 Every Matched Stage Snapshot, S.5 Synthesis Across Resolutions)",
+  "Appendix T Sycophancy Span Annotation and Tokenizer-Specific Alignment",
+  "Appendix U (letter inferred) Geometry, Baseline Tendency, and Causal Gain Are Distinct",
+  "Appendix V Construction of Repaired Non-Repetitive Continuations",
+  "Appendix W Sparse Classifier Training and Coordinate-Selection Details",
+  "Appendix X (letter inferred) Cross-Model Sample Alignment, CCA, and Directed Probing",
+  "Appendix Y Controlled Post-Training Configurations (Y.1 Joint interpretation of ACT and NOC, Y.2 Token Windows and State Extraction)",
+  "Appendix Z Additional Related Work (Repetition and neural degeneration; Sycophancy and preference failures)",
+  "Tables 22-28 (pages 66-68)"
+ ],
+ "setup": {
+  "data": "Repetition: 2,736 response-level records (1,368 repetitive from a 928,046-entry pool, 1,368 non-repetitive all-judge-true), prompts not matched across classes. Sycophancy: DataCreatorAI/Anti-Sycophancy-DPO, 3,480 chosen(truthful)/rejected(sycophantic) pairs on user claims such as 'All smartphones are spying on us all the time.'; responses are teacher-forced dataset text, not the model's own generations; a 'stance span' is extracted from each response by Llama-3.3-70B-Instruct (6,678 of 6,960 records kept). Post-training data: repetition 755,920 SFT records / DPO pairs (repaired continuations written by Llama-3.3-70B-Instruct); sycophancy 3,480 SFT examples / 3,480 DPO pairs from the same Anti-Sycophancy-DPO source.",
+  "models_and_sizes": "Atlas: 23 models from Gemma (2-2B, 2-2B-it, 3-4B-it, 2-9B, 2-9B-it, 2-27B, 2-27B-it), Qwen (2.5-0.5B, 0.5B-Instruct, 7B, 7B-Instruct, 2.5-32B, 32B-Instruct, Qwen3.5-27B), Mistral (7B-v0.3, 7B-Instruct, Nemo base/instruct, Small-3.1-24B base/instruct), Llama (3.1-8B, 3.1-8B-Instruct, 3.3-70B-Instruct). Controlled post-training: only Llama-3.1-8B base, one seed (42).",
+  "layers_positions": "Features are MLP down_proj inputs (FFN intermediate neurons) in all layers, flattened (e.g. 32 x 14,336 = 458,752 for Llama-3.1-8B), mean-pooled over a behavior span (sycophancy: extracted stance-text tokens; repetition: repeated span). NOC as implemented is |activation| x column norm of W_down / ||layer output||, a non-negative magnitude proxy. Sparse L1 logistic regression (C=1, saga) picks positive-weight coordinates (BACs: 20-61 for repetition, 42-101 for sycophancy); chart = PCA to 90% variance. Sycophancy classifier is 3-vs-1: positive = stance tokens of sycophantic records; negative = stance tokens of truthful records plus all non-stance tokens of both.",
+  "post_training_protocol": "Six runs per behavior from Llama-3.1-8B: SFT-up, SFT-down, DPO-up and DPO-down from base, SFT->DPO-up and SFT->DPO-down. SFT lr 1e-5 (sycophancy: 120 steps ~4.4 epochs up, 360 steps ~13.2 epochs down; repetition: 100 steps up, 600 steps down); DPO lr 5e-7, 60 steps (~2.2 epochs for sycophancy, but only ~0.010 epoch for repetition: 60 x 128 / 755,920 pairs), beta 0.1 (0.7 for SFT->DPO-down sycophancy); DPO reference model = frozen copy of the DPO initialisation. Effective batch 128, fp16, ZeRO-3, seed 42. Ten matched relative stages per run. Behaviour column in Table 2b is p_b/m_b: probability assigned to the behaviour-positive (sycophantic) target / sycophantic preference score. Base-model behaviour values are not reported; the first stored checkpoints (SFT step 10, DPO step 6) sit at sycophancy preference ~0.454 and Syco Prob 0.355.",
+  "baselines": "Matched-size random coordinate scaffolds (same model and layer distribution) for PCA, CCA, linear probing and steering; base model chart as anchor for post-training; public Base vs Instruct pairs (10 pairs) as uncontrolled ecological check.",
+  "controls": "Random-coordinate controls (reported numbers for CCA and probing); mean CCA and full-chart probing instead of primary CCA alone; anchored Fisher retention (base chart applied to checkpoint features vs checkpoint's native chart); dose-response steering with PPL tracking for repetition; base-anchored teacher-forced fixed candidate pairs across checkpoints (4 pairs). Label-permutation, rank-sensitivity, token-window and behavior-mismatch controls are described in Appendix I but no numbers for them are given in the text."
+ },
+ "figures": [
+  {
+   "id": "Figure 1",
+   "page": 1,
+   "what_is_plotted": "Pipeline schematic: token windows, ACT/NOC decomposition of FFN, sparse BAC selector, low-rank behavioral chart, ACT-NOC quadrant, cross-model CCA atlas, SFT vs RL chart cartoons.",
+   "takeaway": "Overview only; SFT pictured as reshaping the chart, RL as keeping it.",
+   "numbers": "No data.",
+   "text_matches_figure": "yes (schematic)"
+  },
+  {
+   "id": "Figure 2",
+   "page": 4,
+   "what_is_plotted": "Four-quadrant diagram: NOC alignment (x) vs ACT alignment (y): runtime-associated, active, weak, latent mechanism.",
+   "takeaway": "Frequent activation (ACT) and functional contribution (NOC) are separate axes; 'high NOC, low ACT' = latent pathway.",
+   "numbers": "No data.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 3",
+   "page": 4,
+   "what_is_plotted": "One repetition token trajectory projected onto the ACT chart (PC1 vs PC2) over a log-density-ratio background.",
+   "takeaway": "Trajectory goes from prefix/ordinary generation (blue basin) through lead-in to the established-repetition (red) region.",
+   "numbers": "PC1 77.0% var, PC2 6.3% var; energy colour scale -6 to 6 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 1",
+   "page": 6,
+   "what_is_plotted": "Per-model BAC counts and ACT chart statistics (G_uniF, G_occ, G_causal, PC1, Top-3, k0.9) for repetition and sycophancy across 23 models.",
+   "takeaway": "Both behaviors sit on small scaffolds with strongly compressed charts; sycophancy scaffold is larger.",
+   "numbers": "Repetition #bac 20-61 (mean 37.04, median 34), mean G_uniF ACT 7.16; sycophancy #bac 42-101 (mean 66.09, median 62), k0.9 mean 9.17.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 4",
+   "page": 6,
+   "what_is_plotted": "Repetition rate (left axis) and generated-token PPL (right) vs ACT-chart steering strength alpha in {-2..2} for Llama-3.1-8B, 8B-Instruct, 3.3-70B-Instruct.",
+   "takeaway": "Monotone dose-response, PPL flat.",
+   "numbers": "R(+2)-R(-2): 8B-Instruct 0.142, 70B-Instruct 0.058, 8B 0.033 (text p38); axis 0.63-0.93.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 2",
+   "page": 7,
+   "what_is_plotted": "(a) Cross-model sycophancy atlas (classifier correlation, primary/mean CCA, top-2-PC, k-dim probe; BAC vs random; same/cross family/base-instruct). (b) Endpoint geometry S/angle, R^G, behavior, PPL- for SFT, DPO, SFT->DPO up/down, repetition and sycophancy.",
+   "takeaway": "DPO from base keeps the base chart (S 0.92-0.96); SFT and SFT->DPO move it (S 0.60-0.80).",
+   "numbers": "Behaviour column = p_b/m_b (prob. of sycophantic target / sycophantic preference). Sycophancy: SFT up 0.773/24.69 deg, R^G 0.966, behav 0.886/0.646; SFT down 0.804/22.04, 0.814, 0.442/0.330; DPO up 0.938/10.10, 0.998, 0.370/0.474; DPO down 0.939/9.68, 0.995, 0.342/0.436; SFT->DPO up 0.721/29.03, 0.885, 0.851/0.666; SFT->DPO down 0.695/30.88, 0.819, 0.389/0.297. Random columns in (a): primary CCA 0.367 ACT / 0.317 NOC, top-2-PC 0.266/0.295.",
+   "text_matches_figure": "partly: the random-baseline column conflicts with Table 15 and Appendix O text (random primary CCA 0.667/0.817, random top-2 NOC 0.495); SFT->DPO-up PPL- is 1.48 here but 1485.09937 in Table 6; also: SFT-down raises p_b to 0.442 (vs 0.355 at the first DPO checkpoint) while its preference falls to 0.330, so the two behaviour metrics disagree in direction for SFT-down"
+  },
+  {
+   "id": "Figure 5",
+   "page": 7,
+   "what_is_plotted": "(a,c) Behavior vs mean principal angle from base chart across checkpoints for SFT, RL(DPO), SFT->RL; (b,d) projector overlap S(0,t) vs checkpoint step, up and down.",
+   "takeaway": "DPO overlap stays ~0.94-0.96 throughout; SFT drops fast; SFT->DPO stays at the SFT level.",
+   "numbers": "Sycophancy-up: SFT 9 deg->24.7 deg, preference 0.45->0.645; RL 9->10.1 deg, preference 0.454->0.474; SFT->RL 24.7->26.1 deg, 0.646->0.663. Sycophancy overlap endpoints: SFT up ~0.77, down ~0.80; RL ~0.94; SFT->RL 0.70-0.72. Repetition-up: SFT ends ~38 deg at n-gram rate ~0.85; RL 3.5-3.6 deg, 0.31->0.40; SFT->RL ~36 deg, ~0.94 (approx, read from figure). Both SFT (step 10, lr 1e-5) and RL (step 6, lr 5e-7) first stored checkpoints already sit at ~9 deg / preference ~0.454 in panel (c); in panel (d) every lineage drops from S=1.0 to ~0.95 at its first checkpoint (re-read at 220 dpi).",
+   "text_matches_figure": "partly: sycophancy panels match Table 2 except SFT->RL-up angle (~26 vs 29.03); repetition panel (a) does not match Table 2 (SFT angle ~38 vs 27.78, SFT->RL rate ~0.94 vs 0.565) and (b) x-axis runs to 300 steps while SFT-up repetition ran 100 steps; panel (d) SFT x-axis ends at 120 steps for both directions although SFT-down ran 360 steps; the identical ~9 deg first-checkpoint offset for a 20x-smaller-lr DPO run suggests a measurement floor (chart re-estimation or checkpoint conversion), not objective-driven movement"
+  },
+  {
+   "id": "Table 3",
+   "page": 16,
+   "what_is_plotted": "Representative ACT repetition strength (G_uniF, G_occ, G_causal, T_base, N_eff) for 12 models.",
+   "takeaway": "Subset of Table 9.",
+   "numbers": "e.g. Llama-3.1-8B G_uniF 3.63, G_causal 0.089; Qwen2.5-0.5B-Inst G_causal 0.599.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 4",
+   "page": 17,
+   "what_is_plotted": "Selected sycophancy PC1 variance and 90%-variance dimension in NOC and ACT for 8 models.",
+   "takeaway": "ACT more compressed than NOC.",
+   "numbers": "Llama-3.1-8B NOC PC1 0.309 (Dim90 29), ACT PC1 0.426 (Dim90 8); Qwen2.5-32B ACT PC1 0.795 (Dim90 3).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 5",
+   "page": 17,
+   "what_is_plotted": "Final controlled repetition runs: S, angle, d_proj, R^G, G, repeat prob, PPL, n-gram rate.",
+   "takeaway": "Reward (DPO) runs keep geometry (S 0.92-0.96); SFT and SFT->Reward do not.",
+   "numbers": "S: SFT up 0.693, down 0.711, Reward up 0.960, down 0.920, SFT->R up 0.598, down 0.604; R^G 0.938, 0.942, 1.096, 1.049, 0.900, 0.705; n-gram 0.723, 0.372, 0.403, 0.434, 0.942, 0.565.",
+   "text_matches_figure": "yes (matches Table 2b)"
+  },
+  {
+   "id": "Table 6",
+   "page": 18,
+   "what_is_plotted": "Final controlled sycophancy runs: S, angle, d_proj, R^G, G, Syco Prob, Truth PPL, Syco Pref.",
+   "takeaway": "Reward-only keeps geometry but moves behavior little.",
+   "numbers": "Syco Prob: SFT up 0.886, SFT down 0.442, Reward up 0.370, Reward down 0.342, SFT->R up 0.851, SFT->R down 0.389; Truth PPL 11.72, 1.28, 6.48, 5.69, 1485.10, 1.38; native G 10.96, 17.74, 13.88, 13.89, 10.40, 15.81.",
+   "text_matches_figure": "partly: Truth PPL 1485.09937 for SFT->Reward-up vs 1.48 in Table 2b"
+  },
+  {
+   "id": "Table 7",
+   "page": 18,
+   "what_is_plotted": "Reward-only sycophancy trajectory at steps 6, 30, 60: S, angle, Syco Prob.",
+   "takeaway": "Geometry nearly fixed while behavior moves by about 0.015.",
+   "numbers": "Reward-up: S 0.9498->0.9382, angle 9.06->10.10, Syco Prob 0.3550->0.3702; Reward-down: 0.9498->0.9389, 9.06->9.68, 0.3550->0.3416.",
+   "text_matches_figure": "yes, but step-6 rows of up and down are identical to 4 decimals (0.9498, 9.06, 0.3550) for two opposite objectives, and the SFT first checkpoint in Figure 5c also sits at ~9 deg: most of DPO's reported displacement (9.06 of 9.68-10.10 deg) is present after 6 tiny steps in either direction, so it looks like a measurement floor; objective-driven DPO movement after step 6 is <=1 deg"
+  },
+  {
+   "id": "Figure 6",
+   "page": 21,
+   "what_is_plotted": "Repetition chart samples in Fisher direction e1 vs orthogonal PCA e2, ACT and NOC, with Fisher and logistic arrows.",
+   "takeaway": "Classes form separate clusters in both spaces.",
+   "numbers": "ACT negatives near (-0.6, 2.3), positives near (0.6, -2.5); NOC negatives near (-0.08, -0.28), positives (0.08, 0.3) (approx, read from figure).",
+   "text_matches_figure": "partly: in ACT the logistic arrow is very short and not visibly along e1"
+  },
+  {
+   "id": "Figure 7",
+   "page": 22,
+   "what_is_plotted": "Sycophancy chart samples (Fisher e1 vs orthogonal PCA e2), ACT and NOC.",
+   "takeaway": "Sycophantic vs truthful stance tokens form overlapping-but-shifted clouds.",
+   "numbers": "ACT negatives centered ~(-0.08, 0.7), positives ~(0.07, -0.6); NOC negatives ~(-0.025, -0.06), positives ~(0.02, 0.05) (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 8",
+   "page": 23,
+   "what_is_plotted": "Six repetition token trajectories in ACT chart over density-ratio landscape.",
+   "takeaway": "Repeated spans move into and stay in the positive region; entry often starts at the first repeated unit, before the detector fires.",
+   "numbers": "PC1 77.0%, PC2 6.3%.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 9",
+   "page": 24,
+   "what_is_plotted": "Three more ACT repetition trajectories incl. a paragraph-level case.",
+   "takeaway": "Entry into the positive region can be direct or curved.",
+   "numbers": "Same axes as Figure 8.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 10",
+   "page": 25,
+   "what_is_plotted": "Six matched repetition trajectories in NOC chart.",
+   "takeaway": "NOC chart is dominated by PC1; compact negative region, separate positive region.",
+   "numbers": "PC1 84.6%, PC2 3.3%.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 11",
+   "page": 26,
+   "what_is_plotted": "Three sycophancy token trajectories in ACT chart (not listed in manifest).",
+   "takeaway": "Pre-onset tokens already drift toward the positive region; sycophantic span sits in positive region; paths are 2-D and heterogeneous.",
+   "numbers": "PC1 25.5%, PC2 13.9%. Figure 13 uses the same axes (25.5%/13.9%) and is explicitly the base Llama-3.1-8B chart, so Figure 11 is very likely Llama-3.1-8B too; this conflicts with Table 4 (Llama-3.1-8B ACT PC1 0.426). Possibly token-level vs span-pooled PCA; the paper does not say.",
+   "text_matches_figure": "yes for the figure itself; partly vs Table 4 (PC1 25.5% vs 42.6% for what appears to be the same model and space)"
+  },
+  {
+   "id": "Figure 12",
+   "page": 26,
+   "what_is_plotted": "Same sycophancy instance in ACT and NOC charts.",
+   "takeaway": "Path shapes differ; sycophantic span lands on positive side in both.",
+   "numbers": "ACT PC1 25.5%/PC2 13.9%; NOC PC1 28.2%/PC2 12.3%.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 13",
+   "page": 27,
+   "what_is_plotted": "Base-anchored ACT chart: teacher-forced truthful (blue) and sycophantic (red) candidate prefix paths for 4 fixed prompt pairs, columns Base, RL-up, SFT-up, SFT->RL-up.",
+   "takeaway": "Base: sycophantic path heads into positive cloud. RL-up: paths stay inside base support. SFT-up and SFT->RL-up: both candidates start upper-left (~PC1 -2.5, PC2 +1) and end together near the negative cloud, so the base chart no longer separates truthful from sycophantic for these items. Also RL-up: the two candidates are not clearly separated either (both end ~PC1 0-1). Tension: SFT-up R^G is 0.966 at the population level, yet these 4 items look poorly organised by the base chart.",
+   "numbers": "4 pairs only; PC1 25.5%, PC2 13.9% (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 8",
+   "page": 29,
+   "what_is_plotted": "Initial repetition probe accuracy and #BAC for 7 models.",
+   "takeaway": "Small scaffold predicts on-policy repetition.",
+   "numbers": "Accuracy 0.9646-0.9879, mean 0.9767; #BAC mean 33.4.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 9",
+   "page": 29,
+   "what_is_plotted": "Full ACT repetition-chart statistics, 23 models.",
+   "takeaway": "Chart strength varies widely; Llama has the weakest G_uniF.",
+   "numbers": "Mean G_uniF 7.16, G_occ 0.84, G_causal 0.191, T_base 0.856; Llama-3.1-8B G_uniF 3.63.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 10",
+   "page": 30,
+   "what_is_plotted": "Full NOC repetition-chart statistics, 23 models.",
+   "takeaway": "Similar to ACT; causal gain smaller.",
+   "numbers": "Mean G_uniF 7.02, G_causal 0.093.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 11",
+   "page": 31,
+   "what_is_plotted": "Sycophancy ACT PCA statistics (#BAC, PC1, Top-3, k0.9, k0.9/N, cosine between PC1 and classifier direction).",
+   "takeaway": "ACT sycophancy charts are very compressed, but PC1 is almost orthogonal to the classifier direction.",
+   "numbers": "Mean PC1 0.471, k0.9 9.17, k0.9/N 0.144; Cos mean 0.0623, median 0.0445, several exactly 0.0000.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 12",
+   "page": 32,
+   "what_is_plotted": "Sycophancy NOC PCA statistics.",
+   "takeaway": "NOC less compressed but PC1 better aligned with classifier.",
+   "numbers": "Mean PC1 0.306, k0.9 25.35; Cos mean 0.4565, median 0.5667; Mistral-Nemo-Base -0.1646.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 13",
+   "page": 33,
+   "what_is_plotted": "Unified NOC statistics: repetition (left) and sycophancy (right): G_uniF, G_occ, G_causal, PC1, Top-3, k0.9.",
+   "takeaway": "Sycophancy NOC causal gain is tiny and sometimes negative.",
+   "numbers": "Sycophancy NOC mean G_uniF 8.19, G_occ 0.565, G_causal 0.062 (median 0.030); Qwen2.5-7B -0.0009, Qwen2.5-32B-Instruct -0.0007; Llama-3.1-8B 0.040.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 14",
+   "page": 34,
+   "what_is_plotted": "Model ID letters A-W for heatmaps.",
+   "takeaway": "Roster.",
+   "numbers": "23 models.",
+   "text_matches_figure": "partly: Figure 17 uses a different A-W ordering (A = Gemma-2-2B) despite O.1 saying the same order is used"
+  },
+  {
+   "id": "Figure 14",
+   "page": 34,
+   "what_is_plotted": "Number of positive-weight BACs per layer in Llama-3.1-8B, repetition vs sycophancy.",
+   "takeaway": "Sycophancy scaffold is broad, with peaks in middle and later layers; repetition sparse.",
+   "numbers": "Sycophancy peak ~8 neurons at ~layer 13, ~7 at ~layer 23, ~6 at ~layers 8 and 27; spread over nearly all 32 layers. Repetition at most 3 per layer (~layers 21, 23, 27) (approx, read from figure at 220 dpi).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 15",
+   "page": 34,
+   "what_is_plotted": "Mean off-diagonal cross-model alignment, BAC vs random, ACT and NOC.",
+   "takeaway": "Random primary CCA is high, so mean CCA and k-dim probing are the real tests.",
+   "numbers": "Primary CCA 0.938/0.974 vs random 0.667/0.817; mean CCA 0.515/0.648 vs 0.222/0.233; top-2-PC 0.784/0.958 vs 0.266/0.495; k-dim 0.473/0.581 vs 0.215/0.234.",
+   "text_matches_figure": "yes (but conflicts with Table 2a random column)"
+  },
+  {
+   "id": "Table 16",
+   "page": 34,
+   "what_is_plotted": "Alignment stratified by same family, cross family, base/instruct pairs.",
+   "takeaway": "ACT has larger family effect; base/instruct pairs most aligned.",
+   "numbers": "Mean CCA ACT 0.627 same / 0.480 cross / 0.754 base-inst; NOC 0.677/0.639/0.798.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 15",
+   "page": 35,
+   "what_is_plotted": "23x23 heatmap of absolute correlation of sparse classifier scores between models.",
+   "takeaway": "Near-uniformly high.",
+   "numbers": "Mean off-diagonal 0.950; base/instruct 0.980; cells mostly >0.9 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 16",
+   "page": 36,
+   "what_is_plotted": "23x23 heatmaps: primary and mean CCA, ACT and NOC, sycophancy BAC charts.",
+   "takeaway": "Primary CCA saturated; mean CCA shows family blocks in ACT.",
+   "numbers": "Primary ~0.9-1.0 everywhere; mean CCA ACT ~0.3-0.8 with family blocks; NOC more uniform (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 17",
+   "page": 36,
+   "what_is_plotted": "Aggregate repetition steering: mean/median Delta R, positive count, median |Delta PPL|.",
+   "takeaway": "Both operators raise repetition in all 23 models.",
+   "numbers": "ACT mean Delta R 0.119, median 0.102, 23/23; NOC BAC 0.029, 0.019, 23/23; median |Delta PPL| 0.223/0.239.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 17",
+   "page": 37,
+   "what_is_plotted": "Random-coordinate primary and mean CCA heatmaps.",
+   "takeaway": "Random primary CCA is high (esp. NOC); random mean CCA low.",
+   "numbers": "Random primary ~0.6-0.8 ACT, ~0.8-0.9 NOC; random mean ~0.2 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 18",
+   "page": 37,
+   "what_is_plotted": "Mean endpoint repetition change by family.",
+   "takeaway": "Positive in every family.",
+   "numbers": "ACT: Qwen 0.148, Gemma 0.127, Llama 0.078, Mistral 0.096; NOC 0.028, 0.036, 0.032, 0.020.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 18",
+   "page": 38,
+   "what_is_plotted": "Directed cross-model linear association heatmaps (top-2-PC and k-dim, ACT and NOC).",
+   "takeaway": "Leading coordinate transfers strongly; full chart less.",
+   "numbers": "Means 0.784/0.958 (top-2), 0.473/0.581 (k-dim).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 19",
+   "page": 39,
+   "what_is_plotted": "Random-coordinate linear association heatmaps.",
+   "takeaway": "Random top-2 NOC moderately high; random k-dim ~0.23.",
+   "numbers": "Random top-2 NOC 0.495; k-dim 0.215/0.234.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 20",
+   "page": 40,
+   "what_is_plotted": "Qwen family repetition steering, ACT chart and NOC BAC.",
+   "takeaway": "ACT strongest for Qwen2.5-0.5B-Instruct.",
+   "numbers": "Qwen2.5-0.5B-Instruct 0.322 -> 0.840; NOC best Qwen2.5-7B-Instruct +0.055.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 21",
+   "page": 40,
+   "what_is_plotted": "Gemma family repetition steering.",
+   "takeaway": "2B models respond most.",
+   "numbers": "ACT endpoint +0.182 (2B), +0.238 (2B-it); NOC ~+0.07.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 22",
+   "page": 41,
+   "what_is_plotted": "Llama family repetition steering, both operators.",
+   "takeaway": "All monotone.",
+   "numbers": "ACT +0.142 / +0.058 / +0.033; NOC +0.056 / +0.021 / +0.018 (8B-Inst / 70B-Inst / 8B).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 23",
+   "page": 41,
+   "what_is_plotted": "Mistral family repetition steering.",
+   "takeaway": "Large ACT changes for Small-24B-Instruct and 7B-Instruct.",
+   "numbers": "Mistral-Small-24B-Instruct 0.599 -> 0.834; Mistral-7B-Instruct 0.757 -> 0.900; NOC max +0.041.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 19",
+   "page": 42,
+   "what_is_plotted": "Instruct-minus-base changes in log G_uniF and G_causal (NOC, ACT) for 10 pairs.",
+   "takeaway": "Reliability changes have mixed signs; causal gain more often rises after instruction tuning.",
+   "numbers": "Mean Delta log G_uniF NOC -0.049, ACT -0.027; Delta G_causal NOC +0.027, ACT +0.074; Qwen-0.5B ACT gain +0.389; Gemma-27B NOC log G -0.549.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 24",
+   "page": 42,
+   "what_is_plotted": "Cross-model repetition strength landscape: log G_uniF NOC vs ACT, colour = baseline repetition, bubble = causal gain.",
+   "takeaway": "Chart reliability, baseline tendency and causal gain are distinct.",
+   "numbers": "Axes ~1.4-2.4; Pearson r ~0.64 (text).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 25",
+   "page": 43,
+   "what_is_plotted": "Bar charts of Table 19 per pair.",
+   "takeaway": "Heterogeneous signs.",
+   "numbers": "Same values as Table 19.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 20",
+   "page": 43,
+   "what_is_plotted": "Repetition dataset construction counts.",
+   "takeaway": "Balanced 2,736 records.",
+   "numbers": "Pool 928,046; 1,368 + 1,368.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 21",
+   "page": 43,
+   "what_is_plotted": "Sycophancy stance-extraction outcomes.",
+   "takeaway": "3,206 complete pairs, 6,678 records.",
+   "numbers": "Both 3,206; chosen only 138; rejected only 128; neither 8.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 26",
+   "page": 45,
+   "what_is_plotted": "Final-checkpoint normalized geometry / occupancy / gain bars (NOC geometry+occupancy, activation-level gain) for SFT, RL, SFT->RL in 4 conditions.",
+   "takeaway": "Geometry is large for SFT and SFT->RL, near zero for RL; RL also shows near-zero occupancy and gain.",
+   "numbers": "Syco-up: SFT geom ~1.0, RL ~0.2, SFT->RL ~1.0; Syco-down: SFT geom ~0.8, gain ~0.55; SFT->RL gain 1.0; RL all three ~0-0.15; Rep-down SFT->RL occupancy ~-1.0, gain ~+0.6 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 27",
+   "page": 45,
+   "what_is_plotted": "Same as Figure 26 with chart-subspace gain.",
+   "takeaway": "Gain conclusions depend on estimator; syco-down SFT->RL gain drops from 1.0 to ~0.15.",
+   "numbers": "Rep-up SFT->RL gain ~-0.8; Rep-down SFT->RL gain ~1.0; syco gains <=0.2 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 28",
+   "page": 46,
+   "what_is_plotted": "Ten-stage z-scored trajectories of geometry, occupancy, activation-level gain (ACT geometry/occupancy), 4 conditions x 3 lineages.",
+   "takeaway": "RL geometry stays lowest at every stage; SFT geometry rises by stage 2; sequential syco-down gain rises late.",
+   "numbers": "RL geometry z ~-1.2 throughout; syco-down SFT->RL gain z 1.4 -> 2.8; syco-down SFT gain -0.6 -> 1.4; rep-down SFT gain dips to ~-2.9 at stage 2 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 29",
+   "page": 47,
+   "what_is_plotted": "Same as 28 with chart-subspace gain.",
+   "takeaway": "Subspace gain for sycophancy is flat (~0.5); big gain only for sequential repetition-down.",
+   "numbers": "Rep-down SFT->RL gain z ~2.5; rep-down SFT gain dips to ~-4.3 at stage 2; syco gains ~0-0.6 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 30",
+   "page": 48,
+   "what_is_plotted": "Ten-stage trajectories, NOC geometry/occupancy, activation-level gain.",
+   "takeaway": "Same asymmetry in NOC; RL geometry slowly rises from ~-1.5 to ~-0.9.",
+   "numbers": "Syco-up SFT geometry -1.2 -> 1.2; RL -1.5 -> -0.9 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 31",
+   "page": 49,
+   "what_is_plotted": "Ten-stage trajectories, NOC geometry/occupancy, subspace gain.",
+   "takeaway": "Geometry and occupancy conclusions stable across gain estimator.",
+   "numbers": "As Figure 30 for geometry; gain as Figure 29 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 32",
+   "page": 50,
+   "what_is_plotted": "Stage 1-5 snapshot bars, ACT geometry/occupancy, activation gain.",
+   "takeaway": "SFT vs RL geometry separate from stage 1-2.",
+   "numbers": "RL geometry bar ~-1.2 at every stage; syco-down SFT->RL gain grows ~1.4 -> 2.6 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 33",
+   "page": 51,
+   "what_is_plotted": "Stage 6-10 snapshot bars, ACT, activation gain.",
+   "takeaway": "Hierarchy stable; late gain growth in sequential down runs.",
+   "numbers": "Syco-down SFT->RL gain ~2.8; rep-down SFT->RL occupancy ~-2.5, gain ~+1.6 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 34",
+   "page": 52,
+   "what_is_plotted": "Stage 1-5 snapshots, ACT, subspace gain.",
+   "takeaway": "Gain profile changes with estimator.",
+   "numbers": "Rep-down SFT gain ~-4.3 at stage 2 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 35",
+   "page": 53,
+   "what_is_plotted": "Stage 6-10 snapshots, ACT, subspace gain.",
+   "takeaway": "Sequential repetition-down has the only large positive gain.",
+   "numbers": "Rep-down SFT->RL gain ~+2.4 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 36",
+   "page": 54,
+   "what_is_plotted": "Stage 1-5 snapshots, NOC, activation gain.",
+   "takeaway": "Early geometry separation; occupancy transients for repetition-down.",
+   "numbers": "Rep-down SFT occupancy ~-2.8 at stage 3 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 37",
+   "page": 55,
+   "what_is_plotted": "Stage 6-10 snapshots, NOC, activation gain.",
+   "takeaway": "Late gain growth only in sequential down runs.",
+   "numbers": "Syco-down SFT->RL gain ~2.8 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 38",
+   "page": 56,
+   "what_is_plotted": "Stage 1-5 snapshots, NOC, subspace gain.",
+   "takeaway": "Most functional view; sycophancy bars all small.",
+   "numbers": "Syco bars mostly within +-1.2 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 39",
+   "page": 57,
+   "what_is_plotted": "Stage 6-10 snapshots, NOC, subspace gain.",
+   "takeaway": "Large gain shifts are the exception, not a property of reward-only training.",
+   "numbers": "RL bars within ~+-1; rep-down SFT->RL gain ~+2.4 (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 40",
+   "page": 59,
+   "what_is_plotted": "Repeat of the repetition-strength landscape (Figure 24).",
+   "takeaway": "Same as Figure 24.",
+   "numbers": "Same as Figure 24.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Figure 41",
+   "page": 64,
+   "what_is_plotted": "Local behavioral chart scatter (Fisher e1 vs orthogonal PCA e2) with Fisher and logistic arrows.",
+   "takeaway": "Supervised directions align with separation axis.",
+   "numbers": "Same layout as Figure 7a (approx, read from figure).",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 22",
+   "page": 66,
+   "what_is_plotted": "Per-model classifier row counts for sycophancy 3-vs-1 training.",
+   "takeaway": "9 models have 13,356 rows, 14 have 10,708 (missing other-token activation files).",
+   "numbers": "All models: chosen 3,344, rejected 3,334, pairs 3,206.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 23",
+   "page": 67,
+   "what_is_plotted": "Checkpoint step per matched stage s.",
+   "takeaway": "SFT 10s/60s/12s/36s; reward and SFT->reward 6s.",
+   "numbers": "s in 1..10.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 24",
+   "page": 67,
+   "what_is_plotted": "Repetition post-training dataset configurations (SFT-up/down, RL-up/down).",
+   "takeaway": "DPO uses repetitive vs repaired responses as chosen/rejected.",
+   "numbers": "755,920 records each.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 25",
+   "page": 67,
+   "what_is_plotted": "Repetition repair data counts by stage.",
+   "takeaway": "98.62% retained.",
+   "numbers": "743,687 -> 766,869 -> 766,469 -> 755,920.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 26",
+   "page": 67,
+   "what_is_plotted": "Selected coordinate counts for archived classifiers.",
+   "takeaway": "Sycophancy base classifier: 92 positive, 57 negative, 149 nonzero.",
+   "numbers": "Repetition 25/9/34; hallucination 20/32/52; SAE-repetition 218/556/774.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 27",
+   "page": 68,
+   "what_is_plotted": "Repetition training configuration.",
+   "takeaway": "SFT lr 1e-5 (100/600 steps); DPO lr 5e-7, 60 steps, beta 0.1.",
+   "numbers": "Batch 128, fp16, ZeRO-3, seed 42, 8 GPUs.",
+   "text_matches_figure": "yes"
+  },
+  {
+   "id": "Table 28",
+   "page": 68,
+   "what_is_plotted": "Sycophancy training configuration.",
+   "takeaway": "SFT lr 1e-5 (120/360 steps); DPO lr 5e-7, 60 steps, beta 0.1 (0.7 for SFT->DPO down).",
+   "numbers": "3,480 examples / pairs; seed 42.",
+   "text_matches_figure": "yes"
+  }
+ ],
+ "key_results": [
+  {
+   "claim": "DPO from base keeps the behavior chart; SFT moves it. (Checker caveat: ~9 deg of DPO's ~10 deg sycophancy angle is already present at step 6 for both up and down, so the DPO number is near the measurement floor.)",
+   "quote": "Across the four behavior–direction settings, DPO initialized from Base is consistently geometry-conservative, retaining mean projector overlap 0.939 with mean angle 7.64◦",
+   "page": 7
+  },
+  {
+   "claim": "SFT displaces the chart about 3x more in angle.",
+   "quote": "SFT produces substantially larger chart displacement, with mean overlap 0.745 and mean angle 25.07◦",
+   "page": 7
+  },
+  {
+   "claim": "DPO after SFT stays in the SFT geometry.",
+   "quote": "DPO after SFT does not restore the Base chart, indicating that the sequential objective continues optimization within the SFT-induced geometry.",
+   "page": 7
+  },
+  {
+   "claim": "The 'reweighting' mechanism for DPO is not directly measured: DPO changes all three measured axes only a little.",
+   "quote": "In particular, reward-only changes are usually modest in all three measured axes, so the figures support geometric conservation more directly than a universal large occupancy- or gain-shift account.",
+   "page": 45
+  },
+  {
+   "claim": "Reward-only sycophancy runs barely change behavior.",
+   "quote": "Reward-only sycophancy trajectories preserve geometry while moving behavior modestly.",
+   "page": 18
+  },
+  {
+   "claim": "Leaving the base chart does not mean less sycophancy.",
+   "quote": "A trajectory that leaves the high-density Base support does not necessarily indicate weaker sycophancy.",
+   "page": 24
+  },
+  {
+   "claim": "After SFT, sycophancy rises while paths move away from the base positive direction (the base chart stops being the right coordinate system).",
+   "quote": "The fact that sycophantic preference can increase while the corresponding path moves away from the Base positive direction is particularly informative.",
+   "page": 26
+  },
+  {
+   "claim": "Public instruct models usually have more, not less, causal gain on the repetition chart.",
+   "quote": "This pattern is inconsistent with a simple account in which instruction alignment merely suppresses the behavior mechanism.",
+   "page": 42
+  },
+  {
+   "claim": "Lower separability does not imply lower causal readout.",
+   "quote": "This again shows that suppressing statistical separability does not necessarily suppress the causal readout of the behavior.",
+   "page": 42
+  },
+  {
+   "claim": "Primary CCA alone is not evidence of a shared axis.",
+   "quote": "The random primary scores of 0.667 in ACT and 0.817 in NOC are too large to regard a single canonical correlation as decisive evidence.",
+   "page": 33
+  },
+  {
+   "claim": "Behavior-selected coordinates beat random on mean CCA.",
+   "quote": "The ACT score increases from 0.222 under random selection to 0.515 under behavior-associated selection, an absolute increase of 0.293.",
+   "page": 32
+  },
+  {
+   "claim": "Repetition steering works in all 23 models.",
+   "quote": "Both operators produce a positive endpoint behavioral change for every model.",
+   "page": 36
+  },
+  {
+   "claim": "Public instruct models usually have more causal gain on the repetition chart: 7 of 10 pairs in both NOC and ACT; reliability changes split 5/5 (NOC) and 4/6 (ACT).",
+   "quote": "Seven of ten pairs exhibit positive changes in NOC causal gain, and seven of ten exhibit positive changes in ACT causal gain.",
+   "page": 42
+  }
+ ],
+ "methods": [
+  {
+   "name": "Sparse behavior-coordinate scaffold + PCA chart (ACT and NOC)",
+   "what_it_measures": "L1-logistic selection of MLP neurons that predict a behavior label, then a low-rank PCA basis U of those neurons' pooled activations (ACT) or magnitude-normalized contributions (NOC).",
+   "which_fate_it_could_diagnose": "Gives the subspace to track; ACT-vs-NOC split (present vs functionally contributing) is a weak screen for bypass (fate 2): coordinates active but with little contribution to the layer update.",
+   "causal_followup_it_allows": "Neuron scaling and chart-subspace add/remove steering on the selected coordinates.",
+   "data_and_compute_needed": "Few thousand labeled examples; forward passes with hooks on down_proj; sklearn L1 logistic on up to ~460k features per model (8B).",
+   "code_available": "yes: https://github.com/ronglingze/Manifold-Analysis"
+  },
+  {
+   "name": "Grassmannian chart tracking across checkpoints",
+   "what_it_measures": "Projector overlap S, mean principal angle, projection distance between base and checkpoint charts at matched rank; velocity, path length and excess path length over checkpoints.",
+   "which_fate_it_could_diagnose": "Transformed (fate 5): chart rotates after a fix; vs retained geometry (fate 1/4 style readout or competition change).",
+   "causal_followup_it_allows": "Steer along base vs new chart at the new checkpoint to see which one still controls behavior.",
+   "data_and_compute_needed": "Charts at each checkpoint (one forward pass per checkpoint over the item set); cheap linear algebra.",
+   "code_available": "yes (same repo)"
+  },
+  {
+   "name": "Anchored Fisher retention R^G",
+   "what_it_measures": "Fisher separability of checkpoint features projected into the base chart, divided by separability in the checkpoint's own chart.",
+   "which_fate_it_could_diagnose": "Stage B removed vs hidden: R^G ~1 with behavior fixed = old code still there and readable (hidden); R^G << 1 with native G high = re-encoded (transformed); both low = erased (fate 6). Also a direct H3 test: does a pre-fix probe still work post-fix.",
+   "causal_followup_it_allows": "Patch base-chart component back in post-fix to test whether behavior returns.",
+   "data_and_compute_needed": "Same as above; needs labels at each checkpoint.",
+   "code_available": "yes (same repo)"
+  },
+  {
+   "name": "Geometry / occupancy / gain / threshold decomposition",
+   "what_it_measures": "Chart movement (d_proj), class-conditional second-moment occupancy gap G_occ, finite-difference causal gain G_causal from steering, intercept tau from logistic fit.",
+   "which_fate_it_could_diagnose": "Readout/threshold failure (fate 1: gain or intercept change with geometry fixed) vs override (fate 4: occupancy shift) vs transformed (geometry move).",
+   "causal_followup_it_allows": "Gain is itself causal (dose-response); threshold term is said to be estimable but no tau values are reported.",
+   "data_and_compute_needed": "Steering sweeps at 5 strengths per checkpoint per model.",
+   "code_available": "yes (same repo)"
+  },
+  {
+   "name": "Cross-model CCA atlas with random-coordinate control",
+   "what_it_measures": "Primary and mean canonical correlation between two models' chart coordinates on matched items; directed linear probing; same with matched random coordinates.",
+   "which_fate_it_could_diagnose": "Not a fate test; tells whether a fate-relevant axis found at 9B is the same axis at 27B.",
+   "causal_followup_it_allows": "None directly.",
+   "data_and_compute_needed": "Same item set run through every model.",
+   "code_available": "yes (same repo)"
+  },
+  {
+   "name": "Base-anchored teacher-forced candidate paths",
+   "what_it_measures": "For fixed prompt + truthful and sycophantic candidate answers, token-by-token projections into the base chart at each checkpoint, with length-normalized likelihood as node size.",
+   "which_fate_it_could_diagnose": "Per-item view of Stage B: does the fix move items out of the old chart (transformed) or keep them inside while changing preference (readout/override)?",
+   "causal_followup_it_allows": "Natural place to patch base-checkpoint states into the post-fix model per item.",
+   "data_and_compute_needed": "Teacher-forced passes of paired candidates at each checkpoint; trivial compute.",
+   "code_available": "yes (same repo, presumably)"
+  },
+  {
+   "name": "Token-level trajectories over log-density-ratio landscape",
+   "what_it_measures": "Per-token chart coordinates plotted over log p+(z)/p-(z) background.",
+   "which_fate_it_could_diagnose": "Where flipped vs resisted items split along the answer (group angle: token paths).",
+   "causal_followup_it_allows": "Choose the token position for patching.",
+   "data_and_compute_needed": "Teacher-forced passes; 2-D KDE.",
+   "code_available": "yes (same repo)"
+  }
+ ],
+ "controls_worth_copying": [
+  "Matched-size random coordinate scaffolds from the same layers, run through the whole pipeline (PCA, CCA, probing, steering).",
+  "Report mean CCA and full-chart probing, not primary CCA (random primary CCA reached 0.667 ACT / 0.817 NOC).",
+  "Anchored retention: apply the pre-fix chart to post-fix activations and compare with the post-fix native chart.",
+  "Track every checkpoint, not only endpoints (rules out 'moves then returns').",
+  "Same prompts and same teacher-forced candidates across all checkpoints, plotted in base coordinates.",
+  "Dose-response steering with PPL tracked, and local finite-difference gain instead of endpoint differences.",
+  "Separate discovery data from post-training data (they checked overlap: 39 exact matches in the first 100k)."
+ ],
+ "pitfalls": [
+  {
+   "pitfall": "Update size and behavior change are not matched between SFT and DPO: DPO uses lr 5e-7 for 60 steps vs SFT lr 1e-5 for 100-600 steps; repetition DPO sees only ~1% of its data (0.010 epoch); sycophancy DPO moves Syco Prob by about 0.015. 'Geometry preserved' may just mean 'little changed'.",
+   "quote": "In particular, reward-only changes are usually modest in all three measured axes, so the figures support geometric conservation more directly than a universal large occupancy- or gain-shift account.",
+   "page": 45
+  },
+  {
+   "pitfall": "Sycophancy SFT runs are many epochs on 3,480 examples (high overfit), DPO about 2 epochs.",
+   "quote": "SFT-up runs for 120 steps (∼4.4 effective epochs) and SFT-down for 360 steps (∼13.2 effective epochs).",
+   "page": 64
+  },
+  {
+   "pitfall": "NOC as implemented is an unsigned magnitude proxy, not the signed contribution defined in Section 3.3, so it cannot show opposing/cancelling contributions.",
+   "quote": "The implemented proxy is non-negative and does not preserve the sign or direction of an individual coordinate's contribution.",
+   "page": 12
+  },
+  {
+   "pitfall": "L1 coordinate selection on unstandardized features.",
+   "quote": "Because L1 regularization is not scale-invariant, the coordinate selection described below may be influenced by the relative scales of the per-neuron features.",
+   "page": 61
+  },
+  {
+   "pitfall": "3-vs-1 classifier: non-stance tokens of both classes are negatives, so selected neurons can partly code 'stance span vs rest of text', not sycophancy.",
+   "quote": "Other-region features from sycophantic records (negative, label 0): activation vectors from all_except_answer_tokens for _rejected records.",
+   "page": 58
+  },
+  {
+   "pitfall": "The chart is a PCA of the scaffold, not a discriminant subspace. In ACT the sycophancy PC1 is nearly orthogonal to the classifier direction (mean signed cosine 0.062, several 0.000, across the 23 atlas models), so the dominant chart direction is not the behaviour direction; the behaviour direction may sit in lower PCs. Chart rotation therefore need not mean the behaviour direction rotated (and vice versa).",
+   "quote": "denotes the reported signed cosine similarity between PC1 and the supervised classifier direction.",
+   "page": 28
+  },
+  {
+   "pitfall": "Sycophancy labels come from a fixed preference dataset of user opinions/claims, teacher-forced; no model-generated flips and no check of what the model itself believes.",
+   "quote": "We constructed the sycophancy data from DataCreatorAI/Anti-Sycophancy-DPO, which provides 3 480 chosen–rejected preference pairs.",
+   "page": 43
+  },
+  {
+   "pitfall": "Public Base vs Instruct comparisons are confounded.",
+   "quote": "The comparison is paired at the model-family and parameter-scale level, but it is not a controlled training intervention.",
+   "page": 41
+  },
+  {
+   "pitfall": "Discovery and intervention prompts not fully disjoint.",
+   "quote": "Because this audit covered only a subset of the intervention corpus, we do not claim strict prompt-level disjointness.",
+   "page": 59
+  },
+  {
+   "pitfall": "Layer counts of selected neurons are not causal importance.",
+   "quote": "they should not be interpreted as direct measurements of layer-wise causal importance.",
+   "page": 34
+  },
+  {
+   "pitfall": "Repetition DPO is ~0.010 epoch, so the repetition 'reward preserves geometry' result rests on a tiny update.",
+   "quote": "All DPO runs complete 60 optimization steps, corresponding to an effective epoch count of ∼0.010 (60 × 128 / 755 920).",
+   "page": 63
+  },
+  {
+   "pitfall": "Measurement floor not reported: DPO-up and DPO-down sycophancy are identical at step 6 (S 0.9498, 9.06 deg, Syco Prob 0.3550) and the SFT first checkpoint also sits at ~9 deg, so ~9 deg / S~0.95 looks like a floor from chart re-estimation or checkpoint conversion. There is no base-vs-base (re-extraction or seed) control for S or angle. After step 6, DPO moves <=1 deg.",
+   "quote": "Behavior moves gradually, but overlap remains around 0.94–0.95.",
+   "page": 16
+  },
+  {
+   "pitfall": "Per-checkpoint chart pipeline may re-fit the sparse classifier and neuron set ('train or reuse'), then zero-pad bases to a common ambient space; it is not stated which checkpoints reuse the base mask, so S and angle mix neuron re-selection with representation change.",
+   "quote": "extract activations for the base and checkpoint, train or reuse sparse classifiers, extract selected neurons, compute global padded indices, run PCA, zero-pad bases to a common ambient coordinate system",
+   "page": 14
+  },
+  {
+   "pitfall": "The two sycophancy behaviour metrics disagree for SFT-down: p_b (prob. of sycophantic target) rises to 0.442 vs 0.355 at the first DPO checkpoint, while the preference score falls to 0.330. Base-model behaviour is never reported.",
+   "quote": "The Behavior entry reports pb /mb , where pb is the evaluation probability assigned to the behavior-positive target and mb is the realized behavioral metric.",
+   "page": 14
+  },
+  {
+   "pitfall": "Overclaim in the headline: Figure 1 and the abstract say reward optimization redistributes occupancy and changes readout gain or threshold, but threshold is never estimated and Appendix S finds occupancy and gain changes for DPO are small and estimator-dependent.",
+   "quote": "whereas reward-based optimization largely preserves the inherited chart while redistributing occupancy and modifying readout gain or threshold",
+   "page": 1
+  },
+  {
+   "pitfall": "Internal inconsistencies: Table 2a random baselines (0.367/0.317 primary CCA) conflict with Table 15 (0.667/0.817); Figure 5a repetition values do not match Table 2b; Table 6 Truth PPL 1485.1 vs Table 2b 1.48; Table 7 up/down step-6 rows identical; Figure 11/13 PC1 25.5% vs Table 4 Llama-3.1-8B ACT PC1 0.426; Figure 5d SFT axis ends at 120 steps while SFT-down ran 360. Single model, single seed, no confidence intervals; Appendix I robustness controls described without reported numbers.",
+   "quote": "",
+   "page": 7
+  }
+ ],
+ "limitations_quote": "geometric conservation versus movement, but they do not by themselves prove which non-geometric mechanism causes the remaining behavioral change.",
+ "limitations_page": 7,
+ "limitations_extra": "No dedicated limitations section. Other admitted gaps: 'Threshold changes, subtle readout reconfiguration, or distributional changes outside the second-moment occupancy statistic remain plausible mechanisms' (p45); repaired repetition continuations not re-checked for repetition (p60); public pairs confounded (p41).",
+ "future_work_quote": "None stated (no future-work section; the paper ends at a two-sentence conclusion on p7-8).",
+ "future_work_page": null,
+ "bears_on_fates": [
+  {
+   "fate": "Stage B (removed vs only hidden)",
+   "how": "Closest prior method for the recheck: track the pre-fix subspace across fix checkpoints with principal angles + anchored retention. Their sycophancy-down DPO keeps the base chart (S 0.939, R^G 0.995) while behavior barely moves (Syco Prob 0.355 -> 0.342), consistent with 'hidden/reweighted, not removed', but the behavior change is too small to call it a fix, and ~9 of the 9.68 deg is a first-checkpoint offset shared with DPO-up, so 'conserved' is not distinguished from 'unchanged'.",
+   "strength": "moderate (method), weak (evidence)"
+  },
+  {
+   "fate": "5 transformed",
+   "how": "SFT rotates the chart by 22-31 deg; in Figure 13 SFT moves both truthful and sycophantic candidates out of the base chart's positive/negative separation while sycophantic preference rises, i.e. behavior re-encoded in new coordinates. 4 items, qualitative.",
+   "strength": "weak-moderate"
+  },
+  {
+   "fate": "1 readout/threshold failure",
+   "how": "Decomposition defines gain (slope) and intercept (threshold) inside a fixed chart; public instruct models gain causal readout while separability drops. Threshold values never reported.",
+   "strength": "weak"
+  },
+  {
+   "fate": "2 bypass",
+   "how": "ACT-high / NOC-low quadrant = active but little functional contribution; only conceptual, NOC is an unsigned proxy.",
+   "strength": "weak"
+  },
+  {
+   "fate": "4 override",
+   "how": "Occupancy shift inside a kept chart is their stand-in; no competing-signal analysis.",
+   "strength": "weak"
+  },
+  {
+   "fate": "6 erased",
+   "how": "Native Fisher G stays high after every run (10-18 for sycophancy), so no erasure observed; R^G with native G gives the test.",
+   "strength": "weak"
+  }
+ ],
+ "bears_on_group_angle": "Directly uses Grassmannian tools the group wants (projector overlap, principal angles, projection distance, path length/velocity over checkpoints) but over training time, not across layers: the chart concatenates selected neurons from all layers, so there is no layer-by-layer subspace path. No Procrustes (only CCA, which is not orthogonal). Token-path idea is present (Appendix K, L: teacher-forced candidate paths in a fixed base chart) but on 4 pairs with no flipped-vs-resisted split and no matching on prior confidence. No attention heads (MLP neurons only).",
+ "bears_on_H1_H2_H3": "H1: not tested (one pressure type: user states an opinion/claim; no pushback-after-answer or tempting-option conditions). H2: not tested (only SFT and DPO, up/down; no fate-matched fix). Their result predicts plain DPO leaves the inherited geometry in place, which is the premise of H2's 'plain DPO hides' arm, but with unmatched update size and DPO movement near the measurement floor. H3: anchored retention is a direct analogue: base-chart separability survives DPO (R^G 0.995-0.998) and mostly survives SFT (0.81-0.97), arguing that old probes keep working at the population level; Figure 13 shows per-item cases where the old chart stops separating after SFT, which is the H3 failure mode, but only 4 items. Caveat: R^G labels are fixed dataset labels on teacher-forced text (sycophantic vs truthful response), not the model's own behaviour, so it tests whether an old probe still separates the same text, not whether it catches the model's failures (our H3).",
+ "overlap_with_our_plan": "DOES: (1) asks the same Stage B question in general form ('remove, build a competing mechanism, rotate, shift occupancy, weaken readout'); (2) tracks a sycophancy subspace through controlled SFT, DPO and SFT->DPO checkpoints on Llama-3.1-8B with principal angles, projector overlap and anchored retention; (3) claims SFT rewrites and DPO reweights; (4) separates geometry, occupancy and causal gain. LEAVES OPEN: (a) no decodable correct answer: sycophancy is 'sycophantic vs truthful stance text' on opinion claims, so no knowing-vs-acting gap, no probe for the correct answer, no 'decodable but flipped' items; (b) no per-item fates and no six-way sort (Stage A untouched); (c) no fate-matched fixes, no H2; (d) only Llama-3.1-8B, one seed, DPO with 20x smaller lr and ~no behavior change, so 'DPO hides' is not established; (e) no pressure types (H1); (f) MLP neurons only, no attention heads reading the user claim, no layerwise subspace path, no Procrustes transformed-vs-erased test; (g) sycophancy chart causal validation is weak (NOC gain mean 0.062, sometimes negative; steering curves only for repetition); (h) no base-vs-base noise floor: DPO's ~10 deg is mostly a ~9 deg first-checkpoint offset shared by DPO-up, DPO-down and SFT, so 'DPO reweights' is weaker than the headline; (i) R^G uses fixed dataset labels, not the model's own flips. Scoop risk for Stage B: moderate on framing ('rewrite vs reweight' for SFT vs DPO on sycophancy geometry is now taken and must be cited), low on substance (removal vs hiding of a decodable correct answer, per item, with fate-matched fixes and matched update size is not done).",
+ "architecture_location": "MLP down_proj inputs (FFN intermediate neurons), all layers concatenated; in Llama-3.1-8B the sycophancy scaffold is broad (nearly all 32 layers) with peaks around middle (~layer 13) and late (~layer 23, ~27) layers (approx, read from Figure 14; the paper warns counts are not causal importance); repetition scaffold is sparse. No attention components are analysed.",
+ "actionable_fix": "No sycophancy fix is proposed or shown. Implied: if a fix should change the mechanism rather than reweight it, SFT moves the chart far more than DPO; DPO after SFT stays in the SFT geometry, so the order of stages matters. Repetition can be raised by ACT-chart steering in all 23 models (repetition is the only behavior with demonstrated causal control).",
+ "reuse_verdict": "Reuse the measurement kit for Stage B: matched-rank principal angles + projector overlap across fix checkpoints, anchored retention R^G (pre-fix probe on post-fix model vs post-fix native probe), checkpoint-by-checkpoint trajectories, base-anchored teacher-forced paired candidates, random-coordinate controls. Do not copy: unsigned NOC proxy, unstandardized L1 selection, 3-vs-1 span labels, PCA-of-scaffold chart whose PC1 is orthogonal to the behavior direction (use a supervised or class-difference subspace instead), and unmatched SFT vs DPO budgets (match KL or behavior change before comparing geometry).",
+ "relevance_to_project": "high"
+}

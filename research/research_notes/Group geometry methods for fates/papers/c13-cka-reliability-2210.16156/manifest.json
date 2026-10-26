@@ -1,0 +1,113 @@
+{
+ "slug": "c13-cka-reliability-2210.16156",
+ "url": "https://arxiv.org/pdf/2210.16156",
+ "pdf_ok": true,
+ "pages": 28,
+ "chars": 91728,
+ "title_guess": "R ELIABILITY OF CKA AS A S IMILARITY M EASURE IN D EEP L EARNING MohammadReza Davari 1,3 \u2217 Stefan Horoi 2,3 \u2217",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 4,
+   "caption_start": "Figure 1: Visual representations of the transformations considered in the theoretical results. a) Thm. 1: The original set of neural representations X contains subsets S (red) and X\\S (green). We can "
+  },
+  {
+   "id": "Figure 2",
+   "page": 6,
+   "caption_start": " Figure 2: A layer-wise comparison based on the value Figure 3: The convolution filters within the first two  of the CKA between a generalized, memorized, and layers of a generalized, memorized, and a"
+  },
+  {
+   "id": "Figure 4",
+   "page": 6,
+   "caption_start": " Figure 4: a) Linear and RBF CKA values between the artificial representations X and the subset translated version Y as a function of the translation distance. b) CKA value between a CNN\u2019s internal re"
+  },
+  {
+   "id": "Figure 5",
+   "page": 7,
+   "caption_start": " Figure 5: Original Map is the CKA map of a network trained on CIFAR10. We manipulate this network to  produce CKA maps which: (1) maximizes the CKA similarity between the 1st and last layer, (2) maxi"
+  },
+  {
+   "id": "Figure 6",
+   "page": 7,
+   "caption_start": " Figure 6: The comical target CKA maps (first row) are used as the objective for the CKA map loss in Eq. 3, while prioritizing network performance (small tolerance for changes in accuracy \u03b4acc ). The "
+  },
+  {
+   "id": "Figure 7",
+   "page": 8,
+   "caption_start": " Figure 7: ResNet-34 networks of different widths and their corresponding CKA Maps are modified to produce CKA maps of thin networks. Top row Original shows the unaltered CKA map of the networks deriv"
+  },
+  {
+   "id": "Figure 8",
+   "page": 8,
+   "caption_start": " Figure 8: PCA of the networks presented in Fig. 5 before (left) and after (right) being optimized to manipulate the CKA map with Eq 3. Noticeably to achieve the objective the optimization displaces a"
+  },
+  {
+   "id": "Figure 10",
+   "page": 17,
+   "caption_start": " Figure 10: In Fig. 7 we are presented a series of ResNet-34 networks of different widths and their corresponding CKA Maps, which are modified to produce CKA maps of thin networks using the CIFAR10 da"
+  },
+  {
+   "id": "Figure 11",
+   "page": 17,
+   "caption_start": " Figure 11: VGG style networks of different widths and their corresponding CKA Maps are modified to produce CKA maps of thin networks. Top row Original shows the unaltered CKA map of the networks deri"
+  },
+  {
+   "id": "Figure 12",
+   "page": 18,
+   "caption_start": " Figure 12: Original Map is the CKA map of a network trained on CIFAR10. We manipulate this network to produce CKA maps which: (1) maximizes the CKA similarity between the 1st and last layer, (2) maxi"
+  },
+  {
+   "id": "Figure 13",
+   "page": 19,
+   "caption_start": " Figure 13: Original Map is the CKA map of a network trained on CIFAR10. We manipulate this network following a modified version of Eq. 3 (distillation loss is substituted with cross-entropy loss) to "
+  },
+  {
+   "id": "Figure 14",
+   "page": 19,
+   "caption_start": " Figure 14: Original Map is the CKA map of a ViT (Dosovitskiy et al., 2020) network trained on CIFAR10. We manipulate this network following the Eq. 3 to produce CKA maps which: (1) maximizes the CKA "
+  },
+  {
+   "id": "Table 1",
+   "page": 19,
+   "caption_start": " Table 1: Architectural details of out implementation of ViT (Dosovitskiy et al., 2020) for the CIFAR10 dataset. Note that the training process (except the number of epochs, which is listed above) fol"
+  },
+  {
+   "id": "Figure 15",
+   "page": 20,
+   "caption_start": " Figure 15: A layer wise comparison between a generalized, memorized, and randomly populated network using either (left figure) the same random seed or (right figure) different random seeds. This comp"
+  },
+  {
+   "id": "Figure 16",
+   "page": 20,
+   "caption_start": " Figure 16: The linear probe accuracy obtained on the CIFAR10 test set for the generalized, memorized, and randomly populated network seen in Fig. 2 and 3. The results shown in this figure along with "
+  },
+  {
+   "id": "Figure 17",
+   "page": 21,
+   "caption_start": " Figure 17: Results of OOD evaluation of models from Figure17 on CIFAR-10C (Hendrycks & Dietterich, 2018) corruptions data. We show results for each corruptions as well as the average results. We obse"
+  }
+ ],
+ "n_figures_tables": 16,
+ "section_heading_candidates": [
+  "R ELIABILITY OF CKA AS A S IMILARITY",
+  "M EASURE IN D EEP L EARNING",
+  "A BSTRACT",
+  "I NTRODUCTION",
+  "P RACTICAL IMPLICATIONS OF THEORETICAL RESULTS",
+  "E XPLICITLY O PTIMIZING THE CKA M AP",
+  "R EFERENCES",
+  "E XPERIMENTAL DETAILS",
+  "M INIBATCH CKA",
+  "N ETWORK A RCHITECTURE",
+  "T RAINING D ETAILS",
+  "A DDITIONAL R ESULTS",
+  "W IDER N ETWORKS",
+  "C LOSER L OOK AT T HE E ARLY L AYERS",
+  "O UT OF D ISTRIBUTION E VALUATION",
+  "P ROOFS",
+  "1 XX 2",
+  "1 XX 2"
+ ],
+ "looks_abstract_only": false,
+ "has_references": false
+}

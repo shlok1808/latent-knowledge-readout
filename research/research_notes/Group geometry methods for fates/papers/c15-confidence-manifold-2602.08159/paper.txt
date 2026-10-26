@@ -1,0 +1,3147 @@
+The Confidence Manifold:
+Geometric Structure of Correctness Representations in Language Models
+
+Seonglae Cho 1 2 Zekun Wu 1 2 Kleyton Da Costa 1 Adriano Koshiyama 1 2
+https://github.com/seonglae/confidence-manifold
+
+arXiv:2602.08159v2 [cs.LG] 29 Jul 2026
+
+Abstract
+
+errors are indistinguishable. A growing body of work suggests the model often does register the error: truth-related
+signals are linearly present in the residual stream (Azaria &
+Mitchell, 2023; Burns et al., 2023; Marks & Tegmark, 2024;
+Orgad et al., 2025), and a low-dimensional subspace can
+separate true from false statements (Bürger et al., 2024).
+
+When a language model asserts that “the capital of
+Australia is Sydney,” does it know this is wrong?
+Models assert misconceptions with the same fluency as facts, so the question cannot be answered
+from output uncertainty. Truth-related signals are
+known to exist in the residual stream, but not their
+geometry: how many dimensions carry the signal, how simple a detector can be, and whether it
+transfers. We characterize this geometry across 11
+models (124M–14B) and test it causally with activation steering, concept erasure, and distributed
+alignment search. The structure is simple: two
+class centroids in a 2–8 dimensional subspace
+match a trained linear probe, and 25 labeled examples recover 90% of full-data AUC on GPT-2.
+Steering shifts hallucination rates by 9.1 points
+on six models, erasure drops detection to chance,
+and distributed alignment search, the only method
+that bounds rank, localizes at most five causal
+dimensions. The internal advantage is regimespecific: probes far outperform P(True) and semantic entropy on adversarial misconceptions but
+tie on standard QA. Single-dataset probes transfer
+near-randomly until joint multi-dataset training
+restores 0.73–0.91 AUC. That centroid distance
+matches probe performance indicates class separation is a mean shift, making detection geometric
+rather than learned.
+
+This prior work establishes that such a subspace exists; it
+leaves open how to use it. Three questions matter for a
+detector: how simple the decision rule can be before the signal is lost, how many dimensions the correctness direction
+causally occupies rather than merely correlates with, and
+whether a direction learned on one task transfers to another.
+Difference-of-means probing is reported to work (Marks &
+Tegmark, 2024), but without characterizing why two means
+suffice or when the direction generalizes.
+We answer these questions by characterizing the classconditional discriminative subspace for correctness across
+11 models from five families (124M–14B), and validating it
+with three complementary causal methods: activation steering, concept erasure (Ravfogel et al., 2022), and distributed
+alignment search (DAS) (Wu et al., 2023).1
+• Two centroids suffice. Distance to two class centroids
+in a supervised 2–8D subspace matches a trained probe
+within ±0.02 AUC and beats it at larger label budgets,
+while multi-prototype variants degrade: the per-class
+distributions are unimodal, so one mean shift is the
+decision rule.
+• The signal is causally low-rank. Steering along the
+direction shifts hallucination rates (9.1pp on Qwen27B) and erasing the subspace collapses detection to
+chance, establishing that the direction is sufficient and
+necessary; DAS independently bounds the causal rank
+at five dimensions.
+
+1. Introduction
+When a language model states that “the capital of Australia
+is Sydney,” does it internally register that the claim is false?
+Language models assert falsehoods with the same fluency as
+facts (Rawte et al., 2023; Ji et al., 2025), which makes them
+most dangerous exactly when their confidence and their
+
+• Cross-domain transfer needs joint training. Singledataset probes transfer near-randomly (0.39–0.66
+AUC), but joint multi-dataset training restores 0.73–
+0.91 AUC on instruction-tuned models 1B and larger.
+
+1
+Holistic AI 2 University College London. Correspondence to:
+Seonglae Cho <seonglae.cho@holisticai.com>.
+
+1
+
+1
+
+All AUC values are area under the ROC curve.
+
+The Confidence Manifold
+Output method (P(True), entropy)
+
+Internal probe (PLS)
+
+tainty, and pre-trained transformers are systematically overconfident to begin with (Desai & Durrett, 2020). Semantic
+entropy (Kuhn et al., 2023; Farquhar et al., 2024) addresses
+this by clustering N generations by meaning via NLI, computing entropy over clusters. While effective for uncertainty
+estimation, it requires N forward passes plus NLI inference.
+Calibration evolves across layers with a low-dimensional
+direction in the residual stream (Joshi et al., 2025), but distributional certainty alone is insufficient: models can be
+confidently wrong on TruthfulQA’s misconception-laden
+questions. Semantic entropy probes (Han et al., 2024) predict SE efficiently but inherit its limitation of measuring
+uncertainty rather than correctness.
+
+chance
+
+GPT-2-L
+
+0.79
+
+0.52
+
+Llama-3B
+
+0.95
+
+0.58
+
+Qwen2-7B
+
+0.92
+
+0.61
+
+Mistral-7B
+
+0.92
+
+0.55
+
+0.5
+
+0.6
+
+0.7
+
+0.8
+
+Hallucination detection AUC
+
+0.9
+
+1.0
+
+Figure 1. Internal probes beat output-based uncertainty (P(True),
+semantic entropy) on TruthfulQA’s adversarial misconception questions; the advantage closes on standard QA (§5).
+
+Activation Steering. Inference-time intervention modifies
+activations: h′ = h + αw (Li et al., 2023b; Turner et al.,
+2024). Contrastive activation addition (Rimsky et al., 2024)
+and representation engineering (Zou et al., 2023) demonstrate behavioral control for honesty and safety. Adaptive
+steering (Wang et al., 2025) adjusts intervention strength persample based on predicted uncertainty. Causal mediation
+analysis (Vig et al., 2020) and causal abstraction (Geiger
+et al., 2025) ask where in the network a behavior is computed; our question is instead how many dimensions carry it,
+so we use steering, erasure, and DAS for causal validation
+of the subspace rather than for localization.
+
+We present these as properties of correctness geometry, not
+a new detector: the low-rank separability of truth is established (Marks & Tegmark, 2024; Bürger et al., 2024),
+whereas centroid sufficiency, a bounded causal rank, and
+recipe-dependent transfer are not. The advantage over
+output-based uncertainty is regime-specific (Figure 1): internal probes win on adversarial misconception data but only
+tie on standard QA, so the consistent claim is centroid sufficiency, not internal superiority. Our probes are trained and
+evaluated teacher-forced, as is standard in this line of work
+(Marks & Tegmark, 2024; Burns et al., 2023; Orgad et al.,
+2025); we characterize where the correctness signal lives
+and how it is structured, and leave deployment to free-form
+generation to future work.
+
+Problem Setting. Given question q and response s, predict
+factual correctness y ∈ {0, 1} from hidden state h(ℓ) at layer
+ℓ. Goals: (1) single-pass inference, (2) improvement over
+entropy baselines, (3) causal validation via intervention.
+
+3. Method
+
+2. Background
+
+We extract, characterize, and validate the correctness representation through contrastive data construction, direction
+learning, geometric analysis, and causal validation.2
+
+Linear Representation Hypothesis. Neural networks encode concepts linearly (Mikolov et al., 2013; Park et al.,
+2024): wc enables extraction and intervention (Nanda et al.,
+2023; Marks & Tegmark, 2024). This extends to truth
+(Burns et al., 2023; Marks & Tegmark, 2024), internal
+states (Azaria & Mitchell, 2023; Su et al., 2024; Sriramanan et al., 2024), semantic alignment (Saglam et al.,
+2025), intrinsic-dimension correlation with truthfulness (Yin
+et al., 2024), and confidence regulation (Stolfo et al., 2024);
+LLMs encode more truthfulness than they express (Orgad
+et al., 2025). Prior work establishes existence and individual
+properties (linear extractability (Marks & Tegmark, 2024),
+pooled local intrinsic dimension (Yin et al., 2024)); we
+characterize the class-conditional discriminative subspace
+jointly across 11 models: dimensionality (PLS), decision
+boundary (mean shift), and causal structure, where steering
+tests efficacy, concept erasure (Ravfogel et al., 2022) tests
+necessity, and DAS (Wu et al., 2023) bounds rank.
+
+Definitions. For input x and answer y, let c(x, y) ∈ {0, 1}
+be the binary correctness label (1 if y is the gold answer,
+0 otherwise) and hℓ (x, y) ∈ Rd the residual-stream activation at layer ℓ. We distinguish two scalar predictors
+of c: output uncertainty uout , derived from output logits
+without supervision (e.g. NLL − log pθ (y | x), P(True),
+token entropy, semanticentropy); and internal confidence
+uint (x, y) = f hℓ (x, y) , a learned scalar derived from a
+hidden state via a function f supervised on c. Correctness is the target; uncertainty and confidence are two scalar
+2
+Three terms are distinguished as follows. Embedding manifold (Levina–Bickel MLE on pooled activations, §5): the surface
+residual-stream activations live on. Discriminative subspace (supervised PLS, §5): the linear subspace within which correctness is
+most cleanly separated. Causal subspace (DAS, §5): the dimensions where intervention flips predicted correctness. “Confidence”
+denotes the model’s internal representation of correctness, not
+output-level uncertainty.
+
+Uncertainty
+vs. Correctness. Token entropy H(p) =
+P
+− i pi log pi conflates linguistic and epistemic uncer2
+
+The Confidence Manifold
+
+predictors that differ only in whether they read the output
+distribution or the residual stream.
+
+effect?), and concept erasure (is the subspace necessary?).
+Activation steering. Inference-time intervention on the
+residual stream (Li et al., 2023b; Turner et al., 2024):
+
+Formulation. We hypothesize that f admits a low-rank linear factorization through a subspace M ⊆ Rd of dimension
+k ≪ d: (1) projection onto M predicts c, (2) intervention
+along M causally affects predicted correctness, (3) M has
+consistent structure across layers and architectures.
+
+∗
+
+∗
+
+∗
+
+h′(ℓ ) = h(ℓ ) + α · ŵ(ℓ ) .
+
+(2)
+
+Unlike ITI (Li et al., 2023b), which intervenes at attentionhead outputs, we steer the full residual stream, consistent
+with the discriminative subspace being identified there. Controls are a random direction r ∼ N (0, I) and its component
+orthogonal to ŵ, both normalized.
+
+3.1. Data Construction and Direction Learning
+Contrastive pairs. TruthfulQA provides paired correct/incorrect answers per question (Lin et al., 2022), yield− N
+ing {(h+
+i , hi )}i=1 controlling for topic and difficulty. Each
+pair shares the same question stem, isolating the correctness
+signal from content variation. We extract hidden states from
+the last token position (Gurnee et al., 2023; Belinkov, 2022)
+across all L layers.
+
+Distributed Alignment Search (DAS). Following Wu et al.
+(2023); Geiger et al. (2025), we learn a rotation R ∈ Rd×k
+with an interchange-intervention objective: swapping the
+k-dimensional projected representation between correct and
+incorrect samples should flip the prediction. DAS is a causal
+operationalization of dimensionality, complementing PLS’s
+statistical one, and is the only one of the three methods that
+bounds the rank of the causal subspace.
+
+Probe training. Logistic regression with L2 regularization (C=0.1): p(y = 1|h) = σ(w⊤ h + b), trained with
+cross-entropy loss plus L2 penalty. The learned w(ℓ) is
+the correctness direction at layer ℓ. Probe labels are TruthfulQA’s binary correct/incorrect annotations, not derived
+from model entropy or uncertainty estimates; probes trained
+on entropy proxies fail to separate correct from incorrect
+samples (§5).
+
+Concept erasure (RLACE). Linear Adversarial Concept
+Erasure (Ravfogel et al., 2022) removes the correctness
+signal by projecting activations onto the nullspace of the
+discriminative direction. If the subspace is necessary, erasure should reduce AUC to chance (∼0.50). We also apply
+Iterative Nullspace Projection (INLP; Ravfogel et al., 2020)
+as a complementary iterative erasure method.
+
+3.2. Geometric Analysis
+We distinguish two notions of dimensionality.
+
+4. Experiments
+
+Intrinsic dimension (representation geometry). The
+Levina–Bickel MLE estimator (Levina & Bickel, 2004)
+measures the dimensionality of the data manifold itself:
+for each point xi with k-nearest neighbors at distances
+T1 < · · · < Tk ,
+
+−1
+k−1
+X
+T
+1
+k
+log 
+dˆk (xi ) = 
+(1)
+k − 1 j=1
+Tj
+
+Datasets. We evaluate on five QA datasets: TruthfulQA (Lin et al., 2022) (817 questions with paired correct/incorrect answers), SciQ (Welbl et al., 2017), CommonsenseQA (Talmor et al., 2019), FEVER (Thorne et al.,
+2018), and HaluEval (Li et al., 2023a). The discriminativesubspace dim sweep is run natively on the first four; crossdataset transfer is evaluated on all five. We use 80/20 stratified splits with GroupKFold (5 folds, grouped by question)
+to prevent paraphrase leakage.
+
+averaged over samples and k ∈ [5, 20]. We pool correct and
+incorrect activations to estimate the intrinsic dimension of
+the representation manifold at each layer, independent of
+any classification task.
+
+Models (11 across 5 families, 124M–14B). GPT-2 family (Radford et al., 2019) (124M/355M/774M); Qwen2
+(Yang et al., 2024) (1.5B/7B), Qwen2.5-14B, Mistral-7B
+(Jiang et al., 2023), Llama-3.2 (Grattafiori et al., 2024)
+(1B/3B), Llama-3.1-8B, and Gemma-2-2B (Gemma Team
+et al., 2024).
+
+Discriminative dimension (classification geometry). Partial Least Squares (PLS) regression projects activations onto
+directions maximizing covariance with labels. Sweeping
+the number of PLS components measures how many dimensions are useful for classification (Table 2).
+3.3. Causal Validation
+
+Baselines. Output-based: P(True) (Kadavath et al., 2022),
+NLL, token entropy, verbalized confidence, semantic entropy (Farquhar et al., 2024). Unsupervised: CCS (Burns
+et al., 2023), L2 norm, reconstruction error, LOF, cluster
+uncertainty.
+
+We establish causality with three methods that answer different questions: activation steering (is the direction causal?),
+distributed alignment search (how few dimensions carry the
+
+Probing protocol. Last-token residual stream activations
+(Gurnee et al., 2023; Belinkov, 2022); logistic regression
+with L2 regularization (C=0.1); GroupKFold (5-fold) en3
+
+The Confidence Manifold
+Model
+
+Size
+
+Layer
+
+Depth
+
+AUC
+
+GPT-2
+GPT-2-Med
+GPT-2-Large
+Llama-3.2-1B
+Qwen2-1.5B
+Gemma-2-2B
+Llama-3.2-3B
+Qwen2-7B
+Mistral-7B
+Llama-3.1-8B
+Qwen2.5-14B
+
+124M
+355M
+774M
+1B
+1.5B
+2B
+3B
+7B
+7B
+8B
+14B
+
+L11/12
+L23/24
+L35/36
+L8/16
+L16/28
+L15/26
+L12/28
+L20/28
+L23/32
+L16/32
+L32/48
+
+100%
+100%
+100%
+56%
+61%
+62%
+46%
+75%
+75%
+53%
+69%
+
+0.80±.04
+0.84±.02
+0.84±.02
+0.93±.02
+0.91±.03
+0.93±.01
+0.97±.01
+0.94±.02
+0.92±.02
+0.92±.03
+0.95±.02
+
+What the dimensions encode is open. We locate the subspace but do not identify what its individual directions
+represent. The count falls in the same range as the three
+confidence mechanisms Stolfo et al. (2024) report, but we
+treat that as a coincidence of magnitude, not evidence of
+correspondence: a covariance-maximizing basis fixes the
+subspace only up to rotation within it, so no single PLS component has a semantics to read off. Naming these directions
+needs a decomposition with an identifiability guarantee,
+which we leave open.
+
+Table 1. Correctness detection across 11 models (TruthfulQA,
+GroupKFold AUC). Layer = optimal layer / total layers.
+
+5.2. Two Centroids Suffice
+
+sures no question in both train and test. Preprocessing (standardization, PLS) is fit on training folds only.
+
+Inside that subspace the decision rule collapses to something far simpler than a trained classifier. All geometric
+classifiers we tested (Mahalanobis distance, k-nearest neighbors, kernel SVM, nearest convex hull, centroid distance)
+land within ±0.02 AUC of the linear probe across 9 models
+(Appendix C), and the optimal boundary is a hyperplane
+between the two class means:
+exp(−∥x − µc ∥)
+conf(x) =
+,
+exp(−∥x − µc ∥) + exp(−∥x − µi ∥)
+
+Validation. Nested CV (outer 5-fold for evaluation, inner 3-fold for layer/dimension selection) shows negligible bias: Qwen2-7B +0.005, GPT-2-Large −0.026 (Appendix J). Length-balanced evaluation, length-residualized
+probing, and surface-feature correlations rule out trivial confounds. A contamination check (200 generated answers
+vs. ground truth) yields 0/200 exact matches and 13/200
+substring matches. All experiments run on NVIDIA GB10
+and RTX-class GPUs under PyTorch 2.9 with HuggingFace
+Transformers and scikit-learn; seeds and implementation
+details are in Appendix A, and code is available at the repository linked on the title page.
+
+where µc and µi are the correct- and incorrect-class means.
+Separation is therefore dominated by a mean shift rather
+than by a difference in class covariances, which is why
+methods that model covariance buy nothing.
+Three checks rule out the obvious alternative explanations.
+First, the effect is not manufactured by PLS: difference-ofmeans in the raw residual stream, with no projection, already reaches 0.72–0.91 AUC, and PLS adds only +0.034 to
++0.081 (mean +0.057, Appendix H). The mean shift lives in
+the original representation and is merely sharpened by classconditional projection. Second, labels are doing real work:
+unsupervised features plateau at 0.51–0.62 AUC, individual
+pretrained SAE features explain <6% of variance, and the
+pooled local intrinsic dimension of Yin et al. (2024) reaches
+only 0.51–0.58, a +0.34 mean gap to the PLS centroid that
+separates our class-conditional subspace from label-free dimension estimates (Appendices C.3, D.5, G). Third, extra
+prototypes hurt: KMeans-2 and KMeans-3 within each class
+cost 1.3–2.4pp, so the per-class distributions behave as single unimodal clusters and two means are the right model
+(Appendix F.2).
+
+5. Results
+A correctness probe reaches 0.80–0.97 AUC across the 11
+models (Table 1), reproducing the established finding that
+correctness is linearly decodable (Marks & Tegmark, 2024;
+Orgad et al., 2025). What follows asks what structure that
+decodability has: how few dimensions it needs, how simple
+the decision rule can be, which causal claims the interventions license, and when the direction transfers.
+5.1. The Correctness Signal is 2–8 Dimensional
+We sweep the dimensionality of a supervised PLS subspace,
+which maximizes covariance with the correctness label, and
+evaluate a probe inside each subspace (Table 2). Every
+model peaks between 2 and 8 dimensions and then degrades:
+the GPT-2 family peaks at 3D, larger models at 2–8D, and
+GPT-2 falls from 0.76 (3D) to 0.62 (32D), an 18% drop.
+Degradation beyond the peak is the informative part. If correctness were spread across many directions, adding dimensions would be neutral at worst; instead the extra directions
+carry variance that is uninformative about correctness, so a
+fixed label budget spends capacity on noise.
+
+Centroid distance is also the more label-efficient rule. On
+GPT-2 it rises from 0.60 AUC at 5 labels to 0.69 at
+25 (90% of the full-data value) and 0.76 at 100, matching or exceeding the trained probe at every budget (Appendix E.5). A head-to-head sweep on Qwen2-7B over
+K ∈ {10, 25, 50, 100, 200, 400} shows the same shape:
+centroid and LR are within ±0.5pp of each other up to
+K = 100, and centroid pulls ahead by +1.2–1.5pp once
+K ≥ 200 (0.907 vs 0.894 at K = 400; Appendix F.2). Two
+means estimated from a few dozen examples are thus not a
+4
+
+The Confidence Manifold
+Model
+GPT-2
+GPT-2-Med
+GPT-2-Large
+Llama-3.2-1B
+Qwen2-1.5B
+Gemma-2-2B
+Llama-3.2-3B
+Qwen2-7B
+Mistral-7B
+Llama-3.1-8B
+Qwen2.5-14B
+
+1D
+
+2D
+
+3D
+
+4D
+
+5D
+
+8D
+
+16D
+
+32D Peak
+
+0.718
+0.747
+0.750
+0.847
+0.814
+0.817
+0.887
+0.828
+0.860
+0.895
+0.927
+
+0.750
+0.781
+0.784
+0.886
+0.848
+0.846
+0.914
+0.882
+0.888
+0.931
+0.951
+
+0.758
+0.790
+0.791
+0.892
+0.858
+0.861
+0.917
+0.892
+0.899
+0.929
+0.951
+
+0.753
+0.784
+0.783
+0.895
+0.863
+0.860
+0.917
+0.894
+0.902
+0.929
+0.951
+
+0.746
+0.778
+0.769
+0.893
+0.864
+0.856
+0.919
+0.896
+0.902
+0.923
+0.949
+
+0.720
+0.763
+0.741
+0.878
+0.873
+0.830
+0.910
+0.890
+0.899
+0.910
+0.943
+
+0.672
+0.723
+0.700
+0.831
+0.842
+0.780
+0.893
+0.876
+0.876
+0.900
+0.938
+
+0.621
+0.676
+0.673
+0.813
+0.810
+0.751
+0.881
+0.843
+0.849
+0.890
+0.939
+
+3D
+3D
+3D
+4D
+8D
+3D
+5D
+5D
+5D
+2D
+2D
+
+Table 2. All 11 models peak at 2–8 dimensions and degrade beyond. Adding dimensions hurts: GPT-2 loses 18% AUC from 3D to
+32D, Mistral-7B 5%, Qwen2.5-14B 1%. PLS subspace dimension sweep on TruthfulQA, GroupKFold AUC; per-fold standard deviations
+in Appendix E.3. Blue = peak; red = ≥5pp degradation from peak.
+
+degraded approximation of a probe; at realistic label budgets
+they are the better estimator, because a mean is cheaper to
+estimate than a separating hyperplane.
+5.3. What the Interventions Do and Do Not Show
+
+Model
+
+Peak
+
+AUC
+
+PLS Peak
+
+32D
+
+↓32D?
+
+GPT-2
+GPT-2-L
+Llama-3B
+Mistral-7B
+Qwen2-7B
+
+5D
+1D
+3D
+3D
+3D
+
+0.762
+0.784
+0.944
+0.927
+0.916
+
+3D
+3D
+5D
+5D
+5D
+
+0.735
+0.750
+0.935
+0.906
+0.894
+
+Yes
+Yes
+No
+Yes
+Yes
+
+Steering, concept erasure, and DAS are often bundled as
+joint evidence for a low-rank causal subspace. They are not
+interchangeable, and we separate them because only one of
+the three constrains rank.
+
+Table 3. DAS causal dimension sweep (TruthfulQA, AUC). Peaks
+at 1–5D. ↓32D = degradation at 32D.
+
+Steering shows the direction is causally load-bearing, not
+that the subspace is low-rank. We add the L2-normalized
+probe weight vector at every token position at the optimal layer during generation, h′ = h + αŵ, following Li
+et al. (2023b), and sweep α ∈ [−5, 5] on held-out TruthfulQA questions (Appendix I). The effect is monotonic and
+9.1pp end to end: the error rate rises from 0.56 to 0.61 at
+α = −5 and falls to 0.52 at α = +5 (Figure 2). Controls localize the effect to the learned direction rather than
+to the perturbation itself: random directions move the error rate by −0.8pp and orthogonal directions by −0.3pp.
+Five additional instruction-tuned models across the Qwen,
+Llama, and Gemma families replicate the pattern; over all
+six, learned-direction effects run +2.8 to +10.0pp with
+specificity (learned minus orthogonal) of +4.1 to +9.6pp
+(Appendix Table 20, n = 617 each). This is a claim about
+one direction at one layer. It establishes that the direction
+our probe recovers participates in producing the output, and
+it says nothing about how many dimensions the causal mechanism occupies.
+
+concept, rank-1 erasure is already theoretically sufficient
+(Ravfogel et al., 2022): a method that succeeds by removing
+one direction cannot distinguish a 1D mechanism from an
+8D one. INLP (Ravfogel et al., 2020) degrades progressively, with the first direction accounting for the largest
+single drop (Appendix M), which is consistent with a lowrank mechanism but equally consistent with a 1D one.
+Only DAS bounds the causal rank. Distributed Alignment Search (Wu et al., 2023; Geiger et al., 2025) learns
+a rotation R ∈ Rd×k under an interchange-intervention
+objective: swapping the k-dimensional projected representation between a correct and an incorrect example should
+flip the prediction. Because k is swept explicitly (k ∈
+{1, 2, 3, 4, 5, 8, 12, 16, 32} at the optimal layer), the sweep
+is what licenses a statement about rank. DAS is heavier
+than PLS, so we run it on 5 models spanning the full scale
+range (GPT-2 124M to Qwen2-7B; Table 3). Peaks land at
+1–5D and 4 of 5 models degrade at 32D, so for these models
+the causal effect is carried by at most 5 dimensions. Exact
+peaks differ from the PLS sweep (GPT-2: DAS 5D vs PLS
+3D) because DAS optimizes an intervention loss while PLS
+maximizes label covariance; the agreement is qualitative,
+not point-for-point.
+
+Erasure shows necessity, and also does not bound rank.
+RLACE (Ravfogel et al., 2022) projects the representation
+onto the nullspace of the correctness direction. Across all 5
+tested models this drops AUC to chance (GPT-2 0.48, GPT2-Large 0.51, Qwen2-7B 0.51, Mistral-7B 0.50, Llama-3B
+0.48), so the subspace we identify is necessary for detection and not a redundant correlate. But for a binary linear
+
+The direction is therefore efficacious (steering) and necessary (erasure), and the causal effect fits in ≤5 dimensions
+(DAS). The rank claim rests on DAS alone, bounded by the
+5 models and the layer we tested rather than established in
+5
+
+The Confidence Manifold
+0.675
+
+Learned confidence direction
+Random direction
+Orthogonal direction
+
+Steering toward
+uncertainty
+
+0.650
+0.625
+
+Error Rate
+
+0.600
+0.575
+0.550
+0.525
+Steering toward
+confidence
+
+0.500
+0.475
+4
+
+2
+
+0
+
+Steering Coefficient ( )
+
+2
+
+4
+
+Figure 2. Steering intervention on Qwen2-7B-Instruct (n = 617 held-out TruthfulQA questions). Error rate vs. steering coefficient
+α ∈ [−5, 5]. Interventions modify the forward pass at the optimal layer (L20): h′ = h + α · ŵ. The learned correctness direction (green)
+produces a monotonic 9.1 percentage point swing: α = −5 raises the error rate to 0.61, α = +5 lowers it to 0.52, from a baseline of
+0.56. Random (r ∼ N (0, I), gray, −0.8pp) and orthogonal (r⊥ , orange, −0.3pp) controls remain at baseline. Five additional models in
+Table 20; six in total with this one.
+
+Model
+
+P(T) Ent.
+
+SE
+
+CCS Probe
+
+∆
+
+GPT-2
+GPT-2-Med
+Mistral-7B
+Qwen2-7B
+
+0.44
+0.45
+0.53
+0.64
+
+0.56
+0.60
+0.55
+0.58
+
+0.54
+0.61
+0.85
+0.80
+
+0.80
+0.84
+0.92
+0.94
+
++48%
++38%
++8%
++18%
+
+0.51
+0.51
+0.51
+0.52
+
+Comparison to a single-pass detector. We ran LLMCheck (Sriramanan et al., 2024) on TruthfulQA, applying
+its Hidden Score (mean log singular value of the centered
+token-Gram matrix) to GPT-2-Large over an 8-layer sweep
+(ℓ ∈ {5, 10, 15, 20, 23, 25, 30, 35}, n = 1556, sign-flipped).
+Its best AUC is 0.53 at ℓ = 15, with all layers in 0.513–
+0.528, effectively chance, against 0.79 for centroid distance
+in the same 8D PLS subspace on the same model and dataset:
+a 26-point gap. The two methods answer different questions,
+and we read the gap as a design difference rather than a defect in either. LLM-Check scores sequence-level activation
+abnormality without labels, which is what free-form hallucination detection requires; our centroid uses labeled contrastive pairs at a single token position, which is available
+in the teacher-forced setting and not in deployment.
+
+Table 4. Internal probes vs output methods on TruthfulQA (GroupKFold AUC). Probe standard deviations are given in Table 1.
+
+general.
+5.4. Internal Representations vs Output-Based Methods
+The internal signal does not uniformly beat reading the
+output distribution; the advantage is confined to one regime.
+On TruthfulQA, output methods (P(True), token entropy,
+semantic entropy) fall to 0.44–0.64 while probes reach 0.80–
+0.94 (Table 4). On standard QA the gap closes: across four
+datasets on Qwen2-7B, P(True) reaches 0.93–0.95 on SciQ,
+CSQA, and FEVER, comparable to centroid distance at
+0.91–0.97, and only TruthfulQA produces a large separation
+(P(True) 0.48 vs centroid 0.93; Appendix F.3). The reason
+is specific to adversarial misconception data (Lin et al.,
+2022): the model confidently asserts the wrong answer, so
+any signal derived from the output distribution encodes the
+belief rather than its correctness. The same regime breaks
+the unsupervised probe CCS (Burns et al., 2023), which
+reaches 0.54–0.85 against 0.80–0.94 for supervised probes.
+The claim we carry forward is therefore centroid sufficiency,
+not internal superiority.
+
+5.5. Transfer Requires Joint Training
+A subspace that is clean in-domain is not thereby a transferable one. A probe fit on TruthfulQA alone transfers close
+to random: 0.39–0.66 AUC on SciQ, CSQA, and FEVER,
+with the GPT-2 family at 0.50–0.51 and Qwen2-7B highest
+at 0.66 (Table 5; per-dataset in Appendix E.4). The table
+covers the 8 models for which cross-dataset embeddings
+were extracted; the other three are absent for that reason,
+not by selection.
+The failure is one of orientation, not of absence. Refitting
+PLS-8 natively on each dataset recovers the same low-rank
+structure in-domain everywhere (TruthfulQA 0.71–0.94,
+6
+
+The Confidence Manifold
+Model
+
+In-Dom Single Multi
+
+GPT-2
+GPT-2-Med
+GPT-2-Large
+Llama-3.2-1B
+Qwen2-1.5B
+Qwen2-7B
+Mistral-7B
+Llama-3.2-3B
+
+0.732
+0.750
+0.751
+0.924
+0.877
+0.901
+0.930
+0.970
+
+0.500
+0.501
+0.509
+0.621
+0.532
+0.660
+0.394
+0.648
+
+0.503
+0.538
+0.561
+0.729
+0.848
+0.905
+0.806
+0.799
+
+is block-diagonal (mean intra-phase similarity 0.81; Appendix B): early layers extract token features, middle layers
+integrate semantics, and late layers make the correctness
+signal linearly available. Dimensionality alone does not
+explain quality, however: lower dimension correlates with
+higher AUC at r = −0.43 but accounts for only 18% of
+variance. Orientation matters more, which is why PLS beats
+both LDA, capped at 1D for a binary target, and unsupervised reduction across all 11 models (Appendices N, B.1).
+Probes do not transfer between models in any useful absolute sense: within the GPT-2 family, a GPT-2 probe reads
+GPT-2-Medium activations at 0.59 AUC against a 0.68 native ceiling under the same protocol, the reverse direction
+collapses to chance (0.50), and cross-family transfer through
+a common-dimension projection (GPT-2 ↔ Qwen2-7B) sits
+at or below chance (0.44–0.48). What is shared across
+models is the abstract structure of the encoding, its dimensionality and mean-shift form, not the parameters of any
+particular probe.
+
+∆
++0.3
++3.7
++5.2
++10.8
++31.6
++24.5
++41.2
++15.0
+
+Table 5. Cross-domain generalization (AUC, fixed PLS-5D), averaged over SciQ, CSQA and FEVER (HaluEval excluded; see text).
+Single: probe trained on TruthfulQA only. Multi: leave-one-out
+multi-dataset training. Per-dataset breakdown in Appendix E.4.
+
+SciQ 0.63–0.96, FEVER 0.79–0.95, CSQA 0.61–0.89 over
+8 models; Table 13, Appendix F), so each dataset does
+contain a decodable correctness signal. HaluEval makes
+the point sharply: a TruthfulQA-trained probe scores 0.18–
+0.47 on it, below chance, yet refitting natively on HaluEval yields 0.99 in-domain AUC, and the two directions are
+essentially orthogonal (| cos θ| = 0.08). HaluEval’s question/passage/answer triples are structurally unlike TruthfulQA’s misconception/correct pairs, and a below-chance
+score is the signature of a direction that is present but pointed
+elsewhere. We exclude HaluEval from the cross-domain
+average for this reason.
+
+Confounds. The probe is not reading surface form. A
+length-only probe reaches 0.54 AUC (r = −0.016, p =
+0.52) and length balancing costs 1.3%, while correlations
+with embedding statistics (L2 norm, mean activation, sparsity) stay below |r| = 0.15. Answer-string plausibility is
+ruled out by a paraphrase control: 5 paraphrase variants per
+answer across 817 TruthfulQA questions cluster rather than
+scatter (between/within-answer F = 17.40, p < 0.001),
+and GroupKFold test AUC on unseen paraphrases is 0.926
+(Appendix K).
+
+Because the problem is a mismatch of direction, the fix
+is to constrain the subspace with more than one dataset
+rather than to regularize harder. Training jointly on three
+datasets (leave-one-out), following the multi-dataset protocol of Burns et al. (2023); Marks & Tegmark (2024) and the
+Universal Truthfulness Hyperplane of Liu et al. (2024), lifts
+transfer on all five instruction-tuned models tested: Qwen27B +31/+28pp on SciQ/CSQA, Mistral-7B +42/+33pp,
+Llama-3B +24/+23pp (Table 5). The gain is bounded by
+model class rather than by protocol: the GPT-2 base models
+gain only +0.3 to +5.2pp under identical treatment. We
+report this boundary as a limit on the recipe, not a claim
+about capacity: model class and scale are confounded in our
+grid (§6).
+
+Teacher-forced scope. All results above are teacher-forced,
+standard in this line of work (Marks & Tegmark, 2024;
+Burns et al., 2023; Orgad et al., 2025), and the right setting
+for asking whether correctness is encoded. It is not the
+deployment setting. Extending them to a model’s own freeform generations requires an automatic correctness judge,
+and judge choice is known to shift measured detection performance substantially (Santilli et al., 2025); we treat that
+extension as open (§6).
+
+6. Discussion
+
+5.6. Where the Signal Sits, and What Could Confound It
+
+A low-rank reading of the linear representation hypothesis. The discriminative signal occupies 2–8 dimensions,
+well below the 8–12D intrinsic dimension of the embedding
+manifold it sits inside. The linear representation hypothesis
+(Park et al., 2024) states that features are directions; correctness turns out to be more constrained. It is separable by a
+hyperplane between two class means inside a subspace an
+order of magnitude smaller than the manifold: a low-rank
+linear separator, not a direction in the full residual stream
+(Appendix E.1 visualizes the 3D slice). The block-diagonal
+layer structure (§5.6) gives this a phase-specific reading: the
+signal becomes linearly available only in the late phase.
+
+Depth and scale behave regularly. Within a family, AUC
+increases with scale (GPT-2 0.80 → GPT-2-Large 0.84;
+Qwen2-7B 0.94 → Qwen2.5-14B 0.95), while the optimal layer moves earlier as models grow: the GPT-2 family
+peaks at its final layer, larger models at 46–75% depth (Table 1). The embedding manifold compresses from 20–55D
+at early layers to 8–12D at the optimal layer, and crossmodel variance falls with depth (std 0.28 early, 0.11 late;
+Appendix B.2), so five architecture families converge on
+a similar discriminative dimensionality despite differing
+early-layer geometry. Cross-layer probe-weight similarity
+7
+
+The Confidence Manifold
+
+What is new here, and what is not. Two of our loadbearing observations are established, and we do not claim
+them. Marks & Tegmark (2024) report that difference-ofmeans probing matches or exceeds trained linear probes for
+truth directions on contrastive pairs. Bürger et al. (2024)
+likewise establish low-dimensional linear separability, identifying a small universal truth subspace shared across several
+7B–13B models. Read against that work, low-rank separability of correctness strengthens a known result rather than
+establishing a new phenomenon.
+
+position with an identifiability guarantee (§5.1). (iv) Causal
+validation is in-distribution, on each dataset’s training partition; cross-distribution causal transfer is untested. (v) The
+transfer recipe’s model-class boundary is confounded: every
+model we test below 1B is a base model and every model
+at 1B or above is instruction-tuned, so scale and instruction
+tuning cannot be separated in our grid. (vi) Correctness is
+treated as binary; compositionality and negation are unaddressed, and negation is where Bürger et al. (2024) report
+additional structure. (vii) Steering is dual-use: the direction
+that enables detection also enables manipulation.
+
+We add three things prior work leaves open. First, why
+two means suffice: separation is a mean shift and not a
+covariance difference, which is why Mahalanobis distance,
+kernel SVM, and nearest-convex-hull classifiers all converge
+to the same AUC (Ng & Jordan, 2001). The shift is already
+present in the raw residual stream (PLS adds only +0.057),
+and multi-prototype variants hurt: the per-class distributions
+are unimodal, so two means is the correct model, not merely
+a sufficient one. Second, a bounded causal rank: prior work
+shows truth directions exist and can be steered; how many
+dimensions the mechanism occupies is a separate question,
+which DAS answers by sweeping k explicitly (§5.3). This
+bound rests on DAS alone: steering and erasure establish
+efficacy and necessity but are rank-agnostic, so treating all
+three as joint evidence for low rank would overstate what
+they show. Third, recipe-dependent transfer: single-dataset
+directions are near-orthogonal across domains (| cos θ| =
+0.08 between TruthfulQA and HaluEval), so joint training is
+a structural correction for directional mismatch rather than
+generic regularization. Multi-dataset truthfulness training
+is prior art (Liu et al., 2024); we contribute the diagnosis of
+why it is necessary.
+
+8. Conclusion
+Across eleven models from five families, correctness occupies a 2–8D subspace of a residual stream at least 768
+dimensions wide, and detection collapses to two class means.
+Steering and erasure show the direction is causal and necessary; only DAS bounds its rank. Single-dataset probes need
+joint training to transfer; the dimensions’ semantics and the
+free-form generation gap remain open.
+
+References
+Ansuini, A., Laio, A., Macke, J. H., and Zoccolan, D. Intrinsic dimension of data representations in deep neural
+networks. In Advances in Neural Information Processing
+Systems, 2019.
+Azaria, A. and Mitchell, T. The internal state of an LLM
+knows when it’s lying. In Bouamor, H., Pino, J., and
+Bali, K. (eds.), Findings of the Association for Computational Linguistics: EMNLP 2023, pp. 967–976, Singapore, December 2023. Association for Computational
+Linguistics. doi: 10.18653/v1/2023.findings-emnlp.68.
+URL https://aclanthology.org/2023.fi
+ndings-emnlp.68/.
+
+Relation to unsupervised low-rank detection. HaloScope
+(Du et al., 2024) pursues a similar low-rank intuition without
+labels; our transfer results explain its difficulty: a subspace
+recovered on one distribution points elsewhere on another,
+so unsupervised recovery must solve the orientation problem that joint training solves with labels; a head-to-head
+comparison is left to future work.
+
+Belinkov, Y. Probing classifiers: Promises, shortcomings,
+and advances. Computational Linguistics, 48(1):207–219,
+March 2022. doi: 10.1162/coli a 00422. URL https:
+//aclanthology.org/2022.cl-1.7/.
+
+7. Limitations
+
+Bürger, L., Hamprecht, F. A., and Nadler, B. Truth is universal: Robust detection of lies in LLMs. In Advances in
+Neural Information Processing Systems (NeurIPS), 2024.
+URL https://arxiv.org/abs/2407.12831.
+
+(i) Models span 124M–14B autoregressive decoders; we
+make no claim about encoder–decoder or non-transformer
+architectures. (ii) Probes are trained and evaluated teacherforced, standard in this line of work (Marks & Tegmark,
+2024; Burns et al., 2023; Orgad et al., 2025); the geometry
+is thus a property of the teacher-forced representation, and
+extending detection to free-form generations is open, complicated by unreliable correctness judging (Santilli et al.,
+2025). (iii) We localize the subspace but not what its dimensions encode; a covariance-maximizing basis is fixed only
+up to rotation, so component-level semantics needs a decom-
+
+Burns, C., Ye, H., Klein, D., and Steinhardt, J. Discovering
+latent knowledge in language models without supervision.
+In The Eleventh International Conference on Learning
+Representations, 2023. URL https://openreview
+.net/forum?id=ETKGuby0hcs.
+Desai, S. and Durrett, G. Calibration of pre-trained transformers. In Proceedings of the 2020 Conference on
+8
+
+The Confidence Manifold
+
+Joshi, A., Ahmad, A., and Modi, A. Calibration across
+layers: Understanding calibration evolution in LLMs. In
+Christodoulopoulos, C., Chakraborty, T., Rose, C., and
+Peng, V. (eds.), Proceedings of the 2025 Conference on
+Empirical Methods in Natural Language Processing, pp.
+14686–14714, Suzhou, China, November 2025. Association for Computational Linguistics. ISBN 979-8-89176332-6. doi: 10.18653/v1/2025.emnlp-main.742. URL
+https://aclanthology.org/2025.emnlp-m
+ain.742/.
+
+Empirical Methods in Natural Language Processing
+(EMNLP), pp. 295–302, 2020.
+Du, X., Xiao, C., and Li, Y. HaloScope: Harnessing
+unlabeled LLM generations for hallucination detection.
+In Advances in Neural Information Processing Systems
+(NeurIPS), 2024. URL https://arxiv.org/abs/
+2409.17504.
+Farquhar, S., Kossen, J., Kuhn, L., and Gal, Y. Detecting
+hallucinations in large language models using semantic
+entropy. Nature, 630(8017):625–630, June 2024. ISSN
+1476-4687. doi: 10.1038/s41586-024-07421-0. URL
+https://doi.org/10.1038/s41586-024-0
+7421-0.
+
+Kadavath, S., Conerly, T., Askell, A., Henighan, T., Drain,
+D., Perez, E., Schiefer, N., Hatfield-Dodds, Z., DasSarma,
+N., Tran-Johnson, E., Johnston, S., El-Showk, S., Jones,
+A., Elhage, N., Hume, T., Chen, A., Bai, Y., Bowman,
+S., Fort, S., Ganguli, D., Hernandez, D., Jacobson, J.,
+Kernion, J., Kravec, S., Lovitt, L., Ndousse, K., Olsson,
+C., Ringer, S., Amodei, D., Brown, T., Clark, J., Joseph,
+N., Mann, B., McCandlish, S., Olah, C., and Kaplan, J.
+Language models (mostly) know what they know, 2022.
+URL https://arxiv.org/abs/2207.05221.
+
+Geiger, A., Ibeling, D., Zur, A., Chaudhary, M., Chauhan,
+S., Huang, J., Arora, A., Wu, Z., Goodman, N., Potts, C.,
+and Icard, T. Causal abstraction: A theoretical foundation
+for mechanistic interpretability, 2025. URL https:
+//arxiv.org/abs/2301.04709.
+Gemma Team et al. Gemma 2: Improving open language
+models at a practical size, 2024. URL https://arxi
+v.org/abs/2408.00118.
+
+Kuhn, L., Gal, Y., and Farquhar, S. Semantic uncertainty:
+Linguistic invariances for uncertainty estimation in natural language generation. In The Eleventh International
+Conference on Learning Representations, 2023. URL
+https://openreview.net/forum?id=VD-A
+YtP0dve.
+
+Grattafiori, A. et al. The llama 3 herd of models, 2024. URL
+https://arxiv.org/abs/2407.21783.
+Gurnee, W., Nanda, N., Pauly, M., Harvey, K., Troitskii, D.,
+and Bertsimas, D. Finding neurons in a haystack: Case
+studies with sparse probing. Transactions on Machine
+Learning Research, 2023. ISSN 2835-8856. URL http
+s://openreview.net/forum?id=JYs1R9IM
+Jr.
+
+Levina, E. and Bickel, P. Maximum likelihood estimation
+of intrinsic dimension. In Saul, L., Weiss, Y., and Bottou,
+L. (eds.), Advances in Neural Information Processing
+Systems, volume 17. MIT Press, 2004. URL https:
+//proceedings.neurips.cc/paper_files
+/paper/2004/file/74934548253bcab8490
+ebd74afed7031-Paper.pdf.
+
+Han, J., Kossen, J., Razzak, M., Schut, L., Malik, S. A., and
+Gal, Y. Semantic entropy probes: Robust and cheap hallucination detection in LLMs. In ICML 2024 Workshop
+on Foundation Models in the Wild, 2024. URL https:
+//openreview.net/forum?id=Zd0XLr6JKn.
+
+Li, J., Cheng, X., Zhao, X., Nie, J.-Y., and Wen, J.R. HaluEval: A large-scale hallucination evaluation
+benchmark for large language models. In Bouamor,
+H., Pino, J., and Bali, K. (eds.), Proceedings of the
+2023 Conference on Empirical Methods in Natural Language Processing, pp. 6449–6464, Singapore, December
+2023a. Association for Computational Linguistics. doi:
+10.18653/v1/2023.emnlp-main.397. URL https://ac
+lanthology.org/2023.emnlp-main.397/.
+
+Ji, J., Wang, K., Qiu, T. A., Chen, B., Zhou, J., Li, C.,
+Lou, H., Dai, J., Liu, Y., and Yang, Y. Language models
+resist alignment: Evidence from data compression. In
+Che, W., Nabende, J., Shutova, E., and Pilehvar, M. T.
+(eds.), Proceedings of the 63rd Annual Meeting of the
+Association for Computational Linguistics (Volume 1:
+Long Papers), pp. 23411–23432, Vienna, Austria, July
+2025. Association for Computational Linguistics. ISBN
+979-8-89176-251-0. doi: 10.18653/v1/2025.acl-long.
+1141. URL https://aclanthology.org/2025.
+acl-long.1141/.
+
+Li, K., Patel, O., Viégas, F., Pfister, H., and Wattenberg, M.
+Inference-time intervention: Eliciting truthful answers
+from a language model. In Thirty-seventh Conference
+on Neural Information Processing Systems, 2023b. URL
+https://openreview.net/forum?id=aLLu
+Ypn83y.
+
+Jiang, A. Q. et al. Mistral 7b, 2023. URL https://ar
+xiv.org/abs/2310.06825.
+
+Lin, S., Hilton, J., and Evans, O. TruthfulQA: Measuring
+how models mimic human falsehoods. In Muresan, S.,
+9
+
+The Confidence Manifold
+
+Nakov, P., and Villavicencio, A. (eds.), Proceedings of
+the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pp. 3214–
+3252, Dublin, Ireland, May 2022. Association for Computational Linguistics. doi: 10.18653/v1/2022.acl-long.229.
+URL https://aclanthology.org/2022.ac
+l-long.229/.
+
+Park, K., Choe, Y. J., Jiang, Y., and Veitch, V. The geometry
+of categorical and hierarchical concepts in large language
+models. In ICML 2024 Workshop on Mechanistic Interpretability, 2024. URL https://openreview.net
+/forum?id=KXuYjuBzKo.
+Radford, A., Wu, J., Child, R., Luan, D., Amodei, D., and
+Sutskever, I. Language models are unsupervised multitask
+learners. Technical report, OpenAI, 2019. URL https:
+//cdn.openai.com/better-language-mod
+els/language_models_are_unsupervised
+_multitask_learners.pdf.
+
+Liu, J., Chen, S., Cheng, Y., and He, J. On the universal
+truthfulness hyperplane inside LLMs. In Al-Onaizan,
+Y., Bansal, M., and Chen, Y.-N. (eds.), Proceedings of
+the 2024 Conference on Empirical Methods in Natural
+Language Processing, pp. 18199–18224, Miami, Florida,
+USA, November 2024. Association for Computational
+Linguistics. doi: 10.18653/v1/2024.emnlp-main.1012.
+URL https://aclanthology.org/2024.em
+nlp-main.1012/.
+
+Ravfogel, S., Elazar, Y., Gonen, H., Twiton, M., and Goldberg, Y. Null it out: Guarding protected attributes by
+iterative nullspace projection. In Jurafsky, D., Chai,
+J., Schluter, N., and Tetreault, J. (eds.), Proceedings of
+the 58th Annual Meeting of the Association for Computational Linguistics, pp. 7237–7256, Online, July
+2020. Association for Computational Linguistics. doi:
+10.18653/v1/2020.acl- main.647. URL https:
+//aclanthology.org/2020.acl-main.647/.
+
+Marks, S. and Tegmark, M. The geometry of truth: Emergent linear structure in large language model representations of true/false datasets. In First Conference on
+Language Modeling, 2024. URL https://openre
+view.net/forum?id=aajyHYjjsk.
+
+Ravfogel, S., Twiton, M., Goldberg, Y., and Cotterell, R. D.
+Linear adversarial concept erasure. In Chaudhuri, K.,
+Jegelka, S., Song, L., Szepesvari, C., Niu, G., and Sabato,
+S. (eds.), Proceedings of the 39th International Conference on Machine Learning, volume 162 of Proceedings
+of Machine Learning Research, pp. 18400–18421. PMLR,
+17–23 Jul 2022. URL https://proceedings.ml
+r.press/v162/ravfogel22a.html.
+
+Mikolov, T., Chen, K., Corrado, G., and Dean, J. Efficient
+estimation of word representations in vector space. In
+Proceedings of the International Conference on Learning
+Representations (ICLR), 2013. URL https://open
+review.net/forum?id=idpCdOWtqXd60.
+Nanda, N., Lee, A., and Wattenberg, M. Emergent linear representations in world models of self-supervised sequence
+models. In Belinkov, Y., Hao, S., Jumelet, J., Kim, N.,
+McCarthy, A., and Mohebbi, H. (eds.), Proceedings of the
+6th BlackboxNLP Workshop: Analyzing and Interpreting
+Neural Networks for NLP, pp. 16–30, Singapore, December 2023. Association for Computational Linguistics. doi:
+10.18653/v1/2023.blackboxnlp-1.2. URL https://ac
+lanthology.org/2023.blackboxnlp-1.2/.
+
+Rawte, V., Chakraborty, S., Pathak, A., Sarkar, A., Tonmoy,
+S. T. I., Chadha, A., Sheth, A., and Das, A. The troubling
+emergence of hallucination in large language models - an
+extensive definition, quantification, and prescriptive remediations. In Bouamor, H., Pino, J., and Bali, K. (eds.),
+Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing, pp. 2541–2573, Singapore, December 2023. Association for Computational
+Linguistics. doi: 10.18653/v1/2023.emnlp-main.155.
+URL https://aclanthology.org/2023.em
+nlp-main.155/.
+
+Ng, A. and Jordan, M. On discriminative vs. generative
+classifiers: A comparison of logistic regression and naive
+bayes. In Dietterich, T., Becker, S., and Ghahramani,
+Z. (eds.), Advances in Neural Information Processing
+Systems, volume 14. MIT Press, 2001. URL https:
+//proceedings.neurips.cc/paper_files
+/paper/2001/file/7b7a53e239400a13bd6
+be6c91c4f6c4e-Paper.pdf.
+
+Rimsky, N., Gabrieli, N., Schulz, J., Tong, M., Hubinger,
+E., and Turner, A. Steering llama 2 via contrastive activation addition. In Ku, L.-W., Martins, A., and Srikumar,
+V. (eds.), Proceedings of the 62nd Annual Meeting of
+the Association for Computational Linguistics (Volume
+1: Long Papers), pp. 15504–15522, Bangkok, Thailand,
+August 2024. Association for Computational Linguistics.
+doi: 10.18653/v1/2024.acl-long.828. URL https:
+//aclanthology.org/2024.acl-long.828/.
+
+Orgad, H., Toker, M., Gekhman, Z., Reichart, R., Szpektor, I., Kotek, H., and Belinkov, Y. LLMs know more
+than they show: On the intrinsic representation of LLM
+hallucinations. In The Thirteenth International Conference on Learning Representations, 2025. URL https:
+//openreview.net/forum?id=KRnsX5Em3W.
+
+Saglam, B., Kassianik, P., Nelson, B., Weerawardhena, S.,
+Singer, Y., and Karbasi, A. Large language models en10
+
+The Confidence Manifold
+
+code semantics and alignment in linearly separable representations. In Inui, K., Sakti, S., Wang, H., Wong, D. F.,
+Bhattacharyya, P., Banerjee, B., Ekbal, A., Chakraborty,
+T., and Singh, D. P. (eds.), Proceedings of the 14th International Joint Conference on Natural Language Processing and the 4th Conference of the Asia-Pacific Chapter of
+the Association for Computational Linguistics, pp. 2282–
+2303, Mumbai, India, December 2025. The Asian Federation of Natural Language Processing and The Association
+for Computational Linguistics. ISBN 979-8-89176-2985. doi: 10.18653/v1/2025.ijcnlp- long.124. URL
+https://aclanthology.org/2025.ijcnlp
+-long.124/.
+
+Talmor, A., Herzig, J., Lourie, N., and Berant, J. CommonsenseQA: A question answering challenge targeting
+commonsense knowledge. In Burstein, J., Doran, C., and
+Solorio, T. (eds.), Proceedings of the 2019 Conference of
+the North American Chapter of the Association for Computational Linguistics: Human Language Technologies,
+Volume 1 (Long and Short Papers), pp. 4149–4158, Minneapolis, Minnesota, June 2019. Association for Computational Linguistics. doi: 10.18653/v1/N19-1421. URL
+https://aclanthology.org/N19-1421/.
+Thorne, J., Vlachos, A., Christodoulopoulos, C., and Mittal, A. FEVER: a large-scale dataset for fact extraction and VERification. In Walker, M., Ji, H., and Stent,
+A. (eds.), Proceedings of the 2018 Conference of the
+North American Chapter of the Association for Computational Linguistics: Human Language Technologies,
+Volume 1 (Long Papers), pp. 809–819, New Orleans,
+Louisiana, June 2018. Association for Computational
+Linguistics. doi: 10.18653/v1/N18- 1074. URL
+https://aclanthology.org/N18-1074/.
+
+Santilli, A., Golinski, A., Kirchhof, M., Danieli, F., Blaas,
+A., Xiong, M., Zappella, L., and Williamson, S. Revisiting uncertainty quantification evaluation in language
+models: Spurious interactions with response length bias
+results. In Che, W., Nabende, J., Shutova, E., and Pilehvar,
+M. T. (eds.), Proceedings of the 63rd Annual Meeting of
+the Association for Computational Linguistics (Volume 2:
+Short Papers), pp. 743–759, Vienna, Austria, July 2025.
+Association for Computational Linguistics. ISBN 979-889176-252-7. doi: 10.18653/v1/2025.acl-short.60. URL
+https://aclanthology.org/2025.acl-sho
+rt.60/.
+
+Turner, A. M., Thiergart, L., Leech, G., Udell, D., Vazquez,
+J. J., Mini, U., and MacDiarmid, M. Steering language
+models with activation engineering, 2024. URL https:
+//arxiv.org/abs/2308.10248.
+Vig, J., Gehrmann, S., Belinkov, Y., Qian, S., Nevo, D.,
+Singer, Y., and Shieber, S. Investigating gender bias
+in language models using causal mediation analysis.
+In Advances in Neural Information Processing Systems
+(NeurIPS), 2020.
+
+Sriramanan, G., Bharti, S., Sadasivan, V. S., Saha, S.,
+Kattakinda, P., and Feizi, S. LLM-check: Investigating detection of hallucinations in large language models. In The Thirty-eighth Annual Conference on Neural
+Information Processing Systems, 2024. URL https:
+//openreview.net/forum?id=LYx4w3CAgy.
+
+Wang, T., Jiao, X., Zhu, Y., Chen, Z., He, Y., Chu, X., Gao,
+J., Wang, Y., and Ma, L. Adaptive activation steering: A
+tuning-free LLM truthfulness improvement method for
+diverse hallucinations categories. In THE WEB CONFERENCE 2025, 2025. URL https://openreview
+.net/forum?id=NBHOdQJ1VE.
+
+Stolfo, A., Wu, B., Gurnee, W., Belinkov, Y., Song, X.,
+Sachan, M., and Nanda, N. Confidence regulation neurons in language models. In Globerson, A., Mackey, L.,
+Belgrave, D., Fan, A., Paquet, U., Tomczak, J., and Zhang,
+C. (eds.), Advances in Neural Information Processing Systems, volume 37, pp. 125019–125049. Curran Associates,
+Inc., 2024. doi: 10.52202/079017-3970. URL https:
+//proceedings.neurips.cc/paper_files
+/paper/2024/file/e21955c93dede886af1
+d0d362c756757-Paper-Conference.pdf.
+
+Welbl, J., Liu, N. F., and Gardner, M. Crowdsourcing
+multiple choice science questions. In Derczynski, L., Xu,
+W., Ritter, A., and Baldwin, T. (eds.), Proceedings of the
+3rd Workshop on Noisy User-generated Text, pp. 94–106,
+Copenhagen, Denmark, September 2017. Association for
+Computational Linguistics. doi: 10.18653/v1/W17-4413.
+URL https://aclanthology.org/W17-441
+3/.
+
+Su, W., Wang, C., Ai, Q., Hu, Y., Wu, Z., Zhou, Y., and
+Liu, Y. Unsupervised real-time hallucination detection
+based on the internal states of large language models. In
+Ku, L.-W., Martins, A., and Srikumar, V. (eds.), Findings of the Association for Computational Linguistics:
+ACL 2024, pp. 14379–14391, Bangkok, Thailand, August 2024. Association for Computational Linguistics.
+doi: 10.18653/v1/2024.findings- acl.854. URL
+https://aclanthology.org/2024.findin
+gs-acl.854/.
+
+Wu, Z., Geiger, A., Icard, T., Potts, C., and Goodman,
+N. Interpretability at scale: Identifying causal mechanisms in alpaca. In Thirty-seventh Conference on Neural
+Information Processing Systems, 2023. URL https:
+//openreview.net/forum?id=nRfClnMhVX.
+Yang, A. et al. Qwen2 technical report, 2024. URL https:
+//arxiv.org/abs/2407.10671.
+11
+
+The Confidence Manifold
+
+Yin, F., Srinivasa, J., and Chang, K.-W. Characterizing
+truthfulness in large language model generations with
+local intrinsic dimension. In Proceedings of the 41st
+International Conference on Machine Learning (ICML),
+2024. URL https://arxiv.org/abs/2402.1
+8048.
+Zou, A. et al. Representation engineering: A top-down
+approach to ai transparency, 2023. URL https://ar
+xiv.org/abs/2310.01405.
+
+12
+
+The Confidence Manifold
+
+A. Reproducibility and Implementation
+A.1. Seed Robustness
+Classification experiments use multiple random seeds (42, 123, 456) controlling stratified train/test splits, GroupKFold
+assignment by question ID, and stochastic generation for semantic entropy. Causal experiments (steering, RLACE, DAS) fix
+seed=42 and rely on the large held-out sample (n=617 for steering) for statistical power instead of seed averaging. We report
+mean ± std where variance is non-trivial.
+Variance analysis. Most metrics show low variance: probe AUC std < 0.02 for 10/11 models, in-domain transfer std < 0.01.
+Higher variance appears in Mistral-7B/Gemma-2B cross-dataset transfer (std ≈ 0.20), potentially reflecting dataset-model
+mismatch. All key comparisons (probe vs. entropy) achieve p < 0.05 after Bonferroni correction via paired t-tests across
+seeds.
+A.2. Implementation Details
+Models. GPT-2 (124M, 12L), GPT-2-Medium (355M, 24L), GPT-2-Large (774M, 36L), Qwen2-1.5B-Instruct (28L), Qwen27B-Instruct (28L), Llama-3.2-1B-Instruct (16L), Llama-3.2-3B-Instruct (28L), Llama-3.1-8B-Instruct (32L), Qwen2.5-14BInstruct (48L), Mistral-7B-Instruct-v0.3 (32L), Gemma-2-2B-it (26L).
+Extraction. Residual stream activations at last-token position following Gurnee et al. (2023). PLS dimension reduction
+treats labels as continuous targets (0/1).
+Probing. Logistic regression (C = 0.1); 640–1,280 samples per dataset; 5-fold GroupKFold CV grouped by question ID to
+prevent data leakage. Layer and PLS dimension selection use CV test AUC (averaged across held-out folds), not train AUC,
+ensuring no information leakage from hyperparameter selection.
+SAE analysis. SAELens with Neuronpedia pretrained GPT-2 models (24,576 features, 32× expansion).
+
+B. Geometric Analysis of the Discriminative Subspace
+This section provides detailed geometric characterization of how confidence representations evolve through transformer
+layers. Our analysis reveals three key findings: (1) intrinsic dimension follows a compression pattern: initially expanding in
+early layers (peaking around 10–20% depth) before decreasing through middle and late layers, (2) probe weight similarity
+exhibits block-diagonal structure indicating distinct processing phases, and (3) dimension alone explains only 18% of
+classification variance: the orientation of the low-dimensional subspace matters more than its dimensionality.
+B.1. Compression Pattern
+Figure 3 synthesizes geometric properties across all models, revealing consistent patterns in how confidence is encoded.
+Compression dynamics. Intrinsic dimension (estimated via Levina-Bickel MLE (Levina & Bickel, 2004)) decreases
+monotonically from 20–55D at early layers to 8–12D at optimal layers, a 40–60% reduction. This compression is consistent
+across families: GPT-2, Mistral, Qwen, Llama, and Gemma families all converge to similar final dimensionality despite
+vastly different training procedures and scales. Early layers (0–20% depth) show high cross-model variance (std = 0.28
+normalized units); late layers converge (std = 0.11), suggesting that while models initialize representations differently, they
+converge to similar compressed confidence encodings.
+Dimension vs. performance. The negative correlation (r = −0.43) between intrinsic dimension and probe AUC initially
+suggests that lower-dimensional representations yield better classification. However, the weak R2 = 0.18 reveals that
+dimension is necessary but not sufficient: the orientation of the low-dimensional subspace relative to the correct/incorrect
+decision boundary matters more than its raw dimensionality. A 10D subspace aligned with the confidence direction
+outperforms a 5D subspace misaligned with it. This explains why PLS outperforms unsupervised dimension reduction: PLS
+finds the 2–8D subspace that maximizes class separation, not merely the directions of highest variance. The hunchback
+compression profile itself mirrors the intrinsic-dimension dynamics Ansuini et al. (2019) report for deep vision networks;
+what is specific to our setting is where the discriminative subspace sits inside it.
+Three-phase processing. The averaged cross-layer similarity matrix (Figure 3c) reveals block-diagonal structure with
+consistent phase boundaries across architectures:
+13
+
+The Confidence Manifold
+
+(a) Universal Compression Pattern
+
+(b) Dimension-Performance Correlation
+
+Mean
+
+1.0
+
+0.8
+
+0
+
+Layer (normalized)
+
+0.7
+
+0.6
+
+0.4
+
+0.2
+
+0.6
+
+0.5
+
+10
+
+0.6
+
+15
+0.4
+
+20
+25
+
+0.2
+
+30
+0
+
+0.0
+
+r=-0.43, p=0.000
+
+0.4
+0
+
+20
+
+40
+
+60
+
+Layer Depth (%)
+
+80
+
+100
+
+1.0
+0.8
+
+5
+
+Probe AUC
+
+Normalized Dimension
+
+0.8
+
+(c) Averaged Similarity Structure
+
+20
+
+40
+
+60
+
+80
+
+Intrinsic Dimension
+
+10
+
+20
+
+Layer (normalized)
+
+30
+
+0.0
+
+100
+
+Figure 3. Geometric patterns across architectures. (a) Normalized intrinsic dimension (MLE) by layer depth. All models compress
+from early to late layers (mean curve in black), with peak dimension at 10–20% depth. (b) Dimension-performance correlation: lower
+intrinsic dimension correlates with higher probe AUC (r = −0.43, p < 0.001), but R2 = 0.18 indicates dimension explains less than
+one-fifth of variance; classification utility depends on direction, not dimensionality. (c) Cross-layer probe weight similarity averaged
+across models shows three-phase block-diagonal structure with phase boundaries at 30% and 70% depth.
+
+• Phase I (0–30% depth): Token-level feature extraction; low similarity to later layers (mean cross-phase similarity: 0.18)
+• Phase II (30–70% depth): Semantic integration; gradual probe weight rotation (mean within-phase similarity: 0.58)
+• Phase III (70–100% depth): Stable confidence encoding; high intra-phase coherence (mean within-phase similarity:
+0.81)
+B.2. Architecture-Specific Dimension Evolution
+While the compression pattern is consistent, architecture-specific variations provide insights into how different models
+encode confidence.
+Consistent compression, model-specific timing. The layer sweep tracks intrinsic dimension through network depth for
+four representative models. Smaller models (124M–774M) show earlier phase transitions (boundaries at 25%/60%) than the
+1B–7B models (30%/70%), suggesting larger models prolong rich intermediate representations before final compression.
+Mistral anomaly. Mistral-7B exhibits late-layer dimension expansion from 25D at L25 to 80+D at L30–32. This expansion
+correlates with unembedding preparation: Mistral’s architecture appears to re-expand representations before projecting to
+vocabulary space. This expansion does not improve classification; Mistral’s optimal layer is L23 (72% depth), before the
+expansion begins. This confirms that the confidence signal crystallizes in middle layers; late-layer expansion serves output
+generation, not confidence encoding.
+B.3. Confidence Landscape
+To understand the interaction between layer selection and dimensionality, we sweep the full layer-by-dimension grid for our
+best-performing model.
+Ridge structure. A clear AUC ridge runs through the surface at 2–8 PLS dimensions across all layers. Performance degrades
+sharply below 2D (insufficient capacity to capture the signal) and above 16D (overfitting to training noise). The ridge is
+narrower at early layers (optimal: 3–4D) and broader at late layers (optimal: 4–8D), reflecting increased signal-to-noise
+ratio in later representations.
+Layer dominates dimension. Quantifying the relative importance: fixing dimension at 5D, AUC varies from 0.52 (L0)
+to 0.92 (L23), a 77% relative improvement. Fixing layer at L23, AUC varies from 0.86 (1D) to 0.92 (5D), only 7%
+improvement. Layer selection is 11× more impactful than dimension selection. This motivates our recommendation to
+tune layer first, then dimension, rather than joint optimization.
+14
+
+The Confidence Manifold
+
+C. Geometric Classification Methods
+Given the low-dimensional structure revealed in Section B, we investigate whether geometric classifiers can exploit nonlinear patterns within the PLS subspace. Our negative result (geometric methods do not outperform linear probes) provides
+evidence that within this dominant discriminative subspace, the confidence signal is linearly separable.
+C.1. Method Comparison
+We evaluate five geometric approaches in 8D PLS space:
+Linear probe (0.773 AUC). Standard logistic regression on PLS-reduced activations. Serves as the discriminative baseline.
+Centroid distance (0.771 AUC). Generative approach: classify based on distance to class centroids. Performance nearly
+matches the discriminative probe, confirming that class means capture the discriminative signal. The decision boundary is
+perpendicular to the line connecting centroids, geometrically equivalent to the probe’s learned hyperplane.
+Local density (0.701 AUC). Estimate confidence via kernel density ratio p(correct|x)/p(incorrect|x) using Gaussian KDE
+with Scott’s rule bandwidth selection. Underperforms because correct and incorrect distributions have similar local densities:
+they differ in location (centroid position), not shape (density profile).
+KNN-10 (0.748 AUC). Classify by majority vote of 10 nearest neighbors. Despite local adaptivity, underperforms linear
+methods, suggesting the discriminative subspace is globally linear rather than exhibiting local curvature.
+Ensemble (0.764 AUC). Average predictions across methods. No improvement over the best single method, indicating the
+errors are correlated rather than complementary.
+Implications. The equivalence of discriminative (probe) and generative (centroid) approaches reveals that confidence is
+encoded as a simple mean shift in activation space, not a complex decision boundary. This supports interpretability: a single
+direction suffices to extract the confidence signal.
+C.2. Cross-Model Geometric Classifier Comparison
+Table 6 reports geometric classifier AUC across 9 models in the 8D PLS subspace. All methods (linear probe, centroid,
+Mahalanobis, nearest convex hull, KNN, kernel SVM) converge within ±0.02 AUC, confirming the mean-shift structure
+across architectures.
+Table 6. Geometric classifiers in 8D PLS space (GroupKFold AUC). NCH = Nearest Convex Hull. Llama-8B and Qwen2.5-14B added
+after geometry experiments.
+Model
+GPT-2
+GPT-2-Med
+GPT-2-Large
+Llama-1B
+Qwen2-1.5B
+Gemma-2B
+Llama-3B
+Qwen2-7B
+Mistral-7B
+
+Linear
+
+Centroid
+
+Mahal.
+
+NCH
+
+KNN
+
+SVM
+
+0.757±.038
+0.787±.023
+0.777±.017
+0.881±.016
+0.859±.045
+0.846±.021
+0.922±.019
+0.885±.019
+0.890±.023
+
+0.766±.029
+0.799±.020
+0.797±.016
+0.885±.012
+0.859±.029
+0.851±.022
+0.919±.017
+0.891±.017
+0.897±.020
+
+0.762±.036
+0.796±.020
+0.791±.017
+0.880±.015
+0.858±.036
+0.846±.032
+0.918±.023
+0.887±.020
+0.893±.022
+
+0.714±.045
+0.746±.033
+0.754±.028
+0.849±.014
+0.808±.038
+0.818±.027
+0.900±.019
+0.849±.014
+0.851±.029
+
+0.752±.029
+0.787±.023
+0.779±.017
+0.864±.018
+0.847±.031
+0.817±.024
+0.903±.022
+0.875±.012
+0.883±.021
+
+0.743±.037
+0.779±.020
+0.773±.015
+0.857±.025
+0.842±.036
+0.822±.026
+0.906±.029
+0.878±.015
+0.880±.028
+
+C.3. Unsupervised Features
+
+D. Baseline Method Details
+D.1. Output-Based Baselines
+P(True). Probability the model assigns to “Yes” when explicitly asked whether its previousPanswer is correct. NLL.
+Negative log-likelihood of the answer tokens under the model. Token entropy. H(p) = − i pi log pi over the nexttoken distribution. Verbalized confidence. The model’s self-reported confidence on a 1–10 scale, prompted after answer
+generation. Semantic entropy (Farquhar et al., 2024): entropy over semantically clustered generations (K=5 samples, NLI
+15
+
+The Confidence Manifold
+Table 7. Unsupervised features (AUC, no labels). All fall well short of supervised probes.
+Feature
+
+GPT-2
+
+Mistral-7B
+
+Llama-1B
+
+L2 norm
+Recon. error
+LOF score
+Cluster unc.
+Local dim
+
+0.508±0.003
+0.531±0.025
+0.520±0.017
+0.523±0.016
+0.547±0.038
+
+0.621±0.008
+0.556±0.008
+0.572±0.006
+0.534±0.014
+0.578±0.045
+
+0.608±0.026
+0.546±0.010
+0.556±0.034
+0.557±0.029
+0.590±0.055
+
+Best superv.
+
+0.757±0.038
+
+0.890±0.023
+
+0.881±0.016
+
+clustering; protocol below).
+D.2. Unsupervised Baselines
+CCS (Burns et al., 2023): contrastive consistency search for truth directions, fit on contrast pairs without correctness labels.
+L2 norm: activation magnitude ∥h∥2 . Reconstruction error: residual from a small autoencoder trained on hidden states.
+LOF score: local outlier factor for anomaly detection. Cluster uncertainty: distance to the nearest k-means cluster centroid
+in activation space.
+D.3. Why Direct Labels, Not Entropy?
+A methodological note: probes trained on semantic entropy targets failed to separate incorrect from correct samples,
+while probes trained on direct correctness labels succeed. The reason is that uncertainty ̸= incorrectness. Models can
+be confidently wrong (low entropy, hallucinating) or appropriately uncertain (high entropy on ambiguous inputs). On
+TruthfulQA, which targets common misconceptions models inherit and assert with high confidence, the entropy/correctness
+alignment is especially weak (§D.4). Direct labels capture what we want to detect; entropy proxies do not.
+D.4. Semantic Entropy Analysis
+We implement semantic entropy following Farquhar et al. (2024) to understand why uncertainty-based methods underperform.
+Protocol. (1) Generate K = 5 completions per prompt (nucleus sampling, p = 0.9, T = 0.7). (2) Cluster by semantic
+equivalence via bidirectional NLI (DeBERTa-v3-large):
+two responses are equivalent if NLI predicts entailment in both
+P
+directions. (3) Compute entropy: SE = − c pc log pc over cluster probabilities.
+Results on TruthfulQA. Mean SE for correct answers: 0.060 ± 0.089; for incorrect answers: 0.115 ± 0.142. Cohen’s
+d = 0.47 (small-medium effect). Classification AUC = 0.58, far below probe AUC (0.77–0.92).
+Why SE underperforms. TruthfulQA tests common misconceptions: questions where humans frequently give wrong
+answers. Models inherit these misconceptions and assert them confidently. The 0.055 SE gap confirms incorrect answers are
+slightly more uncertain on average, but the effect is too weak for reliable detection. Semantic entropy detects uncertainty,
+not incorrectness: these are distinct signals, and TruthfulQA specifically targets confident errors.
+D.5. SAE Feature Analysis
+We analyze whether pretrained Sparse Autoencoders (SAEs) can provide interpretable confidence features. If confidence
+localizes to specific SAE features, this would enable mechanistic interpretation of confidence encoding.
+Setup. Neuronpedia gpt2-small-res-jb SAE (layer 6, 24,576 features, 32× expansion). We use layer 6 (mid-network)
+because it is the deepest layer for which a pre-trained Neuronpedia SAE is available; the optimal probe layer for GPT-2 is
+L11 (Table 1).
+Feature statistics. By activation frequency: sparse (<1%): 13 features; moderate (1–10%): 21,857 features (88.9%); dense
+(>10%): 2,706 features (11.0%). The heavy tail toward moderate activation suggests most features are contextually specific.
+Correctness correlation. Of 24,576 features, only 307 show significant correlation with correctness labels (p < 0.05,
+Bonferroni-corrected p < 2 × 10−6 ). Maximum |r| = 0.238. Top positive features (incorrect-associated): uncertainty
+16
+
+The Confidence Manifold
+
+Figure 4. 3D PLS visualization of the discriminative subspace. Row 1: instruction-tuned models (Qwen2-7B, Mistral-7B, Llama-3B).
+Row 2: GPT-2 family (base models). Convex hulls show class regions; stars mark centroids. The GPT-2 family shows clearer visual
+separation despite lower AUC (0.80–0.84), while instruction-tuned models achieve higher AUC (0.92–0.97) with more overlap in the 3D
+projection. Smaller instruction-tuned models are in Appendix E.1.
+
+markers, hedging language, abstract concepts. Top negative features (correct-associated): named entities, numerical
+expressions, specific facts.
+Limitation. Individual SAE features explain <6% of variance (r2 < 0.057), while linear probes explain 35%+. Confidence
+is distributed across many features, not localized to interpretable atoms. This motivates our probe-based approach over
+feature-based interpretability.
+
+E. Extended Results
+E.1. Small Instruction-Tuned Models
+E.2. Layer-wise Performance Table
+Table 8. Layer-wise performance across GPT-2 family. AUC and intrinsic dimension (Dim) at key depth percentiles. All models show
+monotonic AUC increase concurrent with dimension compression, supporting the hypothesis that compression and confidence encoding
+co-occur.
+GPT-2
+
+GPT-2-Medium
+
+GPT-2-Large
+
+Depth
+
+AUC
+
+Dim
+
+AUC
+
+Dim
+
+AUC
+
+Dim
+
+0%
+25%
+50%
+75%
+100%
+
+0.632
+0.648
+0.704
+0.670
+0.772
+
+24.3
+18.7
+14.2
+11.5
+8.9
+
+0.614
+0.652
+0.691
+0.738
+0.799
+
+32.1
+24.6
+18.3
+12.1
+8.3
+
+0.598
+0.661
+0.722
+0.768
+0.812
+
+41.2
+28.9
+21.4
+14.7
+11.8
+
+17
+
+The Confidence Manifold
+Qwen2-1.5B
+AUC=0.91
+
+Correct
+Incorrect
+
+Llama-1B
+AUC=0.93
+
+Gemma-2B
+AUC=0.93
+
+20
+0
+10
+
+PLS3
+
+20
+30
+30
+
+20
+
+10
+PLS1
+
+0
+
+10
+
+20
+
+20
+
+10
+
+0
+
+10
+
+20
+
+30
+
+20
+
+PLS2
+
+15
+10
+5
+0
+PLS3
+5
+10
+15
+20
+
+20
+15
+10
+5
+0 PLS3
+5
+10
+15
+20
+
+10
+
+10
+PLS1
+
+0
+
+10
+
+20
+
+20
+
+15
+
+10
+
+5
+
+0
+
+5
+
+10
+
+15
+
+20
+
+30
+
+PLS2
+
+20
+
+10
+PLS1
+
+0
+
+10
+
+20
+
+20
+
+15
+
+10
+
+5
+
+5
+
+0
+
+10
+
+15
+
+PLS2
+
+Figure 5. 3D PLS visualization of the discriminative subspace for the 1B–2B models (Qwen2-1.5B, Llama-1B, Gemma-2B). These
+models achieve AUC 0.91–0.93, comparable to the 3B–7B models reported elsewhere in the appendix. Visual separation appears less
+distinct due to higher overlap in the projected 3D space, despite strong full-dimensional classification performance.
+
+E.3. Dimension Sweep with Fold Variability
+Table 9 replicates the main-text dimension sweep with per-fold standard deviations (5-fold GroupKFold). Standard deviations
+grow with dimension on most models (e.g. GPT-2: ±.003 at 1D vs ±.034 at 32D), consistent with the interpretation that
+dimensions beyond the peak add estimation variance rather than signal.
+Table 9. PLS dimension sweep with standard deviations (GroupKFold AUC, TruthfulQA).
+Model
+GPT-2
+GPT-2-Med
+GPT-2-Large
+Llama-3.2-1B
+Qwen2-1.5B
+Gemma-2-2B
+Llama-3.2-3B
+Qwen2-7B
+Mistral-7B
+Llama-3.1-8B
+Qwen2.5-14B
+
+1D
+
+2D
+
+3D
+
+4D
+
+5D
+
+8D
+
+16D
+
+32D
+
+0.718±.003
+0.747±.009
+0.750±.010
+0.847±.015
+0.814±.021
+0.817±.030
+0.887±.018
+0.828±.011
+0.860±.019
+0.895±.022
+0.927±.015
+
+0.750±.019
+0.781±.011
+0.784±.015
+0.886±.015
+0.848±.017
+0.846±.024
+0.914±.016
+0.882±.009
+0.888±.014
+0.931±.024
+0.951±.016
+
+0.758±.016
+0.790±.011
+0.791±.011
+0.892±.013
+0.858±.018
+0.861±.027
+0.917±.023
+0.892±.010
+0.899±.014
+0.929±.023
+0.951±.019
+
+0.753±.019
+0.784±.012
+0.783±.016
+0.895±.017
+0.863±.020
+0.860±.029
+0.917±.020
+0.894±.011
+0.902±.016
+0.929±.025
+0.951±.018
+
+0.746±.023
+0.778±.014
+0.769±.013
+0.893±.015
+0.864±.026
+0.856±.036
+0.919±.028
+0.896±.011
+0.902±.017
+0.923±.028
+0.949±.017
+
+0.720±.028
+0.763±.025
+0.741±.018
+0.878±.025
+0.873±.031
+0.830±.047
+0.910±.032
+0.890±.015
+0.899±.019
+0.910±.037
+0.943±.021
+
+0.672±.048
+0.723±.031
+0.700±.022
+0.831±.038
+0.842±.033
+0.780±.052
+0.893±.039
+0.876±.021
+0.876±.023
+0.900±.032
+0.938±.023
+
+0.621±.034
+0.676±.036
+0.673±.020
+0.813±.041
+0.810±.041
+0.751±.053
+0.881±.038
+0.843±.030
+0.849±.030
+0.890±.033
+0.939±.023
+
+E.4. Full Cross-Dataset Results
+Table 10 provides complete cross-dataset transfer results across all models and datasets. Key observations:
+• In-domain performance: All 1B+ models achieve >0.87 AUC on TruthfulQA; GPT-2 family achieves 0.73–0.78 AUC
+• HaluEval anomaly: Cross-domain transfer to HaluEval is below random for most models (0.18–0.33 AUC); GPT-2Large is near-random (0.47), suggesting HaluEval’s task structure differs fundamentally from factuality assessment for
+instruction-tuned models
+• FEVER transfer: Best cross-domain performance (0.51–0.76 AUC), likely because FEVER’s fact verification task is
+closest to TruthfulQA’s factuality assessment
+E.5. Few-Shot Label Efficiency
+For each budget N, we fit PLS using only those N samples, then compute centroids in the resulting 5D space. The
+centroid method matches or exceeds probe performance at all label budgets, demonstrating that geometric detection can be
+bootstrapped with minimal annotation.
+18
+
+The Confidence Manifold
+Table 10. Complete cross-dataset transfer results. In-domain: train and test on the same dataset (5-fold GroupKFold). Cross-domain:
+train on TruthfulQA, test on others (zero-shot transfer). Values are AUC ± std across seeds.
+Model
+
+TruthfulQA
+
+SciQ
+
+CSQA
+
+HaluEval
+
+FEVER
+
+0.953±0.004
+0.883±0.014
+0.830±0.007
+0.641±0.004
+0.623±0.013
+0.579±0.013
+
+0.897±0.016
+0.819±0.0002
+0.719±0.036
+0.621±0.022
+0.657±0.038
+0.546±0.012
+
+0.984±0.0001
+0.986±0.00002
+0.992±0.0001
+0.982±0.00
+0.985±0.00001
+0.977±0.00001
+
+0.934±0.001
+0.898±0.001
+0.881±0.001
+0.863±0.0005
+0.872±0.0004
+0.837±0.0002
+
+Cross-domain (train TruthfulQA → test others)
+Qwen2-7B
+–
+0.676±0.004
+Qwen2-1.5B
+–
+0.607±0.006
+Llama-1B
+–
+0.611±0.008
+GPT-2-Large
+–
+0.541±0.015
+GPT-2-Medium
+–
+0.537±0.014
+GPT-2
+–
+0.542±0.011
+
+0.682±0.017
+0.574±0.010
+0.604±0.005
+0.522±0.001
+0.513±0.011
+0.480±0.017
+
+0.237±0.003
+0.325±0.031
+0.181±0.001
+0.472±0.001
+0.215±0.003
+0.266±0.004
+
+0.720±0.027
+0.759±0.001
+0.679±0.002
+0.612±0.001
+0.624±0.001
+0.507±0.00003
+
+In-domain evaluation
+Qwen2-7B
+0.901±0.002
+Qwen2-1.5B
+0.877±0.001
+Llama-1B
+0.924±0.0003
+GPT-2-Large
+0.751±0.0001
+GPT-2-Medium 0.750±0.00005
+GPT-2
+0.732±0.0003
+
+Table 11. Few-shot label efficiency (GPT-2, AUC). Centroid matches probe at all N.
+N
+
+Probe
+
+Centroid
+
+Mahal.
+
+5
+25
+100
+200
+
+0.59±.11
+0.68±.06
+0.75±.01
+0.78±.02
+
+0.60±.09
+0.69±.05
+0.76±.01
+0.78±.02
+
+0.59±.10
+0.69±.06
+0.75±.01
+0.78±.02
+
+E.6. PLS Improves Cross-Domain Transfer
+PLS dimension reduction not only prevents overfitting (Table 1) but also improves cross-domain generalization. We
+hypothesize that PLS removes dataset-specific noise while preserving the shared confidence signal.
+Setup. Train linear probe on TruthfulQA embeddings, test on SciQ, CommonsenseQA, and FEVER. Compare fulldimensional (3584D for Qwen2-7B) vs. 5D PLS projection. 4 runs with different seeds.
+Table 12. PLS improves cross-domain transfer. Train on TruthfulQA, test on other datasets. PLS 5D outperforms full-dimensional
+embeddings by 10–14% absolute AUC.
+Method
+
+SciQ
+
+CSQA
+
+FEVER
+
+Full (3584D)
+PLS 5D
+
+0.50±0.01
+0.64±0.01
+
+0.47±0.01
+0.61±0.02
+
+0.69±0.00
+0.79±0.00
+
+∆ (absolute)
+
++0.14
+
++0.14
+
++0.10
+
+Interpretation. Full-dimensional probes memorize source-domain patterns (near-random transfer: 0.47–0.50 AUC on
+SciQ/CSQA). PLS extracts the 5D subspace maximally correlated with correctness labels, discarding dataset-specific
+variance. This 5D signal transfers: +14% on CSQA, +14% on SciQ, +10% on FEVER. The result suggests the confidence
+signal is shared but obscured by high-dimensional noise in full embeddings.
+
+F. In-Domain AUC Across Four Datasets
+The dimension sweep in the main paper (Table 2) is reported on TruthfulQA for compactness. To verify the discriminative
+subspace generalizes across QA distributions, we refit a PLS-8 probe natively on each of the four QA datasets (TruthfulQA,
+SciQ, FEVER, CSQA) and report 5-fold GroupKFold AUC (Table 13). The same dimension choice (k = 8) and protocol
+succeed in domain on each dataset, with AUC ranges that overlap across datasets.
+19
+
+The Confidence Manifold
+Table 13. In-domain AUC (PLS-8, GroupKFold by question id). The discriminative subspace generalizes: the same PLS-8 protocol
+works in-domain across all four QA datasets, supporting the geometric framework as a property of correctness representations rather than
+a TruthfulQA artifact.
+Model
+
+TruthfulQA
+
+SciQ
+
+FEVER
+
+CSQA
+
+0.767
+0.709
+0.794
+0.856
+0.908
+0.920
+0.926
+0.943
+
+0.634
+0.657
+0.693
+0.912
+0.891
+0.955
+0.946
+0.945
+
+0.792
+0.808
+0.836
+0.943
+0.933
+0.953
+0.940
+0.935
+
+0.606
+0.647
+0.654
+0.839
+0.786
+0.894
+0.850
+0.824
+
+0.71–0.94
+
+0.63–0.96
+
+0.79–0.95
+
+0.61–0.89
+
+GPT-2
+GPT-2-Med
+GPT-2-Large
+Qwen2-1.5B
+Llama-3.2-1B
+Qwen2-7B
+Mistral-7B
+Llama-3.2-3B
+Range
+
+F.1. Per-dataset dimension sweep (Qwen2-7B)
+To confirm the low-rank peak is a property of the correctness representation rather than an artifact of TruthfulQA’s
+distribution, we run a unified per-dataset PLS dimension sweep on Qwen2-7B-Instruct (layer 20 last-token activations,
+5-fold GroupKFold by question id, k ∈ {1, 2, 3, 5, 8, 12, 16, 32}). TruthfulQA uses the cached embeddings from our main
+pipeline; SciQ, FEVER, and CSQA are extracted natively (300–600 paired correct/incorrect samples each). This protocol is
+intentionally simpler than the main-paper sweep (Table 2, which selects best layer per model) so that all four datasets are
+scored under identical hyperparameters.
+Table 14. Per-dataset PLS dimension sweep on Qwen2-7B (mean AUC over 5 folds). Bold = peak; red = ≥3pp degradation from
+peak. All four datasets peak at k ∈ {2, 3, 5, 12} and degrade beyond k = 16, supporting the low-rank claim natively per dataset.
+Dataset (n)
+
+1D
+
+2D
+
+3D
+
+5D
+
+8D
+
+12D
+
+16D
+
+32D
+
+Peak
+
+TruthfulQA (817)
+SciQ (600)
+FEVER (300)
+CSQA (600)
+
+0.842
+0.963
+0.948
+0.902
+
+0.894
+0.966
+0.935
+0.914
+
+0.905
+0.967
+0.957
+0.895
+
+0.918
+0.960
+0.963
+0.886
+
+0.924
+0.952
+0.954
+0.871
+
+0.929
+0.948
+0.948
+0.856
+
+0.927
+0.946
+0.947
+0.852
+
+0.892 12D
+0.942 3D
+0.948 5D
+0.851 2D
+
+The peak is low-rank (k ≤ 12) on every dataset, and three of four show ≥1.5pp degradation by k = 32 (FEVER recovers to
+within noise of its peak; the monotonic decay is clearest on CSQA at −6.3pp). TruthfulQA’s peak at k = 12 is within 1σ of
+k = 8 (0.929 vs 0.924, std 0.013–0.017), so the 2–8D claim is consistent with this independent protocol once measurement
+noise is accounted for.
+F.2. Centroid methods sweep on Qwen2-7B
+To test whether centroid distance can be improved by relaxing the equal-covariance assumption (QDA) or by allowing
+multiple prototypes per class (k-means clustering within each class), we run a method comparison in the 8D PLS subspace
+on Qwen2-7B-Instruct (5-fold GroupKFold by question, n = 817).
+Table 15. Geometric methods on Qwen2-7B PLS-8 subspace (5-fold AUC). QDA’s per-class covariance buys +1.0pp over LR;
+multi-prototype variants hurt, indicating the per-class distributions are unimodal Gaussian-like.
+Method
+Logistic regression (baseline)
+Centroid distance
+LDA (shared covariance)
+QDA (per-class covariance)
+KMeans-2 prototypes per class
+KMeans-3 prototypes per class
+
+AUC
+
+vs LR
+
+0.910 ± 0.039
+0.913 ± 0.043
+0.913 ± 0.038
+0.921 ± 0.037
+0.886 ± 0.044
+0.897 ± 0.045
+
+—
++0.3pp
++0.3pp
++1.0pp
+−2.4pp
+−1.3pp
+
+Three observations. (1) Centroid distance, LDA (shared covariance), and LR are within noise of each other (±0.3pp),
+confirming the mean-shift structure: under shared-covariance Gaussian assumption, the optimal classifier reduces to centroid
+20
+
+The Confidence Manifold
+
+distance. (2) QDA’s +1.0pp gain over LR shows that per-class covariance carries a small additional signal, the correct and
+incorrect classes have slightly different shapes, but this gain is marginal compared to the mean shift. (3) Multi-prototype
+variants hurt: KMeans-2 (−2.4pp) and KMeans-3 (−1.3pp) underperform a single centroid per class. This is direct evidence
+that within each class the distribution is unimodal Gaussian-like; allowing multiple prototypes adds variance without
+revealing additional structure. Together these results justify the title claim: two centroids (one per class) are not just
+sufficient, but in fact optimal among the geometric classifiers tested in this subspace.
+Sample efficiency of centroid vs LR. We sweep label budgets K ∈ {10, 25, 50, 100, 200, 400} on Qwen2-7B-Instruct,
+fitting PLS-8 + classifier on K balanced labels per fold and evaluating on the held-out test fold (5 seeds, 5 folds; Table 16).
+Table 16. Centroid vs LR sample efficiency (Qwen2-7B PLS-8). Centroid matches LR at low K and beats it at high K (+1.2–1.5pp at
+K ≥ 200), supporting the title claim that two centroids suffice without sacrificing accuracy.
+K
+
+Centroid AUC
+
+LR AUC
+
+∆ (centroid − LR)
+
+10
+25
+50
+100
+200
+400
+
+0.638 ± 0.041
+0.780 ± 0.020
+0.827 ± 0.012
+0.869 ± 0.012
+0.893 ± 0.010
+0.907 ± 0.004
+
+0.636 ± 0.042
+0.785 ± 0.025
+0.825 ± 0.013
+0.865 ± 0.014
+0.878 ± 0.017
+0.894 ± 0.010
+
++0.001
+−0.005
++0.002
++0.005
++0.015
++0.012
+
+Centroid matches LR within ±0.005 AUC for K ≤ 100 and beats LR by 1.2–1.5pp at K ≥ 200. The reversal at high K
+is consistent with PLS already having absorbed the discriminative structure into its 8D projection: within the projected
+subspace, the data are approximately Gaussian with shared covariance, so the Bayes-optimal boundary is the perpendicular
+bisector of class centroids and a logistic regression provides no additional capacity.
+F.3. Multi-dataset output-uncertainty baselines (Qwen2-7B)
+The main-text baseline comparison (Table 4) is conducted on TruthfulQA, where output uncertainty methods drop near
+chance. To verify that the gap is not driven by a broken implementation (a concern raised in prior reviews) and to scope the
+claim properly, we re-run P(True) on Qwen2-7B-Instruct against the centroid distance in the optimal PLS subspace across
+all four QA datasets (Table 17, n = 500 per dataset, identical prompt template).
+Table 17. Centroid (PLS peak) vs P(True) on Qwen2-7B-Instruct. Identical prompt template across datasets; centroid uses the
+per-dataset peak from Table 14.
+Method
+
+TruthfulQA
+
+SciQ
+
+FEVER
+
+CSQA
+
+P(True)
+Centroid (PLS peak)
+
+0.477
+0.929
+
+0.952
+0.967
+
+0.931
+0.963
+
+0.925
+0.914
+
+∆ (centroid − P(True))
+
++45.2
+
++1.5
+
++3.2
+
+−1.1
+
+Three observations. (1) P(True) is well-calibrated on standard QA (0.93–0.95): the implementation is sound, and P(True) is
+competitive with the centroid on three of four datasets. (2) On TruthfulQA, P(True) drops to 0.48 (below chance) while
+centroid remains at 0.93, a +45.2pp gap. This is consistent with TruthfulQA’s design principle (Lin et al., 2022): questions
+are explicitly selected to elicit confident wrong answers, so output-derived confidence is anti-correlated with correctness.
+(3) The centroid is universal, it holds across all four datasets (0.91–0.97), whereas the output-uncertainty advantage is not
+universal but is the practically interesting regime, since adversarial misconception data is exactly where calibration is hardest
+(Santilli et al., 2025). We conclude that the headline “internal ≫ output” gap is a property of the adversarial misconception
+regime, not a generic finding; the universal claim is that centroid distance in the PLS subspace matches trained probes
+(Table 6), independent of dataset. The shared low-rank-with-degradation pattern is the load-bearing observation; the exact
+peak location varies by dataset.
+
+G. Pooled LID Comparison (Yin et al., ICML 2024)
+Setup. Yin et al. (2024) use the Levina-Bickel MLE estimator on pooled LLM activations to predict truthfulness. We
+re-implement their method (k=20 nearest neighbors, per-sample LID, sign-aligned to maximize AUC) and compare against
+21
+
+The Confidence Manifold
+
+our class-conditional PLS centroid distance, both evaluated by 5-fold GroupKFold on the same TruthfulQA embeddings
+(Table 18).
+Table 18. Pooled LID (Yin et al.) vs. class-conditional PLS centroid. 5-fold GroupKFold on TruthfulQA, k=20 for LID, k=8 for PLS.
+The +0.34 mean gap shows our approach captures information distinct from pooled LID.
+Model
+
+Yin et al. LID-AUC
+
+PLS-DoM AUC
+
+∆
+
+0.513
+0.578
+0.511
+0.516
+0.561
+0.515
+0.515
+0.526
+0.512
+
+0.777
+0.794
+0.785
+0.902
+0.913
+0.924
+0.889
+0.912
+0.944
+
++0.264
++0.216
++0.275
++0.385
++0.352
++0.409
++0.374
++0.386
++0.431
+
+GPT-2
+GPT-2-Medium
+GPT-2-Large
+Qwen2-1.5B
+Qwen2-7B
+Mistral-7B
+Gemma-2-2B
+Llama-3.2-1B
+Llama-3.2-3B
+
++0.343
+
+Mean
+
+Protocol asymmetry. For LID, the sign of −LID vs. +LID is chosen on the full dataset to maximize AUC (favorable to
+LID); PLS-DoM uses 5-fold GroupKFold with no test-fold information at fitting time. The +0.343 mean gap is therefore
+a lower bound on PLS-DoM’s advantage. We use centroid distance (PLS-DoM) rather than the linear probe used in the
+main results to keep the comparison purely geometric (no classifier training step). The PLS-DoM AUC at k = 8 tracks the
+linear-probe AUC within ±0.02 at the same k.
+Interpretation. Yin et al.’s pooled LID achieves only chance-level AUC (0.51–0.58), while class-conditional PLS centroid
+reaches 0.78–0.94. The two approaches measure different objects: pooled LID estimates manifold geometry without using
+class labels, capturing overall complexity; PLS dimension uses labels to find the subspace in which correctness varies. This
+decomposition (8–12D representation manifold from Yin et al. vs. 2–8D discriminative subspace) is the central distinction
+we draw between our work and Yin et al.
+
+H. Full-Space Difference-of-Means Baseline
+Why this baseline matters. Centroid distance in PLS-projected space (§5) is supervised by construction: PLS maximizes
+label-feature covariance, so centroids in the PLS subspace are guaranteed to be close to optimal. To verify the mean-shift
+structure exists in the original residual stream rather than being an artifact of PLS optimization, we compute centroid
+distance directly in the full embedding space (no projection), GroupKFold by question.
+Table 19. Full-space DoM vs. PLS-DoM vs. Linear Probe. 5-fold GroupKFold by question on TruthfulQA. Full-space DoM uses raw
+residual-stream embeddings (no projection). PLS-DoM uses 8D PLS projection.
+Model
+GPT-2
+GPT-2-Medium
+GPT-2-Large
+Qwen2-1.5B
+Qwen2-7B
+Mistral-7B
+Gemma-2-2B
+Llama-3.2-1B
+Llama-3.2-3B
+
+Full-space DoM
+
+PLS-DoM (k=8)
+
+Linear Probe
+
+PLS gain
+
+0.719
+0.736
+0.746
+0.833
+0.842
+0.871
+0.808
+0.864
+0.910
+
+0.777
+0.794
+0.785
+0.902
+0.913
+0.924
+0.889
+0.912
+0.944
+
+0.754
+0.770
+0.755
+0.888
+0.916
+0.912
+0.859
+0.908
+0.943
+
++0.058
++0.058
++0.039
++0.068
++0.071
++0.053
++0.081
++0.048
++0.034
++0.057
+
+Mean
+
+Interpretation. Even without any supervised projection, raw-embedding centroid distance achieves 0.72–0.91 AUC across
+9 models. PLS adds only +0.034 to +0.081 on top of this baseline (mean +0.057). The mean-shift structure that makes
+centroids sufficient is therefore a property of the residual-stream representation itself, not an artifact of class-conditional
+projection. PLS sharpens the decision boundary by discarding noise dimensions, but does not create the mean-shift geometry.
+22
+
+The Confidence Manifold
+
+I. Activation Steering Details
+Experimental setup. Steering requires a single fixed direction for causal analysis (unlike classification which uses crossvalidation). We use a holdout split: first 200 questions for probe training (to obtain the steering direction), remaining
+n = 617 for evaluation. This differs from our classification protocol (GroupKFold CV) because steering tests whether
+one specific direction causally affects outputs, not classification generalization. Steering coefficient α ∈ [−5, 5] with 20
+values. The probe weight vector is L2-normalized and scaled to 5% of mean activation norm. Generation uses greedy
+decoding (temperature=0). Correctness is determined by token-level keyword overlap: a generation is counted correct if the
+intersection of its tokens with TruthfulQA’s correct-answer tokens exceeds its intersection with incorrect-answer tokens. We
+adopt this lightweight judge to enable per-sample evaluation across 11 × 33 = 363 generations per question; an LLM-judge
+alternative is discussed in Appendix E.4.
+Statistical significance (Qwen2-7B). Learned direction: +9.1pp total effect (p < 0.001, two-sample t-test comparing
+α = −5 vs α = +5). Random direction: −0.8pp (p = 0.81). Orthogonal direction: −0.3pp (p = 0.92). Only the learned
+direction produces a statistically significant effect.
+Multi-model replication. We apply the same protocol (PLS direction fit on 200 training questions, sign-aligned to training
+labels, alpha-scaled to 5% of mean activation norm, evaluated on n = 617 held-out questions) to five additional instructiontuned models; Table 20 lists all six including the Qwen2-7B reference row. Table 20 reports learned, random, and orthogonal
+effect sizes (pp difference between α = −5 and α = +5).
+Table 20. Multi-model steering (n=617 each). Effect sizes (pp) for learned PLS direction vs. random and orthogonal controls. Specificity
+= learned − orthogonal. All six models show specificity ≥ 4pp.
+Model
+
+Layer
+
+Baseline
+
+Learned
+
+Random
+
+Orthogonal
+
+Specificity
+
+Qwen2-7B-Instruct
+Qwen2-1.5B-Instruct
+Llama-3.2-1B-Instruct
+Llama-3.2-3B-Instruct
+Llama-3.1-8B-Instruct
+Gemma-2-2B-it
+
+L20
+L16
+L8
+L12
+L16
+L15
+
+0.56
+0.72
+0.65
+0.59
+0.63
+0.57
+
++9.1
++9.1
++10.0
++5.3
++4.4
++2.8
+
+−0.8
+−1.0
++2.1
+−1.9
++1.6
+−3.1
+
+−0.3
+−0.5
++3.2
+−1.5
++0.3
+−4.5
+
++9.4
++9.6
++6.8
++6.8
++4.1
++7.3
+
+J. Nested Cross-Validation
+To verify that hyperparameter selection (layer, PLS dimension) does not inflate reported test AUC, we perform nested
+cross-validation with proper separation between selection and evaluation.
+Protocol. Outer loop: 5-fold GroupKFold for final evaluation. Inner loop: 3-fold StratifiedKFold within each training set
+for hyperparameter selection. PLS dimensions searched: {1, 2, 3, 4, 5, 6, 7, 8, 12, 16}. The inner loop selects the optimal
+dimension; the outer loop evaluates on truly held-out data.
+Table 21. Nested CV shows no optimistic bias. Comparing nested CV (unbiased) vs. standard CV (fixed dim=8). Bias = Standard −
+Nested. Negative bias indicates standard CV is actually conservative.
+Model
+
+Nested CV
+
+Standard CV
+
+Bias
+
+Qwen2-7B
+GPT-2-Large
+
+0.905±0.040
+0.788±0.048
+
+0.910±0.039
+0.761±0.053
+
++0.005
+−0.026
+
+Results. Table 21 shows negligible bias between nested and standard CV. Qwen2-7B: +0.005 (within noise). GPT-2-Large:
+−0.026 (standard CV is conservative). The inner CV consistently selects 5–8D, matching our fixed choice. Conclusion:
+reported AUCs are unbiased estimates; hyperparameter selection does not inflate performance.
+
+K. Paraphrase Control Experiment
+To verify that the discriminative subspace encodes correctness rather than answer style, we test whether geometric separation
+persists across paraphrased answers.
+Protocol. For each answer (correct or incorrect), we generate 5 paraphrase variants using templates: (1) original, (2) “The
+23
+
+The Confidence Manifold
+
+answer is: [answer]”, (3) “To be precise, [answer]”, (4) “In other words, [answer]”, (5) “Simply put, [answer]”. We compute
+PLS embeddings for all variants (Qwen2-7B, 817 TruthfulQA questions × 5 paraphrases × 2 correctness labels = 8,170
+embeddings) and analyze variance in the discriminative subspace at layer 20 (optimal for Qwen2-7B).
+Variance decomposition.
+• Within-answer variance (same correctness, different paraphrase): 242.80
+• Between-answer variance (different correctness): 4,223.64
+• F-ratio: 17.40
+The 17× ratio confirms that correctness dominates the geometric separation. Paraphrase style contributes only 5.4% to
+variance in the discriminative subspace (1/17.40). If probes were detecting stylistic artifacts (sentence structure, prefix
+patterns), within-answer variance would be comparable to between-answer variance. The high F-ratio rules out this
+confound.
+Generalization with no question overlap. To ensure probes generalize beyond surface style, we use GroupKFold with
+question ID grouping: training on original answers from train questions, testing on paraphrased answers from held-out
+questions (no overlap). Results:
+• Train AUC (original answers): 0.998
+• Test AUC (paraphrased answers, unseen questions): 0.926 ± 0.011
+• Degradation: 7.2%
+The 0.926 test AUC demonstrates that probes trained on original answers generalize robustly to paraphrased answers on
+unseen questions, confirming detection of correctness rather than style. The modest 7.2% degradation indicates some
+paraphrase-specific features exist but do not dominate the confidence signal.
+
+L. DAS Causal Dimension Details
+Distributed Alignment Search (DAS; Wu et al., 2023; Geiger et al., 2025) provides a causal complement to PLS’s statistical
+dimension analysis. We learn a rotation matrix R ∈ Rd×k with orthogonality regularization, optimizing an interchange
+intervention objective: swapping the k-dimensional projected representation between correct/incorrect samples should flip
+the classifier prediction.
+Training details. We apply DAS to pre-extracted embeddings at the optimal layer (no GPU model loading needed). Training:
+50 epochs, learning rate 10−3 , Adam optimizer, 64 intervention pairs per batch, 5-fold GroupKFold CV. The loss combines
+classification (BCE), interchange intervention, and orthogonality terms (λint = 0.5, λorth = 0.01).
+Table 22. Full DAS dimension sweep (AUC). Bold = peak dimension per model. All models peak at ≤5D.
+Model
+
+1D
+
+2D
+
+3D
+
+5D
+
+8D
+
+16D
+
+32D
+
+GPT-2
+GPT-2-L
+Llama-3B
+Mistral-7B
+Qwen2-7B
+
+.751
+.784
+.943
+.924
+.909
+
+.742
+.783
+.944
+.925
+.905
+
+.741
+.763
+.944
+.927
+.916
+
+.762
+.779
+.941
+.919
+.915
+
+.748
+.739
+.938
+.914
+.912
+
+.750
+.754
+.943
+.917
+.903
+
+.735
+.750
+.935
+.906
+.894
+
+Interpretation. DAS peaks at 1–5D across all models, matching the PLS finding (2–8D) under a causal operationalization.
+The slight difference in exact peaks (e.g., GPT-2: DAS 5D vs PLS 3D) reflects different optimization objectives: DAS
+maximizes intervention flipping, PLS maximizes label covariance. Both converge on the qualitative conclusion that
+correctness is encoded in ≤5 dimensions, with degradation at 32D in 4/5 models.
+
+M. Concept Erasure (RLACE and INLP)
+We apply two concept erasure methods to verify that the identified low-dimensional subspace is necessary for correctness
+detection.
+24
+
+The Confidence Manifold
+
+RLACE (Ravfogel et al., 2022) learns a linear projection that maximally removes the correctness signal while preserving
+other information. After projecting onto the nullspace of the learned direction, AUC drops to chance across all 5 models:
+Table 23. RLACE erasure. Removing the correctness direction drops AUC to ∼0.50 (chance) across all models, confirming necessity of
+the identified subspace.
+Model
+
+Before
+
+After RLACE
+
+GPT-2
+GPT-2-Large
+Llama-3B
+Qwen2-7B
+Mistral-7B
+
+0.766
+0.792
+0.941
+0.908
+0.918
+
+0.482
+0.505
+0.479
+0.505
+0.498
+
+INLP (Ravfogel et al., 2020) iteratively removes linear directions that predict correctness. After 32 iterations, AUC degrades
+substantially: GPT-2 0.58, GPT-2-Large 0.60, Qwen2-7B 0.75, Mistral-7B 0.72, Llama-3B 0.73. The first direction accounts
+for the largest single drop (e.g., GPT-2 train AUC: 1.00 → 0.94 after removing one direction), with subsequent removals
+yielding diminishing returns. This progressive degradation pattern is consistent with the low-dimensional PLS finding: most
+signal concentrates in a few directions.
+
+N. Linear Alternatives to PLS
+Two linear alternatives motivate the PLS projection: LDA as a supervised competitor, and difference-of-means (DoM) in the
+full space as a projection-free baseline. LDA is limited to min(K − 1, d) discriminant functions, so for binary correctness it
+produces a single direction and cannot express multi-dimensional structure. Full-space DoM needs no projection at all, but
+on raw embeddings it is dominated by high-norm dimensions.
+Table 24. Linear alternatives to PLS (AUC). LDA is capped at 1D for a binary target; DoM columns are on raw, unscaled embeddings
+and are reported for the five models where full-space extraction was run. With per-dimension StandardScaler the same full-space DoM
+rises to 0.72–0.91 (Appendix H). Bold marks the best PLS setting per model.
+DoM
+
+PLS
+
+Model
+
+LDA
+
+full
+
+PLS-5
+
+1
+
+5
+
+8
+
+GPT-2
+GPT-2-Med
+GPT-2-L
+Gemma-2B
+Llama-1B
+Llama-3B
+Qwen2-1.5B
+Qwen2-7B
+Mistral-7B
+
+0.549
+0.583
+0.613
+0.734
+0.765
+0.842
+0.730
+0.840
+0.805
+
+0.469
+—
+0.729
+—
+—
+0.904
+—
+0.833
+0.857
+
+0.776
+—
+0.795
+—
+—
+0.942
+—
+0.908
+0.919
+
+0.719
+0.736
+0.746
+0.808
+0.864
+0.910
+0.833
+0.842
+0.871
+
+0.766
+0.785
+0.786
+0.892
+0.911
+0.949
+0.890
+0.916
+0.924
+
+0.756
+0.784
+0.761
+0.873
+0.910
+0.944
+0.898
+0.910
+0.919
+
+PLS-5 beats LDA by 7–22 points of absolute AUC on every model, and PLS-1 beats LDA even though both yield a single
+direction, because PLS maximizes covariance with the labels rather than Fisher’s ratio, which is sensitive to class-covariance
+differences. The DoM columns show the same conclusion from the other side: unscaled full-space DoM falls to 0.47 on
+GPT-2 (near chance), but after PLS projection DoM, centroid distance, and the trained probe converge within 0.01 AUC.
+Class separation in the discriminative subspace is a mean shift; what the projection supplies is the orientation, not the
+decision rule.
+
+O. Llama-3.1-8B Scale Extension
+To extend our analysis beyond 7B, we evaluate Llama-3.1-8B-Instruct (32 layers, 4096 hidden dim).
+Layer sweep. Optimal layer: L16 (53% depth), AUC = 0.923. Performance increases monotonically from L0 (0.59) through
+L16, then gradually decreases to L31 (0.87). This 53% optimal depth falls within the mid-layer range (46–75%) observed in
+the other 1B–14B models.
+Dimension sweep. PLS peak at 2D (AUC = 0.931), with degradation at 32D (0.890). The 2D peak is the lowest in the
+25
+
+The Confidence Manifold
+
+1B–14B range, potentially indicating more concentrated encoding at 8B scale. The pattern of degradation beyond the peak
+is consistent with all other models.
+
+P. Generative Evaluation Details
+Our main results use teacher-forced evaluation, where the model receives ground-truth answer tokens and we probe the
+resulting hidden states. To quantify the gap with generative evaluation, we run a dedicated experiment on Qwen2-7B.
+Protocol. We generate free-form answers for 300 held-out TruthfulQA questions using greedy decoding. We then
+evaluate correctness using two independent judges: (1) keyword overlap with ground-truth answers, and (2) LLM-as-judge
+(Qwen2-7B itself).
+Results. Inter-judge agreement was low, consistent with Santilli et al. (2025), who show that the choice of correctness
+function substantially distorts measured AUROC. Reporting a free-form generative AUC would therefore conflate signal
+degradation with judge noise; we leave free-form generative validation to future work once a trustworthy automatic judge is
+available.
+A judge-free data point. Multiple-choice generation avoids the judge problem: the generated answer letter can be scored
+exactly. Under this protocol on CommonsenseQA (Qwen2-7B, layer 20, PLS-5), the teacher-forced centroid detector reaches
+0.957 AUC (n = 242) while the same subspace applied to the model’s own generated answers reaches 0.688 (n = 199), a
+27-point drop. The teacher-forced numbers in this paper therefore measure where correctness is encoded, not deployable
+free-form detection performance; closing this gap is open (§6).
+Context. Teacher-forcing is the standard regime in this line of work (Marks & Tegmark, 2024; Burns et al., 2023; Orgad
+et al., 2025) and is appropriate for studying whether correctness is encoded in internal representations.
+
+26
+
+

@@ -1,0 +1,106 @@
+{
+ "slug": "c10-curved-inference-ii-2608.24037",
+ "url": "https://arxiv.org/pdf/2608.24037",
+ "pdf_ok": true,
+ "pages": 33,
+ "chars": 91681,
+ "title_guess": "Curved Inference II Sleeper Agent Geometry - Extending Interpretability Beyond Probes Rob Manson (https://robman.fyi)",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 3,
+   "caption_start": "Figure 1: Simplified 3D visualisation of the Rd token trajectories that combine to form the Residual Trajectory Manifold (RTM).  3  "
+  },
+  {
+   "id": "Table 1",
+   "page": 4,
+   "caption_start": "Table 1: Model Specifications Model  Size  Layers  Hidden Size d  Positional Encoding  Gemma3-1b LLaMA3.2-3b  1.3B 2.3B  26 28  2,048 3,072  RoPE RoPE  Both models are evaluated in forward-pass mode o"
+  },
+  {
+   "id": "Table 2",
+   "page": 11,
+   "caption_start": "Table 2: Statistical Significance Comparison - Full Consensus vs Unanimous Only for LLaMA3.2-3b Strategy  Honest Strategic Persuasive Deceptive Malicious  Full Consensus  Unanimous Only  Sample Size  "
+  },
+  {
+   "id": "Table 3",
+   "page": 11,
+   "caption_start": " Table 3: Statistical Significance Comparison - Full Consensus vs Unanimous Only for Gemma3-1b Strategy  Honest Strategic Persuasive Deceptive Malicious  Full Consensus  Unanimous Only  Sample Size  T"
+  },
+  {
+   "id": "Figure 2",
+   "page": 12,
+   "caption_start": "Figure 2: Geometric analysis for Gemma3-1b deceptive strategy (N=61). All responses classified as \u201clow transparency\u201d and \u201cevasive\u201d. Mean A\u2032 = 9,769. Error bars show 95% bootstrap confidence intervals."
+  },
+  {
+   "id": "Figure 3",
+   "page": 13,
+   "caption_start": "Figure 3: Geometric analysis for LLaMA3.2-3b deceptive strategy (N=47). Significant separation across transparency levels (Kruskal-Wallis p < 0.001, \u03b7 2 = 0.448). Mean A\u2032 values: low (1,276), medium ("
+  },
+  {
+   "id": "Figure 4",
+   "page": 14,
+   "caption_start": " Figure 4: Surface area metric for Gemma3-1b deceptive strategy (N=61). Single group distribution with mean A\u2032 = 9,769. The simplified visualization emphasizes the single-group nature of Gemma3-1b\u2019s d"
+  },
+  {
+   "id": "Figure 5",
+   "page": 15,
+   "caption_start": "Figure 5: Surface area metric for LLaMA3.2-3b deceptive strategy (N=47). Transparency groups show distinct geometric signatures (p < 0.001).  Cross-Model Geometric Patterns Both comprehensive analyses"
+  }
+ ],
+ "n_figures_tables": 8,
+ "section_heading_candidates": [
+  "3.1 Models",
+  "3.2 Naturalistic Prompt Design",
+  "3.3 Methodological Rationale",
+  "3.3.1 Extending Curved Inference: From CI01 to CI02",
+  "3.3.2 Why Naturalistic Contexts Are Necessary",
+  "3.3.3 Why Geometric Detection Is Required",
+  "3.3.4 Theoretical Framework",
+  "3.4 Geometric Metrics",
+  "3.4.1 Semantic Surface Area (A\u2032 )",
+  "3.4.2 Curvature and Salience",
+  "3.4.3 Pullback Metric and Trajectory Construction",
+  "3.5 Experimental Protocol",
+  "3.5.1 Response Generation and Activation Capture",
+  "3.5.2 Response Classification and Analysis",
+  "3.6 Cross-Model Scaling and Architectural Considerations",
+  "3.6.1 Surface Area Magnitude Differences",
+  "3.6.2 Methodological Implications",
+  "3.6.3 Geometric Framework Robustness",
+  "3.6.4 Interpretation Framework",
+  "3.6.5 Future Research Directions",
+  "4.1 Signal Quality Improvement with Unanimous Classifications",
+  "4.2 Geometric Signatures Emerge Without Linear Separability",
+  "4.3 Cross-Model Validation",
+  "4.4 Implications for Real-World Deception Detection",
+  "A.1 Overview: Geometry as Unnormalised Trajectory",
+  "A.2 The Unnormalised Trajectory Framework",
+  "A.3 Geometric Measures on Semantic Trajectories",
+  "A.4 Why Unnormalised Trajectories Matter",
+  "A.5 Position, Attention, and Contextual Geometry",
+  "A.6 Implications for Mechanistic Interpretability",
+  "A.7 Summary: The Geometric Lens on Semantics",
+  "C.1 Classification Scheme",
+  "C.2 Inter-rater Reliability",
+  "D.1 Dataset Preparation and Quality Control",
+  "D.2 Normality Assessment and Test Selection",
+  "D.3 Enhanced Statistical Testing Protocol",
+  "D.3.2 Effect Size Estimation",
+  "D.4 Multiple Testing and Statistical Control",
+  "D.5 Correlation and Relationship Analysis",
+  "D.6 Cross-Model Comparative Analysis",
+  "D.7 Statistical Software and Reproducibility",
+  "D.8 Methodological Validation Framework",
+  "E.1 LLaMA3.2-3b Statistical Results",
+  "E.1.1 Full Consensus Dataset (n=100 per strategy)",
+  "E.1.2 Unanimous Consensus Dataset",
+  "E.2 Gemma3-1b Statistical Results",
+  "E.2.1 Full Consensus Dataset (n=100 per strategy)",
+  "E.2.2 Unanimous Consensus Dataset",
+  "E.3 Cross-Model Comparisons",
+  "E.3.1 Surface Area Scale Differences",
+  "E.4 Statistical Methodology Notes"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

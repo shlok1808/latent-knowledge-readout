@@ -1,0 +1,3784 @@
+FishBack: Pullback Fisher Geometry for Optimal Activation Steering in
+Transformers
+Sihan Wang1 , Jiayi Zhao1 , Qingyan Cao 1 , Hongbo Yao1∗ , Lin Shu1†
+
+arXiv:2605.17231v2 [cs.LG] 18 Aug 2026
+
+1
+
+School of Future Technology, South China University of Technology, Guangzhou, China
+{cswangsihan, 202564871285, 202310193229}@mail.scut.edu.cn, shul@scut.edu.cn
+
+Abstract
+Activation steering has emerged as a lightweight approach
+for modifying language model behavior without parameter
+updates, yet existing methods remain brittle: unstable across
+layers and prone to disturbing behavior unrelated to the target
+concept. We trace these failures to a hidden assumption shared
+by widely-used methods such as CAA, ActAdd, and ITI: that
+the intermediate activation space is Euclidean. We show this
+assumption is fundamentally flawed. The metric that actually
+governs how a hidden-state perturbation changes the output
+is the Fisher information metric of the softmax layer, pulled
+back to the intermediate layer through the Jacobian of the
+intervening layers. From it we derive a closed-form steering
+direction, applied to a hidden state at an intermediate layer,
+that reaches a target concept change with the least non-target
+distortion. The framework is sharpest in the early and middle
+intermediate layers, where the metric is strongly non-Euclidean
+and geometric correction matters most. We evaluate it on three
+verb-morphology concepts: third-person-singular, progressive,
+and past-tense inflection, following standard counterfactualconcept evaluation. On GPT-2 Small, this non-Euclidean geometry is borne out empirically, and our method lowers off-target
+KL divergence by median factors of 1.4–6.5x against individual
+steering baselines. On Llama-3-8B and Qwen3-8B, it lowers
+off-target KL by median factors of 1.8–3.6x against individual
+baselines at the early and middle layers. These results show that
+geometric correction retains its advantage on larger models
+with more complex internal structure.
+
+1
+
+Introduction
+
+Shaping a language model’s behavior after training—keeping
+it truthful, within a safety policy, or free of toxic and biased
+text—is a standing need, and reweighting the model through
+fine-tuning or human feedback (Ouyang et al. 2022) is costly
+and specific to each objective. Activation steering offers a
+lighter alternative: because a model’s concepts tend to lie
+along linear directions in its hidden states, displacing an
+activation along the right direction at inference time turns a
+behavior up or down (Subramani, Suresh, and Peters 2022;
+Turner et al. 2023; Zou et al. 2023). A large toolkit now builds
+such directions—from contrastive mean differences (Rimsky
+et al. 2024), probes on individual heads (Li et al. 2023),
+and extracted task or function vectors (Hendel, Geva, and
+Globerson 2023; Todd et al. 2024), to fitted affine and rankone directions (Singh et al. 2024; Belrose et al. 2023)—and it
+∗
+†
+
+Corresponding author.
+Corresponding author.
+
+has served truthfulness (Li et al. 2023), sentiment (Turner et al.
+2023), and refusal (Arditi et al. 2024). Yet these interventions
+are unstable: a vector that works at one layer fails at another, its
+strength must be tuned within narrow margins (van der Weij,
+Poesio, and Schoots 2024; Vu and Nguyen 2025), its effect
+leaks into unrelated behavior, and audits report steerability
+that varies by input, sometimes reverses sign (Tan et al. 2024;
+Braun et al. 2025), and barely improves on simple baselines
+(Wu et al. 2025). Recurring across models and tasks, this
+points to a common cause.
+That cause is the form of the intervention. The most widely
+used methods—CAA, ActAdd, and ITI among them—apply
+the same update h ← h + αv, which treats the activation
+space as flat, as if a step cost the same in every direction,
+and steers along its straight lines. The assumption is seldom
+stated, yet it decides which direction is steepest and whether
+shifting the target concept also disturbs the rest. It is known
+to be wrong at the network’s final layer: there the softmax
+head maps the last hidden state to a distribution over tokens,
+whose local geometry is the Fisher–Rao metric of information
+theory (Rao 1945; Amari 1998, 2016), and steering in its
+dual coordinates best preserves unrelated semantics (Park
+et al. 2026). But steering is almost never applied at that final
+layer. It acts on the intermediate layers of the residual stream,
+far upstream of the softmax, where the operative geometry
+has gone unexamined. Recent work fits this geometry from
+activation samples—a manifold or a kernel-PCA surface
+(Wurgaft et al. 2026; Raval et al. 2026)—confirming that
+straight-line steering is wrong, but stops short of deriving it
+from the model or guaranteeing an optimal direction. What
+is missing is a metric for the intermediate layers that follows
+from the model itself and names the best direction to move.
+We show that this metric need not be fitted at all; it is
+fixed by the model’s own computation. What a displacement
+costs is not its length but how much it moves the model’s
+predicted distribution, and that cost is available in closed
+form: the Fisher information of the softmax head, carried
+back to an intermediate layer along the network’s Jacobian
+(Arvanitidis, Hansen, and Hauberg 2018; Arvanitidis et al.
+2022), gives a layer-specific metric on the residual stream,
+built from quantities the model already computes and equal
+to the generalized Gauss–Newton matrix of second-order
+optimization (Martens 2020). Measured on GPT-2 Small, it is
+far from flat. Because the metric is explicit, so is the optimal
+
+Softmax
+
+Hidden State
+
+Layers
+
+Optimal Steering Direction
+
+Pullback Fisher Metric
+
+UnEmbed
+
+𝒒 = 𝑱𝑻 𝜷𝒘
+
+𝒉 ∈ ℝ𝒅
+
+Jacobian
+ℓ→L
+
+𝜹𝒉 ∝ 𝑮† 𝒒
+
+·
+
+⊗
+𝑮 = 𝑱𝑻 𝑯𝑱
+
+Layer ℓ★
+Concept Probe
+
+Layers
+
+Softmax Fisher
+𝑯 = Cov𝒑 𝒘
+
+Effective rank
+r≪d
+
+Pulled-back
+concept covector
+
+⊕
+𝒉′ = 𝒉 + 𝜹𝒉
+
+Least off-target
+distortion
+Concept reached
+Rest preserved
+
+Layer 1
+Embed
+
+𝜷𝑾
+
+Mean-difference
+
+Inject
+
+Figure 1: Overview of FishBack. At an intermediate layer, we read the hidden state and the concept probe, pull the softmax
+Fisher information back through the network’s Jacobian to obtain the pullback Fisher metric, and solve in closed form for the
+steering direction. The steered activation is then injected back into the layer.
+direction: a single regularized solve returns the displacement
+that induces a target concept change at the least off-target
+distortion, and the solve is reapplied along the trajectory as
+the operating point moves. At the scale of an 8B model this
+computation becomes infeasible—assembling the Jacobian
+alone would take thousands of Jacobian-vector products at
+every step—so we develop an approximation that recovers
+the same direction without forming it (Halko, Martinsson,
+and Tropp 2011), bringing the exact target within a few
+hundred partial forward passes per case on Llama-3-8B and
+Qwen3-8B.
+Our contributions are as follows.
+• The correct geometry for intermediate-layer steering.
+We show that the metric governing an intervention at an
+intermediate layer is the softmax Fisher information pulled
+back through the network’s Jacobian, obtained in closed
+form from the model with no fitting to data; the widely
+used additive methods correspond to steering under a flat
+metric, with directions that differ from ours in the covector
+as well (§4).
+• A closed-form optimal steering direction with stateof-the-art off-target preservation. From this metric we
+prove a closed-form expression for the displacement that
+produces a target concept change at the least off-target KL
+divergence, applied iteratively along the steering trajectory.
+On GPT-2 Small, Llama-3-8B, and Qwen3-8B, it attains
+state-of-the-art off-target preservation among activationsteering methods at the early and middle layers, and the
+highest target reachability on Qwen3-8B (§4, §5).
+• A faithful approximation that scales to 8B models.
+Because forming the metric exactly is computationally
+
+out of reach at 8B scale, we give an approximation that
+recovers the same optimal direction—evaluating its action
+and low-rank spectrum without forming it, and holding the
+Jacobian fixed across steps—within a few hundred partial
+forward passes per case on Llama-3-8B and Qwen3-8B
+(§4 §5).
+
+2
+
+Related Work
+
+Activation steering exploits linear concept directions in hidden states (Subramani, Suresh, and Peters 2022; Zou et al.
+2023), differing mainly in how the direction is obtained—
+contrastive means (Turner et al. 2023; Rimsky et al. 2024),
+head probes (Li et al. 2023), task and function vectors (Hendel, Geva, and Globerson 2023; Todd et al. 2024), affine or
+rank-one fits (Singh et al. 2024; Belrose et al. 2023)—while
+related work controls generation without modifying activations additively (Dathathri et al. 2020; Im and Li 2025). The
+additive methods are widely reported to be fragile across
+layers, coefficients, and inputs (van der Weij, Poesio, and
+Schoots 2024; Vu and Nguyen 2025; Tan et al. 2024; Braun
+et al. 2025; Wu et al. 2025).
+Geometry-aware steering questions the flat view: Park
+et al. (2026) steer in the softmax’s dual coordinates, but at the
+output layer only, while Wurgaft et al. (2026) and Raval et al.
+(2026) fit a manifold or kernel-PCA surface to activations—
+confirming curvature but obtaining the geometry from data
+rather than the model, with no optimality guarantee.
+Information geometry grounds our approach: our metric
+follows from the model in closed form, connecting to the
+Fisher–Rao metric (Rao 1945; Amari 2016), natural-gradient
+optimization (Amari 1998), generalized Gauss–Newton curvature (Martens 2020), and pullback metrics on generative
+
+latent spaces (Arvanitidis, Hansen, and Hauberg 2018; Arvanitidis et al. 2022), none of which has been used to steer
+intermediate representations.
+
+3
+
+Preliminaries
+
+We write scalars in lightface (c), vectors in lowercase bold
+(v), and matrices in uppercase (M ); E denotes expectation
+and DKL the Kullback–Leibler divergence.
+Network and output distribution. We intervene on the
+residual stream at an intermediate layer ℓ and read the effect
+in the model’s next-token distribution. Let h ∈ Rd be the
+activation at layer ℓ and λ ∈ Rd the final-layer representation,
+related by the smooth map λ = f (h) that the remaining
+layers compute, with Jacobian J = ∂λ/∂h. The softmax
+head produces a distribution over the vocabulary V,
+pλ = softmax(WU λ),
+
+WU ∈ R|V|×d ,
+
+The output metric. Change in the prediction is measured
+by KL divergence, not Euclidean length, and to second order
+this divergence is the quadratic form of the Fisher information
+H:
+
+DKL pλ pλ+∆λ ≈ 12 ∆λ⊤ H ∆λ,
+(2)
+
+
+H = Epλ ww⊤ − w̄ w̄⊤ ,
+the covariance of the unembedding rows under the current
+prediction, where w̄ = Epλ [w]. This holds when the secondorder term dominates, the regime in which we steer; we
+check its accuracy on real models in Section 5. Because pλ
+concentrates on a few plausible tokens, H is far from isotropic,
+with most of its weight in a low-dimensional subspace—a
+fact that drives everything below.
+Concepts and off-target distortion. Following Park et al.
+(2026), a binary concept W is specified by counterfactual
+token pairs whose members differ only in the target attribute
+(e.g., run vs. runs), and is read by a mean-difference probe
+β W on the final representation. Steering should move the
+concept while leaving unrelated predictions intact. To make
+this precise, partition the vocabulary into the concept tokens
+c
+c
+YW and the remainder YW
+; the effect on YW
+is the off-target
+distortion,
+
+off
+DKL
+= DKL poff
+poff
+λ
+λ′ ,
+p(y)
+′
+y ′ ∈Y c p(y )
+
+c
+for y ∈ YW
+,
+
+(3)
+
+W
+
+the divergence between the distributions renormalized over
+c
+YW
+before (λ) and after (λ′ ) steering. The evaluation protocol
+and concept-probability target are detailed in Section 5.
+From concept direction to steering direction. Pulled back
+to the intervention layer, the probe becomes the covector
+q = J ⊤ βW ,
+
+4
+4.1
+
+(4)
+
+the direction along which the concept score climbs fastest at h.
+Steering adds a vector to h, so turning the covector q into one
+
+Method
+
+The Pullback Metric
+
+An intervention is applied to the hidden state h at layer ℓ, yet
+what we care about is its effect several layers later, on the
+prediction. A perturbation δh reaches the final representation
+as ∆λ = J δh to first order, so substituting into the outputspace cost (2) expresses that effect directly in terms of δh.
+Theorem 1 (Second-order steering cost). To second order,
+the KL divergence between the prediction before and after an
+intervention δh at layer ℓ is
+
+(1)
+
+through the unembedding matrix WU , whose rows we write
+wi .
+
+poff (y) = P
+
+requires a metric M to raise its index, giving δh ∝ M −1 q.
+Which M to use is the entire question. Additive steering takes
+M = I, moving along q as if it were already a vector—the
+flat choice we make precise, and correct, in Section 4.
+
+DKL ≈ 21 δh⊤ G δh,
+
+G = J ⊤ HJ,
+
+(5)
+
+where J is the Jacobian of the layers from ℓ to the output
+and H is the softmax Fisher information. The matrix G is
+symmetric positive semi-definite.
+We call G the pullback Fisher metric: it carries the Fisher
+geometry of the output back to layer ℓ through the Jacobian,
+and (5) shows that it is the quadratic form measuring how
+far the prediction moves under an intervention. The steering
+cost of a direction is therefore not its Euclidean length but its
+norm under G, which is highly anisotropic (Section 5). The
+proof substitutes ∆λ = J δh into (2), with positive semidefiniteness inherited from H; details are in Appendix A.
+The same matrix arises in second-order optimization.
+Proposition 1 (Gauss–Newton form). G = J ⊤ HJ is the
+generalized Gauss–Newton matrix of the model’s negative
+log-likelihood with respect to the activation h at layer ℓ.
+The curvature that natural-gradient methods use to precondition parameter updates is thus, restricted to one layer’s
+activations, the metric that governs steering there (Martens
+2020).
+
+4.2
+
+Optimal Steering Direction
+
+The metric of Section 4.1 reduces the choice of a steering
+direction to a constrained optimization. An effective intervention must induce a prescribed change in the target concept
+while minimizing the accompanying movement of the prediction, which Theorem 1 quantifies as 12 δh⊤ G δh. The concept
+is captured by the pulled-back covector q = J ⊤ β W of (4),
+and a first-order concept change of magnitude ρ corresponds
+to the linear constraint q⊤ δh = ρ. The resulting quadratic
+program admits a closed-form solution.
+Theorem 2 (Optimal steering direction). Suppose q ∈
+Range(G). Among all interventions achieving a concept
+change q⊤ δh = ρ, the minimum-norm minimizer of the
+output movement 12 δh⊤ G δh is
+δh⋆ =
+
+ρ
+G† q,
+q⊤ G† q
+
+where G† is the Moore–Penrose pseudoinverse of G.
+
+(6)
+
+A Lagrange multiplier turns the constraint into the stationarity condition G δh = νq, which (6) solves while matching
+the constraint. When G is rank-deficient the minimizers form
+an affine family differing by directions in ker(G), all of equal
+second-order cost; (6) selects the minimum-norm element,
+and the regularization of Section 4.4 makes q ∈ Range(G)
+hold in practice by replacing G with G + αI. The full derivation is in Appendix A. The direction is that of G† q, not of q:
+the metric rotates the raw concept covector toward the cheap
+directions of the output geometry, and the scalar prefactor
+sets its length to meet the target ρ.
+Existing additive methods correspond to this rule under
+a Euclidean metric. Setting G = I makes (6) collapse to
+δh⋆ = (ρ/∥q∥2 ) q, a step along q itself; methods that add a
+fixed direction take the same flat metric, though their direction
+is an empirical estimate rather than the pulled-back covector.
+
+4.3
+
+Preservation of Non-Target Behavior
+
+Theorem 2 minimizes the total movement of the prediction,
+whereas the quantity of practical interest is the movement
+of the non-target distribution, since the on-target change is
+intended. These two objectives coincide under a separability
+condition on the concept: the predicted distribution factorizes
+into a concept factor carried by YW and a content factor
+c
+shared with YW
+, which holds exactly when all counterfactual
+pairs share the same within-pair log-odds. Appendix A states
+the condition formally and proves this criterion.
+Theorem 3 (Non-target optimality). Suppose the concept W
+is separable in the sense above. Then, among all interventions
+achieving a concept change q⊤ δh = ρ, the optimal direction
+off
+δh⋆ of (6) also minimizes the off-target divergence DKL
+of
+(3) to second order.
+Separability decomposes the output movement into a target
+and a non-target term, and the constraint q⊤ δh = ρ fixes
+the former; minimizing the total is therefore equivalent to
+minimizing the latter alone. The proof is given in Appendix A.
+The direction that is economical in aggregate is therefore
+economical precisely where it matters.
+
+4.4
+
+Structure and Computation
+
+The pullback metric inherits structure from the layers it is
+pulled through. Writing the Jacobian as the product of perlayer Jacobians expresses G(ℓ) recursively in terms of G(ℓ+1)
+(Appendix B), so the metric at an early layer accumulates
+the transformations of every layer above it. One effect of this
+accumulation is a growth in the anisotropy of G with depth,
+for which the per-layer factors provide an upper bound on
+the condition number (Appendix B). This bound constrains
+how large the anisotropy can become but does not by itself
+determine where steering is most effective, a question we
+return to empirically in Section 5.
+Two properties of G shape its use in practice. First, the
+metric is rank-deficient and ill-conditioned, so the pseudoinverse in (6) must be regularized; we use a scale-equivariant
+Tikhonov term whose strength adapts to the spectrum of
+G, which leaves the solution invariant to a rescaling of the
+activations and introduces a controlled bias (Appendix D).
+Second, the direction of (6) is a first-order construction, yet
+
+it remains accurate beyond the regime in which the secondorder cost of Theorem 1 is itself accurate: the deviation of the
+direction is of order ρ2 (Appendix D). This stability licenses
+an iterative procedure, in which the metric and the covector
+are recomputed at the updated activation and a further step
+is taken, so that a large concept change is reached through a
+sequence of steps each solved in closed form.
+Forming G explicitly is infeasible at the scale of an 8B
+model, where assembling the Jacobian alone would require
+thousands of Jacobian-vector products at every step. The direction can nonetheless be computed matrix-free, as described
+in Section 5 and Appendix E.
+
+5
+
+Experiments
+
+The experiments address three questions in the order the
+theory raises them: whether the pullback metric of a trained
+Transformer departs from the Euclidean metric at the layers
+where steering is applied (§5.2); whether the closed-form
+direction of Theorem 2 outperforms existing steering methods
+at matched concept change (§5.3); and whether the observed
+gain is attributable to the metric itself (§5.4). Section 5.5
+examines how the gain depends on depth.
+
+5.1
+
+Setup
+
+Models and layers. We evaluate on GPT-2 Small (Radford
+et al. 2019) (d = 768), where every quantity in (6) is computed
+exactly, and on Llama-3-8B (Grattafiori et al. 2024) and
+Qwen3-8B (Yang et al. 2025) (d = 4096), where forming
+the metric exactly is computationally out of reach and the
+approximation summarized below is used. Interventions are
+applied at layers spanning early to late depth: {3, 6, 9, 11} for
+GPT-2 Small, {8, 16, 24} for Llama-3-8B, and {6, 18, 27}
+for Qwen3-8B. The main comparisons cover all four GPT-2
+Small layers and the early and middle layers of the two 8B
+models; the deepest 8B layers are analyzed separately in
+Section 5.5.
+Concepts and evaluation. We adopt the counterfactual
+protocol of Park et al. (2026). A concept is specified by token
+pairs differing only in the target attribute; we use three verbmorphology concepts—third-person-singular (run→runs),
+progressive (run→running), and past tense (run→ran)—each
+instantiated in natural-language contexts drawn from the
+C4 validation set (Raffel et al. 2020) and retained by the
+acceptance criterion of that protocol: 50 contexts per layer
+on GPT-2 Small and Llama-3-8B and 100 on Qwen3-8B
+(Appendix F). The concept probability
+P
+1
+i)
+i p(y
+P
+PW = P
+(7)
+0
+1
+i p(yi ) +
+i p(yi )
+is a ratio of token masses that bisection can drive to a prescribed value, and the vocabulary partitions cleanly into
+concept and non-concept tokens, so the off-target divergence
+(3) at matched concept change is well defined. Under the separability condition of Section 4.3, P W is a strictly monotone
+function of the concept score β ⊤
+W λ, so prescribing a level
+of P W and prescribing the concept change ρ of Theorem 2
+are two coordinates for the same constraint; we report P W
+
+GPT-2 Small (L3–L11)
+
+Llama-3-8B (L8, L16)
+
+Qwen3-8B (L6, L18)
+
+Ratio [IQR]
+
+Win%
+
+n
+
+Ratio [IQR]
+
+Win%
+
+n
+
+Ratio [IQR]
+
+Win%
+
+n
+
+CAA
+ActAdd
+ITI
+ReFT
+RepSurgery
+
+1.42 [0.81, 3.03]
+6.52 [2.32, 30.89]
+2.01 [1.11, 5.59]
+2.67 [1.36, 8.52]
+1.97 [1.16, 4.99]
+
+68.7
+93.9
+80.1
+87.2
+81.0
+
+332
+198
+337
+329
+327
+
+2.22 [0.88, 5.66]
+3.50 [1.63, 10.98]
+3.08 [1.05, 7.91]
+2.20 [0.89, 5.60]
+2.75 [1.06, 7.07]
+
+69.0
+84.5
+77.9
+71.1
+76.6
+
+142
+84
+113
+159
+141
+
+1.77 [0.94, 5.19]
+2.93 [1.38, 8.47]
+3.61 [1.37, 9.44]
+1.93 [0.94, 5.87]
+2.11 [1.00, 5.72]
+
+71.3
+85.0
+87.6
+70.3
+74.5
+
+223
+206
+193
+192
+235
+
+Euclidean (ablation)
+
+1.30 [1.03, 1.82]
+
+80.1
+
+366
+
+1.79 [0.90, 5.13]
+
+70.3
+
+236
+
+2.45 [1.38, 4.84]
+
+86.7
+
+165
+
+Best-per-case (oracle)
+
+1.25 [0.75, 2.63]
+
+63.5
+
+359
+
+1.64 [0.75, 4.35]
+
+64.3
+
+221
+
+1.49 [0.89, 4.29]
+
+66.9
+
+399
+
+Method
+
+Table 1: FishBack lowers off-target KL divergence at matched concept change against every steering baseline, the Euclidean
+ablation, and a per-case oracle. Entries are the median [IQR] of the per-case ratio KLmethod /KLFishBack , pooled over concepts
+and targets; values above 1 favor FishBack. Pooled entries are descriptive; per-cell tests appear in Appendix G.
+because it is directly interpretable and identical across methods. Three concepts suffice to test what this paper claims.
+Whether geometric correction can reduce the local steering
+cost is settled theoretically rather than empirically: Appendix I
+proves that, under the second-order model, steering under a
+flat metric is never cheaper than steering under G, for any
+concept direction whatsoever, with equality only in a degenerate case. Adding concepts cannot strengthen or weaken that
+result. What experiments must establish is that the predicted
+advantage survives at practical step sizes, appears in the offtarget component specifically, and is of the size the theory
+predicts—and the theory is specific about the size, attributing
+it to how the concept direction spreads across the spectrum of
+G. Section 5.5 measures that quantity directly. The evidence
+here is therefore not three observations of one effect, but an
+effect that varies, across nearly two thousand cases and three
+model families, with a quantity named in advance.
+Steering task and matched comparison. Each method
+steers each context toward four targets P W ∈
+{0.3, 0.5, 0.7, 0.9}. All comparisons are paired at matched
+concept change: a case enters a comparison only when both
+methods reach the same target on the same context, so offtarget divergences are compared at equal on-target effect.
+Aggregation over targets takes the geometric mean of the four
+per-target ratios and requires all four targets to be reached;
+runs whose calibration fails to reach a target are excluded
+from that target’s pairs, and per-cell counts appear in Table 1
+and Appendix G.
+Methods. FishBack reaches each target by iteration. At the
+current activation it solves the regularized system of (6) in
+closed form, and applies the resulting direction at a fixed
+concept efficiency: the component along q is set to a constant
+and the remainder follows the orthogonal part of the solved
+direction (Appendix E). Fixing the concept efficiency guarantees progress toward the target when G is ill-conditioned,
+and the same construction is used for the Euclidean ablation,
+which retains only the concept component, so the two runs
+differ exactly by the geometric term. The activation is then
+updated, and the covector and metric are re-evaluated at
+the new point—exactly at every step on GPT-2 Small, and
+through the fixed-Jacobian approximation described below
+on the 8B models—until the trajectory of P W has crossed
+
+the targets. Because the trajectory is discrete, each crossing is
+localized by bisection in activation space between the adjacent
+iterates, and the off-target divergence of (3) is evaluated at
+the localized crossing, so every method is scored at exactly
+the prescribed concept level. The same localization applies
+to the baselines, whose trajectories arise from sweeping the
+magnitude of their fixed directions. At the scale of an 8B
+model, exact computation is no longer viable: forming G
+at d = 4096 over a 105 -token vocabulary exceeds practical
+memory and time budgets by orders of magnitude. We therefore developed an approximation that computes the Fisher
+correction while avoiding the explicit matrix. The action of G
+on a vector is evaluated by a finite-difference Jacobian–vector
+product followed by a backward product under automatic
+differentiation; the softmax Fisher is restricted to the roughly
+103 tokens carrying the predictive mass; and a randomized
+decomposition of rank 50 (Halko, Martinsson, and Tropp
+2011) supplies the low-dimensional subspace in which the
+regularized inverse is taken, with the Jacobian held fixed
+across steps. Each component is validated in Appendix E.
+We compare against five steering methods: CAA (Rimsky
+et al. 2024), ActAdd (Turner et al. 2023), ITI (Li et al. 2023),
+ReFT (Wu et al. 2024), and Representation Surgery (Singh
+et al. 2024). Two references complete the comparison: the
+Euclidean ablation, which runs the same iterative pipeline
+with G replaced by the identity and thus steers along q itself;
+and Best-per-case, a per-case oracle that selects, for every
+case, the baseline with the smallest off-target divergence.
+
+Statistics. Off-target comparisons are summarized by percase ratios KLbaseline /KLFishBack , so values above 1 favor
+FishBack; we report medians with interquartile ranges. Significance uses one-sided paired Wilcoxon signed-rank tests
+on the log-ratios, each pair consisting of the two methods’
+off-target divergences for the same context at the same target,
+whose null distribution is symmetric where that of raw ratios is
+not, with Benjamini–Hochberg correction applied within families defined per model and aggregation level (Appendix G);
+cells with fewer than six pairs are marked underpowered and
+excluded from confirmatory claims. Families, audits, and
+per-cell tables appear in Appendix G.
+
+(b)
+
+10
+
+10
+
+10
+
+10
+
+FishBack
+ITI
+
+0
+
+−2
+
+−4
+
+−6
+
+−8
+
+10
+
+0
+
+10
+
+1
+
+10
+
+2
+
+L3
+
+L6
+
+L9
+
+20
+
+10
+
+15
+
+10
+
+10
+
+L11
+
+0
+
+2.37%
+0.10%
+
+L3
+
+L6
+
+L9 L11
+
+0.14%
+
+0.08%
+
+L8 L16
+
+0.11%
+
+L6 L18
+
+GPT-2 Small
+
+Llama-3-8B
+
+Qwen3-8B
+
+Figure 2: The pullback Fisher metric is strongly non-Euclidean
+at every layer studied. Left: normalized eigenvalue spectra
+of G, decaying by more than six orders of magnitude. Right:
+median effective rank as a fraction of the hidden dimension,
+with interquartile ranges over contexts.
+
+10
+
+10
+
+Geometry of the Intermediate Layers
+
+1
+
+L3
+
+L6
+
+L9
+
+L11
+
+0
+
+Off-Target Comparison Against Baselines
+
+Table 1 reports the central comparison: the per-case ratio
+of each method’s off-target divergence to FishBack’s, at
+matched concept change, pooled over concepts, targets, and
+the layers in scope. On GPT-2 Small, where every step of (6)
+is exact, FishBack attains a lower off-target divergence than
+each of the five steering methods, with median ratios from
+1.42 (CAA) to 6.52 (ActAdd) and win rates of 69–94%; the
+per-cell tests remain significant after Benjamini–Hochberg
+correction in the large majority of concept–layer–target cells
+(Appendix G). The advantage holds at every layer, including
+the deepest (Figure 3). Against the Best-per-case oracle, the
+median ratio is 1.25 with a 64% win rate—a thinner margin,
+and a bar no single fixed method faces in practice. The
+same protocol runs on Llama-3-8B and Qwen3-8B under the
+approximation of Section 5.1. At the early and middle layers
+the advantage not only persists but widens: median ratios
+against individual baselines reach 2.2–3.5 on Llama-3-8B
+
+−2
+
+10
+
+10
+
+1
+
+0
+
+−1
+
+−2
+
+Figure 3: On GPT-2 Small, FishBack attains the lowest offtarget KL divergence at matched concept change at every layer.
+Boxes show the median and interquartile range of per-case
+off-target KL (log scale), pooled over concepts and targets.
+FishBack
+ITI
+
+Euclidean
+ReFT
+
+CAA
+RepSurgery
+
+ActAdd
+Best-per-case
+
+Llama-3-8B
+
+10
+
+Off-target KL
+(case-level geometric mean)
+
+Theorem 1 makes the operative geometry explicit; the first
+experiment measures how far it departs from the flat metric
+that additive methods assume. On GPT-2 Small, where G
+is computed exactly, the deviation from the closest scaled
+identity (the deviation identity of Appendix C) exceeds 97%
+in relative Frobenius norm at every layer, and the spectrum
+decays by more than six orders of magnitude within the
+first few hundred eigendirections (Figure 2, left): the median
+effective rank per layer spans 2–17% of the hidden dimension
+across layers 3–11, with condition numbers on the order of 107 .
+The two 8B models concentrate further still—at their early
+and middle layers the median effective rank, computed within
+the rank-50 subspace retained by the approximation, falls
+below 0.2% of d = 4096 (Figure 2, right), a concentration
+with two consequences realized below: the rank-50 subspace
+captures essentially all of the metric’s mass, and the geometric
+correction has more room to act (Section 5.4). The premise
+of Section 4—that steering cost is governed by a strongly
+anisotropic quadratic form—holds quantitatively at every
+layer used below.
+
+5.3
+
+ActAdd
+Best-per-case
+
+−1
+
+10
+
+10
+
+5.2
+
+CAA
+RepSurgery
+
+3.72%
+
+5
+
+Intervention layer
+
+Eigenvalue rank i
+
+Euclidean
+ReFT
+
+17.06%
+15.17%
+
+Off-target KL
+(case-level geometric mean)
+
+10
+
+Effective rank / hidden size (%)
+
+Normalized eigenvalue λi/λmax
+
+(a)
+
+10
+
+0
+
+−2
+
+Qwen3-8B
+
+10
+
+10
+
+L8
+
+L16
+
+0
+
+−2
+
+L6
+
+L18
+
+Intervention layer
+
+Figure 4: The off-target advantage persists on Llama-3-8B and
+Qwen3-8B at the early and middle layers under the matrixfree approximation. Boxes show per-case off-target KL (log
+scale) at matched concept change, with shared axes.
+
+and 1.8–3.6 on Qwen3-8B, and the Best-per-case margins
+remain at 1.64 and 1.49 (Table 1; Figure 4). The deepest
+8B layers, where the geometry itself contracts, are analyzed
+in Section 5.5. Because matched comparison conditions on
+both methods reaching a target, per-method reachability is
+
+Verb to 3rd
+Verb to -ing
+
+identity while keeping the iterative pipeline, the calibration,
+and the covector unchanged; the gap between the two runs
+therefore measures the contribution of the metric alone. Table 1 (middle block) and Figures 5–6 report this gap as the
+per-case ratio of Euclidean to FishBack off-target divergence.
+On GPT-2 Small the ratio sits above parity at every layer,
+with a pooled median of 1.30 and an 80% win rate; on the 8B
+models it widens to 1.79 (Llama-3-8B) and 2.45 (Qwen3-8B)
+at the early and middle layers.
+
+Verb to past
+Pooled
+
+Off-target KL ratio
+(Euclidean / FishBack)
+
+2.25
+2.00
+1.75
+1.50
+1.25
+
+5.5
+
+1.00
+0.75
+L3
+
+L6
+
+L9
+
+L11
+
+Intervention layer
+
+Figure 5: Ablating the metric isolates the geometric gain on
+GPT-2 Small: the Euclidean-to-FishBack off-target ratio lies
+above parity at every layer. Points are per-layer medians with
+interquartile ranges.
+Verb to 3rd
+Verb to -ing
+
+Verb to past
+Pooled
+
+Llama-3-8B
+10
+5
+2
+
+Off-target KL ratio
+(Euclidean / FishBack)
+
+1
+0.5
+L8
+
+L16
+
+Qwen3-8B
+
+Section 4.4 noted that the condition-number bound caps how
+anisotropic the geometry can become but does not by itself
+determine where correcting it pays. The analysis in Appendix I
+sharpens this: the attainable gain over Euclidean steering is
+bounded by the anisotropy of G, and it is realized only to the
+extent that the concept covector spreads across the spectrum
+of G rather than aligning with a single eigendirection. Both
+quantities are measurable per case, which turns the framework
+into a prediction about where the ablation gap of Section 5.4
+should appear and where it should close.
+The deepest 8B layers test the prediction. At Llama-3-8B
+L24 and Qwen3-8B L27 (roughly 75% relative depth), the
+conditioning of G has flattened substantially—the condition
+number falls by a factor of three on Llama-3-8B and forty on
+Qwen3-8B relative to their early layers (Appendix C)—which
+lowers the ceiling of Appendix I on the attainable gain, and the
+Euclidean gap of Table 1 is no longer significant. The closure
+is not uniform noise: at these layers the per-case gain becomes
+strongly predictable from the concept–spectrum alignment,
+with case-level Spearman correlations rising from near zero
+at the early layers to 0.50 (Llama-3-8B) and 0.62 (Qwen3-8B)
+at the deepest ones (Appendix J). Where the geometry is
+rich, the correction helps broadly; where it flattens, the gain
+narrows to the cases the theory selects.
+
+10
+
+6
+
+5
+2
+1
+0.5
+L6
+
+L18
+
+Intervention layer
+
+Figure 6: The geometric gain transfers to the 8B models: the
+Euclidean-to-FishBack off-target ratio stays above parity at
+the early and middle layers. Points are per-layer medians with
+interquartile ranges.
+
+reported in Appendix H.
+
+5.4
+
+Analysis of the Advantage Regime
+
+Geometric Ablation
+
+To attribute the advantage established above, the Euclidean
+ablation replaces the pullback Fisher metric G in (6) with the
+
+Conclusion
+
+Activation steering has treated the intermediate activation
+space as flat, and its familiar instabilities follow from that
+choice. This paper identified the metric that the choice ignores:
+the Fisher information of the softmax head, pulled back
+through the network’s Jacobian, which measures to second
+order how much an intervention at layer ℓ moves the model’s
+prediction. From this metric we derived the steering direction
+that achieves a prescribed concept change at the least off-target
+distortion, and related the widely used additive methods to
+steering under a flat metric. A matrix-free approximation
+carries the computation to 8B-scale models at a few hundred
+partial forward passes per case. On three verb-morphology
+concepts across GPT-2 Small, Llama-3-8B, and Qwen38B, the derived direction lowers off-target KL divergence
+at matched concept change by median factors of 1.4–6.5x
+against individual steering baselines on GPT-2 Small and
+1.8–3.6x on the 8B models at the early and middle layers,
+with the geometric ablation attributing the gain to the metric
+itself.
+
+References
+Amari, S.-i. 1998. Natural Gradient Works Efficiently in
+Learning. Neural Computation, 10(2): 251–276.
+Amari, S.-i. 2016. Information Geometry and Its Applications, volume 194 of Applied Mathematical Sciences. Tokyo:
+Springer.
+Arditi, A.; Obeso, O.; Syed, A.; Paleka, D.; Panickssery,
+N.; Gurnee, W.; and Nanda, N. 2024. Refusal in Language
+Models Is Mediated by a Single Direction. In Advances in
+Neural Information Processing Systems 37 (NeurIPS 2024),
+136037–136083. Curran Associates, Inc.
+Arvanitidis, G.; González-Duque, M.; Pouplin, A.; Kalatzis,
+D.; and Hauberg, S. 2022. Pulling Back Information Geometry. In Proceedings of the 25th International Conference on
+Artificial Intelligence and Statistics, volume 151 of Proceedings of Machine Learning Research, 4872–4894. PMLR.
+Arvanitidis, G.; Hansen, L. K.; and Hauberg, S. 2018. Latent
+Space Oddity: On the Curvature of Deep Generative Models.
+In 6th International Conference on Learning Representations
+(ICLR 2018). Vancouver, Canada: OpenReview.net.
+Belrose, N.; Schneider-Joseph, D.; Ravfogel, S.; Cotterell,
+R.; Raff, E.; and Biderman, S. 2023. LEACE: Perfect Linear
+Concept Erasure in Closed Form. In Advances in Neural
+Information Processing Systems 36 (NeurIPS 2023), 66044–
+66063. Curran Associates, Inc.
+Braun, J.; Eickhoff, C.; Krueger, D.; Bahrainian, S. A.; and
+Krasheninnikov, D. 2025. Understanding (Un)Reliability of
+Steering Vectors in Language Models. In ICLR 2025 Workshop on Building Trust in Language Models and Applications.
+Singapore: OpenReview.net.
+Dathathri, S.; Madotto, A.; Lan, J.; Hung, J.; Frank, E.;
+Molino, P.; Yosinski, J.; and Liu, R. 2020. Plug and Play
+Language Models: A Simple Approach to Controlled Text
+Generation. In 8th International Conference on Learning
+Representations (ICLR 2020). Addis Ababa, Ethiopia: OpenReview.net.
+Grattafiori, A.; Dubey, A.; Jauhri, A.; Pandey, A.; Kadian, A.;
+et al. 2024. The Llama 3 Herd of Models. arXiv:2407.21783.
+Halko, N.; Martinsson, P.-G.; and Tropp, J. A. 2011. Finding
+Structure with Randomness: Probabilistic Algorithms for
+Constructing Approximate Matrix Decompositions. SIAM
+Review, 53(2): 217–288.
+Hendel, R.; Geva, M.; and Globerson, A. 2023. In-Context
+Learning Creates Task Vectors. In Findings of the Association
+for Computational Linguistics: EMNLP 2023, 9318–9333.
+Singapore: Association for Computational Linguistics.
+Im, J.; and Li, J. 2025. A Unified Framework for Understanding Activation Steering Directions. arXiv:2502.02716.
+Li, K.; Patel, O.; Viégas, F.; Pfister, H.; and Wattenberg,
+M. 2023. Inference-Time Intervention: Eliciting Truthful
+Answers from a Language Model. In Advances in Neural
+Information Processing Systems 36 (NeurIPS 2023), 41451–
+41530. Curran Associates, Inc.
+Martens, J. 2020. New Insights and Perspectives on the
+Natural Gradient Method. Journal of Machine Learning
+Research, 21(146): 1–76.
+
+Ouyang, L.; Wu, J.; Jiang, X.; Almeida, D.; Wainwright,
+C. L.; Mishkin, P.; Zhang, C.; Agarwal, S.; Slama, K.; Ray,
+A.; Schulman, J.; Hilton, J.; Kelton, F.; Miller, L.; Simens, M.;
+Askell, A.; Welinder, P.; Christiano, P.; Leike, J.; and Lowe,
+R. 2022. Training Language Models to Follow Instructions
+with Human Feedback. In Advances in Neural Information
+Processing Systems 35 (NeurIPS 2022), 27730–27744. Curran
+Associates, Inc.
+Park, K.; Nief, T.; Choe, Y. J.; and Veitch, V. 2026. The
+Information Geometry of Softmax: Probing and Steering.
+arXiv:2602.15293.
+Radford, A.; Wu, J.; Child, R.; Luan, D.; Amodei, D.; and
+Sutskever, I. 2019. Language Models are Unsupervised
+Multitask Learners. Technical report, OpenAI.
+Raffel, C.; Shazeer, N.; Roberts, A.; Lee, K.; Narang, S.;
+Matena, M.; Zhou, Y.; Li, W.; and Liu, P. J. 2020. Exploring
+the Limits of Transfer Learning with a Unified Text-to-Text
+Transformer. Journal of Machine Learning Research, 21(140):
+1–67.
+Rao, C. R. 1945. Information and the Accuracy Attainable
+in the Estimation of Statistical Parameters. Bulletin of the
+Calcutta Mathematical Society, 37(3): 81–91.
+Raval, S.; Song, H. J.; Wu, L.; Harrasse, A.; Phillips,
+J. M.; Barez, F.; and Abdullah, A. 2026. Curveball Steering: The Right Direction To Steer Isn’t Always Linear.
+arXiv:2603.09313.
+Rimsky, N.; Gabrieli, N.; Schulz, J.; Tong, M.; Hubinger,
+E.; and Turner, A. 2024. Steering Llama 2 via Contrastive
+Activation Addition. In Proceedings of the 62nd Annual
+Meeting of the Association for Computational Linguistics
+(Volume 1: Long Papers), 15504–15522. Bangkok, Thailand:
+Association for Computational Linguistics.
+Singh, S.; Ravfogel, S.; Herzig, J.; Aharoni, R.; Cotterell, R.;
+and Kumaraguru, P. 2024. Representation Surgery: Theory
+and Practice of Affine Steering. In Proceedings of the 41st
+International Conference on Machine Learning, volume 235
+of Proceedings of Machine Learning Research, 45663–45680.
+PMLR.
+Subramani, N.; Suresh, N.; and Peters, M. E. 2022. Extracting
+Latent Steering Vectors from Pretrained Language Models.
+In Findings of the Association for Computational Linguistics: ACL 2022, 566–581. Dublin, Ireland: Association for
+Computational Linguistics.
+Tan, D.; Chanin, D.; Lynch, A.; Paige, B.; Kanoulas, D.;
+Garriga-Alonso, A.; and Kirk, R. 2024. Analysing the Generalisation and Reliability of Steering Vectors. In Advances in
+Neural Information Processing Systems 37 (NeurIPS 2024),
+139179–139212. Curran Associates, Inc.
+Todd, E.; Li, M. L.; Sharma, A. S.; Mueller, A.; Wallace,
+B. C.; and Bau, D. 2024. Function Vectors in Large Language
+Models. In 12th International Conference on Learning Representations (ICLR 2024). Vienna, Austria: OpenReview.net.
+Turner, A. M.; Thiergart, L.; Leech, G.; Udell, D.; Vazquez,
+J. J.; Mini, U.; and MacDiarmid, M. 2023. Steering Language
+Models With Activation Engineering. arXiv:2308.10248.
+
+van der Weij, T.; Poesio, M.; and Schoots, N. 2024. Extending
+Activation Steering to Broad Skills and Multiple Behaviours.
+arXiv:2403.05767.
+Vu, H. M.; and Nguyen, T. M. 2025. Angular Steering:
+Behavior Control via Rotation in Activation Space. In 2nd
+Workshop on Models of Human Feedback for AI Alignment.
+OpenReview.net.
+Wu, Z.; Arora, A.; Geiger, A.; Wang, Z.; Huang, J.; Jurafsky,
+D.; Manning, C. D.; and Potts, C. 2025. AxBench: Steering
+LLMs? Even Simple Baselines Outperform Sparse Autoencoders. In Proceedings of the 42nd International Conference
+on Machine Learning, Proceedings of Machine Learning
+Research. PMLR.
+Wu, Z.; Arora, A.; Wang, Z.; Geiger, A.; Jurafsky, D.; Manning, C. D.; and Potts, C. 2024. ReFT: Representation Finetuning for Language Models. In Advances in Neural Information
+Processing Systems 37 (NeurIPS 2024), 63908–63962. Curran
+Associates, Inc.
+Wurgaft, D.; Rager, C.; Kowal, M.; Shyam, V.; Feucht, S.;
+Bhalla, U.; Haklay, T.; Bigelow, E.; Sarfati, R.; McGrath, T.;
+Lewis, O.; Merullo, J.; Goodman, N.; Fel, T.; Geiger, A.; and
+Lubana, E. S. 2026. Manifold Steering Reveals the Shared
+Geometry of Neural Network Representation and Behavior.
+arXiv:2605.05115.
+Yang, A.; Li, A.; Yang, B.; Zhang, B.; Hui, B.; et al. 2025.
+Qwen3 Technical Report. arXiv:2505.09388.
+Zou, A.; Phan, L.; Chen, S.; Campbell, J.; Guo, P.; Ren, R.;
+Pan, A.; Yin, X.; Mazeika, M.; Dombrowski, A.-K.; Goel, S.;
+Li, N.; Byun, M. J.; Wang, Z.; Mallen, A.; Basart, S.; Koyejo,
+S.; Song, D.; Fredrikson, M.; Kolter, J. Z.; and Hendrycks, D.
+2023. Representation Engineering: A Top-Down Approach
+to AI Transparency. arXiv:2310.01405.
+
+A
+
+Proofs of the Main Results
+
+Theorem and proposition numbers in the headings below refer
+to the main paper; results stated here for the first time are
+numbered within this appendix.
+
+A.1
+
+Setting and Notation
+
+Notation follows the main paper. The softmax head maps the
+final representation λ ∈ Rd to pλ = softmax(WU λ) with
+unembedding rows wy ; the log-partition of this exponential
+family is
+X
+
+A(λ) = log
+exp(wy⊤ λ), pλ (y) = exp wy⊤ λ − A(λ) .
+y∈V
+
+(8)
+We write
+w̄λ = Epλ [w],
+
+H = Covpλ (w),
+
+⊤
+
+q = J ⊤ βW ,
+
+G = J HJ,
+
+(9)
+
+where λ = f (h) and J is the Jacobian of f . For a concept W
+0 1 nW
+with counterfactual
+tokens
+S 0 1pairs {(yc i , yi )}i=1 , the concept
+off
+are YW = i {yi , yi } and YW is the remainder; DKL
+denotes
+the divergence between the distributions renormalized over
+c
+YW
+, as in the main paper.
+
+A.2
+
+Proof of Theorem 1 (Second-Order Steering
+Cost)
+
+Lemma 1 (KL as a Bregman divergence). For all λ0 , λ1 ,
+
+DKL (pλ0 ∥ pλ1 ) = A(λ1 ) − A(λ0 ) − ∇A(λ0 )⊤ λ1 − λ0 .
+(10)
+Proof. By (8),
+log
+
+
+pλ0 (y)
+= wy⊤ λ0 − λ1 − A(λ0 ) + A(λ1 ).
+pλ1 (y)
+
+(11)
+
+Taking the expectation under pλ0 and using Epλ0 [w] =
+∇A(λ0 ), which is verified in the next proof, gives the claim.
+Lemma 2 (Hessian equals the softmax Fisher). ∇A(λ) =
+w̄λ and ∇2 A(λ) = Covpλ (w) = H.
+Proof. Differentiating (8),
+X
+∇A(λ) =
+pλ (y) wy = w̄λ .
+
+(12)
+
+y
+
+
+Since ∇pλ (y) = pλ (y) wy − w̄λ ,
+X
+X
+
+∇2 A(λ) =
+∇pλ (y) wy⊤ =
+pλ (y) wy − w̄λ wy⊤
+=
+
+y
+
+y
+
+X
+
+
+⊤
+pλ (y) wy − w̄λ wy − w̄λ ,
+
+y
+
+where the last step uses
+
+P
+
+y pλ (y) wy − w̄λ
+
+
+
+= 0.
+
+Proof of Theorem 1. Let
+
+∆λ = f (h0 + δh) − f (h0 ) = J δh + O ∥δh∥2
+
+(13)
+
+2
+
+for f ∈ C . By Lemma 1 and a third-order Taylor expansion
+of A at λ0 , the first-order terms cancel and
+
+DKL = 12 ∆λ⊤ H ∆λ + O ∥∆λ∥3 ,
+(14)
+using Lemma 2 for the quadratic coefficient. Substituting the
+expansion of ∆λ and absorbing all cross and higher terms
+into the remainder yields
+
+G = J ⊤ HJ. (15)
+DKL = 12 δh⊤ G δh + O ∥δh∥3 ,
+Symmetry is immediate; positive semi-definiteness follows
+since δh⊤ G δh = (Jδh)⊤ H(Jδh) ≥ 0 by Lemma 2. An
+explicit bound on the third-order remainder, and the critical
+radius within which the quadratic model is reliable, are given
+in Appendix D.
+
+A.3
+
+Proof of Proposition 1 (Gauss–Newton Form)
+
+Proof. The negative log-likelihood of a label y as a function
+of the final representation is
+Ly (λ) = A(λ) − wy⊤ λ,
+whose Hessian ∇2λ Ly
+
+(16)
+
+2
+
+= ∇ A = H is independent of y
+by Lemma 2. The generalized Gauss–Newton matrix of
+Ly ◦ f with respect to h discards the term involving second
+derivatives of f and retains
+
+J ⊤ ∇2λ Ly J = J ⊤ HJ = G
+(17)
+for every label.
+
+A.4
+
+Proof of Theorem 2 (Optimal Steering
+Direction)
+
+Throughout this subsection assume q ∈ Range(G) and
+q ̸= 0, so that q⊤ G† q > 0; in practice this is secured by the
+spectral regularization of the main paper, which replaces G
+by a positive-definite G + αI (Appendix D).
+Proof of Theorem 2. The Lagrangian
+
+L(δh, ν) = 12 δh⊤ G δh − ν q⊤ δh − ρ
+(18)
+has stationarity condition
+G δh = ν q.
+(19)
+†
+Since q ∈ Range(G), all solutions are δh = ν G q + k with
+k ∈ ker(G), and the constraint fixes
+ν q⊤ G† q + q⊤ k = ρ.
+(20)
+Because the objective is convex (G ⪰ 0) and constant along
+ker(G), the set of minimizers is the affine family
+
+ρ
+δh⋆ + ker(G) ∩ q⊥ ,
+δh⋆ = ⊤ † G† q, (21)
+q G q
+all attaining the optimal cost
+ρ2
+.
+(22)
+⊤
+2 q G† q
+Among them, δh⋆ is the unique minimum-norm element,
+since G† q ∈ Range(G) ⊥ ker(G). Kernel directions carry
+no second-order cost but are not certified by the quadratic
+model beyond second order; the minimum-norm choice discards them. Setting G = I recovers δh⋆ = (ρ/∥q∥2 ) q, the
+additive step of the flat special case.
+
+A.5
+
+Proof of Theorem 3 (Non-Target Optimality)
+
+Definition 1 (Concept decomposability). Write di = wyi1 −
+wyi0 . The distribution pλ is decomposable for W if there
+exist a binary distribution PλW and a distribution PλZ over
+contents—one atom zi per counterfactual pair and one atom
+c
+per token of YW
+—such that
+pλ (yiw ) = PλW (w) PλZ (zi )
+pλ (y) = PλZ (zy )
+
+for all i, w,
+
+(23)
+
+c
+for y ∈ YW
+.
+
+ζ(r) =
+
+Lemma 3 (Criterion). pλ is decomposable for W if and only
+if d⊤
+i λ is the same for all i, i.e.
+(di − dj )⊤ λ = 0
+
+for all i, j.
+
+(24)
+
+Proof. Decomposability forces the within-pair odds
+P W (1)
+pλ (yi1 )
+=
+pλ (yi0 )
+P W (0)
+
+
+P W (1) = σ d⊤
+1λ ,
+P Z (zi ) = pλ (yi0 ) + pλ (yi1 ),
+
+(26)
+
+Z
+
+P (zy ) = pλ (y);
+the factorization follows.
+Theorem 4 (Non-target optimality, precise form). Let Aρ
+be the feasible set of interventions achieving the prescribed
+concept change, and suppose every distribution reached from
+Aρ ∪ {h0 } is decomposable for W , with P W determined by
+the concept score β ⊤
+W λ. Then
+
+arg min DKL (pλ0 ∥ pλ ) ⊆ arg min DKL PλZ0 PλZ .
+
+B
+
+PλW
+
+i,j
+
+(30)
+
+Structure of the Pullback Metric
+
+This appendix develops the layerwise structure referenced
+in Section 4.4 of the main paper: the recursion relating the
+metrics at adjacent layers, the bounds on conditioning and
+effective rank that follow from it, and the behavior of the
+null space. Throughout, G(ℓ) denotes the pullback metric at
+layer ℓ, so that G(L) = H is the softmax Fisher at the final
+representation, and
+∂h(ℓ+1)
+∂h(ℓ)
+is the Jacobian of the map from layer ℓ to layer ℓ + 1.
+Aℓ =
+
+B.1
+
+(31)
+
+Layerwise Recursion
+
+Theorem 7 (Recursive decomposition). For every ℓ,
+(ℓ+1)
+G(ℓ) = A⊤
+Aℓ .
+ℓ G
+
+(32)
+
+Proof. The chain rule gives Jℓ→L = Jℓ+1→L Aℓ , so
+
+c
+Expanding the total divergence over YW ∪ YW
+under
+
+Proof.
+Definition 1 and collecting terms,
+P
+
+Z
+W
+DKL (pλ0 ∥ pλ ) =
+i Pλ0 (zi ) DKL Pλ0
+
++ DKL PλZ0 PλZ ,
+
+max (di − dj )⊤ f (h)
+
+is small, in which case all within-pair odds agree up to a factor
+e±2ζ . Exactness at one point does not extend automatically:
+with da = (1, 0), db = (0, 1) and the reachable curve
+f (t) = (t, 2t), decomposability holds at t = 0 and fails for
+every t ̸= 0.
+
+δh∈Aρ
+
+(27)
+
+sup
+h∈Br (h0 )
+
+(25)
+
+to be independent of i; by (8) this odds equals exp(d⊤
+i λ).
+Conversely, if all d⊤
+λ
+are
+equal,
+define
+i
+
+δh∈Aρ
+
+where m is the content mass on the pairs and d(·∥·) the binary
+off
+divergence. The reported metric DKL
+is thus the dominant
+component whenever the concept tokens carry a small share
+of the mass, which holds throughout our evaluation contexts.
+Remark 6 (Scope of the assumption). Decomposability need
+only hold on the steering neighborhood. If all pairs share one
+difference vector, di ≡ β W , the criterion of Lemma 3 holds
+identically. Otherwise it holds approximately when
+
+⊤
+G(ℓ) = Jℓ→L
+H Jℓ→L
+⊤
+= A⊤
+ℓ Jℓ+1→L H Jℓ+1→L Aℓ
+
+
+
+(ℓ+1)
+= A⊤
+Aℓ .
+ℓ G
+
+(28)
+
+where thePcross terms recombine into the second divergence
+because w P W (w) = 1. On Aρ the concept score is fixed,
+hence PλW is constant and the first term does not vary with
+δh; minimizing the left side over Aρ therefore minimizes the
+second term.
+Theorem 3 of the main paper is this statement specialized
+to the reported metric: under the same condition, the direction
+that minimizes the total divergence also minimizes the nonoff
+concept divergence, whose dominant component is DKL
+by
+Remark 5.
+Remark 5 (Relation to the experimental metric). Splitting
+c
+P Z into its pair-content and YW
+components by the chain
+rule,
+
+pair
+off
+DKL PλZ0 PλZ = d(m0 ∥ m)+m0 DKL
++(1−m0 ) DKL
+,
+(29)
+
+The metric at each layer is thus a congruence transform
+of the metric above it, and the metric at an early layer is the
+output Fisher conjugated by the entire stack of intervening
+maps. Mild per-layer distortion accumulates multiplicatively,
+which is the mechanism behind the bounds below.
+
+B.2
+
+Conditioning
+
+Theorem 8 (Condition-number bound). Suppose Aℓ is invertible on the relevant subspace. Then
+
+
+κ G(ℓ) ≤ κ G(ℓ+1) κ(Aℓ )2 .
+(33)
+If moreover Ak = I + Bk with ∥Bk ∥2 ≤ ρk < 1 for all k,
+then
+Y  1 + ρk 2
+
+ L−1
+(ℓ)
+(L)
+κ G
+≤κ G
+.
+(34)
+1 − ρk
+k=ℓ
+
+Proof. By Theorem 7, v⊤ G(ℓ) v = (Aℓ v)⊤ G(ℓ+1) (Aℓ v) for
+every v. Writing mℓ+1 and Mℓ+1 for the extreme eigenvalues
+of G(ℓ+1) on that subspace,
+
+λmax G(ℓ) ≤ Mℓ+1 σmax (Aℓ )2 ,
+
+λmin G(ℓ) ≥ mℓ+1 σmin (Aℓ )2 ,
+and dividing gives (33). For Ak = I + Bk one has
+σmax (Ak ) ≤ 1 + ρk and σmin (Ak ) ≥ 1 − ρk , so κ(Ak ) ≤
+(1 + ρk )/(1 − ρk ); telescoping (33) from L down to ℓ yields
+(34).
+Remark 9 (Scope of the bounds). Equation (34) is an upper
+bound. It permits the conditioning to degrade geometrically
+in the number of layers traversed, but does not force it:
+a layer with κ(Aℓ ) near one leaves the bound essentially
+unchanged, and the bound is blind to cancellations between
+layers. The measured condition numbers of Appendix C do
+grow toward the shallower layers on all three models, though
+not in every concept-level cell. Corollary 1 is likewise specific
+to the trace effective rank rtr ; the quantity measured in our
+experiments is the entropy effective rank of Definition 4, which
+weights the spectrum differently, so the two track each other
+qualitatively but the bound does not apply to the reported
+values verbatim. These bounds constrain how anisotropic
+the metric can become; they do not identify where geometric
+correction is most useful, which is the empirical question
+taken up in Appendix J.
+
+B.3
+
+Effective Rank
+
+Definition 2 (Trace effective rank). For G ⪰ 0 let
+tr(G)
+,
+λmax (G)
+
+(35)
+
+Corollary 1 (Decay bound). If Aℓ is invertible, then
+
+
+rtr G(ℓ) ≥ κ(Aℓ )−2 rtr G(ℓ+1) ,
+
+(36)
+
+and consequently
+Y
+
+ L−1
+κ(Ak )−2 .
+rtr G(ℓ) ≥ rtr G(L)
+
+(37)
+
+k=ℓ
+2
+Proof. Cyclicity of the trace and Aℓ A⊤
+ℓ ⪰ σmin (Aℓ ) I give
+
+
+
+tr G(ℓ) = tr G(ℓ+1) Aℓ A⊤
+≥ σmin (Aℓ )2 tr G(ℓ+1) ,
+ℓ
+
+while λmax (G(ℓ) ) ≤ σmax (Aℓ )2 λmax (G(ℓ+1) ) as in the previous proof. Dividing the two gives the claim.
+
+B.4
+
+
+τ
+λi G(ℓ+1) ≤ 2
+Sℓ
+
+=⇒
+
+
+λi G(ℓ) ≤ τ.
+
+(40)
+
+When the intervening maps contract, Sℓ < 1 and the set of
+directions falling below the threshold at the shallower layer
+is strictly larger than at the deeper one. The concentration
+observed at early layers is therefore a statement about the
+numerical near-null space rather than about exact nullity, and
+we describe it as such throughout.
+
+C
+
+Geometry Measurements
+
+This appendix gives the identity behind the deviation figures
+quoted in Section 5.2 of the main paper, and reports the
+measured geometry at every layer of the three models.
+
+Deviation from the Euclidean Metric
+
+The Euclidean assumption amounts to modelling G by a
+scalar multiple of the identity. The quality of the best such
+model is controlled by a single spectral quantity.
+Definition 3 (Participation rank). For G ⪰ 0 let
+2
+P 2
+tr G
+λi
+= Pi 2 ,
+PR(G) =
+(41)
+2
+∥G∥F
+i λi
+which satisfies 1 ≤ PR(G) ≤ rank(G) ≤ d.
+Theorem 13 (Best scalar Euclidean approximation). For any
+G ⪰ 0 in dimension d,
+r
+∥G − cI∥F
+PR(G)
+= 1−
+,
+(42)
+min
+c∈R
+∥G∥F
+d
+attained at c⋆ = tr(G)/d.
+Proof. Expanding the objective and using ∥I∥2F = d,
+
+Null Space and Near-Null Space
+
+Theorem 10 (Kernel recursion). For G(ℓ+1) ⪰ 0,
+
+ker G(ℓ) = v : Aℓ v ∈ ker G(ℓ+1) .
+
+and hence
+
+C.1
+
+1 ≤ rtr (G) ≤ rank(G).
+
+rtr (G) =
+
+Remark 11 (Layer normalization does not enlarge the exact
+kernel). The Jacobian of layer normalization annihilates the
+two-dimensional subspace spanned by the all-ones vector
+and the centered input. In a pre-normalization residual block,
+however, the layer map has Jacobian Ak = I + Bk JLN , so
+any v ∈ ker JLN satisfies Ak v = v and is not annihilated.
+By Theorem 10, exact nullity therefore does not accumulate
+merely because normalization layers are traversed.
+Theorem 12 (Threshold null space). Let Nτ (G) = span{ui :
+λi (G) ≤ τ }, and suppose σmin (Aℓ ) ≥ sℓ and σmax (Aℓ ) ≤
+Sℓ . Then, by the Courant–Fischer principle,
+
+
+
+s2ℓ λi G(ℓ+1) ≤ λi G(ℓ) ≤ Sℓ2 λi G(ℓ+1) ,
+(39)
+
+∥G − cI∥2F = ∥G∥2F − 2c tr G + c2 d,
+(38)
+
+In particular ker Aℓ ⊆ ker G(ℓ) , and if Aℓ is invertible then
+dim ker G(ℓ) = dim ker G(ℓ+1) .
+Proof. For G ⪰ 0 one has x⊤ Gx = 0 if and only if Gx = 0.
+Applying this to v⊤ G(ℓ) v = (Aℓ v)⊤ G(ℓ+1) (Aℓ v) gives the
+characterization; the two consequences are immediate.
+
+a quadratic in c minimized at c⋆ = tr(G)/d. Substituting,
+(tr G)2
+min∥G − cI∥2F = ∥G∥2F −
+c
+d
+
+
+PR(G)
+2
+= ∥G∥F 1 −
+,
+d
+and dividing by ∥G∥2F and taking square roots gives (42).
+
+Layer
+3
+6
+9
+11
+
+n
+100
+100
+100
+100
+
+κ(G)
+
+reff [IQR]
+7
+
+9.5×10
+7.1×107
+5.0×107
+4.9×107
+
+18.2 [14.0, 25.4]
+28.6 [20.7, 41.7]
+116.5 [39.3, 151.5]
+131.0 [51.7, 154.3]
+
+reff /d
+2.4%
+3.7%
+15.2%
+17.1%
+
+Dev.
+0.996
+0.994
+0.978
+0.980
+
+Table 2: Exact pullback-Fisher geometry of GPT-2 Small
+(d = 768), medians over 100 contexts per layer. Dev. is
+the relative Frobenius deviation (42) from the closest scalar
+metric.
+The identity makes the observed deviations a direct consequence of spectral concentration: a relative error of 0.98
+requires PR(G)/d ≈ 0.04, so no scalar metric can approximate G once its spectrum occupies a small fraction of the
+ambient dimension. The values in Table 2 correspond to
+participation ranks between roughly 6 and 34 out of 768.
+
+C.2
+
+Measured Geometry
+
+i
+
+which equals d for a flat spectrum and approaches 1 as the
+mass concentrates on a single direction.
+Table 2 reports the exact geometry of GPT-2 Small, computed from the full 768-dimensional spectrum at 100 contexts
+per layer. The condition number grows as the metric is pulled
+back through more layers, and the effective rank contracts
+in the same direction, from 17% of the hidden dimension at
+layer 11 to 2.4% at layer 3; the deviation from the closest
+scalar metric exceeds 97% everywhere.
+At 8B scale the spectrum is obtained from the rank-50
+randomized decomposition of Appendix E, so the quantities
+in Table 3 describe the retained dominant subspace rather than
+the full spectrum; the deviation (42) requires the complete
+spectrum and is therefore reported only for GPT-2 Small.
+Within that subspace the concentration is far sharper than on
+GPT-2 Small, with effective ranks near 0.1% of d = 4096,
+and the condition number again grows toward the shallower
+layers on both models.
+The two tables together support the premise of the main
+paper’s analysis at every layer used in the comparisons: the
+metric is far from any scalar multiple of the identity, and the
+directions along which an intervention actually moves the
+prediction number in the single digits on the 8B models and
+in the tens to low hundreds on GPT-2 Small, against ambient
+dimensions of 4096 and 768.
+
+Regularization and Validity of the Linear
+Solve
+
+The direction of Theorem 2 requires inverting a metric that
+is rank-deficient and ill-conditioned, and it is derived from
+a second-order model of a nonlinear map. This appendix
+
+n
+
+Layer
+
+κ(G)
+
+reff [IQR]
+
+reff /d
+
+4
+
+Llama-3-8B
+
+8
+16
+24
+
+126
+117
+93
+
+1.2×10
+4.0×103
+3.9×103
+
+4.25 [2.58, 7.67]
+5.63 [2.91, 11.22]
+4.45 [2.60, 11.96]
+
+0.10%
+0.14%
+0.11%
+
+Qwen3-8B
+
+6
+18
+27
+
+291
+292
+289
+
+1.2×105
+1.8×104
+2.9×103
+
+3.15 [2.06, 5.14]
+4.54 [2.28, 6.64]
+6.07 [2.91, 9.67]
+
+0.08%
+0.11%
+0.15%
+
+Table 3: Pullback-Fisher geometry of the two 8B models
+(d = 4096), medians over successful cases with finite spectra, computed within the rank-50 subspace retained by the
+approximation of Appendix E.
+bounds the bias introduced by regularization, gives the radius
+within which the second-order model is faithful, bounds the
+effect of an inexact metric, and reports a controlled numerical
+study.
+
+D.1
+
+P
+Definition 4 (Effective rank). Let λ̃i = λi / j λj be the normalized eigenvalues of G. The effective rank reported below
+is the exponentiated Shannon entropy of this distribution,
+ X
+
+reff (G) = exp −
+λ̃i log λ̃i ,
+(43)
+
+D
+
+Model
+
+Regularized Solve and Its Bias
+
+Write δ = G† q for the exact solution and
+δα = (G + αI)−1 q
+
+(44)
+
+for the regularized one.
+Theorem 14 (Regularization bias). Suppose q ∈ Range(G)
+and let m > 0 be the smallest positive eigenvalue of G. Then
+α
+∥δα − δ∥ ≤
+∥q∥.
+(45)
+m(m + α)
+Pr
+Proof.PLet G = i=1 λi ui u⊤
+i with λi ≥ m, and expand
+q = i qi ui , which is possible because q ∈ Range(G).
+Then
+X qi
+X qi
+δ=
+ui ,
+δα =
+ui ,
+λi
+λi + α
+i
+i
+so that
+2
+α
+λi (λi + α)
+i
+
+2
+α
+≤
+∥q∥2 .
+m(m + α)
+
+∥δα − δ∥2 =
+
+X
+
+qi2
+
+
+
+The bias is therefore controlled as long as α is small relative
+to the smallest eigenvalue that carries signal. Choosing α well
+requires it to track the scale of the spectrum, which also makes
+the solution independent of the units in which activations are
+expressed.
+Proposition 2 (Scale equivariance). Consider the reparameterization h̃ = th of the activation coordinates, under which
+G̃ = t−2 G and q̃ = t−1 q. If α is set to a fixed multiple of a
+degree-one spectral statistic of G, as in α = c λmed (G), then
+δ̃α̃ = t δα ,
+
+(46)
+
+which is the transformation satisfied by the exact solution. A
+fixed α does not satisfy it.
+
+Proof. With α̃ = c λmed (G̃) = t−2 α,
+−1 −1 
+δ̃α̃ = t−2 G + t−2 αI
+t q
+= t2 (G + αI)−1 t−1 q = t δα .
+The exact solution obeys δ̃ = G̃† q̃ = t δ, so the regularized
+solve inherits the correct scaling. For fixed α the matrix
+t−2 G + αI is not proportional to G + αI, and the identity
+fails.
+With condition numbers of order 107 (Appendix C), a fixed
+ridge either leaves the smallest eigenvalues under-regularized
+or suppresses the largest ones; an adaptive α avoids both.
+
+D.2
+
+Validity Radius of the Second-Order Model
+
+Let S be the subspace on which the solve is performed, with
+G|S ⪰ mIS . Fix a reference radius r0 > 0 and let CKL
+bound the third-order remainder of the output KL on the ball
+of radius r0 , so that the remainder is at most CKL ∥δh∥3 for
+∥δh∥ ≤ r0 .
+Theorem 15 (Critical radius). The quadratic term satisfies
+1
+1
+⊤
+2
+2 δh G δh ≥ 2 m∥δh∥ . The third-order remainder is at
+most a fraction ηKL ∈ (0, 1) of the quadratic term whenever
+n
+ηKL m o
+∥δh∥ ≤ rKL := min r0 ,
+.
+(47)
+2 CKL
+Proof. Substituting the two bounds into CKL (r)∥δh∥3 ≤
+ηKL · 12 m∥δh∥2 and dividing by ∥δh∥2 gives the stated
+bound.
+An analogous requirement on the linearization of the concept constraint yields a second radius, and the operative one
+is the smaller of the two. These radii govern the accuracy
+of the KL value; the accuracy of the direction is a separate
+question, taken up numerically below.
+
+D.3
+
+Stability Under an Inexact Metric
+
+The 8B procedure of Appendix E replaces G by an approximation and q by a computed covector. The resulting direction
+error is controlled.
+Theorem 16 (Perturbation bound). Let δ⋆ = (G + αI)−1 q
+and δ̃ = (M + αI)−1 q̂, and suppose
+λmin (G+αI) ≥ m,
+
+∥M −G∥2 ≤ η < m,
+
+∥q̂−q∥ ≤ ξ.
+(48)
+
+Then
+∥δ̃ − δ⋆ ∥ ≤
+
+η
+ξ
+∥q∥ +
+.
+m(m − η)
+m−η
+
+(49)
+
+Proof. Write Mα = M + αI and Gα = G + αI, and split
+
+δ̃ − δ⋆ = Mα−1 (q̂ − q) + Mα−1 − G−1
+α q.
+Weyl’s inequality gives λmin (Mα ) ≥ m − η, bounding the
+first term by ξ/(m−η). The resolvent identity Mα−1 −G−1
+α =
+Mα−1 (Gα − Mα )G−1
+α bounds the second by η∥q∥/ m(m −
+η) .
+
+Config.
+
+cos(δ, δexact )
+
+KLeuc /KLfish
+
+rs (κ, ratio)
+
+∥δh∥/rKL
+
+tiny
+small
+medium
+
+0.997
+1.000
+1.000
+
+2.39 [1.73, 4.46]
+1.58 [1.35, 2.00]
+1.80 [1.51, 2.24]
+
+0.29
+0.37
+0.56
+
+1183
+82
+288
+
+pooled
+
+—
+
+1.82 [1.46, 2.53]
+
+0.50
+
+239
+
+Table 4: Synthetic-model study at ρ = 0.1; medians with
+interquartile ranges over 300 cases per configuration. All rank
+correlations have p < 10−5 , and the pooled correlation has
+p < 10−56 . The last column reports how far the operating
+step size exceeds the critical radius of Theorem 15.
+
+D.4
+
+Numerical Study on a Synthetic Model
+
+To examine the direction beyond the radius of Theorem 15,
+we use a synthetic softmax model in which G, the exact
+KL-minimizing direction, and rKL can all be computed
+without approximation. Three configurations of increasing
+width are each instantiated in 300 cases, at step sizes whose
+median exceeds the critical radius of Theorem 15 by factors
+between 82 and 1183. Table 4 reports, at a concept change
+of ρ = 0.1, the cosine between the Fisher direction and the
+exact minimizer, the ratio of Euclidean to Fisher output KL,
+and the rank correlation between κ(G) and that ratio.
+Two observations follow. The Fisher direction stays close to
+the exact KL-minimizing direction even though the operating
+step size exceeds rKL by a median factor between 82 and
+1183, so the radius that governs the accuracy of the KL value
+is not the radius that governs the usefulness of the direction.
+And the advantage over Euclidean steering grows with the
+anisotropy of the metric, in the direction predicted by the
+bound of Appendix I.
+
+E
+
+Matrix-Free Computation at 8B Scale
+
+The direction of Theorem 2 requires the regularized inverse
+of G applied to q. At d = 4096 over a vocabulary of order
+105 , assembling J alone would take d Jacobian evaluations at
+every step, which is out of reach. This appendix describes the
+procedure that produces the direction without ever forming J
+or G, and states its error sources.
+
+E.1
+
+Action of the Metric Without Forming It
+
+Every step of the computation needs only the map v 7→ Gv,
+which factors as
+
+Gv = J ⊤ H(Jv)
+(50)
+and is evaluated in three stages.
+Forward. Jv is obtained by a central finite difference,
+fℓ (h + εv) − fℓ (h − εv)
+,
+ε = 10−4 , (51)
+2ε
+at the cost of two partial forward passes. Forward-mode
+automatic differentiation would need one, but conflicts with
+the fused attention and normalization kernels used at this scale;
+the finite difference is numerically stable and reproducible.
+Fisher. The softmax Fisher is applied without materializing
+a d × d matrix. Retaining the K = 1000 tokens of largest
+Jv ≈
+
+probability and renormalizing gives weights p̃ and rows WK ;
+P
+f = diag(√p̃) (WK − 1w̄⊤ ),
+with w̄ = i p̃i wi and W
+
+f⊤ W
+fx ,
+Hx = W
+(52)
+which costs O(Kd) and touches only K × d storage. The
+predictive distribution at this scale is concentrated enough
+that K = 1000 carries almost all of the Fisher mass.
+Backward. J ⊤ u = ∇h u⊤ fℓ (h) is exact and costs one
+partial backward pass.
+A single metric-vector product therefore costs two forward
+and one backward pass, with no d × d object at any point.
+
+E.2
+
+GPT-2 Small
+
+Fisher truncation K
+Randomized rank r
+Oversampling
+Concept efficiency cmin
+Tikhonov α
+Finite difference ε
+Steps T
+Jacobian
+
+5000
+1000
+—
+50
+—
+20
+0.3
+0.5
+median positive eigenvalue
+10−4
+30
+recomputed
+frozen at h0
+
+8B models
+
+Table 5: Settings of the steering procedure. Entries spanning
+both columns are shared.
+
+Low-Rank Spectrum
+
+Because the spectrum of G is concentrated in far fewer
+than 50 directions at every layer measured (Appendix C),
+the regularized solve is performed inside a low-dimensional
+subspace obtained by randomized decomposition (Halko,
+Martinsson, and Tropp 2011). With target rank r = 50 and
+oversampling 20, a Gaussian test matrix Ω ∈ Rd×70 gives
+Y = GΩ, whose orthonormal basis Q is refined by forming
+the small matrix
+T = Q⊤ (GQ) ∈ R70×70 ,
+
+(53)
+
+symmetrizing it, and diagonalizing. The procedure uses 140
+metric-vector products in total and returns the leading eigenpairs (λj , uj ). All subsequent inverses, and all spectral diagnostics reported in the paper, are computed from this
+representation.
+
+E.3
+
+Setting
+
+Applying the Direction at Fixed Concept
+Efficiency
+
+The regularized Fisher direction (G + αI)−1 q, with α set
+to the median positive eigenvalue as in Proposition 2, can
+carry a small component along the concept covector when
+the spectrum is ill-conditioned, so that reaching a prescribed
+level of P W requires impractically large steps. We therefore
+apply it in a form whose concept efficiency is fixed. Writing
+q̂ = q/∥q∥ and decomposing
+
+δF = (G + αI)−1 q,
+δ⊥ = δF − δF⊤ q̂ q̂,
+(54)
+the applied direction is
+δ = cmin q̂ +
+
+q
+
+1 − c2min
+
+δ⊥
+,
+∥δ⊥ ∥
+
+(55)
+
+oriented so that δ ⊤ q̂ > 0, with cmin = 0.5 on the 8B models
+and 0.3 on GPT-2 Small. If ∥δ⊥ ∥ falls below 10−10 the
+direction reduces to q̂ and the case is flagged.
+Two consequences are worth stating plainly. The first
+component of (55) guarantees a fixed rate of progress toward
+the target, so reachability does not depend on the conditioning
+of G. The second component is where the pullback geometry
+acts: it is the part of the Fisher direction orthogonal to the
+concept, and it is what reduces movement of the rest of the
+distribution. The Euclidean ablation of the main paper is
+exactly (55) with this second component removed, so the
+two runs share the same covector, the same calibration, and
+the same concept efficiency, and differ only in the geometric
+correction.
+
+E.4
+
+Frozen Jacobian Across Steps
+
+Steering proceeds for T = 30 steps, and in principle both J
+and H should be re-evaluated at each. We instead compute
+the randomized decomposition once, at the base point h0 ,
+and hold J0 fixed, updating only the Fisher and the covector:
+Gt = J0⊤ Ht J0 ,
+
+(56)
+
+which is a recomposition inside the retained subspace and
+costs one top-K Fisher evaluation and one backward pass
+per step. Recomputing the Jacobian at every step was both
+about 30 times more expensive and less accurate, the drift
+injected by re-estimation outweighing the benefit of a current
+linearization.
+
+E.5
+
+Cost and Hyperparameters
+
+The dominant cost per case is the initial decomposition, 140
+metric-vector products or roughly 280 partial forward-pass
+equivalents; the 30 steering steps add about two more each.
+Table 5 lists the settings, with the GPT-2 Small values for
+comparison.
+
+E.6
+
+Error Sources and a Known Boundary
+
+Four approximations separate the computed direction from
+δh⋆ , and each is bounded or checked where possible. The
+finite-difference product carries a truncation error of order
+ε2 and is reproducible to machine precision under repetition.
+The top-K truncation discards tail mass, and the spectrum of
+G is stable under changes of K. The randomized decomposition retains 50 directions, comfortably above the measured
+effective rank at every layer. Freezing the Jacobian introduces
+drift, which was measured to be smaller than the noise of
+re-estimation. The effect of an inexact metric and covector on
+the resulting direction is bounded in Theorem 16.
+The fourth approximation also marks the boundary of the
+method. At roughly 75% relative depth the conditioning of G
+has flattened considerably (Appendix C), which by the bound
+of Appendix I lowers the gain available from correcting
+the metric; the ablation gap closes accordingly. This is a
+property of the geometry at those layers rather than a defect
+of the approximation, and it is the behavior the analysis of
+Appendix J predicts.
+
+E.7
+
+Computational Environment
+
+Experiments ran under Python 3.10 with PyTorch 2.7.1 and
+Transformers 4.52.4, on NVIDIA RTX PRO 6000 and H200
+
+accelerators. GPT-2 Small requires 16 GB of device memory
+for the exact Jacobian computation; the 8B experiments
+were run on an 80 GB accelerator, with 48 GB the practical
+minimum. Statistics and figure generation run on CPU.
+Total compute is 31.4 GPU-hours for the 600 GPT-2 Small
+cases, 10.8 for the 450 Llama-3-8B cases, and 30.8 for the
+900 Qwen3-8B cases. All randomness is seeded: the synthetic study, the randomized range finder, and the ReFT-r1
+initialization each use a fixed seed, and the C4 scan consumes
+shards and documents in deterministic order. The closed-form
+solves and the bisection localization are deterministic for a
+fixed model snapshot, so residual variation comes only from
+floating-point reductions in GPU kernels.
+
+F
+
+Experimental Protocol
+
+This appendix records the construction of the evaluation
+set, the calibration of step sizes, and the localization of the
+comparison points, in the detail needed to reproduce the
+numbers of Section 5 of the main paper.
+
+F.1
+
+Concepts and Contexts
+
+The three concepts are verb-inflection contrasts: third-person
+singular (run→runs), progressive (run→running), and past
+tense (run→ran). Each is specified by a set of counterfactual
+token pairs whose two members differ only in that inflection,
+following the protocol of Park et al. (2026); only pairs whose
+two forms are both single tokens in the model’s vocabulary
+are retained, so that the concept probability of Section 5 is
+well defined at a single prediction step.
+Contexts are natural-language sequences drawn from the
+validation split of C4 (Raffel et al. 2020). A position is
+accepted when the model’s three most probable next tokens
+all belong to the base set {yi0 } or the target set {yi1 } and carry
+a cumulative probability of at least 0.7, the criterion of Park
+et al. (2026); this ensures the concept is genuinely at issue at
+that position rather than being a marginal alternative. Table 6
+reports the counts. Between 44 and 166 thousand sequences
+are scanned per concept, of which a few hundred meet the
+criterion and a subset is retained: 50 contexts per layer on
+GPT-2 Small and Llama-3-8B, and 100 on Qwen3-8B. The
+same contexts are reused across the layers of a given model,
+so a context contributes one case per layer, which is why the
+pooled rows of Table 1 are treated as descriptive rather than
+confirmatory.
+
+F.2
+
+Targets and Step-Size Calibration
+
+Each method steers each context toward four levels of the
+concept probability, P W ∈ {0.3, 0.5, 0.7, 0.9}, spanning a
+mild shift to a strong one. Steering runs for T = 30 steps,
+and the step size of every method—FishBack, the Euclidean
+ablation, and each baseline—is calibrated independently by
+line search so that its trajectory of P W covers the highest
+target it can reach. Calibrating each method to its own scale
+prevents the comparison from turning on a shared step size
+that happens to suit one of them.
+
+F.3
+
+Localization of the Comparison Point
+
+The trajectory of P W is discrete, so a method rarely lands
+exactly on a target. For each target we bisect in activation
+
+Model
+
+Concept
+
+Scanned
+
+Accepted
+
+Used
+
+GPT-2 Small
+
+third
+ing
+past
+
+165,925
+139,174
+57,313
+
+500
+500
+500
+
+50
+50
+50
+
+Llama-3-8B
+
+third
+ing
+past
+
+73,204
+58,379
+44,209
+
+250
+250
+250
+
+50
+50
+50
+
+Qwen3-8B
+
+third
+ing
+past
+
+74,071
+59,635
+55,210
+
+300
+300
+300
+
+100
+100
+100
+
+Table 6: Construction of the evaluation set. “Used” is the
+number of contexts evaluated per layer; each is evaluated at
+every layer of that model.
+space between the two adjacent iterates that bracket it, and
+evaluate the off-target divergence at the localized crossing.
+Every method is therefore scored at precisely the same ontarget level, and the off-target comparison is not contaminated
+by residual differences in concept change. A method that
+fails to reach a target within its calibrated range is recorded
+as a miss for that (case, target) cell and contributes to the
+reachability figures of Appendix H rather than to the off-target
+comparison.
+
+F.4
+
+Off-Target Divergence
+
+The off-target divergence is computed on the distribution
+renormalized over the complement of the concept tokens, as
+defined in Section 3 of the main paper, and evaluated at the
+localized crossing point of the previous subsection. The same
+definition is used for all methods and all three models. Its
+relation to the quantity appearing in Theorem 3 is given in
+Appendix A.
+
+F.5
+
+Aggregation
+
+A case contributes to a comparison only when both methods
+reach the target under consideration. Within a case, the four
+per-target ratios are collapsed by averaging their logarithms
+and exponentiating, which is their geometric mean, and a
+case is retained in the folded comparison only if all four
+targets are reached by both methods. Cells with fewer than six
+retained pairs are marked underpowered and excluded from
+confirmatory claims. Statistical treatment of the resulting
+samples is described in Appendix G.
+
+G
+G.1
+
+Statistical Procedure and Full Results
+Test and Correction
+
+All off-target comparisons are paired within a case. For a
+method m and a case c we form the ratio
+Rm,c =
+
+KLoff
+m,c
+KLoff
+FishBack,c
+
+,
+
+(57)
+
+so that R > 1 favors FishBack, and test the one-sided hypothesis median log R > 0 with a Wilcoxon signed-rank test on
+log R.
+
+Model
+
+Level
+
+Tests
+
+Model
+
+Layer
+
+Tested
+
+Significant
+
+GPT-2 Small
+
+target
+folded
+target
+folded
+target
+folded
+
+288
+72
+216
+45 + 9
+216
+45 + 9
+
+GPT-2 Small
+
+3
+6
+9
+11
+
+16
+16
+18
+18
+
+10
+14
+16
+18
+
+Llama-3-8B
+
+8
+16
+24
+
+17
+18
+18
+
+15
+10
+1
+
+Qwen3-8B
+
+6
+18
+27
+
+18
+18
+18
+
+15
+18
+2
+
+Llama-3-8B
+Qwen3-8B
+
+Table 7: Size of each Benjamini–Hochberg family. On the
+8B models the folded level is corrected separately for the
+baseline comparisons and the geometric ablation.
+The transform is not cosmetic. A ratio is confined to (0, 1)
+when FishBack loses and to (1, ∞) when it wins, so under the
+null of no difference the distribution of R is asymmetric about
+1 and the signed-rank statistic, which assumes symmetry, is
+biased. Taking logarithms restores the symmetry the test
+requires; an early version of our analysis applied the test to
+raw ratios and produced significant cells that did not survive
+the corrected procedure.
+Two levels of aggregation are reported. At the target level
+a pair is one context at one of the four values of P W . At the
+folded level the four ratios of a case are collapsed into their
+geometric mean, and a case enters only if both methods reach
+all four targets. Multiplicity is controlled by the Benjamini–
+Hochberg procedure applied within a family, and a family
+is defined per model and per aggregation level: at the target
+level the family spans concept × layer × target × comparator,
+and at the folded level concept × layer × comparator. Table 7
+lists their sizes. Cells with fewer than six retained pairs
+are marked underpowered and excluded from confirmatory
+claims, though they remain in the released tables.
+
+G.2
+
+Outcome by Layer
+
+Table 8 reports, for every layer of every model, how many
+folded cells were testable and how many survived correction.
+The pattern is the one the main paper describes. On GPT-2
+Small the proportion rises with depth and is complete at the
+deepest layer. On both 8B models it is high at the early and
+middle layers and collapses at roughly 75% relative depth,
+where one cell of eighteen survives on Llama-3-8B and two
+of eighteen on Qwen3-8B.
+
+G.3
+
+Outcome by Comparison
+
+Aggregating instead over layers, Table 9 separates the two
+comparison families. The ablation against Euclidean steering
+and the comparisons against fixed baselines behave alike,
+which is consistent with the attribution argument of Section 5.4: what the fixed baselines lose to FishBack is largely
+what the Euclidean ablation loses to it.
+
+G.4
+
+Released Tables
+
+The complete per-cell record accompanies the submission:
+model, concept, layer, comparator, target, sample size, median
+ratio with interquartile range, median log-ratio, uncorrected
+and corrected p-values, and the underpowered and significance flags, for all 900 cells across both aggregation levels.
+
+Table 8: Folded cells surviving Benjamini–Hochberg correction, counted over the three concepts and all comparators.
+Underpowered cells are excluded from the tested column.
+Model
+
+Family
+
+Tested
+
+Significant
+
+GPT-2 Small
+
+baselines
+ablation
+
+224
+48
+
+173
+38
+
+Llama-3-8B
+
+baselines
+ablation
+
+176
+36
+
+75
+20
+
+Qwen3-8B
+
+baselines
+ablation
+
+180
+36
+
+115
+24
+
+Table 9: Target-level cells surviving correction, pooled over
+concepts, layers, and targets, including the deepest layers of
+the 8B models.
+
+Every number quoted in the main paper can be traced to a
+row of that table.
+
+H
+
+Reachability
+
+The off-target comparison of the main paper conditions on
+both methods reaching a target, so it is silent on how often a
+target is reached at all. This appendix reports that quantity.
+A method reaches a target when its calibrated trajectory of
+P W crosses the prescribed level within the step budget; the
+denominator is the set of cases with a valid base point, pooled
+over the three concepts and the four targets.
+Three observations follow from Table 10.
+The fixed-direction baselines are the constrained ones, and
+their difficulty is concentrated at the early layers. On GPT-2
+Small, CAA reaches two thirds of the targets at layer 3 and all
+of them at layer 9; ActAdd reaches one target in eight at layer 3.
+This is why the paired samples of the main comparison shrink
+at those layers, and why ActAdd in particular is compared on
+a reduced set of cases: the ratios reported for it describe the
+cases where it did reach the target, which are the cases where
+it was competitive.
+FishBack and the Euclidean ablation reach targets at similar
+rates on GPT-2 Small and Llama-3-8B, with one exception
+in the wrong direction: at GPT-2 Small’s layer 11 the ablation reaches every target while FishBack reaches 91.2%.
+Reachability is not uniformly in our favor, and we report it as
+measured.
+
+scalar ν, whence
+
+GPT-2 Small
+Method
+
+L3
+
+L6
+
+L9
+
+L11
+
+⋆
+e⊤ GδG
+= ν e⊤ q = 0.
+
+FishBack
+Euclidean
+CAA
+ActAdd
+ITI
+ReFT
+RepSurgery
+
+100.0
+100.0
+66.7
+12.7
+71.4
+69.8
+60.3
+
+100.0
+100.0
+85.2
+14.8
+88.6
+84.1
+86.4
+
+99.6
+100.0
+100.0
+73.8
+99.2
+96.9
+98.5
+
+91.2
+100.0
+100.0
+96.9
+100.0
+99.2
+100.0
+
+⋆
+Expanding CG (δG
++ e) and cancelling the cross term leaves
+1 ⊤
+⋆
+CG (δG ) + 2 e Ge.
+
+Llama-3-8B
+
+The identity has the form of a Pythagorean relation in
+the geometry of G: the excess cost is the squared G-length
+of the error, and theP
+error is G-orthogonal to the optimum.
+⊤
+Diagonalizing G = i λi ui u⊤
+i and writing ei = ui e gives
+X
+∆CG (δ̃) = 12
+λi e2i ,
+(60)
+
+Qwen3-8B
+
+Method
+
+L8
+
+L16
+
+L24
+
+L6
+
+L18
+
+L27
+
+FishBack
+Euclidean
+CAA
+ActAdd
+ITI
+ReFT
+RepSurgery
+
+98.2
+98.2
+56.3
+28.6
+54.8
+67.5
+58.7
+
+100.0
+99.8
+62.4
+41.9
+39.3
+65.0
+59.8
+
+99.7
+100.0
+87.1
+52.7
+55.9
+71.0
+57.0
+
+75.2
+36.3
+55.0
+52.2
+45.7
+48.1
+58.1
+
+67.9
+22.7
+51.7
+48.6
+44.9
+45.2
+56.5
+
+68.5
+23.3
+54.3
+46.0
+40.8
+50.8
+44.2
+
+Table 10: Percentage of targets reached, pooled over the three
+concepts and the four levels of P W .
+On Qwen3-8B the ordering changes. The Euclidean ablation reaches between 22.7% and 36.3% of targets, well below
+every fixed baseline, while FishBack reaches between 67.9%
+and 75.2%. The gap has a specific cause rather than a general
+one. The applied direction of Appendix E fixes the concept
+efficiency at cmin , so progress toward the target does not depend on the conditioning of the metric; the ablation removes
+the geometric component but inherits the same construction,
+and on this model the resulting direction advances too slowly
+along the concept to reach the higher targets within the step
+budget. The reachability gap on Qwen3-8B is therefore evidence that the geometric component contributes to progress
+on this model, not a separate advantage of the method.
+
+I
+
+A Metric View of Existing Steering Methods
+
+The direction of Theorem 2 is optimal for the metric G.
+Existing methods use other directions, and this appendix
+quantifies what that costs. Throughout, G ≻ 0 on the effective
+tangent space, the concept constraint is q⊤ δ = ρ, and
+CG (δ) = 12 δ ⊤ G δ
+
+so the penalty for a given error depends on where the error
+points, not only on how large it is.
+Corollary 2 (Errors along flat directions are invisible). If e
+has no component along the k leading eigendirections of G,
+then
+∆CG (δ̃) ≤ 21 λk+1 ∥e∥2 .
+(61)
+Proof. Immediate from (60), since the surviving terms carry
+eigenvalues at most λk+1 .
+This is why a method can use the wrong direction and
+still perform acceptably. With effective ranks in the range
+measured in Appendix C, most of the spectrum is negligible,
+and an error confined to that part of the space costs almost
+nothing at the output. Cosine similarity to the optimal direction
+is therefore the wrong diagnostic; the relevant quantity is the
+G-weighted spectral error of (60).
+
+I.2
+
+Cost of Steering Under a Proxy Metric
+
+A linear steering method that uses the correct concept covector
+but an incorrect metric M ≻ 0 produces
+ρ M −1 q
+.
+q⊤ M −1 q
+Theorem 18 (Cost ratio of a proxy metric).
+δM =
+
+Excess Cost Is a Squared Distance
+
+Theorem 17 (Fisher–Pythagorean identity). For any δ̃ satisfying q⊤ δ̃ = ρ,
+
+
+⋆ ⊤
+⋆
+∆CG (δ̃) = 21 δ̃ − δG
+G δ̃ − δG
+.
+(59)
+⋆
+Proof. Let e = δ̃ − δG
+. Both directions satisfy the constraint,
+⊤
+⋆
+⋆
+so q e = 0. Stationarity of δG
+gives GδG
+= νq for some
+
+(62)
+
+
+
+q⊤ M −1 GM −1 q q⊤ G−1 q
+CG (δM )
+RG (M ; q) =
+,
+2
+⋆) =
+CG (δG
+q⊤ M −1 q
+(63)
+and RG (M ; q) ≥ 1 with equality if and only if M −1 q ∥
+G−1 q.
+Proof. Substituting δM into CG gives
+
+(58)
+
+⋆
+is the second-order output cost of Theorem 1. We write δG
+⋆
+for the optimum and ∆CG (δ̃) = CG (δ̃) − CG (δG ) for the
+excess cost of any competing direction.
+
+I.1
+
+i
+
+CG (δM ) =
+
+ρ2 q⊤ M −1 GM −1 q
+2 ,
+2
+q⊤ M −1 q
+
+
+⋆
+while Theorem 2 gives CG (δG
+) = ρ2 / 2 q⊤ G−1 q ; dividing
+yields the stated expression. For the inequality, set a =
+G1/2 M −1 q and b = G−1/2 q, so that
+a⊤ b = q⊤ M −1 q,
+∥a∥2 = q⊤ M −1 GM −1 q,
+∥b∥2 = q⊤ G−1 q,
+and RG (M ; q) = ∥a∥2 ∥b∥2 /(a⊤ b)2 ≥ 1 by Cauchy–
+Schwarz. Equality holds exactly when a ∥ b, that is, when
+M −1 q ∥ G−1 q.
+
+The ratio takes a more transparent form after whitening.
+Let
+G−1/2 q
+ν=p
+,
+q⊤ G−1 q
+
+B = G1/2 M −1 G1/2 ,
+
+(64)
+
+so that ∥ν∥ = 1 and B ≻ 0 measures the mismatch between
+the proxy and the true metric.
+Theorem
+dispersion). With
+P 19 (Cost ratio as a weighted
+⊤ 2
+B = i bi ri r⊤
+i and weights wi = (ri ν) summing to one,
+RG (M ; q) =
+
+Varw (b)
+ν⊤B2ν
+2 = 1 +
+2 .
+⊤
+ν Bν
+Ew b
+
+Additive Methods
+
+Methods that add a fixed direction v take the form h ← h+αv.
+Rescaled to meet the same concept constraint, this is
+δv (ρ) =
+
+q⊤ M −1 q = ∥z∥2 ν ⊤ Bν,
+q⊤ M −1 GM −1 q = ∥z∥2 ν ⊤ B 2 ν,
+q⊤ G−1 q = ∥z∥2 ,
+using B = G1/2 M −1 G1/2 for the first two. Substituting
+2
+and cancelling ∥z∥
+RG = ν ⊤ B 2 ν/(ν ⊤ Bν)2 . DiagP gives
+⊤
+2
+onalizing B = i bi ri ri and setting wi = (r⊤
+i
+Pν) , which
+⊤
+sum to onePsince ∥ν∥ = 1, yields ν Bν = i wi bi and
+ν ⊤ B 2 ν = i wi b2i . Hence
+ 
+P
+2
+Ew b2
+Varw (b)
+i wi bi
+RG = P
+2 =
+2 = 1 +
+2 ,
+Ew b
+Ew b
+i w i bi
+the last step by Varw (b) = Ew [b2 ] − (Ew b)2 .
+Equation (65) says that the penalty for using the wrong
+metric is the squared coefficient of variation of the mismatch
+spectrum, weighted by how the concept direction distributes
+over that spectrum. A proxy that is wrong by a uniform factor
+costs nothing, because a global rescaling is absorbed by the
+constraint. A proxy is expensive only when it misscales the
+directions the concept actually occupies, by differing amounts.
+Two consequences follow.
+Corollary 3 (Ceiling on the attainable gain). If the spectrum
+of B lies in [a, b] with 0 < a ≤ b, then
+(a + b)2
+.
+4ab
+
+I.3
+
+(65)
+
+Proof. Write q = G1/2 z, so that ν = z/∥z∥. Each factor of
+Theorem 18 becomes
+
+RG (M ; q) ≤
+
+so the attainable gain from correcting the metric is capped
+by the conditioning of the mismatch, and a well-conditioned
+mismatch leaves little to gain. And the gain vanishes when
+the weights w concentrate on a single eigenvalue of B, that
+is, when the concept direction aligns with one eigendirection
+of the mismatch rather than spreading across several. These
+are the two quantities examined empirically in Appendix J.
+
+Ew [b2 ]
+ta2 + (1 − t)b2
+=
+2 ,
+(Ew b)2
+ta + (1 − t)b
+whose maximum over t ∈ [0, 1] is attained at t = b/(a + b)
+and equals (a + b)2 /(4ab).
+
+q⊤ v ̸= 0,
+
+(67)
+
+which is the proxy-metric form with M = I and the covector
+replaced by v: CAA takes v = µ+ −µ− , the difference of class
+means, and ActAdd the difference of a single pair of prompt
+activations. Their cost follows directly rather than through
+Theorem 18, whose statement uses the correct covector.
+Proposition 3 (Cost of a fixed direction). For any v with
+q⊤ v ̸= 0,
+
+
+v⊤ Gv q⊤ G−1 q
+CG (δv )
+≥ 1,
+(68)
+2
+⋆) =
+CG (δG
+q⊤ v
+with equality if and only if v ∥ G−1 q.
+Proof. Substituting δv = ρv/(q⊤ v) gives CG (δv ) =
+
+ρ2 ⊤
+⊤
+2
+⋆
+2
+⊤ −1
+q ; di2 v Gv/(q v) , while CG (δG ) = ρ / 2 q G
+viding gives the expression. Setting a = G1/2 v and
+b = G−1/2 q makes it ∥a∥2 ∥b∥2 /(a⊤ b)2 ≥ 1 by Cauchy–
+Schwarz, with equality exactly when G1/2 v ∥ G−1/2 q.
+An empirical direction therefore pays twice: once for the
+flat metric, and once for departing from G−1 q.
+We note a limitation of this framing. Any direction that
+changes the concept can be written as M −1 q̂ for some positive
+definite M and some covector q̂, and the representation is not
+unique; exhibiting one is therefore not by itself informative.
+What carries content is the cost, which is why the results
+above are stated in terms of RG rather than in terms of the
+existence of an implicit metric.
+
+(66)
+
+Proof. By Theorem 19, RG = Ew [b2 ]/(Ew b)2 where w
+is a probability distribution supported on the spectrum of
+B, hence on [a, b]. Over all such distributions this ratio is
+maximized at an extreme point of the moment set, which
+for a ratio of this form is a two-point distribution on {a, b}.
+Writing the mass at a as t,
+
+ρv
+,
+q⊤ v
+
+J
+
+Depth Dependence of the Advantage
+
+Appendix I identifies two quantities that govern how much
+correcting the metric can help: the conditioning of the mismatch between the proxy and the true metric, which caps the
+attainable gain, and the spread of the concept direction across
+the mismatch spectrum, which determines how much of that
+cap is realized. This appendix examines whether the realized
+gain behaves as those quantities predict, layer by layer.
+
+J.1
+
+Measured Quantities
+
+The theoretical quantities of Appendix I are defined through
+B = G1/2 M −1 G1/2 , which requires a square root and an
+inverse of the metric at every case. We instead record two
+
+Model
+
+Layer
+
+n
+
+ρ q⊤ Gq
+
+ρ align
+
+GPT-2 Small
+
+3
+6
+9
+11
+
+13
+22
+27
+28
+
+−0.16
+0.26
+0.26
+0.07
+
+−0.17
+0.16
+−0.30
+−0.41∗
+
+Llama-3-8B
+
+8
+16
+24
+
+122
+117
+93
+
+0.08
+0.24∗
+0.42∗∗∗
+
+−0.03
+0.21∗
+0.50∗∗∗
+
+Qwen3-8B
+
+6
+18
+27
+
+106
+67
+68
+
+−0.13
+0.23
+0.56∗∗∗
+
+−0.16
+0.26∗
+0.62∗∗∗
+
+J.3
+
+Table 11: Spearman correlations between the two spectral
+proxies and the per-case log gain over Euclidean steering.
+Significance is marked at p < 0.05 (∗ ) and p < 0.001 (∗∗∗ ).
+
+computable proxies for the same underlying property, namely
+how the concept covector sits relative to the spectrum of G:
+
+GPT-2 Small
+
+GPT-2 Small does not reproduce this pattern, and we report it
+as measured. Its correlations remain weak at every layer, and
+at the deepest layer the alignment proxy is significantly negatively correlated with the gain. Two circumstances distinguish
+this model. Its condition numbers remain of order 107 at every
+layer, varying by less than a factor of two across depth, so the
+flattening that drives the pattern above does not occur here;
+consistently with that, the advantage over Euclidean steering
+persists at every GPT-2 Small layer, and the proportion of
+cells surviving correction is highest at layer 11 (Appendix G).
+The correlations are also estimated on between 13 and 28
+cases, against roughly a hundred on the 8B models; at that
+sample size a correlation of 0.3 is not distinguishable from
+zero.
+We therefore read the negative coefficient at layer 11 as
+unexplained rather than as evidence against the account, and
+note that the mechanism it would speak to concerns a regime
+that this model does not enter.
+
+(69)
+
+The Output-Layer Metric at Intermediate
+Layers
+
+the first measuring the curvature the concept direction encounters, the second the fraction of the pulled-back concept
+direction that the output Fisher retains. Neither is the dispersion of (65); both increase when the concept direction
+occupies directions the metric treats as expensive, which is
+the regime in which correcting the metric matters.
+The realized gain of a case is the log-ratio of off-target
+divergences between the Euclidean ablation and FishBack, averaged over the targets both reach. Correlations are Spearman
+rank correlations over cases, pooled across the three concepts
+within each layer.
+
+Park et al. (2026) establish the geometry of the softmax
+head: the Fisher information H is the metric on the final
+representation, and steering in its dual coordinates changes a
+target concept while preserving unrelated semantics. Their
+analysis is stated at the output, where it is exact. Steering
+in practice, however, is applied several layers upstream, and
+the metric that governs an intervention there is not H but
+its pullback G = J ⊤ HJ. This appendix measures what that
+difference is worth.
+The relationship between the two is a strict specialization.
+At ℓ = L the map f is the identity, so J = I, q = β W , and
+Theorem 2 reduces to
+
+q⊤ G q,
+
+J.2
+
+∥H 1/2 Jq∥
+,
+∥Jq∥
+
+K
+
+δλ⋆ ∝ H −1 β W ,
+
+Results
+
+On both 8B models the pattern is the same and it is monotone
+in depth. At the early layers neither proxy predicts the gain:
+the correlations are near zero and not significant, which is
+what one expects when the geometry is rich enough that the
+correction helps almost everywhere, so there is little variation
+across cases for a predictor to explain. At the middle layers
+weak but significant correlations appear. At the deepest layers
+both proxies become strong predictors, reaching 0.42 and
+0.50 on Llama-3-8B and 0.56 and 0.62 on Qwen3-8B, all
+significant after correction.
+Read together with Appendix G and Appendix C, this
+gives a coherent account of the deepest layers. The effective
+rank of G there falls to single digits, so the subspace in
+which the correction can act is narrow; the number of cells
+surviving correction collapses to one of eighteen on Llama-38B and two of eighteen on Qwen3-8B; and what gain remains
+is concentrated in precisely the cases where the concept
+direction still occupies expensive directions of the metric.
+The advantage does not decay uniformly, as a general failure
+of the method would produce. It narrows to the cases the
+geometry still supports, which is the behavior Appendix I
+describes.
+
+(70)
+
+which is the dual-coordinate direction of Park et al. (2026).
+Their construction is thus the boundary case of ours in which
+no transport is required. The question this appendix answers
+is what happens to that construction when the intervention
+moves upstream and the transport is omitted.
+
+K.1
+
+Setup
+
+Three directions are compared at every layer, differing only
+in the metric used to raise the concept covector:
+M = I,
+
+M = H,
+
+M = J ⊤ HJ.
+
+(71)
+
+The middle rung applies the output-layer metric of Park et al.
+(2026) at the intervention layer, unchanged. All three use
+the same pulled-back covector q = J ⊤ β W , the same fixed
+concept efficiency, the same adaptive regularization, the same
+step-size calibration, and the same bisection to the exact
+crossing, so runs differ only in the metric. For M = H the
+regularized solve uses the Woodbury identity on the low-rank
+factorization of the truncated Fisher, which is exact and needs
+no randomized decomposition; the output-layer metric is
+therefore solved more accurately than the pullback is at 8B
+scale, and the comparison is conservative in its favor.
+
+Model
+
+Layer
+
+Ratio
+
+Win%
+
+n
+
+Model
+
+Layer
+
+cos(δH , δG )
+
+cos(q, δH )
+
+cos(q, δG )
+
+GPT-2 Small
+
+3
+6
+9
+11
+
+1.35∗
+1.62∗
+2.72∗
+2.60∗
+
+67
+86
+89
+97
+
+108
+121
+109
+86
+
+GPT-2 Small
+
+3
+6
+9
+11
+
+0.11
+0.14
+0.20
+0.29
+
+0.84
+0.81
+0.72
+0.32
+
+0.13
+0.19
+0.33
+0.45
+
+Llama-3-8B
+
+8
+16
+24
+
+0.98
+1.16
+1.33
+
+44
+80
+60
+
+18
+5
+5
+
+Llama-3-8B
+
+8
+16
+24
+
+0.67
+0.72
+0.73
+
+0.95
+0.95
+0.92
+
+0.71
+0.75
+0.82
+
+Qwen3-8B
+
+6
+18
+27
+
+1.41∗
+1.98∗
+3.56∗
+
+82
+83
+100
+
+22
+12
+13
+
+Qwen3-8B
+
+6
+18
+27
+
+0.65
+0.72
+0.78
+
+0.95
+0.95
+0.90
+
+0.68
+0.76
+0.87
+
+Table 12: Off-target divergence under the output-layer metric
+of Park et al. (2026), applied at the intervention layer, relative
+to the pullback metric, at matched concept change; values
+above 1 favor the pullback. Cohort: both methods reach all four
+targets. ∗ significant after Benjamini–Hochberg correction.
+
+Table 14: Median cosines between the raw solved directions,
+before the concept-efficiency decomposition. δH uses the
+output-layer metric, δG the pullback.
+from the other two.
+
+Model
+
+Layer
+
+Ratio
+
+Win%
+
+n
+
+Cells
+
+Llama-3-8B
+
+8
+16
+24
+
+1.11
+2.60
+2.98
+
+64
+73
+71
+
+146
+135
+81
+
+2/12
+1/12
+0/12
+
+6
+18
+27
+
+1.52
+1.91
+2.45
+
+75
+77
+86
+
+169
+105
+138
+
+4/12
+6/12
+5/12
+
+Qwen3-8B
+
+Table 13: The same comparison on the single-target cohort.
+“Cells” counts concept–target cells significant after correction
+out of twelve.
+
+K.2
+
+Results
+
+Table 12 reports the paired comparison on the cohort used
+throughout the paper, in which both methods reach all four
+targets on the same case. On GPT-2 Small and Qwen3-8B
+the pullback produces less off-target distortion at every layer,
+with median ratios from 1.35 to 3.56, all significant after
+correction. On Llama-3-8B this cohort is too small to support
+inference, for a reason given below.
+The all-four requirement is severe here, because the outputlayer metric reaches targets far less often than the pullback
+once it is used upstream: 92–96% of targets on GPT-2 Small,
+but only 22–37% on Llama-3-8B and 13–20% on Qwen3-8B,
+against 98–100% for the pullback. At a per-target rate near
+0.2 the probability of reaching all four falls below one percent,
+which is why the 8B cohorts hold a few dozen cases rather
+than a few hundred. Table 13 therefore repeats the comparison
+on the wider cohort requiring only the same single target.
+Two features of the tables should be stated explicitly. The
+ratio grows toward the output layer on all three models—1.35
+to 2.60 across GPT-2 Small, 1.11 to 2.98 across Llama-3-8B,
+1.41 to 3.56 across Qwen3-8B—so the transport matters most
+where least of it is applied; we report this as measured and
+offer no mechanism for it. And the three pairwise comparisons
+rest on different cohorts, since each requires both of its own
+methods to succeed, so the ratios do not compose and a
+comparison against the Euclidean ablation cannot be inferred
+
+K.3
+
+Why the Untransported Metric
+Underperforms
+
+The direction cosines in Table 14 identify the mechanism, and
+show that it differs by scale. On both 8B models the direction
+produced by the output-layer metric is nearly parallel to
+the raw covector, with median cosine near 0.95 at the early
+and middle layers: applied upstream, H barely redirects
+anything, so the resulting direction is close to the flat one,
+and its off-target divergence is statistically indistinguishable
+from the Euclidean ablation’s on both models. On GPT-2
+Small the cosine is lower, between 0.32 and 0.84, so H
+does redirect—and the redirection is unhelpful, the Euclidean
+ablation achieving lower off-target divergence at three of four
+layers.
+Either way the conclusion is the same. The geometry that
+Park et al. (2026) identify is the right geometry, but it is the
+right geometry for the final representation. Carried upstream
+unchanged, it either collapses toward the flat metric it was
+meant to replace, as on the 8B models, or redirects in a way
+that does not serve the objective, as on GPT-2 Small. The
+Jacobian is what makes it applicable where steering is actually
+performed.
+One case deserves separate mention. At Qwen3-8B’s deepest layer the Euclidean ablation gap has closed, as reported
+in Appendix J: the pullback and the flat metric are no longer
+distinguishable there. The untransported metric, however,
+remains clearly worse at that layer, with a median ratio of
+3.56 and every case favoring the pullback. What disappears
+at depth is the gain available from correcting the geometry,
+not the cost of correcting it in the wrong space.
+
+K.4
+
+Summary
+
+Across three models and ten layers, steering under the transported metric produces less off-target distortion than steering
+under the output-layer metric applied upstream, in every cell
+measured, reaching significance on GPT-2 Small and Qwen38B; the evidence on Llama-3-8B is directionally consistent
+but does not reach significance in either cohort. Since the
+untransported metric offers no reliable improvement over flat
+
+steering on either 8B model, and is worse than flat steering
+on GPT-2 Small, the gap that this paper closes is not the identification of the softmax geometry, which Park et al. (2026)
+supply, but its transport to the layer at which interventions
+are made.
+
+

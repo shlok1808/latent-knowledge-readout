@@ -1,0 +1,1363 @@
+arXiv:2602.02315v2 [cs.CL] 5 May 2026
+
+The Shape of Beliefs:
+Geometry, Dynamics, and Interventions
+along Representation Manifolds of Language Models’
+Posteriors
+AUTHORS
+
+Raphaël Sarfati∗ , Eric Bigelow, Daniel Wurgaft, Siddharth Boppana, Jack Merullo,
+Atticus Geiger, Owen Lewis, Tom McGrath, & Ekdeep Singh Lubana∗
+∗ {raphael,ekdeep}@goodfire.ai
+
+|
+
+Goodfire
+
+ABSTRACT
+
+Large language models (LLMs) form implicit beliefs (posteriors over latent variables) from prompts, but we lack a
+mechanistic account of how these beliefs are encoded in representation space, how they update with new evidence,
+and how interventions reshape them. We study a controlled setting in which Llama-3.2 infers the parameters of a
+normal distribution from in-context samples. We show that parameter posteriors are encoded as curved manifolds
+in representation space, and trace how they evolve along the prompt. Standard linear steering moves representations off-manifold, inducing unintended, coupled changes, whereas geometry-aware methods preserve the target
+belief family. Our work demonstrates an example of linear field probing (LFP) as a principled approach to tile the
+data manifold and make interventions that respect the underlying geometry. Our results suggest that LLM beliefs
+are inherently geometric objects, and that globally linear representations are often inadequate abstractions. Code
+available at raphael-goodfire/shape-of-beliefs.
+
+1
+
+Introduction
+
+Natural language is inherently ambiguous: the same surface form can express multiple meanings, roles, or
+functions, resolved only through context. For instance, the English suffix “-s” can mark plurality (“trees”),
+possession (“Dylan’s”), or verb agreement (“runs”) (Piantadosi et al., 2012). As a result, any system that
+understands and acts through language must engage with this ambiguity: it must represent uncertainty over
+latent states (intended meanings, referents, world states, task hypotheses) consistent with the input, and
+update that uncertainty as new evidence arrives.
+Large language models instantiate the requirement above in a concrete way: at each position, next-token
+prediction is driven by an internal state that compresses a distribution over the plausible latent structures
+behind the prompt—i.e., an implicit belief state. Studying and altering model behavior can then be boiled
+1
+
+C output:
+
+softmax embeddings (inPCA)
+
+PC
+
+PC
+
+2
+
+activations at layer 14
+
+PC1
+
+D
+
+softmax projected
+onto '0','1',...,'999'
+
+pdf
+
+B hidden states:
+
+2
+
+A
+
+PC1
+999
+
+700
+600
+500
+400
+300
+
+0
+
+tokens
+
+Figure 1: Shape of beliefs. (A) Stochastic time series u(t) ∈ J0, 999K are generated from normal distributions N (µ, σ) draws and
+passed into Llama 3.2 as strings. (B) Representations (PCA at layer 14) form curved manifolds parametrized by (µ, σ0 = 100)
+(pink to green) and (µ0 = 500, σ) (shades of purple). They encode the model’s current posterior inferred from the input data.
+(C) Softmax outputs, shown here in as a 3D embedding representation from inPCA, mirror the geometry of activations. (D)
+Softmax probabilities, alternatively represented by their projection onto the subset of tokens corresponding to integers from
+0 to 999, closely reflect the input distributions.
+
+down to the questions of assessing how a model encodes beliefs over latent variables of a distribution, how
+these beliefs are updated in light of new evidence, and how beliefs can be altered by intervening on model
+representations.
+This work. We study the questions above in a toy task that makes tractable our core objects of interest:
+beliefs over latent concepts with known ground truth. Building on recent in-context learning work showing
+that models can infer latent variables of a data-generating process from examples in the prompt and reflect
+those variables in their predictive distributions (Bigelow et al., 2025; Liu et al., 2025), we feed the model
+sequences of comma-delimited integers sampled from a generating distribution Gθ . The model converges to a
+next-token prediction that closely matches Gθ (Liu et al., 2025), giving us a controlled notion of a posterior
+over a small set of interpretable parameters θ (e.g., θ = (µ, σ) for Gaussians) that lets us measure both
+outputs (logits/softmax) and their preimages (hidden states) in a calibrated way with ground-truth anchors.
+From this controlled setup, we address the following questions.
+• Geometry: How is a prompt-conditioned posterior belief encoded in the model’s internal representations, and what geometric structure does it form? We characterize the geometry of posterior belief in
+representation space by showing smooth but curved manifolds associated with different inferred beliefs
+over (µ, σ). We find these belief states can be read out via a collection of linear probes that “tiles” the
+manifold (termed linear field probes by Yocum et al. (2025)).
+• Dynamics: When evidence changes over time, how does the model update that posterior—do trajectories move along or across belief manifolds? To answer this question, we consider sequences where the
+generating distribution switches mid-sequence and quantify the resulting belief-update trajectories and
+the characteristic timescales by which the model equilibrates.
+• Interventions: If we try to manipulate a belief by intervening on activations, when do standard
+steering methods succeed (Marks & Tegmark, 2024; Rimsky et al., 2024b), and when do they produce
+unintended behavior? We compare standard linear steering to geometry-aware approaches, showing
+that interventions which respect manifold structure better preserve the intended belief family and
+avoid unintended coupled shifts.
+Overall, our work suggests that beliefs in LLMs are best understood as structured, geometric objects in
+representation space, not as single linear directions. We argue these representation manifolds can serve as
+building blocks for more reliable interpretability and intervention—enabling edits that target the intended
+belief update while preserving the surrounding family of behaviors.
+
+2
+
+2
+
+Experiments and analysis
+
+Our goal is to make a posterior belief state both observable in the logits and indexable by a small set of
+interpretable parameters, so we can study its preimage geometry and update trajectories along this manifold.
+Stochastic numerical time series provide this setting: the model’s next-token distribution can be compared
+directly to the ground-truth generating distribution G(θ), and varying θ provides a continuous family of belief
+states. In particular, we consider the setup by Liu et al. (2024), who showed that LLMs are capable of various
+time series extrapolation tasks; in particular, given a prompt such as 533,460,689,432,501,487,508,465,340,
+. . . , where the numbers are random variables drawn from a normal distribution N (µ = 500, σ = 100) (as an
+example), the model quickly in-context learns the distribution underlying the input series of (stringified)
+numbers, and reproduces this distribution in its logits (App. A). We rely primarily on the Llama-3.2-1B
+model (Grattafiori et al., 2024), whose tokenizer discretely represents every single number between 0 and
+999 (Bao et al., 2025), and restrict input distributions to integers in that range by rounding and clamping.
+We extend the analysis to several other models in App. B. In our setup, there are two categories of tokens:
+the comma-predicting-number (com2num) tokens and the number-predicting-comma (num2com) tokens. Unless
+otherwise noted, we consider the com2num tokens in what follows. More details in App. A.
+The code to generate data, analyze data, and reproduce figures is made available at:
+https://github.com/raphael-goodfire/shape-of-beliefs.
+
+2.1
+
+Methods
+
+We use Principal Component Analysis (PCA) to visualize and analyze high-dimensional sets of vectors. For
+vectors describing probability distributions, such as softmax outputs, we employ Intensive PCA (inPCA)
+instead, a variation of PCA more informative for prediction vectors, i.e., vectors constrained to the unit
+d-simplex (Quinn et al., 2019).
+
+2.2
+
+Notations and definitions
+
+We write vectors in bold (e.g., v) and matrices in capital letters (e.g., A). We use activations, representations,
+and hidden states interchangeably to refer to the model’s residual stream, denoted xi,k (l), where i is the token
+index, k the sequence index, and l ≥ 0 the layer index. A normal distribution with mean µ and standard
+deviation σ is written N (µ, σ) or Nµ,σ . Its preimage manifold is denoted Mµ,σ : if x ∈ Mµ,σ , after layer-norm
+and unembedding it maps to a softmax corresponding to Nµ,σ . For preimages at intermediate layers l (not
+(l)
+the final layer), we write Mµ,σ .
+We use logits as a proxy for model behavior. To compare input distributions to output behavior, we
+normalize the logits into probability vectors by applying softmax with temperature T = 1.0. Finally, we
+often use the term “Linear Field Probes”, as proposed by Yocum et al. (2025), for describing a family of linear
+probes that are trained to be sensitive to a specific part of the input domain (e.g., sensitive to specific values
+of µ, σ). These probes help us elicit an intriguing duality between beliefs, as observed in the output space,
+and the geometry of representations that encodes these beliefs.
+
+3
+
+Results
+
+We first investigate the geometry of belief manifolds tiled by the activations from various input time series.
+Then, we report the dynamics along and across these manifolds when time series switch between distributions.
+Finally, we demonstrate that linear field probes tile the manifold without privileged access to knowledge about
+the underlying geometry, and we use them to design causal interventions based on the discovered geometry.
+
+3.1
+
+Shape of beliefs
+
+Given enough number samples, of the order of 100, Llama 3.2 in-context learns the distribution and converges
+towards the true distribution underlying the data (App. A), as evidenced by its logit output in Fig. 1C &
+D. In other words, over the course of the prompt the model acquires a posterior belief about the input
+3
+
+Figure 2: Belief dynamics. Input (A) is a time series with a sharp transition between two distinct regimes, N300,σ0 → N700,σ0 at
+t = 1000. Output (B) shows the model quickly adapting its mean after the switch while broadening its variance, which relaxes
+back to its true value after about 300 tokens. This switch in belief is apparent in the model’s activations (C). The trajectory in
+probability space (D) shows two attractors corresponding to the true input distributions, and the path taken by the model across
+them.
+
+contextual information. Critically, this belief state is not only manifested in the logits, but also encoded
+in the internal representations of the prompt. We extract an ensemble of activations corresponding to the
+preimages for normal distributions with various means and standard deviations Nµ,σ . Fig. 1B reveals two
+orthogonal manifolds, one corresponding to varying means µ ∈ {300, 350, . . . , 700} and constant standard
+deviation σ0 = 100, the other to constant mean µ0 = 500 and varying σ ∈ {20, 50, . . . , 200}. These manifolds
+appear to form smooth, continuous structures, exhibiting substantial curvature. This implies, a priori, that
+the geometry supporting the data is complex, and might not be adequately described by standard linear
+frameworks such as the Linear Representation Hypothesis (LRH, (Elhage et al., 2022; Park et al., 2024)).
+These structured manifolds appear across models, as shown in App. B.
+
+3.2
+
+Belief dynamics
+
+Now that we have established a ground-truth map of beliefs, we investigate the situation where the input
+materializes a sharp change of distribution and the corresponding response of the model to this impulse
+perturbation. Concretely, we study the model’s output distribution when we input a time series whose first
+1000 numbers follow N (300, 100) and the next ones abruptly switch to N (700, 100) (Fig. 2A).
+We observe two timescales of adjustment in Fig. 2B. The mean of the output distribution quickly settles
+on the new mean. The variance takes longer to equilibrate, defining an effective timescale of belief equilibration. The specific trajectory that the model follows is reflected both in probability space (Fig. 2D) and
+in representation space (Fig. 2C). They show that, after the switch, the model jumps to a phase of high
+variance, or equivalently a phase of high entropy 1 , reflecting the model’s uncertainty about what the input
+data represents.
+In App. C, we compare the model’s empirical response to that of an ideal observer. In App. D, we consider
+the response to a time series with multiple switches and observe meta-in-context learning capabilities (CodaForno et al., 2023).
+
+3.3
+
+Features encoded along data manifolds
+
+With belief states mapped as manifolds and updates measured as trajectories, we investigate which coordinates of belief are accessible to simple readouts. This matters for two reasons: (i) probing: how we extract
+1 For a normal distribution, entropy h = log σ + h .
+0
+
+4
+
+what the model believes without relying on prompting; and (ii) intervention: how we define a principled steering objective, such as “increase µ while preserving σ”. We therefore study how the µ-parameter is decodable
+along the manifold using linear field probes.
+3.3.1
+
+Linear field probes
+
+To address the mounting evidence that neural networks, and transformers in particular, encode features
+using geometries and topologies far more complex than single directions (Gurnee et al., 2025), Yocum et al.
+(2025) recently introduced feature fields to describe features defined over (non-Euclidean) manifolds—one can
+deem these fields as describing a “higher-level concept”, e.g., the number system, compared to a “lower-level
+concept”, e.g., a unique number. Overall, the framework proposes a natural extension of linear probes into
+families of probes, called linear field probes (LFP), which essentially operate a piecewise-linear tiling of an
+underlying manifold.
+Using our continuous representation of beliefs, we examine the linear field probing on the gaussian(l)
+preimage manifolds Mµ,σ . We find that linear field probes produce an excellent representation of the belief
+manifolds.
+Specifically, we train a set of linear probes on activations classifying the discretized manifold σ0 = 100, µi =
+{300, 350, . . . , 700}, at every layer. At each layer, we fit a single multiclass probe to predict µ via a softmax
+classifier trained with cross-entropy, using a 80/20 train-test split (see App. E.2 for more details). We report
+the following findings.
+• Separability: probes achieve high accuracy on all activation classes µi , from 0.87 at layer 0 to 0.99 at
+layer 15 (Fig. 3A); this shows that µ-indexed representations are linearly separable at all layers.
+• Continuity: probes vary smoothly with the parameter µ, as revealed by the structured cosine similarity
+matrix in Fig. 3B; this smooth similarity structure reflects an underlying geometry over the domain µ, as
+further discussed below.
+• Interpolation: probe vectors can be interpolated across µ based on trained endpoints (Fig. 3C); for
+example, the probe at µ = 350 can be interpolated between w300 and w400 without retraining. This
+indicates that the probes form a coherent field over µ rather than a collection of unrelated classifiers.
+• Transfer: probes transfer only locally along the manifold; transfer performance decays with distance in
+µ at a rate matching the decay lengthscale in the Gram matrix (Fig. 3D). This indicates curvature in the
+domain embedding and limits the validity of a single (global) linear direction.
+Together, these observations support the interpretation that the set of linear probes constitute a LFP as
+defined in Yocum et al. (2025). Separability establishes that µ is linearly decodable, while continuity and
+interpolation establish that µ is linearly represented as a field. Thus, the manifold of gaussian activations is
+a feature field that is linearly represented.
+3.3.2
+
+Field geometry
+
+We stress that, in general, a standard multiclass probe for (non-parametric) classes (Alain & Bengio, 2018),
+for example {cats, dogs, horses, raccoons} would not show the continuous and interpolative structure that
+characterizes linear field probes—because there is no semantic or conceptual continuity between these discrete
+categories. A LFP, instead, represents a bilinear form f (x, µ) = ⟨x, Ψ(µ)⟩, where Ψ(µ) denotes the probe
+vector associated with field value µ ∈ Z; evaluation of the field is simply an inner product ⟨·, ·⟩, allowing to
+encode a space’s structure in operand (Ψ(.)) and read said structure out from the other operand (x). Correspondingly, the linear field probe implicitly endows the domain Z = [300, 700] with a particular geometry.
+Importantly, this geometry does not describe where activations corresponding to different domain values are
+(co-)located in activation space. Instead, it describes which linear directions in activation space matter for
+decision boundaries: the way µ is encoded is not the same as the way µ can be read out. This distinction
+between encoding geometry and separability relates to the notion of primal vs. dual space in information
+geometry; see App. E.1 for further discussion of this subtle point.
+This global structure of the linear readout space is naturally captured by the Gram matrix of probe
+vectors, defined via cosine similarity and shown in Fig. 3B. The Gram matrix encodes which directions in
+activation space are functionally similar for readout, independently of where the data lies in the manifold.
+5
+
+C - interpolation:
+
+1.0
+
+1
+
+1.0
+
+0.9
+
+0
+0
+
+10
+Layer
+
+cosine similarity
+
+1.0
+0.9
+0.8
+0.7
+0.6
+0.5
+
+0.5
+
+1
+
+0.0
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+0.8
+
+D - transfer:
+
+350 450 550 650
+
+transfer accuracy
+
+B - continuity:
+
+test accuracy
+
+A - separability:
+
+0 50 100 150 200
+
+Figure 3: Linear field probes. (A) Separability: probe accuracy (on test set) on all µ-indexed representations, for all layer. (B)
+Continuity: cosine similarity between probes, showing smooth variation over µ and revealing structured geometry over the
+domain. (C) Interpolation: cosine similarity between true and (kernel-) interpolated (see E.3) vectors at intermediate µ; for
+reference,
+cosine similarity between two random vectors in a space of d = 2048 dimensions has mean 0 and standard deviation
+√
+1/ 2048 ≃ 0.02. (D) Transfer: probes only transfer locally; here showing a probe trained on µ = {300, 350} (layer 0) and
+applied on sets µ = {350, 400}(∆µ = 50), µ = {400, 450}(∆µ = 100), etc. (An untrained binary probe has accuracy 0.5.)
+
+Its eigendecomposition reflects the underlying dimensionality and directionality necessary to decode µ values
+from the embedded representations. Following standard kernel PCA, this dual geometry can be visualized
+by embedding each µi as
+p
+
+p
+p
+λ1 u1 (µi ), λ2 u2 (µi ), λ3 u3 (µi ) ,
+
+cumulative expl. var.
+
+where λβ and uβ are the leading eigenvalues and eigenvectors of the Gram matrix (Fig 4B).
+Figure 4 thus illustrates a representation in which
+the readout geometry is dominated by a small numlayer 15
+ber of principal directions, even when the underlying
+1.0
+activation manifold is highly curved. This highlights
+L0
+the duality between encoding complexity and linear
+0.8
+= 300
+L5
+usability: complex internal representations can give
+0.6
+L13
+rise to comparatively simple linear fields.
+
+0.4
+0.2
+
+L14
+L15
+
+= 700
+
+Finally, the LFP also reveals the evolution of the
+field geometry across layers. In particular, eigenvalues of the Gram matrix show that the intrinsic dimensionality of the manifold increases over layers
+(Fig. 4A)—with the exception of the last layer2 . It
+may be interpreted as the deeper representations encoding an increasing number of features, requiring
+the feature field to densify and spread across more
+dimensions in readout space.
+
+1 3 5 7 9
+eigenval. rank
+
+Figure 4: Field geometry. (Left) Cumulative variance explained as a function of rank of the eigenvalues of the
+LFP Gram matrices (Fig 3B), for each layer. The intrinsic dimensionality increases with layers, but drops at the
+last layer (L15). (Right) Kernel PCA embedding of the first
+3 eigenvectors of the Gram matrix at layer 15. This represents the field geometry, dual to the activation space
+manifold.
+
+4
+
+Interventions
+
+Based on the model’s belief map, can we purposefully intervene on its activations and engineer its output to match a specific distribution? This is traditionally
+referred to as model steering (Subramani et al., 2022; Turner et al., 2024).
+Model steering is usually performed along a specific direction with a tunable magnitude; in other words:
+linearly. However, the manifold geometry and the field probe results uncovered above suggest that steering
+2 This “last layer anomaly” (Sarfati et al., 2025) has been noted many times before, but remains to this day to be characterized
+and explained precisely. Intuitively, the model converges to a next token prediction.
+
+6
+
+B
+
+200
+
+softmax std
+
+A
+150
+
+100
+
+300
+
+500
+
+700
+
+softmax mean
+
+Figure 5: Steering based on activation geometry: linear vs manifold-aware. The manifold of activations (A) for µ ∈ [300, 700]
+provides a principled basis for steering directions, for example a centroid-to-centroid vector (orange), and a manifold-fitting
+spline (yellow). The corresponding resulting logits are shown in (B). Steering linearly (orange path) brings steered logits far out
+of the σ = 100-distributions, while steering along the manifold keeps outputs significantly more aligned with the targeted
+behavior.
+
+ought to be done along the manifold that supports the underlying structure rather than a constant direction
+(Hindupur et al., 2025; Lubana et al., 2025; Fel et al., 2025). Here, we use our experiments to compare various
+steering schemes and help concretize this point precisely. In summary, we find that steering linearly tends to
+push next-token prediction “off the data manifold”, yielding predictions that are misaligned with the target
+distribution.
+
+4.1
+
+Activation-aware steering (primal space)
+(300)
+
+Assume we have an ensemble of last-layer representations xi,k
+
+∈ M300,100 mapping onto next-token pre(700)
+dictions ∼ N300,100 , and a second set xi,k ∈ M700,100 mapping onto N700,100 . Suppose we aim to steer the
+
+µ = 300 representations towards an intermediate target N (500, 100). A simple steering approach computes
+the “difference of means” steering vector
+s = x700 − x300 ,
+where x300 , x700 are class centroids, and applies the linear intervention::
+(500)
+
+x̃i,k
+
+(300)
+
+≃ xi,k
+
++ αs,
+
+with α = 0.5 (halfway between 300 and 700). This is essentially Contrastive Activation Steering (Rimsky
+et al., 2024a).
+However, the set Mµ,100 of the preimages to Nµ,100 varies nonlinearly with µ, and the resulting trajectory
+is curved in activation space (Fig 5A). Thus, steering linearly towards M700,100 might push activations out
+of the gaussian manifold, so that when they reach µ = 500 their shape departs significantly from that of
+the normal distribution N500,100 . This is indeed what we observe experimentally in Fig. 5B, where the
+linear steering in activation space forms a curve in logit (image) space so that steered activations reaching
+µ = 500 have a large variance (orange curve). In contrast, if we parametrize along the prototypes of
+Mµ,σ0 =100 and steer along the manifold, we preserve the class-conditioned structure: induced predictions
+remain close to N (µ, σ0 ) while shifting their mean towards µ = 500 (Fig. 5B yellow curve). These results
+thus offer concrete evidence that linear steering can lead to unexpected and unpredictable behaviors when
+the underlying geometry is curved, indicating one ought to first characterize the geometry before steering is
+performed.
+
+7
+
+4.2
+
+Field-aware steering (dual space)
+
+A complementary approach to intervening in the representation space is to steer the model in the dual
+(i.e., the distribution) space using probe vectors (Li et al., 2023; Davis & Sukthankar, 2024; Park et al.,
+2026). Specifically, rather than steering towards activation prototypes, this method attempts to modify the
+component of the representation that controls a linear readout of µ.
+Linear probe steering.
+
+In our setup, we can use point probes to define the steering vector:
+s⋆ =
+
+wµ=700 − wµ=300
+.
+∥wµ=700 − wµ=300 ∥
+
+Steering x(300) ∈ M300 towards M700 reads:
+xs (α) = x(300) + αs⋆ .
+One immediate caveat is that, since feature geometry is agnostic to scale, it’s unclear which values of α
+are meaningful. Prior work has found that small α can have negligible effects on logits (StefanHex &
+Mendel (2024)’s “activation plateaus”), whereas large values break the model towards distribution shifts and
+degenerate outputs. We directly visualize the evolution of the induced output distribution as a function
+of α in Fig. 4. Again, this naive linear steering scheme pushes output distributions away from the Gaussian
+manifold.
+
+softmax std
+
+Field-aware steering from LFP. Alternatively, the linear field probe provides a geometry over µ to
+extract field-aware steering vectors.
+
+200
+
+15
+
+150
+
+10
+
+Specific implementations vary; we propose the following. We use the first r eigenmodes of the LFP
+Gram matrix K and obtain a low-dimensional embedding:
+p
+
+p
+c(µ) =
+λ1 u1 (µ), . . . , λr ur (µ) .
+We then fit a spline c̃(µ) and use P
+it to define an interpolated steering direction s⋆ = i α(µ)wµi , where
+the weights αi are obtained by kernel regression using K. This removes noisy components and preserves only the smooth and predictive geometry. As
+shown in Fig. 6, this approach maintains the induced
+output distribution closer to the intended Nµ,σ0 family, within a certain range.
+
+5
+100
+50
+
+0
+300 400 500 600 700
+softmax mean
+
+5
+
+Figure 6: Steering based on feature and field geometry.
+Steering along a single probe direction, here w300→700
+(lozenges ♦) again brings the steered activations far from
+the σ0 = 100 manifold. Taking advantage of the linear
+field probe to smoothly travel along the field geometry
+(squares ■), however, maintain the same standard deviation while increasing the mean – at least in a certain
+regime between 300 and 500.
+
+5
+
+Conclusion
+
+We introduced a principled framework for tracking
+language models’ beliefs by mapping how posterior
+predictions are encoded as structured manifolds in
+activation space, and how non-stationary inputs induce dynamics between attractor regions. Using this
+setup, our main finding is that purely linear concept
+representations are often an inadequate abstraction.
+Even when a target feature, such as the mean of an
+output distribution, is locally decodable, the underlying representations can exhibit substantial curvature. Moreover, we show in App. E.4 that the joint (µ, σ)
+sheet cannot be reconstructed as a simple additive composition of the anchor manifolds Mµ,σ0 and Mµ0 ,σ ,
+8
+
+suggesting non-linear interactions between belief parameters. Hence, linear steering can move activations
+off-manifold, producing unintended coupled shifts in other covariates (e.g., distort the shape of the distribution). This geometric mismatch reflects the gap between readout geometry and representation geometry.
+Linear separability does not entail geometrically faithful control: features may be linearly separable and
+readable, yet linear steering can still cut across (rather than along) the curved belief manifold.
+This is notably the case when the probe field spans multiple directions (rank > 1; see App. E.1).
+Our work is part of a broader effort to bridge representation geometry and intervention schemes in language
+models. Increasingly, representations are understood beyond collections of linear features, as structured
+geometric objects shaped by statistical correlations and symmetries in the training data (Karkada et al.,
+2026; Prieto et al., 2026). This perspective is formalized in recent work on the information geometry of
+softmax representations: Park et al. (2026) propose that the natural notion of distance is not Euclidean but
+induced by the divergence between output distributions, leading to a dually flat geometry with distinct primal
+and dual structures. This geometric lens motivates alternatives that operate in the appropriate coordinate
+system; for example, by projecting activations back onto learned data manifolds (Luo et al., 2026) or by
+gradient-informed paths between contrastive clusters (Zhao et al., 2026). Our findings complement this view:
+effective control of belief systems, and hence behavior, must respect the intrinsic geometry of representations.
+Limitations. Our analysis relies on true activations of base models without finetuning; nevertheless, it is
+currently constrained to numerical settings. Extending these findings to broader natural language processing
+contexts remains open, particularly because identifying continuous parametrizations in natural language is
+more challenging. However, analogous continuous and quantitative descriptions of other rather intangible
+objects, such as stories (Reagan et al., 2016) or behavior (Stephens et al., 2008), have been achieved in other
+fields, suggesting that similar approaches might be possible in language as well. Accordingly, our results
+should be interpreted as clarifying what internal representations look like geometrically, and what geometry
+implies for probing and steering, rather than as a complete account of belief formation in general settings.
+
+9
+
+Acknowledgments
+R.S. is very grateful to Chris Earls, Toni Liu, Haley Moller and Can Rager for insightful conversations and
+feedback on the manuscript.
+
+References
+Guillaume Alain and Yoshua Bengio. Understanding intermediate layers using linear classifier probes, 2018.
+URL https://arxiv.org/abs/1610.01644.
+Jiajun Bao, Nicolas Boullé, Toni J. B. Liu, Raphaël Sarfati, and Christopher J. Earls. Text-trained llms can
+zero-shot extrapolate pde dynamics, revealing a three-stage in-context learning mechanism, 2025. URL
+https://arxiv.org/abs/2509.06322.
+Eric Bigelow, Daniel Wurgaft, YingQiao Wang, Noah Goodman, Tomer Ullman, Hidenori Tanaka, and
+Ekdeep Singh Lubana. Belief dynamics reveal the dual nature of in-context learning and activation steering,
+2025. URL https://arxiv.org/abs/2511.00617.
+Julian Coda-Forno, Marcel Binz, Zeynep Akata, Matthew Botvinick, Jane X. Wang, and Eric Schulz. Metain-context learning in large language models, 2023. URL https://arxiv.org/abs/2305.12907.
+Austin L Davis and Gita Sukthankar. Hidden pieces: An analysis of linear probes for gpt representation
+edits. In 2024 International Conference on Machine Learning and Applications (ICMLA), pp. 498–505,
+2024. doi: 10.1109/ICMLA61862.2024.00073.
+Nelson Elhage, Tristan Hume, Catherine Olsson, Nicholas Schiefer, Tom Henighan, Shauna Kravec, Zac
+Hatfield-Dodds, Robert Lasenby, Dawn Drain, Carol Chen, Roger Grosse, Sam McCandlish, Jared Kaplan,
+Dario Amodei, Martin Wattenberg, and Christopher Olah. Toy models of superposition. Transformer
+Circuits Thread, 2022. URL https://transformer-circuits.pub/2022/toy_model/index.html.
+Thomas Fel, Binxu Wang, Michael A. Lepori, Matthew Kowal, Andrew Lee, Randall Balestriero, Sonia
+Joseph, Ekdeep S. Lubana, Talia Konkle, Demba Ba, and Martin Wattenberg. Into the rabbit hull: From
+task-relevant concepts in dino to minkowski geometry, 2025. URL https://arxiv.org/abs/2510.08638.
+Aaron Grattafiori, Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian, Ahmad Al-Dahle,
+Aiesha Letman, Akhil Mathur, Alan Schelten, Alex Vaughan, Amy Yang, Angela Fan, Anirudh Goyal, Anthony Hartshorn, Aobo Yang, Archi Mitra, Archie Sravankumar, Artem Korenev, Arthur Hinsvark, Arun
+Rao, Aston Zhang, Aurelien Rodriguez, Austen Gregerson, Ava Spataru, Baptiste Roziere, Bethany Biron,
+Binh Tang, Bobbie Chern, Charlotte Caucheteux, Chaya Nayak, Chloe Bi, Chris Marra, Chris McConnell,
+Christian Keller, Christophe Touret, Chunyang Wu, Corinne Wong, Cristian Canton Ferrer, Cyrus Nikolaidis, Damien Allonsius, Daniel Song, Danielle Pintz, Danny Livshits, Danny Wyatt, David Esiobu, Dhruv
+Choudhary, Dhruv Mahajan, Diego Garcia-Olano, Diego Perino, Dieuwke Hupkes, Egor Lakomkin, Ehab
+AlBadawy, Elina Lobanova, Emily Dinan, Eric Michael Smith, Filip Radenovic, Francisco Guzmán, Frank
+Zhang, Gabriel Synnaeve, Gabrielle Lee, Georgia Lewis Anderson, Govind Thattai, Graeme Nail, Gregoire
+Mialon, Guan Pang, Guillem Cucurell, Hailey Nguyen, Hannah Korevaar, Hu Xu, Hugo Touvron, Iliyan
+Zarov, Imanol Arrieta Ibarra, Isabel Kloumann, Ishan Misra, Ivan Evtimov, Jack Zhang, Jade Copet,
+Jaewon Lee, Jan Geffert, Jana Vranes, Jason Park, Jay Mahadeokar, Jeet Shah, Jelmer van der Linde,
+Jennifer Billock, Jenny Hong, Jenya Lee, Jeremy Fu, Jianfeng Chi, Jianyu Huang, Jiawen Liu, Jie Wang,
+Jiecao Yu, Joanna Bitton, Joe Spisak, Jongsoo Park, Joseph Rocca, Joshua Johnstun, Joshua Saxe, Junteng Jia, Kalyan Vasuden Alwala, Karthik Prasad, Kartikeya Upasani, Kate Plawiak, Ke Li, Kenneth
+Heafield, Kevin Stone, Khalid El-Arini, Krithika Iyer, Kshitiz Malik, Kuenley Chiu, Kunal Bhalla, Kushal
+Lakhotia, Lauren Rantala-Yeary, Laurens van der Maaten, Lawrence Chen, Liang Tan, Liz Jenkins, Louis
+Martin, Lovish Madaan, Lubo Malo, Lukas Blecher, Lukas Landzaat, Luke de Oliveira, Madeline Muzzi,
+Mahesh Pasupuleti, Mannat Singh, Manohar Paluri, Marcin Kardas, Maria Tsimpoukelli, Mathew Oldham,
+Mathieu Rita, Maya Pavlova, Melanie Kambadur, Mike Lewis, Min Si, Mitesh Kumar Singh, Mona Hassan, Naman Goyal, Narjes Torabi, Nikolay Bashlykov, Nikolay Bogoychev, Niladri Chatterji, Ning Zhang,
+
+10
+
+Olivier Duchenne, Onur Çelebi, Patrick Alrassy, Pengchuan Zhang, Pengwei Li, Petar Vasic, Peter Weng,
+Prajjwal Bhargava, Pratik Dubal, Praveen Krishnan, Punit Singh Koura, Puxin Xu, Qing He, Qingxiao
+Dong, Ragavan Srinivasan, Raj Ganapathy, Ramon Calderer, Ricardo Silveira Cabral, Robert Stojnic,
+Roberta Raileanu, Rohan Maheswari, Rohit Girdhar, Rohit Patel, Romain Sauvestre, Ronnie Polidoro,
+Roshan Sumbaly, Ross Taylor, Ruan Silva, Rui Hou, Rui Wang, Saghar Hosseini, Sahana Chennabasappa,
+Sanjay Singh, Sean Bell, Seohyun Sonia Kim, Sergey Edunov, Shaoliang Nie, Sharan Narang, Sharath
+Raparthy, Sheng Shen, Shengye Wan, Shruti Bhosale, Shun Zhang, Simon Vandenhende, Soumya Batra,
+Spencer Whitman, Sten Sootla, Stephane Collot, Suchin Gururangan, Sydney Borodinsky, Tamar Herman,
+Tara Fowler, Tarek Sheasha, Thomas Georgiou, Thomas Scialom, Tobias Speckbacher, Todor Mihaylov,
+Tong Xiao, Ujjwal Karn, Vedanuj Goswami, Vibhor Gupta, Vignesh Ramanathan, Viktor Kerkez, Vincent
+Gonguet, Virginie Do, Vish Vogeti, Vítor Albiero, Vladan Petrovic, Weiwei Chu, Wenhan Xiong, Wenyin
+Fu, Whitney Meers, Xavier Martinet, Xiaodong Wang, Xiaofang Wang, Xiaoqing Ellen Tan, Xide Xia, Xinfeng Xie, Xuchao Jia, Xuewei Wang, Yaelle Goldschlag, Yashesh Gaur, Yasmine Babaei, Yi Wen, Yiwen
+Song, Yuchen Zhang, Yue Li, Yuning Mao, Zacharie Delpierre Coudert, Zheng Yan, Zhengxing Chen, Zoe
+Papakipos, Aaditya Singh, Aayushi Srivastava, Abha Jain, Adam Kelsey, Adam Shajnfeld, Adithya Gangidi,
+Adolfo Victoria, Ahuva Goldstand, Ajay Menon, Ajay Sharma, Alex Boesenberg, Alexei Baevski, Allie Feinstein, Amanda Kallet, Amit Sangani, Amos Teo, Anam Yunus, Andrei Lupu, Andres Alvarado, Andrew
+Caples, Andrew Gu, Andrew Ho, Andrew Poulton, Andrew Ryan, Ankit Ramchandani, Annie Dong, Annie
+Franco, Anuj Goyal, Aparajita Saraf, Arkabandhu Chowdhury, Ashley Gabriel, Ashwin Bharambe, Assaf
+Eisenman, Azadeh Yazdan, Beau James, Ben Maurer, Benjamin Leonhardi, Bernie Huang, Beth Loyd,
+Beto De Paola, Bhargavi Paranjape, Bing Liu, Bo Wu, Boyu Ni, Braden Hancock, Bram Wasti, Brandon
+Spence, Brani Stojkovic, Brian Gamido, Britt Montalvo, Carl Parker, Carly Burton, Catalina Mejia, Ce Liu,
+Changhan Wang, Changkyu Kim, Chao Zhou, Chester Hu, Ching-Hsiang Chu, Chris Cai, Chris Tindal,
+Christoph Feichtenhofer, Cynthia Gao, Damon Civin, Dana Beaty, Daniel Kreymer, Daniel Li, David Adkins, David Xu, Davide Testuggine, Delia David, Devi Parikh, Diana Liskovich, Didem Foss, Dingkang
+Wang, Duc Le, Dustin Holland, Edward Dowling, Eissa Jamil, Elaine Montgomery, Eleonora Presani,
+Emily Hahn, Emily Wood, Eric-Tuan Le, Erik Brinkman, Esteban Arcaute, Evan Dunbar, Evan Smothers,
+Fei Sun, Felix Kreuk, Feng Tian, Filippos Kokkinos, Firat Ozgenel, Francesco Caggioni, Frank Kanayet,
+Frank Seide, Gabriela Medina Florez, Gabriella Schwarz, Gada Badeer, Georgia Swee, Gil Halpern, Grant
+Herman, Grigory Sizov, Guangyi, Zhang, Guna Lakshminarayanan, Hakan Inan, Hamid Shojanazeri, Han
+Zou, Hannah Wang, Hanwen Zha, Haroun Habeeb, Harrison Rudolph, Helen Suk, Henry Aspegren, Hunter
+Goldman, Hongyuan Zhan, Ibrahim Damlaj, Igor Molybog, Igor Tufanov, Ilias Leontiadis, Irina-Elena
+Veliche, Itai Gat, Jake Weissman, James Geboski, James Kohli, Janice Lam, Japhet Asher, Jean-Baptiste
+Gaya, Jeff Marcus, Jeff Tang, Jennifer Chan, Jenny Zhen, Jeremy Reizenstein, Jeremy Teboul, Jessica
+Zhong, Jian Jin, Jingyi Yang, Joe Cummings, Jon Carvill, Jon Shepard, Jonathan McPhie, Jonathan Torres, Josh Ginsburg, Junjie Wang, Kai Wu, Kam Hou U, Karan Saxena, Kartikay Khandelwal, Katayoun
+Zand, Kathy Matosich, Kaushik Veeraraghavan, Kelly Michelena, Keqian Li, Kiran Jagadeesh, Kun Huang,
+Kunal Chawla, Kyle Huang, Lailin Chen, Lakshya Garg, Lavender A, Leandro Silva, Lee Bell, Lei Zhang,
+Liangpeng Guo, Licheng Yu, Liron Moshkovich, Luca Wehrstedt, Madian Khabsa, Manav Avalani, Manish
+Bhatt, Martynas Mankus, Matan Hasson, Matthew Lennie, Matthias Reso, Maxim Groshev, Maxim Naumov, Maya Lathi, Meghan Keneally, Miao Liu, Michael L. Seltzer, Michal Valko, Michelle Restrepo, Mihir
+Patel, Mik Vyatskov, Mikayel Samvelyan, Mike Clark, Mike Macey, Mike Wang, Miquel Jubert Hermoso,
+Mo Metanat, Mohammad Rastegari, Munish Bansal, Nandhini Santhanam, Natascha Parks, Natasha
+White, Navyata Bawa, Nayan Singhal, Nick Egebo, Nicolas Usunier, Nikhil Mehta, Nikolay Pavlovich
+Laptev, Ning Dong, Norman Cheng, Oleg Chernoguz, Olivia Hart, Omkar Salpekar, Ozlem Kalinli, Parkin
+Kent, Parth Parekh, Paul Saab, Pavan Balaji, Pedro Rittner, Philip Bontrager, Pierre Roux, Piotr Dollar,
+Polina Zvyagina, Prashant Ratanchandani, Pritish Yuvraj, Qian Liang, Rachad Alao, Rachel Rodriguez,
+Rafi Ayub, Raghotham Murthy, Raghu Nayani, Rahul Mitra, Rangaprabhu Parthasarathy, Raymond Li,
+Rebekkah Hogan, Robin Battey, Rocky Wang, Russ Howes, Ruty Rinott, Sachin Mehta, Sachin Siby,
+Sai Jayesh Bondu, Samyak Datta, Sara Chugh, Sara Hunt, Sargun Dhillon, Sasha Sidorov, Satadru Pan,
+Saurabh Mahajan, Saurabh Verma, Seiji Yamamoto, Sharadh Ramaswamy, Shaun Lindsay, Shaun Lindsay,
+Sheng Feng, Shenghao Lin, Shengxin Cindy Zha, Shishir Patil, Shiva Shankar, Shuqiang Zhang, Shuqiang
+Zhang, Sinong Wang, Sneha Agarwal, Soji Sajuyigbe, Soumith Chintala, Stephanie Max, Stephen Chen,
+Steve Kehoe, Steve Satterfield, Sudarshan Govindaprasad, Sumit Gupta, Summer Deng, Sungmin Cho,
+Sunny Virk, Suraj Subramanian, Sy Choudhury, Sydney Goldman, Tal Remez, Tamar Glaser, Tamara
+11
+
+Best, Thilo Koehler, Thomas Robinson, Tianhe Li, Tianjun Zhang, Tim Matthews, Timothy Chou, Tzook
+Shaked, Varun Vontimitta, Victoria Ajayi, Victoria Montanez, Vijai Mohan, Vinay Satish Kumar, Vishal
+Mangla, Vlad Ionescu, Vlad Poenaru, Vlad Tiberiu Mihailescu, Vladimir Ivanov, Wei Li, Wenchen Wang,
+Wenwen Jiang, Wes Bouaziz, Will Constable, Xiaocheng Tang, Xiaojian Wu, Xiaolan Wang, Xilun Wu,
+Xinbo Gao, Yaniv Kleinman, Yanjun Chen, Ye Hu, Ye Jia, Ye Qi, Yenda Li, Yilin Zhang, Ying Zhang,
+Yossi Adi, Youngjin Nam, Yu, Wang, Yu Zhao, Yuchen Hao, Yundi Qian, Yunlu Li, Yuzi He, Zach Rait,
+Zachary DeVito, Zef Rosnbrick, Zhaoduo Wen, Zhenyu Yang, Zhiwei Zhao, and Zhiyu Ma. The llama 3
+herd of models, 2024. URL https://arxiv.org/abs/2407.21783.
+Wes Gurnee, Emmanuel Ameisen, Isaac Kauvar, Julius Tarng, Adam Pearce, Chris Olah, and Joshua Batson.
+When models manipulate manifolds: The geometry of a counting task. Transformer Circuits Thread, 2025.
+URL https://transformer-circuits.pub/2025/linebreaks/index.html.
+Sai Sumedh R. Hindupur, Ekdeep Singh Lubana, Thomas Fel, and Demba E. Ba. Projecting assumptions:
+The duality between sparse autoencoders and concept geometry. In ICML 2025 Workshop on Methods and
+Opportunities at Small Scale, 2025. URL https://openreview.net/forum?id=AKaoBzhIIF.
+Dhruva Karkada, Daniel J. Korchinski, Andres Nava, Matthieu Wyart, and Yasaman Bahri. Symmetry in
+language statistics shapes the geometry of model representations, 2026. URL https://arxiv.org/abs/
+2602.15029.
+Kenneth Li, Oam Patel, Fernanda Viégas, Hanspeter Pfister, and Martin Wattenberg. Inference-time intervention: eliciting truthful answers from a language model. In Proceedings of the 37th International
+Conference on Neural Information Processing Systems, NIPS ’23, Red Hook, NY, USA, 2023. Curran
+Associates Inc.
+Toni J.b. Liu, Nicolas Boulle, Raphaël Sarfati, and Christopher Earls. LLMs learn governing principles of
+dynamical systems, revealing an in-context neural scaling law. In Yaser Al-Onaizan, Mohit Bansal, and
+Yun-Nung Chen (eds.), Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing, pp. 15097–15117, Miami, Florida, USA, November 2024. Association for Computational Linguistics.
+doi: 10.18653/v1/2024.emnlp-main.842. URL https://aclanthology.org/2024.emnlp-main.842/.
+Toni J.B. Liu, Nicolas Boulle, Raphaël Sarfati, and Christopher Earls. Density estimation with LLMs: a
+geometric investigation of in-context learning trajectories. In The Thirteenth International Conference on
+Learning Representations, 2025. URL https://openreview.net/forum?id=semTHoVGsJ.
+Ekdeep Singh Lubana, Can Rager, Sai Sumedh R Hindupur, Valerie Costa, Greta Tuckute, Oam Patel,
+Sonia Krishna Murthy, Thomas Fel, Daniel Wurgaft, Eric J Bigelow, et al. Priors in time: Missing
+inductive biases for language model interpretability. arXiv preprint arXiv:2511.01836, 2025.
+Grace Luo, Jiahai Feng, Trevor Darrell, Alec Radford, and Jacob Steinhardt. Learning a generative metamodel of llm activations, 2026. URL https://arxiv.org/abs/2602.06964.
+Samuel Marks and Max Tegmark. The geometry of truth: Emergent linear structure in large language
+model representations of true/false datasets. In First Conference on Language Modeling, 2024. URL
+https://openreview.net/forum?id=aajyHYjjsk.
+Kiho Park, Yo Joong Choe, and Victor Veitch. The linear representation hypothesis and the geometry of
+large language models. In Proceedings of the 41st International Conference on Machine Learning, ICML’24.
+JMLR.org, 2024.
+Kiho Park, Todd Nief, Yo Joong Choe, and Victor Veitch. The information geometry of softmax: Probing
+and steering, 2026. URL https://arxiv.org/abs/2602.15293.
+Steven T Piantadosi, Harry Tily, and Edward Gibson. The communicative function of ambiguity in language.
+Cognition, 122(3):280–291, 2012.
+Lucas Prieto, Edward Stevinson, Melih Barsbey, Tolga Birdal, and Pedro A. M. Mediano. From data statistics
+to feature geometry: How correlations shape superposition, 2026. URL https://arxiv.org/abs/2603.
+09972.
+12
+
+Katherine N. Quinn, Colin B. Clement, Francesco De Bernardis, Michael D. Niemack, and James P. Sethna.
+Visualizing probabilistic models and data with intensive principal component analysis. Proceedings of the
+National Academy of Sciences, 116(28):13762–13767, 2019. doi: 10.1073/pnas.1817218116. URL https:
+//www.pnas.org/doi/abs/10.1073/pnas.1817218116.
+Andrew J. Reagan, Lewis Mitchell, Dilan Kiley, Christopher M. Danforth, and Peter Sheridan Dodds. The
+emotional arcs of stories are dominated by six basic shapes. EPJ Data Science, 5(1):31, 2016. doi: 10.
+1140/epjds/s13688-016-0093-1. URL https://doi.org/10.1140/epjds/s13688-016-0093-1.
+Nina Rimsky, Nick Gabrieli, Julian Schulz, Meg Tong, Evan Hubinger, and Alexander Turner. Steering
+llama 2 via contrastive activation addition. In Lun-Wei Ku, Andre Martins, and Vivek Srikumar (eds.),
+Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long
+Papers), pp. 15504–15522, Bangkok, Thailand, August 2024a. Association for Computational Linguistics.
+doi: 10.18653/v1/2024.acl-long.828. URL https://aclanthology.org/2024.acl-long.828/.
+Nina Rimsky, Nick Gabrieli, Julian Schulz, Meg Tong, Evan Hubinger, and Alexander Turner. Steering
+llama 2 via contrastive activation addition. In Lun-Wei Ku, Andre Martins, and Vivek Srikumar (eds.),
+Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long
+Papers), pp. 15504–15522, Bangkok, Thailand, August 2024b. Association for Computational Linguistics.
+doi: 10.18653/v1/2024.acl-long.828. URL https://aclanthology.org/2024.acl-long.828/.
+Raphaël Sarfati, Toni J.B. Liu, Nicolas Boulle, and Christopher Earls. Lines of thought in large language
+models. In The Thirteenth International Conference on Learning Representations, 2025. URL https:
+//openreview.net/forum?id=zjAEa4s3sH.
+StefanHex and Jake Mendel. Interim research report: Activation plateaus & sensitive directions in
+gpt2. LessWrong blog post, July 2024. URL https://www.lesswrong.com/posts/LajDyGyiyX8DNNsuF/
+interim-research-report-activation-plateaus-and-sensitive-1.
+Greg J. Stephens, Bethany Johnson-Kerner, William Bialek, and William S. Ryu. Dimensionality and
+dynamics in the behavior of c. elegans. PLOS Computational Biology, 4(4):1–10, 04 2008. doi:
+10.1371/journal.pcbi.1000028. URL https://doi.org/10.1371/journal.pcbi.1000028.
+Nishant Subramani, Nivedita Suresh, and Matthew E Peters. Extracting latent steering vectors from pretrained language models. In Findings of the Association for Computational Linguistics: ACL 2022, pp.
+566–581, 2022.
+Alexander Matt Turner, Lisa Thiergart, Gavin Leech, David Udell, Juan J. Vazquez, Ulisse Mini, and Monte
+MacDiarmid. Steering language models with activation engineering, 2024. URL https://arxiv.org/abs/
+2308.10248.
+Stephen Welch. The Welch Labs Illustrated Guide to AI. Welch Labs LLC, 2025. ISBN 9798991923415. URL
+https://www.welchlabs.com/resources/ai-book-ezrzm.
+Julian Yocum, Cameron Allen, Bruno Olshausen, and Stuart Russell. Neural manifold geometry encodes
+feature fields. In NeurIPS 2025 Workshop on Symmetry and Geometry in Neural Representations, 2025.
+URL https://openreview.net/forum?id=MwU86qfCTW.
+Hongjue Zhao, Haosen Sun, Jiangtao Kong, Xiaochang Li, Qineng Wang, Liwei Jiang, Qi Zhu, Tarek Abdelzaher, Yejin Choi, Manling Li, and Huajie Shao. Odesteer: A unified ode-based steering framework for
+llm alignment, 2026. URL https://arxiv.org/abs/2602.17560.
+
+Appendix
+A
+
+Convergence to the input distribution
+
+A prompt consisting of n numbers contains 2n + 1 tokens: an initial <|begin_of_text|> token, n com2num
+tokens, and n num2com tokens. We denote by t ≥ 0 the index of each input number, i.e. each number token
+13
+
+has global index 2t + 1 (0-indexed). The corresponding com2num tokens predicting the following numbers
+have index 2t + 2.
+Figure 7 shows the convergence of the com2num outputs pt = p(2t + 2) towards the true distribution underlying the data. After about 100 numbers have been seen, the model adequately reproduces the underlying
+distribution in its logits. Figure 8 further shows that outputs are locally close to each other, suggesting
+continuity of the output softmax along t.
+Liu et al. (2025) and Bao et al. (2025) have already studied the mechanisms of convergence in various
+numerical settings, starting with syntactic matching and a high-entropy phase corresponding to the uniform
+distribution. We further note here that even 100 input numbers is insufficient to sketch an underlying
+distribution with σ = 100, even though the model’s output is faithful to it. In other words, the model
+believes the input data is Gaussian, even though it doesn’t yet look like it. This suggests the model’s prior
+is biased towards normality.
+
+2
+1
+
+10 4
+
+0
+0
+
+t=20
+
+100
+
+200
+
+300
+
+400
+
+10 5
+
+500
+
+7.0
+
+10 2
+
+6.5
+
+10 3
+
+model
+N(500,100)
+
+t=30
+
+t=100
+
+P(token)
+
+entropy
+
+t=10
+
+10 3
+
+P(token)
+
+KL divergence
+
+10 2
+
+6.0
+
+10 4
+
+5.5
+0
+
+100
+
+200 300 400
+number index
+
+10 5
+
+500
+
+0 250 500 750 999
+token (number)
+
+0 250 500 750 999
+token (number)
+
+Figure 7: Convergence to the normal distribution. (A) KL divergence between the softmax distribution and the distribution underlying the input numbers, KL(pt ∥ N500,100 ). The convergence appears to be reached after about 100 numbers. (B) Entropy
+of the softmax distribution. (C) Output distributions at different times, showing convergence from a uniform distribution on
+integers to the true distribution (red).
+
+B
+
+Belief manifolds for various models
+
+We apply the same methodology (input time series, PCA of representations) to the residual stream activations
+of various models of the Llama, LFM, and OLMo models. We focus on these models as they are the main
+foundational base models with unique tokens for each integer between 0 and 999. In Fig. 9, we observe
+qualitatively the same structured manifolds across models, with increasing resolution as we go towards the
+deeper layers. An interactive explorer of low-dimensional visualization of manifolds across models and layers
+will be made available.
+
+C
+
+Ideal observer
+
+In a previous study, Liu et al. (2025) observed that LLMs operate an implicit, context-dependent Kernel
+Density Estimation procedure to compute logit distributions from a numerical input. Here, we consider the
+
+14
+
+200
+150
+
+0.4
+
+Hellinger distance
+
+t (number index)
+
+0.5
+
+0.3
+
+100
+
+0.2
+
+50
+0
+
+0.1
+0
+
+50
+100
+150
+t (number index)
+
+200
+
+0.0
+
+Figure 8: Pairwise distances between output distributions. The Hellinger distance is a (symmetric) distance between two
+√
+√
+probability vectors: DHel (pt , pt′ ) = 2−1/2 ∥ pt − pt′ ∥2 . Early outputs are far from those at t ≥ 100, which encode the
+stationary distribution.
+
+perspective of a Bayesian observer that incorporates the sequentiality of the input data to infer its own
+posterior.
+Considering the switching dynamics of Section 3.2, it is apparent that the language model does not
+conform to an online ideal Bayesian observer under standard assumptions. For one thing, intuitively, an ideal
+observer would compute a running average of the input data and hence the output distribution mean would
+not converge fast enough to 700 as in Fig. 2.
+More precisely, assuming the model’s generative process is stationary & i.i.d. Gaussian, with unknown
+mean and unknown variance, the output distribution should follow:
+
+
+σ2
+σ 2 ∼ InvGamma(α0 , β0 ), µ | σ 2 ∼ N µ0 ,
+.
+κ0
+The resulting posterior predictive p(xt+1 |x1:t ) is Student-t distributed. The expected predictive mean reads:
+300n1 (t) + 700n2 (t)
+,
+t
+where n1 = min(t, 1000), n2 (t) = max(t − 1000, 0), and under the assumption of weak prior (κ0 small), and
+the expected predictive standard deviation:
+r
+n1 (t)n2 (t)
+E [std(xt+1 | x1:t )] ≃ 1002 + 4002
+.
+t2
+E [avg(xt+1 | x1:t )] ≃
+
+In Fig. 10, we show the trajectory of the ideal observer in the (µ, σ) plane on top of the ensemble-averaged
+trajectory of Llama-3.2’s softmax on the switching time series. The LLM converges much faster than the
+ideal observer.
+
+D
+
+Meta-in-context learning
+
+In Fig. 2, we observed the response of the LLM upon a change of input distribution. We now extend this
+experiments to a long sequence of several switches between N (300, 100) and N (700, 300). The main question
+here is whether the model starts to understand the meta-distribution of the input data. Figure 11 provides
+early evidence that it does. Indeed, the model’s response to a change of distribution becomes faster and faster,
+as evidenced in the shape of the softmax standard deviation over time, and the trajectories of activations
+between the two attractors. The model transitions much faster and follows a more direct path for later
+switches and the early ones. This ability of meta-in-context learning has been reported before, in different
+settings (Coda-Forno et al., 2023).
+15
+
+E
+
+Linear field probes
+
+E.1
+
+Data and feature geometry
+
+In order to illustrate the dichotomy between data manifold and field geometry (primal vs dual), as framed
+in Yocum et al. (2025), we propose the visualization in Fig. 12. Suppose representations lie on a helicoid:
+their geometry is fully three-dimensional. Let’s now assume that these activations describe separate classes:
+blue, orange, green; class assignment varies along the manifold There are many ways these classes can be
+encoded along the manifold. In Fig 12A, B, D, E these classes are linearly separable because there exists
+linear probe vectors (equivalently: single hyperplanes) that separate the classes. In Fig 12C, no such linear
+separator exists, therefore the classes are not separable from single decision boundary directions.
+Let’s now consider the dimensionality of the linear field probe. In Fig 12D, the class probe vectors
+are collinear across µ, so that dim span{wµ } = 1 (a rank-1 field). However, in Fig 12E, two non-parallel
+hyperplanes are required, one to separate blue from orange, and another for orange to green: the span of the
+linear field probe is 2. This intrinsic field dimensionality is reflected in the rank of the LFP Gram matrix.
+More intuitively, one can consider this intuitive example of the planar map of Earth. The landmasses
+represent where data is distributed in space: this is the primal geometry, or data manifold. Each point on
+the land is also associated with different features, for example: the country it belongs to, the local climate,
+or the elevation. These features define a dual geometry: they are fields supported on the data manifold,
+but taking values in a different space (e.g., a finite set of countries, or R+ for elevation). Some categorical
+features are linearly separable: Australia and New Zealand can be separated by a single line (more generally,
+a hyperplane). Others are not: Belgium and the Netherlands are not cleanly separable due to intricacies
+and enclaves at their border (Welch, 2025). Continuous feature fields, such as atmospheric pressure, have a
+geometry of their own, visualized by isobars. A linear field probe corresponds to a family of linear readouts
+that locally approximate such feature fields, revealing their geometry through how probe directions vary
+across the domain. To make this notion precise, we need to characterize how these probe vectors relate to
+one another globally. Further elaboration is provided in App. E.1.
+
+E.2
+
+Set of linear probes
+
+Practically, to calculate a set of linear probes on an ensemble of activations representing a set of C classes,
+and test the hypothesis that they constitute a LFP, we have two main options:
+A multiclass probe,
+
+which computes the logits:
+z(x) = W x + b,
+
+with z ∈ RC , W ∈ RC×d , b ∈ RC . It is trained using a softmax + cross-entropy loss. The point probes
+correspond to the domain embedding vectors Ψ(µi ) at the discretized points µi , i.e. Ψ(µi ) are the rows wi
+of W .
+A one-vs-rest probe set, i.e. a set of C binary classifiers with scores for each class i:
+si (x) = wi⊤ x + bi ,
+and corresponding probabilities pi (x) = σ (si (x)) and a sigmoid + binary cross-entropy loss. The point
+probes are the C learned wi ∈ Rd .
+In either case, the bias term b is optional and a weight-decay is applied for training. We set b = 0 for
+our probes for simplicity – it doesn’t seem to affect performance. In practice, we find one-vs-rest probes to
+be less efficient to separate a specific class from all others. Hence we rely on the multiclass probe in what
+follows.
+The steering directions are calculated from differences of point-probes. (For multiclass probes using a
+softmax model, the row vectors are defined up to a shared shift, so we optionally center them across classes
+without affecting steering differences.)
+
+16
+
+E.3
+
+Manifold interpolation
+
+We consider the unit-norm probe vectors wµi ; for simplicity let’s take w300 and w400 . We aim to find an
+interpolation for the probe vector w̃350 at µ = 350.
+Linear interpolation.
+
+This is simply the arithmetic weighted mean:
+w̃350 = αw300 + (1 − α)w400 ,
+
+with α = 0.5 for the midpoint.
+Geodesic interpolation.
+
+We use the standard spherical interpolation formula:
+w̃350 =
+
+sin αθ
+sin (1 − α)θ
+w300 +
+w400 ,
+sin θ
+sin θ
+
+⊤
+where θ = arccos w300
+w400 and α = 0.5.
+
+P
+Kernel interpolation. In this case, w̃350 = i ai wi , with a = G−1 k350 and k350 = αG300,j +(1−α)G400,j ,
+where G is the Gram matrix (the notation G300,j is shorthand for G(i,j)|µi =300 , i.e. the row of G corresponding
+to µ=300).
+Eigenbasis interpolation. Yocum et al. (2025) propose a more rigorous approach from their Field Geometry Equivalence Theorem based on spectral decomposition in feature space.
+
+E.4
+
+Mixture of manifolds
+
+The Linear Representation Hypothesis is a convenient framework to think of latent representations as a linear
+sum of features encoded as directions (Elhage et al., 2022; Park et al., 2024). However, ample evidence has
+found that features are often encoded along curved manifolds, such as circular supports (Gurnee et al., 2025).
+Our previous observations herein concur. This yields the question: given manifold parametrizations, can
+we instead interpolate any combination of parameters as a mixture of manifolds? More precisely, around an
+anchor (µ0 , σ0 ), we hypothesize that the effect of µ and σ on the representations decomposes into independent
+subspaces U and V such that
+c(µ, σ) ≃ c(µ0 , σ0 ) + u(µ) + v(σ),
+with u(µ) ∈ U, v(σ) ∈ V , and the gauge fixed at u(µ0 ) = v(σ0 ) = 0. Under this model, the surface of
+prototypes is approximately a product manifold embedded as an additive superposition. We investigate
+experimentally by fitting a spline cµ (µ) through the centroids of the Mµ,100 tiles and another spline cσ (σ)
+across M500,σ . Then, we interpolate:
+c̃(µ∗ , σ ∗ ) = c0 + (cµ (µ∗ ) − cµ (µ0 ))
++ (cσ (σ ∗ ) − cσ (σ0 )) ,
+with c0 = c(µ0 , σ0 ) denoting an anchor point, for example (µ = 500, σ = 100). Fig. 13 shows the interpolated
+centroids compared to the ground-truth centroids computed from the activations of the corresponding time
+series. Evidently, the simple, spline-based interpolation fails to capture the true geometry of the (µ, σ) sheet.
+This is possibly due to non-linear interactions between parameters, here µ and σ. Other decompositions might
+be possible. For example, Fel et al. (2025) recently proposed the Minkowski Representation Hypothesis,
+according to which concepts are represented as convex hulls, and representations can de decomposed as
+(non-unique) sums of polytopes.
+
+17
+
+Belief-Manifold Activations: 2D PCA (rows=models)
+idx=1
+PC1 9% PC2 6%
+
+layer 1
+
+layer L-2
+
+layer L-1
+
+idx=14
+PC1 41% PC2 15%
+
+idx=15
+PC1 48% PC2 27%
+
+idx=1
+PC1 14% PC2 8%
+
+idx=28
+PC1 58% PC2 10%
+
+idx=29
+PC1 83% PC2 9%
+
+idx=1
+PC1 11% PC2 6%
+
+idx=14
+PC1 42% PC2 17%
+
+idx=15
+PC1 45% PC2 21%
+
+idx=1
+PC1 7% PC2 6%
+
+idx=30
+PC1 35% PC2 25%
+
+idx=31
+PC1 70% PC2 20%
+
+idx=1
+PC1 12% PC2 11%
+
+idx=14
+PC1 38% PC2 26%
+
+idx=15
+PC1 53% PC2 24%
+
+idx=1
+PC1 9% PC2 8%
+
+idx=26
+PC1 38% PC2 27%
+
+idx=27
+PC1 60% PC2 23%
+
+idx=1
+PC1 21% PC2 9%
+
+idx=14
+PC1 67% PC2 15%
+
+idx=15
+PC1 62% PC2 25%
+
+idx=1
+PC1 25% PC2 14%
+
+idx=30
+PC1 58% PC2 21%
+
+idx=31
+PC1 53% PC2 27%
+
+idx=1
+PC1 67% PC2 5%
+
+idx=30
+PC1 41% PC2 22%
+
+idx=31
+PC1 42% PC2 26%
+
+LFM2-1.2B
+
+LFM2-2.6B
+
+LFM2.5-1.2B-Base
+
+Llama-3.1-8B
+
+Llama-3.2-1B
+
+Llama-3.2-3B
+
+OLMo-2-0425-1B
+
+OLMo-2-1124-7B
+
+OLMo-3-1025-7B
+
+Figure 9: Structured manifolds across models. 2D PCA plots of activations from various models. L is the number of layers in
+the model. Plotted here are residual stream activations after the second layer (L = 1), the penultimate (L − 2), and the last
+layer (L − 1).
+18
+
+t
+500 750 1000 1250 1500 1750 2000
+250
+
+std
+
+200
+
+150
+
+100
+300
+
+500
+mean
+
+700
+
+Figure 10: LLM vs Ideal Observer. Ensemble-averaged (10 samples) trajectory of Llama-3.2’s softmax mean and standard
+deviation (line and dots), compared to the expectation from an ideal observer model, as a function of t (color).
+
+19
+
+A
+
+500
+300
+700
+
+B
+
+250
+
+500
+
+200
+
+300
+
+100
+
+150
+2000
+
+4
+
+4000
+
+6000
+
+C
+
+10000
+
+D
+
+output softmax std
+
+250
+
+2
+1
+0
+1
+2
+
+8000
+
+input number index
+
+3
+
+PC2
+
+output softmax std
+
+output softmax mean input number
+
+700
+
+200
+150
+100
+
+6
+
+4
+
+2
+
+0
+PC1
+
+2
+
+4
+
+6
+
+300
+
+500
+output softmax mean
+
+700
+
+Figure 11: Meta-in-context learning. (A) The input time-series consists of 10 sequences of 1000 numbers each, alternating
+between N (300, 100) and N (700, 100). (B) Mean and standard deviation of the softmax output (next-number prediction). (C)
+Activations (layer 14) for the corresponding input tokens in (A). (D) Trajectory in the (mean,std) plane of the output distributions
+, colored by input index.
+
+20
+
+y
+
+x
+z
+
+y
+
+x
+z
+
+y
+
+x
+z
+
+y
+
+x
+z
+
+y
+
+x
+z
+Figure 12: Data geometry vs field geometry. (A) The data forms a 3D helicoid, yet the two classes (blue/orange) depend only
+on the position along the x-axis: they are linearly separable (by a hyperplane perpendicular to the x-axis). Separability does
+not require the data manifold to be flat. (B) Another example of linearly separable classes, along the y-axis (xz-plane). (C) Nonlinearly separable classes: no single hyperplane separates the two colors. (D) The three classes are linearly separable, with probe
+vectors being all collinear: the linear field probe is rank 1. (E) Curved field geometry: the probe directions rotate with µ, requiring
+at least a 2D probe subspace.
+
+21
+
+Figure 13: Mixture of manifolds. Prototypes interpolated from the anchor manifolds Mµ,σ0 and Mµ0 ,σ with (µ0 = 500, σ0 =
+100), marked with a cross, do not match the geometry of the ground-truth centroids (circles).
+
+22
+
+

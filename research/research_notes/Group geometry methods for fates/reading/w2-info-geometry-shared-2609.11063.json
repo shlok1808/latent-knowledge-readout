@@ -1,0 +1,418 @@
+{
+  "slug": "w2-info-geometry-shared-2609.11063",
+  "title": "The information geometry of large language models is shared, learned, and controllable (Dario Picozzi, UCL; arXiv 2609.11063v1, 10 Sep 2026; 41-page main text + Extended Data, 50-page Supplementary Information)",
+  "sections_read": [
+    "Abstract",
+    "Introduction (unheaded opening, pp. 1-2)",
+    "Results: Predictive behaviour fixes a canonical, identifiable output geometry (incl. Figure 1, p. 3)",
+    "Results: Independently trained models share the geometry (incl. Figure 2, p. 7)",
+    "Results: The geometry inherits the statistics of language (incl. Figure 3, p. 9)",
+    "Results: Corpus n-gram statistics predict acquisition, and evidence depth shifts its timing (incl. Figure 4, p. 10)",
+    "Results: The geometry determines minimum-disturbance interventions and their relative cost (incl. Figure 5, p. 12)",
+    "Results: One geometric correction spans model operations",
+    "Table 1 (p. 14)",
+    "Discussion",
+    "Methods: Models, datasets and geometric definitions (Models and data; Output metric and pullback)",
+    "Methods: Behavioural identification and causal language assignment (Profiled-loss experiment; Causal language assignment)",
+    "Methods: Cross-model geometry and human completions (Relational comparison and controls; Common-byte comparison; Prediction of cross-model agreement; Semantic geometry and transfer; Eigenvector sharing; Native human-completion comparison; Prediction of human alignment; Human probability directions; Independent human-completion replication; Model-only calibration on independent human data)",
+    "Methods: Spectral measurements and effective-dimension prediction (Spectrum estimation and inheritance; Standardised read-out representation; External-family prediction; Probability and read-out contributions; Finite-size validation)",
+    "Methods: Acquisition forecasting and causal evidence depth (Corpus-based forecast; Randomised evidence depth; Architecture and evidence-construction generalisation; Cumulative acquisition and observational composition)",
+    "Methods: Intervention computation, calibration and reusable control (Matrix-free solves and damping; Objectives and matched-response calibration; Disturbance and paired steering comparisons; Prediction of relative intervention cost; Finite intervention paths; Reusable control; Layer and intervention-magnitude dependence)",
+    "Methods: Editing, attribution, dictionary learning and fine-tuning (Knowledge editing; Sparse-feature sensitivity and attribution; Interpretable partitions; Dictionary learning; Low-rank adaptation; Cyclic concepts and relations)",
+    "Methods: Statistical analysis and reproducibility (Statistical analysis; Compute and reproducibility; Use of generative AI)",
+    "Data availability; Code availability; Acknowledgements; Author contributions; Competing interests",
+    "References [1]-[71] (skimmed for related-work pointers: FishBack 2605.17231, Park et al. 2602.15293, Curveball steering 2603.09313)",
+    "Extended Data Fig. 1 (coordinate covariance and common-outcome controls)",
+    "Extended Data Fig. 2 (shared structure beyond displacement magnitude; independent human data)",
+    "Extended Data Fig. 3 (damping and bounded effective dimension)",
+    "Extended Data Fig. 4 (evidence depth delays acquisition across architectures)",
+    "Extended Data Fig. 5 (intervention trade-off curves, composition, fixed activation editing)",
+    "Extended Data Fig. 6 (output geometry predicts cost and selectivity of SAE features)",
+    "Extended Data Fig. 7 (natural-gradient LoRA vs AdamW+KL)",
+    "Extended Data Fig. 8 (layer and intervention magnitude delimit the correction)",
+    "Extended Data Fig. 9 (sensitivity, sharing and answer motion share leading modes)",
+    "Extended Data Fig. 10 and Extended Data note: cyclic concepts and two geometries of behaviour",
+    "Supplementary Information: Contents and Organisation",
+    "Supp. Note 1: The canonical output metric and its pullback (1.1 Chentsov canonicity; 1.2 Pullback metric and reparametrisation invariance)",
+    "Supp. Note 2: Cross-entropy induces and determines the output geometry (Theorems 2-3; proofs skimmed)",
+    "Supp. Note 3: Identification of the read-out geometry (Theorems 4-5, Lemma 1, Corollaries 1-2, Proposition 1; profiled-loss protocol; 3.1 Causal language assignment; proofs skimmed)",
+    "Supp. Note 4: Stability and attenuation of cross-model agreement (4.1 Stability, Lemma 2, Theorems 6-8, Corollaries 3-4, Supp. Table 1; 4.2 The resolution law, Theorem 9, Remarks 1-2; 4.3 Attenuation identity and floors, Theorems 10-11, Propositions 2-3; proofs skimmed)",
+    "Supp. Note 5: Shared geometry carries meaning and transfers",
+    "Supp. Note 6: Spectral inheritance, cluster anatomy and multiscale response (6.1 Spectral constraints, Theorems 12-15, Corollaries 6-10, Proposition 4, Remarks 3-4, evaluation on real models, Supp. Table 2, Supp. Fig. 1; 6.2 Probability vs read-out structure; 6.3 Singleton tokens and interchangeable clusters, Proposition 5, Theorem 16; proofs skimmed)",
+    "Supp. Note 7: Acquisition time on a logarithmic scale (7.1-7.4)",
+    "Supp. Note 8: Projected-margin dynamics and conditional acquisition time (8.1-8.3, Theorems 17-22, Corollary 11; proofs skimmed)",
+    "Supp. Note 9: Geometric motion, margins and local objective rate (Theorem 23 flip-margin, Theorem 24 objective-update alignment, Proposition 6 read-out subspace kinematics, Theorem 25; cyclic concepts and relation displacements)",
+    "Supp. Note 10: Minimum-disturbance control and coordinate dependence of Euclidean cost (Theorem 26, Proposition 7; 10.1 Relation to DPO; 10.2 Fisher coarse-graining; 10.3 Cubic correction and erosion predictor; 10.4 Relinearised finite paths; 10.5 Reusable interventions with a reference metric)",
+    "Supp. Note 11: Matrix-free computation (Proposition 8 CG bound; low-rank Woodbury; exact CG; dense spectral computation)",
+    "Supp. Note 12: Experimental protocols (12.1 Design and statistical controls; 12.2 Matched-effect comparisons)",
+    "Supp. Note 13: Knowledge-editing details (Supp. Table 3)",
+    "Supp. Note 14: The instruct-model programme (Supp. Fig. 2)",
+    "Supp. Note 15: Sparse-autoencoder feature ablations",
+    "Supp. Note 16: Dictionary-learning details",
+    "Supp. Note 17: Cross-model convergence: protocols and controls",
+    "Supp. Note 18: The displacement-magnitude-matched null and the anisotropy analysis",
+    "Supp. Note 19: Meaning decomposition and transfer probes (19.1-19.4)",
+    "Supp. Note 20: Reproducibility map (Supp. Table 4)",
+    "Supplementary References [1]-[33]"
+  ],
+  "setup": {
+    "core_object": "Output Fisher H = Cov_p(unembedding rows) at the final hidden state, pulled back to an intervention layer as G = J^T H J (J = Jacobian from that layer to the final hidden state). For small activation changes, KL(p || p_after) is about one half of delta_h^T G delta_h. The damped natural-gradient step is delta_h proportional to (G + alpha R)^-1 q, where q is the gradient of a contrastive log-odds objective and alpha = c * lambda_max(G), c about 1e-2.",
+    "data": "Natural battery of 200 WikiText test prefixes (primary), 160 templated contexts over eight topics, 120 factual-relation prompts whose next token is the answer; human completion norms (Peelle et al., 512 contexts plus a 384-context subset; de Varda et al., 1,726 positions; DERCo, 640 positions and 64,000 responses); SST-2 sentiment; capital-city true/false preference pairs; TruthfulQA; a sycophancy objective defined as honest-over-flattering continuations; writing style; CounterFact (30 held-out edits on GPT-2, 100 and 300 on GPT-2-XL); LAMBADA, AG News, Wikipedia contexts; 300-fact batteries for acquisition; synthetic controlled languages (64 contexts x 64 outcomes; copy-back-reference and four-cue-parity languages).",
+    "models_and_sizes": "Pythia 70M-6.9B (main ladder), GPT-2 / Medium / Large / XL, GPT-Neo 125M / 1.3B, Qwen2 0.5B / 1.5B, Qwen2-1.5B-Instruct, Qwen1.5-1.8B-Chat, BLOOM 560M / 1.1B, Mamba 130M / 1.4B, RWKV 430M / 1.5B, Mistral-7B, StarCoder2, OLMo-2-1B checkpoints; synthetic transformer, gated-recurrent and diagonal-recurrent models; compact 4-layer width-256 GPT-2-, GPT-NeoX- and Llama-style decoders. Largest model with full GPU pullback solves: 2.8B. At 6.9B only spectra and CPU calibration. Nothing at 9B or above.",
+    "layers_positions": "Default intervention: residual stream at L = round(0.45 x depth) (layer 14 for Qwen2-1.5B-Instruct). Layer sweeps at quarter, half and three-quarter depth (11 models), and Pythia-410M layers 4, 8, 12, 20. Reusable control: final prompt position, after block round(0.45L). SAE work: Pythia-410M layer 12 Top-k SAE (k=32). Cross-model geometry: next-token distributions (output level), compared with mid-layer and last-layer activations.",
+    "baselines": "Euclidean-gradient steering (R = I comparator), contrastive activation addition (CAA), donor-only Fisher metric, activation magnitude and attribution patching (for feature importance), Adam / tuned AdamW + explicit KL penalty and K-FAC (for LoRA), ROME / MEMIT / GRACE / SERAC (descriptive editing context only), CKA, mutual k-NN and cosine RSA (for cross-model similarity), constant acquisition-time and label-permutation baselines.",
+    "controls": "Matched-random read-out subspaces that preserve every principal angle; random invertible reparameterisations of hidden states (condition number up to 1e4); permutation-null calibration of similarity metrics; partialling out character n-gram surface geometry and a corpus n-gram predictor; first-byte common-outcome mapping for cross-tokenizer checks; same-trace flat spectrum and rank-shuffled profile; displacement-magnitude-matched null vs shuffled-word null for eigenvector sharing; fixed-treatment and label-randomisation controls for acquisition; matched-response (binary-searched) comparisons; predictions fixed before responses are measured; held-out neutral prompts for off-target KL; fp64 checks."
+  },
+  "figures": [
+    {
+      "id": "Figure 1",
+      "page": 3,
+      "what_is_plotted": "a: held-out profiled loss (x1e-3) against squared subspace (chordal) distance d^2 between a perturbed read-out subspace and a reference subspace estimated from Pythia-6.9B, for Pythia 70M, 160M, 410M, 1.4B. Green lines = moving toward each model's real read-out; grey = matched-random directions with the same principal angles. b: measured KL against predicted KL (one half delta_h^T G delta_h) for 99 model-depth-prompt points over 11 models, log-log.",
+      "takeaway": "a: predictive loss grows linearly in squared Grassmannian distance, and real read-out deviations cost more than random ones with the same principal angles, so behaviour pins down the read-out subspace. b: the pullback metric predicts small-step output change with no fitted scale.",
+      "numbers": "a: largest green point about 19.5e-3 at d^2 about 1.75 (70M); largest grey point about 16.5e-3 at the same d^2 (approx, read from figure); R^2 >= 0.9999 on all eight paths; slope ratios 1.14-1.27 (caption). b: points span about 1e-7 to 1e-3 KL on the identity line (approx, read from figure); measured/predicted median 1.000, range 0.948-1.224 (caption).",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Figure 2",
+      "page": 7,
+      "what_is_plotted": "a: output Fisher-Rao rank agreement (y) vs activation-space agreement (x) for 29 cross-tokenizer, cross-family dyads among ten models; blue circles mid layer, vermilion squares last layer, joined per dyad. b: absolute held-out error of the six-scalar agreement prediction vs training step (1 to 64k). c: model-human semantic distance vs Pythia size (70M-2.8B). d: measured vs predicted human alignment (kernel CKA) for OLMo checkpoints and five external models, using a relation fitted only on Pythia.",
+      "takeaway": "Output geometry agrees across architectures much more than activation geometry; the agreement is predictable from six variance terms once training passes step 256; bigger and better-trained models are closer to human completions.",
+      "numbers": "a: output agreement about 0.73-0.95, activation agreement about 0.38-0.88, every point above the diagonal (approx, read from figure); means 0.88 vs 0.62 (mid) and 0.61 (last) (text). b: error about 0.2-0.3 at steps 1-16, about 1e-3 to 3e-2 from step 256 (approx, read from figure). c: per-fold points 0.26-0.37, means fall from about 0.34 at 70M to about 0.30 at 2.8B (text). d: r = 0.758, RMSE 0.0295 (caption).",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Figure 3",
+      "page": 9,
+      "what_is_plotted": "a: measured spectral exponent of the output Fisher (ranks 8-32) vs exponent predicted from the weighted token profile, 576 cells, nine models from five external families. b: measured vs predicted normalised effective dimension (5,760 values). c: weighted-profile vs probability-only prediction error for effective dimension (log-log, 14 models). d: same comparison for spectral-exponent error.",
+      "takeaway": "Token probabilities times read-out geometry predict the Fisher spectrum without fitting; probability concentration alone predicts how many modes are resolved, read-out structure predicts how fast they decay.",
+      "numbers": "a: exponents 0.6-3.0 on the diagonal, Pearson 0.968, Spearman 0.955 (caption). b: tight around the diagonal over 0-1; family RMSE 0.0270-0.0521 (caption). c: most points above the diagonal, i.e. probability-only error is lower (read from figure). d: the cloud straddles the diagonal (read from figure); family medians favour the weighted profile in all seven families, sign-flip P = 1/128 (caption).",
+      "text_matches_figure": "partly: a, b, c match clearly; in d the raw point cloud looks mixed, and the claim holds for family medians rather than for most points."
+    },
+    {
+      "id": "Figure 4",
+      "page": 10,
+      "what_is_plotted": "a: measured answer margin vs margin predicted from ex-ante corpus n-gram statistics, 9,840 fact-checkpoint means at Pythia 70M, 160M, 410M. b: cumulative facts acquired vs training step (log) for the 300-fact battery, nine seeds per size. c: the same curves against held-out loss.",
+      "takeaway": "Corpus n-gram margins forecast when facts are acquired; curves line up across sizes better by held-out loss than by step.",
+      "numbers": "a: margins about -9 to +12 on the diagonal (approx, read from figure); trajectory R^2 0.790, 0.792, 0.775 (caption). b: about 25-30 facts at step 0, a jump to about 80 by step 16-32, then a slow rise to about 175-200 by 128k steps (approx, read from figure). c: median alignment error 2.1 facts (caption).",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Figure 5",
+      "page": 12,
+      "what_is_plotted": "a: measured vs predicted Euclidean/natural-gradient off-target cost ratio (R_pred), 3,515 matched-response observations, 11 models, log-log. b: path KL (natural gradient) vs path KL (Euclidean) for relinearised finite paths, 864 points. c: reference-metric sequence KL vs comparator (Euclidean or donor-only Fisher) sequence KL on reference continuations, 192 points. d: mean target log-odds change on eight unseen prompts vs mean sequence KL, natural gradient (green) vs Euclidean (vermilion), joined at matched donor change.",
+      "takeaway": "The cost advantage of geometry-aware steering is predicted before intervening; it holds along curved (relinearised) paths; and a single shared update (truth preference or anti-sycophancy) transfers to unseen prompts with less disturbance than Euclidean control.",
+      "numbers": "a: ratios about 1 to 1e3 on the identity line, one outlier above (approx, read from figure); median measured/predicted 0.967, slope 0.982 (caption). b: all points below the diagonal; natural-gradient path KL about 1e-7 to 1e-3 vs Euclidean about 1e-6 to 1e-2 (approx, read from figure); cell ratios 11.5-127.1 (caption). c: all points below the diagonal; ratios 2.90-6.29 (caption). d: target changes 0.01-0.21 nats, green points left of their vermilion partners (approx, read from figure); all 24 natural-gradient means positive (caption).",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Table 1",
+      "page": 14,
+      "what_is_plotted": "Summary table: for six operations (non-local steering, knowledge editing, feature importance, attribution, dictionary learning, fine-tuning) it lists the geometry-aware construction, the strongest matched result and the evidence base.",
+      "takeaway": "One substitution (the pullback-metric inner product instead of the Euclidean one) improves every tested operation at matched target effect.",
+      "numbers": "Steering: median measured/predicted 0.967; up to 72.7-fold lower off-target KL on factual steering, 92-100% prompt-level wins. Editing: Euclidean/Fisher other-token KL 10.57 (8.52-13.37), +5 log-odds on 30/30. Feature importance: rho 0.997 vs 0.896 (activation magnitude). Attribution: 0.935 vs 0.506 (attribution patching), sign agreement 0.746 vs 0.354. Dictionary learning: matched cosine 0.167 to 0.480. Fine-tuning: AdamW+KL has 1.57x the preservation-KL AUC (1.14-1.98); 60-250x lower off-target change than Adam at 410M.",
+      "text_matches_figure": "yes"
+    }
+  ],
+  "other_figures_tables_read_from_text_only": [
+    {"id": "Extended Data Fig. 1", "page": 32, "content": "Coordinate covariance: transporting the reference metric reproduces the native damped direction to 7.4e-13; a fresh identity changes it (median error 1.23). First-byte agreement 0.910 vs token-level 0.899. Under reparameterisation, output Fisher-Rao agreement stays flat while CKA, mutual k-NN and cosine RSA fall."},
+    {"id": "Extended Data Fig. 2", "page": 33, "content": "Eigenvector sharing residual above the displacement-magnitude-matched null falls from 0.080 (ranks 0-5) to 0.013 (ranks 90-120); about 89% of leading-band raw overlap is shared displacement magnitude. DERCo replication of the scale trend; model-only calibration gains in 6 of 7 families."},
+    {"id": "Extended Data Fig. 3", "page": 34, "content": "Stiff-mode counts vs damping; bounded effective-dimension curve beats an unbroken power curve on all 80 curves (median error 0.00493 vs 0.0814)."},
+    {"id": "Extended Data Fig. 4", "page": 35, "content": "Deep evidence delays acquisition by 2.10 log2 steps (4.3x) in the lower tail; across GPT-2/NeoX/Llama-style decoders delays are 0.81-1.51 log2 units; all 12 controls contain zero."},
+    {"id": "Extended Data Fig. 5", "page": 36, "content": "Style frontier; composition of sycophancy and style in one solve (summed CAA moves sycophancy the wrong way); fixed CounterFact edits: Euclidean cost higher on all 30 edits."},
+    {"id": "Extended Data Fig. 6", "page": 37, "content": "SAE zero-ablations (303): Fisher-predicted KL vs exact KL rho 0.997; objective-effect-to-Fisher-cost ratio predicts selected-token probability-change fraction (0.935) better than attribution patching (0.506)."},
+    {"id": "Extended Data Fig. 7", "page": 38, "content": "Natural-gradient LoRA vs AdamW+KL on Pythia-70M rank-4: AdamW+KL incurs 1.57x the preservation-KL AUC; no broader capability claim."},
+    {"id": "Extended Data Fig. 8", "page": 38, "content": "Off-target advantage by depth: 11.79 (quarter), 11.08 (half), 6.62 (three-quarter); measured/predicted falls 0.918, 0.860, 0.755 as intervention fraction rises 0.01, 0.03, 0.10."},
+    {"id": "Extended Data Fig. 9", "page": 39, "content": "Top five Fisher modes carry 55% of eigenvalue mass, the largest cross-model residual sharing (+0.069) and the largest answer motion (0.59)."},
+    {"id": "Extended Data Fig. 10", "page": 40, "content": "Pythia-410M: steering around the month/weekday cycle traces a near-closed rotation; relations (capital-of, gender, tense) share a probability-displacement direction (0.49 vs permuted 0.33), cyclic concepts do not (0.00); isometry defect 0.29 (cyclic) vs 1.02 (relations)."},
+    {"id": "Supp. Table 1", "page": 55, "content": "Same-tokenizer stability certificates: median per-context root-probability distance 0.30-0.71, coherence 0.024-0.085, Spearman 0.777-0.951."},
+    {"id": "Supp. Table 2", "page": 64, "content": "Profile prediction errors per external family (spectral error 0.0617-0.0884 decades; certificates 98.4-100%)."},
+    {"id": "Supp. Fig. 1", "page": 65, "content": "Calibration of token-profile effective-dimension prediction; modest mid-resolution overprediction."},
+    {"id": "Supp. Table 3", "page": 81, "content": "Knowledge editing in full; routed Fisher S = 100 on EasyEdit (descriptive, different access conditions); apply-operator ablation off-target KL Fisher 0.872 vs Euclidean 3.700."},
+    {"id": "Supp. Fig. 2", "page": 82, "content": "Instruction-model frontiers (Qwen2-1.5B-Instruct, Qwen1.5-1.8B-Chat) for anti-sycophancy and capital-city truth: Fisher frontier left of Euclidean and CAA."},
+    {"id": "Supp. Table 4", "page": 88, "content": "Evidence map of the claim chain."}
+  ],
+  "key_results": [
+    {
+      "claim": "Activation coordinates are arbitrary: any invertible linear change of hidden coordinates gives the same model, so Euclidean activation geometry is not fixed by behaviour.",
+      "quote": "the same input–output function can be realised in any coordinate system related by an invertible linear transformation",
+      "page": 1
+    },
+    {
+      "claim": "Output geometry is shared across ten models much more than mid-layer activation geometry.",
+      "quote": "the identified relational geometries have a mean rank agreement of 0.88, compared with 0.62 for mid-layer activation geometries",
+      "page": 2
+    },
+    {
+      "claim": "The pullback Fisher quadratic form predicts the real KL change from small activation perturbations.",
+      "quote": "matches the realised divergence locally across 99 model–depth–objective cells spanning 11 models, six families and 125M–1.5B parameters",
+      "page": 4
+    },
+    {
+      "claim": "A measured anisotropy ratio predicts, before intervening, how much less off-target damage natural-gradient steering does than Euclidean steering.",
+      "quote": "A measured anisotropy ratio, which quantifies how unevenly different activation directions affect the output, predicts their advantage over Euclidean control without fitted parameters.",
+      "page": 2
+    },
+    {
+      "claim": "A shared update learned on four donor prompts transfers a positive mean target change to eight unseen prompts for truth preference and anti-sycophancy in base models up to 1.5B. Target effects are small (smallest mean 0.0128 nats, p. 78; up to about 0.21 nats, Fig. 5d) and measured, not matched. Sycophancy here means preferring honest over flattering continuations, not factual pushback.",
+      "quote": "it transfers a positive mean truth-preference or anti-sycophancy change in all 24 model–objective–target settings",
+      "page": 11
+    },
+    {
+      "claim": "On instruction-tuned models (Qwen2-1.5B-Instruct, Qwen1.5-1.8B-Chat), at equal aggregate objective change, the geometry-aware steer has far lower off-target divergence for anti-sycophancy and truth. These are per-prompt frontiers (12 prompts per objective), not reusable updates; anti-sycophancy means honest-over-flattering continuations, not user pushback on a factual answer; no answer-flip or accuracy outcome is reported.",
+      "quote": "natural-gradient frontiers have 8–74 times lower off-target divergence for anti-sycophancy, 30–190 times for capital-city truth preferences",
+      "page": 11
+    },
+    {
+      "claim": "Fisher cost of zeroing an SAE feature predicts the real output change much better than activation magnitude.",
+      "quote": "the intervention-specific Fisher cost rank-correlated with the exact divergence at 𝜌 = 0.997, against 0.896 for activation magnitude",
+      "page": 13
+    },
+    {
+      "claim": "Where to intervene: the advantage is largest early-to-mid and shrinks near the read-out.",
+      "quote": "The advantage is largest at early-to-mid injection layers, where the metric pulled back through the rest of the network is most anisotropic, and shrinks toward the near-linear read-out",
+      "page": 13
+    },
+    {
+      "claim": "An argmax flip requires a root-probability distance of at least half the margin (a necessary condition; margin and distance do not force a flip). The paper uses this to link a smooth training-time acquisition trajectory to an abrupt-looking benchmark transition, not pushback.",
+      "quote": "This connects a smooth geometric acquisition trajectory to an apparently abrupt benchmark transition.",
+      "page": 72
+    },
+    {
+      "claim": "Empirical check of the flip-margin theorem on LAMBADA cross-seed flips.",
+      "quote": "the flip frequency falls from 0.519 to zero as the normalised margin",
+      "page": 72
+    },
+    {
+      "claim": "Controllability (sensitivity) does not determine how fast an objective is learned; the missing factor is alignment between the objective and the actual preconditioned training update (checked on 80 held-out Pythia-70M examples: mean alignment squared 0.6811, correlation of log sensitivity with log squared rate 0.541). Reading this as 'use' or mediation is our inference.",
+      "quote": "The missing quantity linking controllability to learning is objective–update alignment.",
+      "page": 73
+    },
+    {
+      "claim": "In randomised synthetic controlled languages (training-time acquisition, not inference), deeper evidence delays persistent preference for the designated answer, but not the earlier onset of unsigned movement along the target-alternative margin direction. 'Gradual drift vs commitment' is our gloss.",
+      "quote": "Depth therefore delays persistent preference for the designated answer, but not the earlier onset of unsigned movement along the same target–alternative margin direction",
+      "page": 8
+    },
+    {
+      "claim": "Two kinds of output-space behaviour: cyclic concepts are rotations (metric isometries), relations move mass along a shared displacement direction.",
+      "quote": "cyclic concepts trace nearly closed rotations, whereas analogy relations instead share a probability-displacement direction",
+      "page": 13
+    },
+    {
+      "claim": "Subspace rotation comes only from the normal component of an update; in-span updates (including weight decay) do not rotate.",
+      "quote": "an update confined to the current column span, including scalar decoupled weight decay, produces no rotation.",
+      "page": 73
+    },
+    {
+      "claim": "Where models disagree, the disagreement is idiosyncratic and nearly orthogonal to shared relational structure.",
+      "quote": "Model disagreement is idiosyncratic and nearly orthogonal to the relational structure",
+      "page": 54
+    },
+    {
+      "claim": "Author proposes using Fisher sensitivity to prioritise features in safety audits, including sycophancy.",
+      "quote": "They could therefore help prioritise candidate features and circuits in audits of sycophancy, deception, refusal and other safety-relevant behaviours",
+      "page": 15
+    }
+  ],
+  "methods": [
+    {
+      "name": "Pullback Fisher metric G = J^T H J at an intervention layer (output sensitivity of an activation direction)",
+      "what_it_measures": "How much a small move along a direction v at layer l changes the whole next-token distribution: KL is about one half v^T G v. Its null space is the set of directions the rest of the network maps to no output change.",
+      "which_fate_it_could_diagnose": "2 bypass (our adaptation): take the probe's correct-answer direction at each layer and compute its Fisher sensitivity v^T G v relative to random and top-eigen directions. A decodable direction with near-zero Fisher sensitivity is output-inert to first order at the same position, which is the bypass signature. Limit: G is the Jacobian from layer l to the final state for an intervention at one position, so a direction at an earlier token could still act through attention at later positions; the test is same-position and first-order only. Also helps separate 1 readout/threshold (direction is sensitive but the margin is small) from 2.",
+      "causal_followup_it_allows": "Inject along the probe direction and check measured KL against the predicted one half v^T G v (the paper's Fig. 1b check). Low predicted and measured effect = bypass at that layer; high effect but no answer change = the push goes into off-answer tokens.",
+      "data_and_compute_needed": "One JVP + one VJP per G-vector product; power iteration for lambda_max; CG to relative residual 1e-6 (85 iterations is the exact-arithmetic worst-case bound at c = 1e-2, not an observed count). The paper says full GPU-resident solves fit through 2.8B, with most runs on one 32 GB RTX 5000 Ada plus additional A100 runs; it does not say which card carried the 2.8B solves. Our inference: 9B-27B likely needs larger GPUs; the low-rank top-|S| Woodbury route cuts the vocabulary-side cost but still needs |S| vector-Jacobian products, so it is not shown to relieve network memory. Use float32 (bf16 vs float32 directions had absolute cosines 0.056-0.542 in Pythia-410M and 1.4B, two contexts each).",
+      "code_available": "No public code; 'available from the corresponding author on reasonable request'."
+    },
+    {
+      "name": "Damped natural-gradient steering (G + alpha I)^-1 q with matched-response comparison and the parameter-free cost predictor R_pred",
+      "what_it_measures": "The minimum-disturbance activation change that achieves a target log-odds change, and the predicted off-target advantage over Euclidean steering, computed before intervening.",
+      "which_fate_it_could_diagnose": "3 not routed (test step): a cleaner 'injecting works' test, because the steer changes the target answer with 8-190x less collateral change, so a success is less likely to come from generic disruption. Also a Stage B fix candidate for 3 and 4.",
+      "causal_followup_it_allows": "Steer flipped items toward Canberra (q = gradient of log p(Canberra) - log p(Sydney)) at each layer at matched objective change; compare Fisher vs Euclidean vs CAA off-target KL on neutral prompts. Shows causal controllability only, not endogenous mediation.",
+      "data_and_compute_needed": "Contrastive continuation pairs (they used 12 prompts per objective); binary search on step scale per method; neutral held-out prompts for off-target KL (note: Supp. Note 14, p. 81, says localised objectives use on-prompt off-target KL and only style uses held-out neutral prompts, while the Supp. Fig. 2 caption, p. 82, says held-out neutral prompts). Same compute as above per step; relinearised paths need repeated solves (0.02-nat trust region).",
+      "code_available": "On request only."
+    },
+    {
+      "name": "Reusable reference-metric update (donor / reference / target prompt split)",
+      "what_it_measures": "A single activation update, learned from 4 donor prompts with the Fisher averaged over 4 reference prompts, applied unchanged to 8 unseen targets; cost = teacher-forced sequence KL on continuations of the same 4 reference prompts that define the metric (p. 12, p. 78). So preservation is shown in-sample on the reference set; only the target effect is held out (criterion: positive mean change, smallest 0.0128 nats). No held-out disturbance number is given for the reusable update.",
+      "which_fate_it_could_diagnose": "Not a diagnostic. A candidate Stage B inference-time fix for override / not-routed failures under pushback, and a comparator for H2 (fate-matched fix vs DPO). Untested for this: effects are small (0.013-0.21 nats), no answer-flip or accuracy outcome is reported, and the objective is honest-over-flattering continuations, not factual pushback.",
+      "causal_followup_it_allows": "Apply the shared update to held-out pushback items and measure disturbance on held-out prompts ourselves (the paper does not); then recheck whether the fate signature is removed or only hidden (re-run probes and patching after the fix).",
+      "data_and_compute_needed": "Donor, reference and target prompt sets per objective; injection after block round(0.45L) at final prompt position; damping 0.03 x lambda_max. Tested only on BLOOM-560M, Pythia-410M, Pythia-1.4B, Qwen2-1.5B.",
+      "code_available": "On request only."
+    },
+    {
+      "name": "Fisher-weighted feature sensitivity v^T G v and objective-effect-to-Fisher-cost ratio",
+      "what_it_measures": "For an SAE feature or any direction: its output consequence per unit displacement, and how selectively it moves the chosen objective tokens per unit of total output change.",
+      "which_fate_it_could_diagnose": "2 bypass (high activation, low Fisher sensitivity) and 4 override (features with a high effect-to-cost ratio for the wrong answer or the user's claim token). Ranks candidate features before patching.",
+      "causal_followup_it_allows": "Zero-ablate top-ranked features and measure exact full-vocabulary KL and selected-token probability change, as in their 303-ablation study.",
+      "data_and_compute_needed": "An SAE at the layer of interest (Gemma Scope exists for Gemma-2-9B), discovery vs held-out context split. Note: attribution patching remains the better predictor of raw effect size.",
+      "code_available": "On request only; SAE used is public (tim-lawson/sae-pythia-410m-deduped-x64-k32-layers-12)."
+    },
+    {
+      "name": "Flip-margin theorem (Theorem 23): normalised margin z = m / (2 rho)",
+      "what_it_measures": "m = gap between the top token's probability and the runner-up; rho = root-probability (Hellinger-type) distance between the two output distributions. An argmax flip is impossible unless rho >= m/2, i.e. z <= 1. This is a necessary condition only (zero violations over 45,315 cross-seed flips); the LAMBADA fall from 0.519 to zero shows where flips can occur, not independent validation.",
+      "which_fate_it_could_diagnose": "1 readout/threshold failure (our adaptation): for each pushback item, compute m before pushback and rho between pre- and post-pushback outputs. Flips with small m and small rho are candidate threshold crossings. But z is a function of the two output distributions alone, so it cannot by itself separate threshold crossing from override; the paper gives no support for reading large-m flips as override or transformation. Use it as an output-only pre-screen before internals.",
+      "causal_followup_it_allows": "Bin items by z and check whether the fate mix (from patching) differs by bin; matched on prior confidence (m) as the wave plan requires.",
+      "data_and_compute_needed": "Only output distributions; trivial compute.",
+      "code_available": "Formula is fully stated; no code needed."
+    },
+    {
+      "name": "Objective-update alignment factorisation (Theorem 24)",
+      "what_it_measures": "rate^2 = sensitivity x update-norm^2 x alignment^2 in a declared metric A. Separates how controllable an objective is (sensitivity) from whether the actual update moves along it (alignment).",
+      "which_fate_it_could_diagnose": "Our adaptation, not tested by the paper: let the 'update' be the natural activation displacement between the no-pushback and pushback runs, and the 'objective' be the truth log-odds covector. Caveats: the paper's update is the preconditioned training-loss step A^-1 g, checked on 80 Pythia-70M examples. Any displacement that flips the answer has negative alignment with the truth log-odds by definition, so negative alignment does not discriminate override from bypass or readout failure; near-zero alignment only says no first-order change in truth log-odds. The no-pushback and pushback runs have different contexts (extra tokens), so G and the displacement need a stated convention to live on one context. Weak as a fate diagnostic.",
+      "causal_followup_it_allows": "Gives a quantitative bridge between causal controllability (sensitivity) and endogenous mediation (alignment), which the project keeps separate.",
+      "data_and_compute_needed": "Two forward passes per item plus one G-solve per layer.",
+      "code_available": "Formula stated; on request for their implementation."
+    },
+    {
+      "name": "Grassmannian tools: chordal subspace distance, principal-vector paths with angle-preserving random controls, subspace kinematics (Proposition 6), rotation bound (Theorem 25)",
+      "what_it_measures": "Distance between subspaces via principal angles; speed of subspace rotation as the Frobenius norm of the normal component (||dP/dt||^2 = 2||B||^2).",
+      "which_fate_it_could_diagnose": "Group angle generally: tracking the truth subspace across layers or tokens and measuring where it rotates (speed) vs only rescales. Only the normal component counts as rotation; in-span changes are not movement on the Grassmannian. Applied by the paper only to the read-out subspace, not internal ones.",
+      "causal_followup_it_allows": "Use angle-preserving random subspaces as the null for any 'the truth subspace rotated' claim.",
+      "data_and_compute_needed": "Cheap linear algebra on probe or PCA bases.",
+      "code_available": "Formulas stated."
+    },
+    {
+      "name": "Metric-isometry (rotation) fit with isometry defect and closure defect; probability-displacement alignment vs permuted control",
+      "what_it_measures": "Whether a concept step is a rotation in output-space phase coordinates (cyclic concepts) or a shared displacement between disjoint token sets (relations).",
+      "which_fate_it_could_diagnose": "5 transformed, weakly: a pushback that re-encodes the answer as a rotation would show a low isometry defect; a Canberra-to-Sydney switch is a mass move between disjoint tokens, which the paper says the pullback metric alone does not characterise.",
+      "causal_followup_it_allows": "None directly; descriptive.",
+      "data_and_compute_needed": "Pythia-410M only in the paper; output distributions plus Fourier-1 phase coordinates.",
+      "code_available": "On request only."
+    },
+    {
+      "name": "Output Fisher-Rao relational geometry (RSA on next-token distributions), consensus-residual decomposition, relative representations via anchor distances",
+      "what_it_measures": "Coordinate-free comparison of models or checkpoints by how they order context pairs from near to far in output space.",
+      "which_fate_it_could_diagnose": "Stage B check (our adaptation): compare output geometry before and after a fix on a fixed pressure battery to see what changed beyond the target behaviour. It cannot see masked internal circuits whose outputs do not change.",
+      "causal_followup_it_allows": "None; descriptive and audit use.",
+      "data_and_compute_needed": "Next-token distributions on a fixed battery; cheap.",
+      "code_available": "On request only."
+    }
+  ],
+  "controls_worth_copying": [
+    "Matched-response comparison: binary-search each method's step size to the same realised objective change before comparing any cost (also for Stage B fix comparisons vs DPO).",
+    "Random control subspaces that preserve every principal angle of the real subspace (null for any subspace-rotation claim in the group angle).",
+    "Random invertible reparameterisation of hidden states (condition number up to 1e4): a geometry measure that changes under it is a coordinate artefact. Run our principal-angle and Procrustes measures through this test.",
+    "Displacement-magnitude-matched null instead of a shuffled null when claiming two subspaces or models share directions (shuffled nulls make sharing look ubiquitous).",
+    "Permutation-null calibration of similarity scores (CKA has a dimension-dependent null of 0.316 here vs 0.001 for rank agreement of distance matrices).",
+    "Mean-centre unembedding (and probably probe) vectors before cosine comparisons.",
+    "Fix the predictor before measuring the response (they fixed R_pred and spectral predictions before revealing outcomes).",
+    "Off-target KL on held-out neutral prompts (used for the per-prompt instruct-model frontiers, p. 22, p. 81), plus the Fisher-orthogonal residual KL - dphi^2 / (2 Var phi), to separate intended change from collateral change.",
+    "Separate donor, reference and target prompts so the target effect is tested on prompts the update never saw. Caution: in the paper, disturbance is measured on the reference prompts that built the metric (in-sample); we should add held-out disturbance.",
+    "Fixed-treatment and label-randomisation controls whose intervals must contain zero.",
+    "Report float32 vs bf16 agreement of recovered directions."
+  ],
+  "pitfalls": [
+    {
+      "pitfall": "Local predictions weaken as interventions get larger (model-balanced measured/predicted 0.918, 0.860, 0.755).",
+      "quote": "This quantifies attenuation of the local prediction as intervention magnitude grows",
+      "page": 13
+    },
+    {
+      "pitfall": "Half-precision solves give different directions: bf16 vs float32 absolute cosines 0.056-0.542 (Pythia-410M and 1.4B, two contexts each; G has kappa about 1e5-1e7). Only four comparisons; that our 9B-27B bf16 runs would be unreliable is our extrapolation.",
+      "quote": "in the evaluated Pythia-410M and Pythia-1.4B cases the bfloat16 and float32 recovered directions were only weakly to moderately aligned",
+      "page": 79
+    },
+    {
+      "pitfall": "Scale ceiling: full pullback solves stop at 2.8B; nothing tested in our 9B-27B range.",
+      "quote": "Full GPU-resident pullback solves fit through 2.8B parameters; at 6.9B the evidence comprises graph-free spectra and CPU-based pullback calibration/offload analyses",
+      "page": 25
+    },
+    {
+      "pitfall": "Coarse discrete endpoints (20-item multiple choice) can hide large distributional differences; do not rely on accuracy alone to compare fixes.",
+      "quote": "The 20-item multiple-choice check changes in increments of 1/20 = 0.05 and showed no Fisher–Euclidean difference.",
+      "page": 81
+    },
+    {
+      "pitfall": "The pullback metric describes reweighting; a switch between disjoint answers (Canberra to Sydney) needs an extra ground metric on tokens.",
+      "quote": "The pullback metric characterises probability reweighting, whereas movement between disjoint token sets additionally requires a ground metric on tokens",
+      "page": 41
+    },
+    {
+      "pitfall": "Fisher cost says how much a feature matters to the output, not what it means; and attribution patching predicts raw effect size better.",
+      "quote": "the metric measures the functional consequence of a proposed feature, but does not by itself explain what that feature represents",
+      "page": 16
+    },
+    {
+      "pitfall": "Euclidean steering depends on the chosen coordinates; resetting the reference to identity after a change of basis changes the problem.",
+      "quote": "resetting the reference metric to the identity after a coordinate transformation is not invariant",
+      "page": 44
+    },
+    {
+      "pitfall": "Raw cosine geometry is dominated by a shared mean direction and can reverse comparisons.",
+      "quote": "raw cosine similarities of embedding rows are dominated by a shared mean direction and can invert cross-model comparisons outright",
+      "page": 84
+    },
+    {
+      "pitfall": "Shuffled nulls inflate apparent sharing.",
+      "quote": "A shuffled-word null destroys both and makes sharing look ubiquitous",
+      "page": 84
+    },
+    {
+      "pitfall": "Damping hides anisotropy: too much damping makes natural gradient collapse to Euclidean.",
+      "quote": "damping removes the exploitable anisotropy together with the natural-gradient advantage",
+      "page": 75
+    },
+    {
+      "pitfall": "The activation-space steer is not DPO; a Stage B comparison needs both, they are different objects.",
+      "quote": "The resulting activation-space natural-gradient update is distinct from DPO’s parameter update.",
+      "page": 76
+    },
+    {
+      "pitfall": "The reusable update's disturbance is measured on the same reference prompts that define the metric; only the target effect is held out, and it is measured rather than matched. No held-out disturbance number exists for the reusable update.",
+      "quote": "Reference prompts also define the metric, so the readout evaluates continuation disturbance on that reference set.",
+      "page": 78
+    },
+    {
+      "pitfall": "The cubic erosion predictor works only for moderate interventions and reverses sign beyond that regime; together with the 0.918-to-0.755 attenuation, local guarantees may not hold at the size of push needed to undo a pushback flip.",
+      "quote": "the association reverses sign beyond that regime",
+      "page": 77
+    }
+  ],
+  "limitations_quote": "The held-out LoRA comparison provides an initial local-preservation result in this direction, although it does not establish safety-specific retention or broader capability preservation.",
+  "limitations_page": 15,
+  "limitations_note": "There is no dedicated limitations section. Other stated limits: LoRA endpoints 'did not support a broader conclusion' (p. 25); full solves only to 2.8B (p. 25); editing comparisons with ROME/MEMIT are descriptive only (p. 81); no universal fixed token partition across contexts (Supp. Note 6.3); code and data only on request.",
+  "future_work_quote": "the reference-set construction could be applied in parameter space to limit changes to the model's predictions on protected prompts",
+  "future_work_page": 15,
+  "future_work_note": "Also proposed: Fisher-weighted dictionary learning / replacement models (p. 15-16), output-geometry audits across checkpoints and post-training variants (p. 16).",
+  "bears_on_fates": [
+    {
+      "fate": "1 readout/threshold failure",
+      "how": "Theorem 23 gives an exact, output-only necessary condition: a flip needs root-probability distance of at least half the margin. On LAMBADA cross-seed flips the flip rate goes from 0.519 to 0 as z = m/(2 rho) crosses 1, where zero is forced by the theorem. It shows where flips can occur, but z depends only on the two output distributions, so it cannot separate a threshold crossing from an override by itself. Not tested on pressure-induced flips; the smooth-to-abrupt link concerns training-time acquisition.",
+      "strength": "weak-moderate"
+    },
+    {
+      "fate": "2 bypass",
+      "how": "The null space of G is exactly the set of output-invisible directions at a layer, and v^T G v measures a direction's output consequence. A probe direction that decodes the right answer but has near-zero Fisher sensitivity is output-inert, i.e. bypass. The paper never applies this to probe directions or truth signals.",
+      "strength": "moderate (method), none (finding)"
+    },
+    {
+      "fate": "3 not routed",
+      "how": "Natural-gradient injection gives a cleaner 'injecting works' test (8-190x less collateral change on instruct models), so a successful injection is more clearly due to the injected content. The alignment factorisation (Theorem 24) could ask whether the model's own displacement moves along the truth direction (our adaptation), but an answer flip implies negative alignment by definition, so it does not discriminate fates.",
+      "strength": "moderate (injection test), weak (alignment)"
+    },
+    {
+      "fate": "4 override",
+      "how": "Objectives combine as a weighted sum of covectors in one solve; summed CAA vectors moved sycophancy in the opposite direction (the paper gives no mechanism; sycophancy and style are not competing signals in the pushback sense). The effect-to-cost ratio could rank features that push toward the user's claim. Indirect.",
+      "strength": "weak"
+    },
+    {
+      "fate": "5 transformed",
+      "how": "Cyclic concepts move as near-isometries (rotations) of the metric with a low isometry defect (0.29 vs 1.02 for relations). This is a tool for detecting rotation-like re-encoding in output space, but it was shown only for weekdays and months on Pythia-410M and says nothing about internal re-encoding of truth.",
+      "strength": "weak"
+    },
+    {
+      "fate": "6 erased",
+      "how": "Nothing direct. Output geometry is a function of outputs only, so it cannot tell an erased signal from a masked one if outputs agree.",
+      "strength": "none"
+    },
+    {
+      "fate": "Stage B / H2 (fate-matched fix vs DPO)",
+      "how": "Gives a concrete geometry-aware fix: a reusable anti-sycophancy (honest-over-flattering, not factual pushback) or truth update with 2.9-6.3x less sequence KL than Euclidean control, measured in-sample on the reference prompts that define the metric (no held-out disturbance number; target effects 0.013-0.21 nats, no flip or accuracy outcome), and natural-gradient LoRA as a 'behaviour-level trust region' (1.57x better preservation frontier than AdamW+KL at 70M). It explicitly differs from DPO, so it is a natural extra arm. Only up to 1.8B.",
+      "strength": "moderate"
+    }
+  ],
+  "bears_on_group_angle": "Mostly a caution plus tools. (1) The paper argues that activation geometry has a full GL(d) gauge freedom: Euclidean distances, inner products and cosines are not fixed by behaviour (hence, our inference, Euclidean principal angles between internal subspaces are not either; the paper uses principal angles only for read-out subspaces). Proposition 1 is an abstract factorisation argument; the paper does not discuss how norm layers restrict the gauge group in real transformers, and its reparameterisation test shows CKA, k-NN and cosine RSA degrade while output geometry stays constant. Within one model the residual stream is in one shared basis, so cross-layer Euclidean angles are still computable, but they answer a different question than angles in the pullback metric, which weights directions by their output effect. For fate claims (does the truth subspace still matter for the action?), principal angles measured in the G-metric (with a stated choice of layer for G, since G is layer-specific), or Euclidean angles checked under random reparameterisation, are more defensible. (2) It gives ready Grassmannian tools: chordal distance, principal-vector paths with angle-preserving random controls, and subspace kinematics where only the normal component of a change rotates the subspace (speed = sqrt(2) x ||B||_F). These were applied to the read-out subspace only, not to internal subspaces across layers or tokens. (3) On manifold vs linear steering: with both arms relinearised after every step (0.02-nat trust region), natural-gradient paths cost 11.5-127x less path KL than Euclidean paths, so the Fisher advantage persists along relinearised paths. There is no relinearised-vs-single-step comparison under the same metric, and no nonlinear manifold steering is tested (it is only cited, ref 14, Curveball steering). (4) Procrustes, path-forking and curvature of subspace paths are not covered.",
+  "architecture_location": "Interventions on the residual stream at a middle layer, default round(0.45 x depth); the final prompt position is stated for the reusable control. The geometric advantage is largest at early-to-mid layers (off-target advantage 11.79x at quarter depth, 11.08x at half, 6.62x at three-quarter) and shrinks near the read-out, where the metric reduces to the output Fisher H. On natural text the output Fisher's top five eigenmodes carry 55% of eigenvalue mass and the largest answer-motion value (0.59) among the bands (answer motion = fraction of the band's probability motion on the highest-probability tokens); these are modes of the final-layer output Fisher H, so they describe output geometry, not a place in the architecture.",
+  "actionable_fix": "For Stage B: add a damped natural-gradient activation steer on the truth-vs-flip log-odds covector (q = grad of log p(correct) - log p(user's claim)), injected at about 45% depth at the final prompt position, with the Fisher averaged over a reference set of neutral prompts (the paper shows lower disturbance only on that reference set itself, so we must measure disturbance on separate held-out prompts); compare it at matched effect with Euclidean/CAA steering, plain DPO, and (for a training fix) natural-gradient LoRA as a behaviour-level trust region. For Stage A diagnostics: compute the Fisher sensitivity of the probe's correct-answer direction per layer to flag bypass, and the flip-margin z per item to flag threshold flips. Run all solves in float32.",
+  "reuse_verdict": "Borrow the methods and controls, not the findings. The pullback-Fisher sensitivity, the flip-margin screen, matched-response comparisons and the angle-preserving and reparameterisation controls transfer directly. Nothing was tested at 9B-27B, on pressure-induced flips, or on internal truth subspaces, and code is only on request, so we would reimplement (the formulas and solver recipe are fully specified). Before reimplementing, read the scale precedents the paper cites: FishBack (arXiv 2605.17231, ref 12) extends natural-gradient steering to 8B models, and Park et al. (2602.15293, ref 13) is the other Fisher-steering paper.",
+  "relevance_to_project": "Indirect but useful. The paper is about output geometry and minimum-disturbance control, not about what happens to correctness information when a model gives in to pushback, and it never sorts failures into fates. Its two most transferable pieces are a principled per-direction output-sensitivity measure (a natural bypass test for probe directions) and a geometry-aware steering/fine-tuning fix with an anti-sycophancy objective that can serve as a Stage B arm next to DPO. It also shows that Euclidean activation geometry (distances, inner products, cosine similarity) is not fixed by behaviour; that Euclidean principal angles between internal subspaces inherit the same problem is our inference, which matters for how this wave measures subspace paths."
+}

@@ -1,0 +1,116 @@
+{
+ "slug": "w2-fishback-2605.17231",
+ "url": "https://arxiv.org/pdf/2605.17231",
+ "pdf_ok": true,
+ "pages": 22,
+ "chars": 97559,
+ "title_guess": "FishBack: Pullback Fisher Geometry for Optimal Activation Steering in Transformers Sihan Wang1 , Jiayi Zhao1 , Qingyan Cao 1 , Hongbo Yao1\u2217 , Lin Shu1\u2020",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 2,
+   "caption_start": " Figure 1: Overview of FishBack. At an intermediate layer, we read the hidden state and the concept probe, pull the softmax Fisher information back through the network\u2019s Jacobian to obtain the pullbac"
+  },
+  {
+   "id": "Table 1",
+   "page": 5,
+   "caption_start": " Table 1: FishBack lowers off-target KL divergence at matched concept change against every steering baseline, the Euclidean ablation, and a per-case oracle. Entries are the median [IQR] of the per-cas"
+  },
+  {
+   "id": "Figure 2",
+   "page": 6,
+   "caption_start": " Figure 2: The pullback Fisher metric is strongly non-Euclidean at every layer studied. Left: normalized eigenvalue spectra of G, decaying by more than six orders of magnitude. Right: median effective"
+  },
+  {
+   "id": "Figure 3",
+   "page": 6,
+   "caption_start": " Figure 3: On GPT-2 Small, FishBack attains the lowest offtarget KL divergence at matched concept change at every layer. Boxes show the median and interquartile range of per-case off-target KL (log sc"
+  },
+  {
+   "id": "Figure 4",
+   "page": 6,
+   "caption_start": " Figure 4: The off-target advantage persists on Llama-3-8B and Qwen3-8B at the early and middle layers under the matrixfree approximation. Boxes show per-case off-target KL (log scale) at matched conc"
+  },
+  {
+   "id": "Figure 5",
+   "page": 7,
+   "caption_start": " Figure 5: Ablating the metric isolates the geometric gain on GPT-2 Small: the Euclidean-to-FishBack off-target ratio lies above parity at every layer. Points are per-layer medians with interquartile "
+  },
+  {
+   "id": "Figure 6",
+   "page": 7,
+   "caption_start": " Figure 6: The geometric gain transfers to the 8B models: the Euclidean-to-FishBack off-target ratio stays above parity at the early and middle layers. Points are per-layer medians with interquartile "
+  },
+  {
+   "id": "Table 2",
+   "page": 13,
+   "caption_start": " Table 2: Exact pullback-Fisher geometry of GPT-2 Small (d = 768), medians over 100 contexts per layer. Dev. is the relative Frobenius deviation (42) from the closest scalar metric. The identity makes"
+  },
+  {
+   "id": "Table 3",
+   "page": 13,
+   "caption_start": " Table 3: Pullback-Fisher geometry of the two 8B models (d = 4096), medians over successful cases with finite spectra, computed within the rank-50 subspace retained by the approximation of Appendix E."
+  },
+  {
+   "id": "Table 4",
+   "page": 14,
+   "caption_start": " Table 4: Synthetic-model study at \u03c1 = 0.1; medians with interquartile ranges over 300 cases per configuration. All rank correlations have p < 10\u22125 , and the pooled correlation has p < 10\u221256 . The las"
+  },
+  {
+   "id": "Table 5",
+   "page": 15,
+   "caption_start": " Table 5: Settings of the steering procedure. Entries spanning both columns are shared.  Low-Rank Spectrum  Because the spectrum of G is concentrated in far fewer than 50 directions at every layer mea"
+  },
+  {
+   "id": "Table 6",
+   "page": 16,
+   "caption_start": " Table 6: Construction of the evaluation set. \u201cUsed\u201d is the number of contexts evaluated per layer; each is evaluated at every layer of that model. space between the two adjacent iterates that bracket"
+  },
+  {
+   "id": "Table 7",
+   "page": 17,
+   "caption_start": " Table 7: Size of each Benjamini\u2013Hochberg family. On the 8B models the folded level is corrected separately for the baseline comparisons and the geometric ablation. The transform is not cosmetic. A ra"
+  },
+  {
+   "id": "Table 8",
+   "page": 17,
+   "caption_start": " Table 8: Folded cells surviving Benjamini\u2013Hochberg correction, counted over the three concepts and all comparators. Underpowered cells are excluded from the tested column. Model  Family  Tested  Sign"
+  },
+  {
+   "id": "Table 9",
+   "page": 17,
+   "caption_start": " Table 9: Target-level cells surviving correction, pooled over concepts, layers, and targets, including the deepest layers of the 8B models.  Every number quoted in the main paper can be traced to a r"
+  },
+  {
+   "id": "Table 10",
+   "page": 18,
+   "caption_start": " Table 10: Percentage of targets reached, pooled over the three concepts and the four levels of P W . On Qwen3-8B the ordering changes. The Euclidean ablation reaches between 22.7% and 36.3% of target"
+  },
+  {
+   "id": "Table 11",
+   "page": 20,
+   "caption_start": " Table 11: Spearman correlations between the two spectral proxies and the per-case log gain over Euclidean steering. Significance is marked at p < 0.05 (\u2217 ) and p < 0.001 (\u2217\u2217\u2217 ).  computable proxies f"
+  },
+  {
+   "id": "Table 12",
+   "page": 21,
+   "caption_start": " Table 12: Off-target divergence under the output-layer metric of Park et al. (2026), applied at the intervention layer, relative to the pullback metric, at matched concept change; values above 1 favo"
+  },
+  {
+   "id": "Table 14",
+   "page": 21,
+   "caption_start": " Table 14: Median cosines between the raw solved directions, before the concept-efficiency decomposition. \u03b4H uses the output-layer metric, \u03b4G the pullback. from the other two.  Model  Layer  Ratio  Wi"
+  },
+  {
+   "id": "Table 13",
+   "page": 21,
+   "caption_start": " Table 13: The same comparison on the single-target cohort. \u201cCells\u201d counts concept\u2013target cells significant after correction out of twelve.  K.2  Results  Table 12 reports the paired comparison on the"
+  }
+ ],
+ "n_figures_tables": 20,
+ "section_heading_candidates": [
+  "A Metric View of Existing Steering Methods"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

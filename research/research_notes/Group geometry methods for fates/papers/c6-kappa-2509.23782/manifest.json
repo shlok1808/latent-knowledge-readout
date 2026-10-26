@@ -1,0 +1,161 @@
+{
+ "slug": "c6-kappa-2509.23782",
+ "url": "https://arxiv.org/pdf/2509.23782",
+ "pdf_ok": true,
+ "pages": 31,
+ "chars": 106472,
+ "title_guess": "Bridging the Knowledge-Prediction Gap in LLMs on Multiple-Choice Questions  Yoonah Park * 1 Haesung Pyun * 1 Yohan Jo \u2020 1",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 2,
+   "caption_start": " Figure 1. Given a hidden representation h from the residual stream at layer l, we train two linear probes with disjoint objectives: a knowledge probe that predicts the ground-truth answer and a predi"
+  },
+  {
+   "id": "Figure 2",
+   "page": 3,
+   "caption_start": " Figure 2. Layer-wise accuracy of the knowledge probe and the prediction probe on TruthfulQA for Llama 3.1 8B Instruct. While the knowledge probe accuracy increases steadily and saturates at higher la"
+  },
+  {
+   "id": "Table 1",
+   "page": 4,
+   "caption_start": "Table 1. Model- and dataset-wise comparison of the knowledge-prediction gap for Qwen 2.5 7B Instruct and Llama 3.1 8B Instruct. We report task accuracy of the base model (ACC), the absolute accuracy g"
+  },
+  {
+   "id": "Figure 3",
+   "page": 5,
+   "caption_start": " Figure 3. Scatter plots of hidden-state activations from Qwen2.5 7B Instruct, where each point corresponds to a pair of logits: the knowledge logit and the prediction logit for the first answer optio"
+  },
+  {
+   "id": "Table 2",
+   "page": 7,
+   "caption_start": "Table 2. Results across benchmarks for Qwen 2.5 7B Instruct and Llama 3.1 8B Instruct. Higher \u2206ACC and AGR indicate smaller knowledge-prediction gaps, while lower KLD reflects closer alignment between"
+  },
+  {
+   "id": "Figure 4",
+   "page": 7,
+   "caption_start": " Figure 4. Effect of parameters \u03b1 and \u03b2 on agreement rate improvement over the base model. (Left) Qwen2.5 7B Instruct results across six \u03b1 values and four \u03b2 values. (Right) Llama 3.1 8B Instruct resul"
+  },
+  {
+   "id": "Table 3",
+   "page": 8,
+   "caption_start": "Table 3. Average accuracy (ACC), agreement (AGR), and KL divergence (KLD) across multiple models on the TruthfulQA benchmark. For KAPPA(\u00b7), the value in parentheses denotes the number of layers interv"
+  },
+  {
+   "id": "Figure 5",
+   "page": 8,
+   "caption_start": " Figure 5. Cross-dataset transfer results measured by agreement improvement over the base model on Llama 3.1 8B Instruct. Positive values indicate improvement over base and negative values indicate de"
+  },
+  {
+   "id": "Table 4",
+   "page": 9,
+   "caption_start": "Table 4. Generation accuracy of Qwen2.5 7B Instruct after applying KAPPA to free-form settings. Method Base KAPPA (1)  TruthfulQA BBQ-Age GSM8k 41.7 44.2  89.7 89.9  91.6 90.7  questions only\u2014without "
+  },
+  {
+   "id": "Figure 6",
+   "page": 9,
+   "caption_start": " Figure 6. We present a per-subtask analysis of KAPPA generalization on BBH benchmarks. For each probe training dataset (GSM8k, BBH-Algorithmic, BBH-NLP), we identify questions that were originally an"
+  },
+  {
+   "id": "Table 5",
+   "page": 15,
+   "caption_start": " Table 5. Task instructions used in our experiments.  Instruction 1 2 3 4  Text Provide your answer with {option text}, following the output format below. Output Format: {format text} Given the follow"
+  },
+  {
+   "id": "Table 6",
+   "page": 15,
+   "caption_start": " Table 6. Answer format types used in experiments.  Answer Format Type 1 2  Format Text The correct answer is ( Answer: (  Table 7. Option symbol types used in experiments.  Option Symbol Type Common "
+  },
+  {
+   "id": "Table 7",
+   "page": 15,
+   "caption_start": " Table 7. Option symbol types used in experiments.  Option Symbol Type Common Alphabet Upper Roman Numerals Common Numbers Random Alphabet Upper  Examples (A), (B), (C), (D) (i), (ii), (iii), (iv) (1)"
+  },
+  {
+   "id": "Table 8",
+   "page": 16,
+   "caption_start": "Table 8. Dataset statistics for training, validation, and test splits. k denotes the number of answer choices. Category  Dataset  k  Train  Validation  Test  Reasoning  GSM8k BBH-Algorithmic BBH-NLP  "
+  },
+  {
+   "id": "Table 9",
+   "page": 16,
+   "caption_start": "Table 9. Subtasks used from the BBH-Algorithmic and BBH-NLP benchmarks. Dataset  BBH-Algorithmic  BBH-NLP  Subtasks  geometric shapes logical deduction temporal sequences tracking shuffled objects rea"
+  },
+  {
+   "id": "Table 10",
+   "page": 17,
+   "caption_start": "Table 10. Subtasks used from the MMLU Humanities, Social Sciences, and STEM benchmarks. Dataset  Subtasks  MMLU Humanities  Formal Logic High School European History High School US History High School"
+  },
+  {
+   "id": "Figure 7",
+   "page": 18,
+   "caption_start": " Figure 7. Layer-wise accuracy of knowledge probes (blue) and prediction probes (orange) across benchmarks, with baseline accuracy shown as dashed lines. Prediction probe accuracy reaches very high le"
+  },
+  {
+   "id": "Figure 8",
+   "page": 21,
+   "caption_start": " Figure 8. Layer-wise mean principal angle analysis across models and benchmarks. The blue curve shows the mean principal angle between the knowledge and prediction subspaces, while the green curve sh"
+  },
+  {
+   "id": "Figure 9",
+   "page": 22,
+   "caption_start": " Figure 9. Layer-wise orthogonal linear CKA between the knowledge- and prediction-subspace projections across models and benchmarks. The solid blue curve shows the CKA between representations projecte"
+  },
+  {
+   "id": "Figure 10",
+   "page": 24,
+   "caption_start": "Figure 10. Cross-benchmark relationship between geometric misalignment and the behavioral gap. Each point corresponds to one benchmark, plotted at the layer achieving the highest validation knowledge-"
+  },
+  {
+   "id": "Table 11",
+   "page": 27,
+   "caption_start": "Table 11. Results across knowledge benchmarks for Qwen 2.5 7B Instruct and Llama 3.1 8B Instruct. Higher \u2206ACC and AGR indicate smaller knowledge-prediction gaps, while lower KLD reflects closer alignm"
+  },
+  {
+   "id": "Table 12",
+   "page": 28,
+   "caption_start": "Table 12. Average accuracy (ACC), agreement (AGR), and KL divergence (KLD) across multiple models on the GSM8k benchmark. For KAPPA(\u00b7), the value in parentheses denotes the number of layers intervened"
+  },
+  {
+   "id": "Table 13",
+   "page": 28,
+   "caption_start": " Table 13. Results on the TruthfulQA benchmark across multiple models. All models use their instruct variants. BASE denotes the original model without intervention, KP denotes the knowledge probe accu"
+  },
+  {
+   "id": "Table 14",
+   "page": 29,
+   "caption_start": "Table 14. Robustness to distractor sampling. We construct 10 test sets using different random seeds for distractor sampling (sampling only the test sets) and report the mean and standard deviation of "
+  },
+  {
+   "id": "Table 15",
+   "page": 29,
+   "caption_start": " Table 15. Statistical significance under distractor sampling. We construct 10 test sets using different random seeds for distractor sampling (sampling only the test sets) and perform one-sided t-test"
+  },
+  {
+   "id": "Figure 11",
+   "page": 30,
+   "caption_start": " Figure 11. KAPPA accuracy under varying training data sizes. We subsample the training data at 10, 20, 40, 60, and 80% using three random seeds, learn subspaces from each subset, and report the resul"
+  },
+  {
+   "id": "Figure 12",
+   "page": 30,
+   "caption_start": " Figure 12. Knowledge probe accuracy under varying training data sizes. We train knowledge probes on 10, 20, 40, 60, and 80% subsampled datasets (three random seeds) and report accuracy averaged over "
+  },
+  {
+   "id": "Figure 13",
+   "page": 30,
+   "caption_start": " Figure 13. Prediction probe accuracy under varying training data sizes. We train prediction probes on 10, 20, 40, 60, and 80% subsampled datasets (three random seeds) and report accuracy averaged ove"
+  },
+  {
+   "id": "Figure 14",
+   "page": 31,
+   "caption_start": " Figure 14. Per-subtask analysis of KAPPA generalization on BBH (Llama-3.1 8B Instruct). For each probe training dataset (GSM8K, BBH-Algorithmic, BBH-NLP), we identify both incorrect-to-correct and co"
+  }
+ ],
+ "n_figures_tables": 29,
+ "section_heading_candidates": [
+  "A QB ),"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

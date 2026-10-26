@@ -1,0 +1,114 @@
+{
+ "slug": "u2-subtrackpp-2502.01586",
+ "url": "https://arxiv.org/pdf/2502.01586v1",
+ "pdf_ok": true,
+ "pages": 19,
+ "chars": 65434,
+ "title_guess": "SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training ",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 1,
+   "caption_start": " Figure 1. Visualization of SubTrack-Grad: Between subspace updates, gradients are projected onto a fixed subspace. The tangent vector \u2207F is computed via the derivative of a loss function that measure"
+  },
+  {
+   "id": "Table 1",
+   "page": 6,
+   "caption_start": "Table 1. Evaluating the performance of SubTrack-Grad and other baselines when fine-tuning RoBERTa-Base on GLUE tasks for different ranks r. All hyperparameters are the same for each rank. The performa"
+  },
+  {
+   "id": "Table 2",
+   "page": 6,
+   "caption_start": " Table 2. Evaluating the performance of SubTrack-Grad and other baselines when fine-tuning RoBERTa-Large on SuperGLUE tasks with rank 8. All hyperparameters are consistent across different methods. Th"
+  },
+  {
+   "id": "Figure 2",
+   "page": 7,
+   "caption_start": " Figure 2. Comparing wall-time on different architecture and datasets. (a) shows the memory and wall-time measured on pretraining different Llama-architectures sizing from 60M to 3B. (b) demonstrates "
+  },
+  {
+   "id": "Table 3",
+   "page": 7,
+   "caption_start": " Table 3. Evaluation loss comparison for pre-training different Llama-based architectures on C4 dataset after 10K iterations. 60M r=128  130M r=256  350M r=256  1B r=512  3B r=512  Avg -  Full-Rank  3"
+  },
+  {
+   "id": "Table 4",
+   "page": 7,
+   "caption_start": "Table 4. Optimizer\u2019s memory requirement in each method along with the time complexity of involved subspace update operations, considering a gradient matrix of dimension m \u00d7 n and projection rank r whe"
+  },
+  {
+   "id": "Figure 3",
+   "page": 8,
+   "caption_start": " Figure 3. Comparison of the Adam Optimizer Combined with SubTrack-Grad (a, d) and GaLore (b, e) on the Ackley Function for 100 optimization steps and the subspace update interval set to 10. With scal"
+  },
+  {
+   "id": "Figure 4",
+   "page": 8,
+   "caption_start": " Figure 4. Comparing runtimes of GaLore and SubTrack-Grad. RoBERTa-Base is fine-tuned for 10 epochs on COLA and Llama-60M is pre-trained for 2500 iterations on C4 dataset. Subspace update intervals ra"
+  },
+  {
+   "id": "Table 5",
+   "page": 15,
+   "caption_start": " Table 5. Time Complexity for SubTrack-Grad Subspace Update  Computation Step  Time  Cost function  O(mr2 )  Residual  O(mrn)  Partial derivative  O(mnr)  Tangent vector \u2206F  O(m2 r)  Rank-1 approximat"
+  },
+  {
+   "id": "Table 6",
+   "page": 15,
+   "caption_start": " Table 6. Wall-time comparison for pre-training Llama-based architectures with varying model sizes on the C4 dataset. The experiments consist of 2000 iterations, corresponding to exactly 10 subspace u"
+  },
+  {
+   "id": "Table 7",
+   "page": 16,
+   "caption_start": "Table 7. Peak memory consumption comparison when pre-training Llama-based architectures with different sizes on C4 dataset. The last two columns present the average percentage change in memory consump"
+  },
+  {
+   "id": "Table 8",
+   "page": 16,
+   "caption_start": " Table 8. Wall-time comparison when fine-tuning RoBERTa-Base on GLUE tasks for different ranks r up to a number of iterations to exactly include 5 subspace update steps. The last two columns present t"
+  },
+  {
+   "id": "Table 9",
+   "page": 17,
+   "caption_start": "Table 9. Peak memory consumption when fine-tuning RoBERTa-Base on GLUE tasks for different ranks r. The last two columns present the average percentage change in memory consumption relative to Full-Ra"
+  },
+  {
+   "id": "Table 10",
+   "page": 17,
+   "caption_start": " Table 10. Wall-time comparison when fine-tuning RoBERTa-Large on SuperGLUEup to a number of iterations to exactly include 5 subspace update steps. The last two columns present the average percentage "
+  },
+  {
+   "id": "Table 11",
+   "page": 18,
+   "caption_start": " Table 11. Peak memory consumption comparison when fine-tuning RoBERTa-Large on SuperGLUE. The last two columns present the average percentage change in memory consumption relative to Full-Rank and Ga"
+  },
+  {
+   "id": "Table 12",
+   "page": 18,
+   "caption_start": " Table 12. Hyperparameters of fine-tuning RoBERTa-Base on GLUE tasks.  MNLI  SST-2  MRPC  CoLA  QNLI  QQP  RTE  STS-B  Batch Size Learning Rate # Epochs Max Seq. Len.  16 1E-05  16 1E-05  16 3E-05  32"
+  },
+  {
+   "id": "Table 13",
+   "page": 18,
+   "caption_start": " Table 13. Hyperparameters of fine-tuning RoBERTa-Large on SuperGLUE tasks.  BoolQ Shared Parameters  Batch Size # Epochs Learning Rate Max Seq. Len.  SubTrack-Grad & GaLore Parameters  SubTrack-Grad "
+  },
+  {
+   "id": "Table 14",
+   "page": 19,
+   "caption_start": " Table 14. Hyperparameters of pre-training Llama-based architectures.  60M  130M  350M  1B  3B  Hidden Intermediate Heads Layers  512 1376 8 8  768 2048 12 12  1024 2736 16 24  2048 5461 24 32  4096 1"
+  },
+  {
+   "id": "Table 15",
+   "page": 19,
+   "caption_start": " Table 15. Comparing changes in performance while decreasing the subspace update interval (increasing the frequency of subspace updates) on fine-tuning RoBERTa-Base on COLA task. 500  450  400  350  3"
+  },
+  {
+   "id": "Figure 5",
+   "page": 19,
+   "caption_start": " Figure 5. The figures present changes in training loss relative to wall-time for pre-training the Llama-3B architecture on the C4 dataset and fine-tuning RoBERTa-Large on the BoolQ dataset. They demo"
+  }
+ ],
+ "n_figures_tables": 20,
+ "section_heading_candidates": [],
+ "looks_abstract_only": false,
+ "has_references": true
+}

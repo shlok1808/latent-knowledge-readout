@@ -1,0 +1,571 @@
+{
+  "slug": "u5-user-2608.27510",
+  "title": "How Do Linear Probes Emerge? A Circuit-Tracing Framework with Concept-Targeted Attribution (Palit, Draye, Zhang, Schoelkopf, Jin; arXiv 2608.27510v1, 27 Aug 2026)",
+  "sections_read": [
+    "Abstract",
+    "1 Introduction (incl. Figure 1 page 2)",
+    "2 Related Work: Circuit Discovery and Attribution Graphs",
+    "2 Related Work: dictionary-learning / transcoder / cross-layer transcoder paragraphs",
+    "2 Related Work: Concept Directions and Diagnostic Probing",
+    "3 Methodology",
+    "3.1 Transcoder Attribution Graphs (Eq. 1, CTA definition; Figure 2 page 3)",
+    "3.2 Concept Representation via Probing (belief point definition)",
+    "Table 1 (page 4)",
+    "3.3 Causal Dissociation",
+    "3.4 Predicting the Quality of a Probe (Graph-Structural Predictor; Local Feature Predictor)",
+    "4 Experiments",
+    "4.1 Concept Emergence and the Belief Point",
+    "Figure 3 and Table 2 (page 5)",
+    "4.2 Structural and Functional Dissociation of Concept and Generation Circuits",
+    "4.3 Graph-Structural Features Predict Probe Quality",
+    "4.4 Feature-Level Prediction of Probe Classification Power (Toxicity; Sentiment; Reasoning; Truthfulness; cross-concept paragraph) incl. Figure 4",
+    "4.5 Cross-Prompt Consistency of Concept-Attribution Graphs (Many Circuits, One Core) incl. Figure 5",
+    "4.6 Cross-Layer Stability of Concept-Attribution Graphs incl. Figure 6",
+    "5 Discussion (Probes need mechanistic explanations; Circuit structure as a diagnostic of concept encoding; Circuit stability as evidence of structured encoding)",
+    "6 Conclusion",
+    "Limitations",
+    "Acknowledgment",
+    "References",
+    "Appendix Contents page",
+    "A Experimentation Details",
+    "A.1 Dataset Curation",
+    "A.2 Probe Training Details (DIM probe, IID/LDA correction, class balance and split)",
+    "A.3 Cross-Layer-Transcoder",
+    "A.4 Attribution Graph (Eq. 2, frozen-Jacobian attribution, pruning)",
+    "A.5 Predictability Experiment Details",
+    "A.5.1 Graph Structural Predictor",
+    "A.5.2 Local CLT Feature Predictor",
+    "Figure 7 (page 18)",
+    "B Extended Result Discussion",
+    "B.1 Belief layer selection (incl. Table 3; Reasoning: sign inversion and inflated logit ratio; Truthfulness: dominant shared subgraph; Tables 4 and 5)",
+    "B.2 Graph-Structural Predictability: Gemma-2-2B (Table 6)",
+    "B.3 Detailed Feature-Level Study (Toxicity; Sentiment; Reasoning; Truthfulness; Cross-concept features; Figure 8)",
+    "B.4 Cross-Prompt Consistency of CTA Graphs (Figure 9)",
+    "B.5 Case Study: Truthfulness vs. Reasoning (Layer alignment is necessary but not sufficient; Exclusive features dominate at every layer; Figure 10)",
+    "C Activated Examples for Selected Features (Figure 11)",
+    "D Implementation Results on Llama-3.2-1B (Table 7)",
+    "D.1 Causal Dissociation",
+    "D.2 Graph-Structural Predictability: Llama-3.2-1B (Tables 8 and 9; Structural separation is weaker than Gemma-2-2B)",
+    "E Computational Resources",
+    "F Topological Fingerprints of Graph Structural Features (Figures 12-18)"
+  ],
+  "setup": {
+    "data": "Four concepts, each a balanced binary set of n = 5000 per class (10,000 total), filtered to <= 60 tokens, 80/20 split, seed 42. Toxicity: ParaDetox paired toxic vs detoxified sentences. Sentiment: SST-2. Reasoning: HotpotQA multi-hop (positive) vs TriviaQA single-hop (negative). Truthfulness: pooled Geometry of Truth subsets (Counterfactuals, Cities, Spanish-English Translations), e.g. 'The capital of Japan is Tokyo/Osaka'. Graph analyses use 100 prompts per concept per layer; causal dissociation uses 50 prompts per concept.",
+    "models": "Gemma-2-2B (main; d_model 2304; 26 layers, layers 0-25 plotted) and Llama-3.2-1B (appendix replication; 16 layers). No model above 2B.",
+    "positions_layers": "Last-token residual stream at every layer (probes trained at layers 1-25 for Gemma). One analysis layer per concept, the 'belief layer' Lb = layer with the steepest single-step rise in mean positive-class probe score: Gemma Toxicity L22, Sentiment L21, Reasoning L15, Truthfulness L14; Llama Toxicity L14, Sentiment L15, Reasoning L9, Truthfulness L1.",
+    "probe": "Difference-in-means (mass-mean) direction per layer, unit-normalised, used as the attribution target. Accuracy is evaluated with an LDA-corrected direction in a PCA-200 subspace and a midpoint threshold. Concept directions are Gram-Schmidt orthogonalised against each other.",
+    "attribution": "Open-source cross-layer transcoders (CLTs) from the Circuit-Tracer library, loaded through CLT-Forge. Attribution edges come from a frozen-nonlinearity Jacobian (attention patterns, norms and MLP nonlinearities held constant). Graphs are pruned to features that explain 80% of the effect and edges that explain 95%. CTA = graph rooted at the probe score S = theta^T x_l; LTA = graph rooted at the next-token logit.",
+    "analyses": "(1) Causal dissociation: ablate probe-exclusive, logit-exclusive and shared nodes; measure the change in probe score (Delta S) and the top-1 next-token flip rate. (2) Graph-structural predictor: 35 graph features per (concept, layer), Gradient Boosting (200 trees, depth 3) and Ridge, 5-fold group-aware CV, target = probe validation accuracy. (3) Local feature predictor: binary presence of the top-100 CLT features per prompt, Ridge (alpha 10) predicts the probe margin s - tau; 'rise features' by Fisher exact test. (4) Cross-prompt presence enrichment of top features vs a random feature. (5) Consecutive-layer Jaccard J(L, L-1); cross-concept Jaccard over layer pairs.",
+    "baselines": "Layer-mean baseline (predicts each layer's mean accuracy across concepts) for the structural predictor; de-meaned target; random-feature presence rate for the enrichment analysis.",
+    "controls": "Group-aware permutation test (200 shuffles) and bootstrap CI (500 resamples). Replication on a second model family. NOT present: size-matched random-feature ablation, a stated ablation method (zero vs mean), a logit-margin or other non-mechanistic baseline for the dissociation, multiple seeds or checkpoints, and an output token that bears on the concept.",
+    "compute": "Single A100 80 GB. About 10,400 graphs for Gemma. Feature-level predictor about 26 h, structural predictor 5 h, ablations 3 h, probe training 3 h; Llama about half the total."
+  },
+  "figures": [
+    {
+      "id": "Figure 1",
+      "page": 2,
+      "what_is_plotted": "Pipeline schematic. MLPs in three layers are replaced by CLTs. An attribution graph runs from token nodes (Token 1, Token 2, [Toxic Word], Token 4) up to the linear probe direction theta-bar at Layer 3. Global features, nodal statistics and topological features feed a 'Predictor' of probe accuracy, and CLT features predict the probe score.",
+      "takeaway": "Conceptual only. The attribution target is the probe direction, not a logit. Two downstream uses: graph shape -> probe accuracy, feature identity -> probe margin.",
+      "numbers": "None (schematic).",
+      "text_matches_figure": "yes - matches the caption and Section 3."
+    },
+    {
+      "id": "Figure 2",
+      "page": 3,
+      "what_is_plotted": "Gemma-2-2B. L0-centred, normalised mean positive-class probe score (y, -1 to 1) against layer (0-25) for the four concepts. Shaded bands mark each concept's belief layer.",
+      "takeaway": "Concepts consolidate at different depths: truthfulness about L14, reasoning L15, sentiment L21, toxicity L22. The reasoning curve goes negative from about L7 and stays negative.",
+      "numbers": "Approx, read from figure: Toxicity about 0 through L17, 0.52 at L21, 1.0 at L22, 0.5 at L24, 0.92 at L25. Sentiment 0.4 at L13-14, 0.62 at L15, 0.73 at L21, 1.0 at L24, -0.15 at L25. Reasoning peak +0.22 at L5, -0.69 at L14, -0.45 at L15, -1.0 at L22, -0.9 at L25. Truthfulness -0.26 at L11, 0.08 at L13, 0.38 at L14, 0.85 at L18, about 1.0 at L22, 0.18 at L25. Bands: L13-14 (truthfulness), L14-15 (reasoning), L20-21 (sentiment), L21-22 (toxicity).",
+      "text_matches_figure": "partly - the belief bands match Table 3. But the text says reasoning scores 'fall below zero between L6 and L14 before recovering at L15', while the figure shows only a small uptick at L15 and the scores stay negative through L25 (minimum about -1.0 at L22). The text also says truthfulness is strongest mid-network; that holds for accuracy (Figure 7), but this score peaks about L22."
+    },
+    {
+      "id": "Table 1",
+      "page": 4,
+      "what_is_plotted": "Causal dissociation at Lb for Toxicity and Truthfulness in both models: post-ablation probe score, Delta S and top-1 flip rate for clean, probe-exclusive, logit-exclusive and intersection ablations.",
+      "takeaway": "Ablating logit-exclusive nodes flips the next token 100% of the time with Delta S about 0. Ablating probe-exclusive nodes lowers S with 0% flips, except Gemma Truthfulness (25% flips). Truthfulness depends more on the shared subgraph (67% flips, S drops from 41.87 to 2.93).",
+      "numbers": "Gemma Toxicity L22: clean 102.52; probe-excl 41.28 / -61.24 / 0%; logit-excl 101.82 / 0.70 / 100%; shared +36.50 / -66.02 / 38%. Gemma Truthfulness L14: clean 41.87; probe-excl 29.84 / -12.03 / 25%; logit-excl 41.84 / 0.03 / 100%; shared +2.93 / -38.94 / 67%. Llama Toxicity L14: clean 0.43; probe-excl -0.10 / -0.53 / 0%; logit-excl 0.43 / about 0 / 100%; shared +0.67 / +0.24 / 78%. Llama Truthfulness L1: clean 0.11; probe-excl 0.11 / about 0 / 0%; logit-excl 0.09 / -0.02 / 100%; shared +0.08 / -0.03 / 17%.",
+      "text_matches_figure": "partly - the caption says probe-exclusive ablation gives 'near-zero behavioural flip', but Gemma Truthfulness flips 25%. The signs of the logit-excl Delta S differ from Table 4 (0.70 and 0.03 here vs -0.70 and -0.03 there). The Llama shared ablation raises the toxicity score (+0.24), which the text does not discuss."
+    },
+    {
+      "id": "Figure 3",
+      "page": 5,
+      "what_is_plotted": "Gemma-2-2B Toxicity. KDEs of five CTA-graph features (max CLT activation, Gini influence concentration, max edge weight, max logit edge, graph density) for high- vs low-accuracy probe layers.",
+      "takeaway": "High-accuracy layers have more concentrated, denser, stronger graphs. All five features differ (p < 0.05).",
+      "numbers": "From panel titles: max CLT activation p < 0.05, d = +1.07; Gini p < 0.001, d = +1.68; max edge weight p < 0.05, d = +0.88; max logit edge p < 0.01, d = +1.20; density p < 0.01, d = +1.32. Approx, read from figure: Gini peaks about 0.102 (high) vs 0.095 (low); density about 0.073 vs 0.049; max edge weight about 22 vs a broad low distribution.",
+      "text_matches_figure": "yes - the reported p and d match the caption. The high/low split rule and the number of layers per group are not stated."
+    },
+    {
+      "id": "Table 2",
+      "page": 5,
+      "what_is_plotted": "Prediction of probe validation accuracy from graph-structural features (5-fold group-aware CV): layer baseline, Ridge and GB.",
+      "takeaway": "GB graph features predict layer-wise probe accuracy far better than layer depth alone.",
+      "numbers": "Layer baseline rho 0.08 +/- 0.15, R2 -0.19 +/- 0.29; Ridge rho 0.65 +/- 0.11, R2 0.33 +/- 0.27; GB rho 0.91 +/- 0.05, R2 0.84 +/- 0.14; bootstrap 95% CI for GB rho [0.724, 0.964], permutation p < 0.005.",
+      "text_matches_figure": "partly - the text says the signal 'persists under de-meaned targets, as shown in Table 2', but Table 2 has only one (raw) column; the de-meaned results are in Table 5. Table 6 gives observed raw rho = 0.890, not 0.905/0.91."
+    },
+    {
+      "id": "Figure 4",
+      "page": 6,
+      "what_is_plotted": "Neuronpedia top activations for CLT feature L6/F4508 (Gemma-2-2B).",
+      "takeaway": "The feature fires on positive superlatives and intensifiers ('great', 'Greatest', 'amazing', 'fabulous', 'phenomenal'), including proper-noun uses such as 'The great temple of Shiva'. It is a lexical feature, partly about domain rather than sentiment polarity.",
+      "numbers": "Header read from figure: Act 0.15, 18pct, Freq 0.049%; act=0.149. The '>50% of positive prompts' claim cannot be checked from the figure.",
+      "text_matches_figure": "yes - the examples show both the superlative and proper-noun contexts the text describes."
+    },
+    {
+      "id": "Figure 5",
+      "page": 7,
+      "what_is_plotted": "Mean presence rate (%) across 100 prompts' CTA graphs at Lb of the top predictive features vs a random feature, per concept (Gemma-2-2B).",
+      "takeaway": "A shared 'core' of features recurs across prompts, most strongly for toxicity and least for reasoning.",
+      "numbers": "Approx, read from figure: Toxicity 51% vs 2.6% (20x); Sentiment 34% vs 2.3% (15x); Reasoning 16% vs 2.7% (6x); Truthfulness 23.5% vs 2.3% (10x).",
+      "text_matches_figure": "yes - the caption says 6-20x; the text says 6-21x, which includes Figure 9."
+    },
+    {
+      "id": "Figure 6",
+      "page": 8,
+      "what_is_plotted": "Consecutive-layer Jaccard J(L, L-1) of CTA graph node sets against layer, for ONE representative prompt per concept (Gemma-2-2B).",
+      "takeaway": "Feature turnover is fast in layers 1-3. Overlap plateaus at about 0.9 from about L8-10 onward.",
+      "numbers": "Approx, read from figure: Toxicity 0.07 at L1, 0.55 L2, 0.78 L3, about 0.9 from L8-10; Sentiment 0.03 L1, 0.7 L2, about 0.93 from L10; Reasoning 0.05 L1, 0.58 L2, 0.83 L4, about 0.92 from L9; Truthfulness 0.08 L1, 0.63 L2, 0.8 L4, about 0.88 L10, about 0.92 late.",
+      "text_matches_figure": "yes - but this is one prompt per concept, and node sets of graphs rooted at adjacent layers share all earlier-layer nodes, so a high J is expected from construction (our inference)."
+    },
+    {
+      "id": "Figure 7",
+      "page": 18,
+      "what_is_plotted": "Left: Gemma-2-2B probe validation accuracy across layers. Centre: Llama-3.2-1B probe validation accuracy across layers. Right: Llama-3.2-1B normalised probe-score belief curves with belief-layer bands.",
+      "takeaway": "In Gemma, truthfulness accuracy peaks mid-network (L11-14) and then declines, and sentiment rises late. In Llama, toxicity is flat at about 91%, while sentiment and truthfulness stay near chance-to-60s. The Llama truthfulness and reasoning score curves fall monotonically to -1.",
+      "numbers": "Approx, read from figure. Gemma: Toxicity 86-91% throughout; Sentiment 56% at L0 to 83% at L24-25; Reasoning 72% at L0, about 88% at L15, about 87% late; Truthfulness 58% at L0, about 90% at L11-13, 78% at L25. Llama: Toxicity about 91%; Reasoning 79% at L0 to 73% at L15; Sentiment 63-65%; Truthfulness 55% at L0-1, peak about 68% at L9, about 58% at L13. Llama score curves: toxicity jumps from -0.3 (L13) to 0.87 (L14); sentiment 0.17 (L14) to 1.0 (L15); truthfulness declines from 0 to -1.0 by L15.",
+      "text_matches_figure": "partly - the curves match the caption. But the Llama Truthfulness belief layer L1 (55.2%) is about 13 points below the Llama truthfulness peak (about 68% at L9), which breaks the stated rule that Lb must lie within a 2-8% plateau of peak accuracy."
+    },
+    {
+      "id": "Table 3",
+      "page": 18,
+      "what_is_plotted": "Belief layer Lb and validation accuracy at Lb for each concept, both models.",
+      "takeaway": "Gemma probes are 80-90% accurate at Lb. In Llama, sentiment (63%) and truthfulness (55.2%) are weak.",
+      "numbers": "Gemma: Toxicity L22 90.0%, Sentiment L21 80.1%, Reasoning L15 87.6%, Truthfulness L14 88.2%. Llama: Toxicity L14 90.9%, Sentiment L15 63.0%, Reasoning L9 76.5%, Truthfulness L1 55.2%.",
+      "text_matches_figure": "yes - consistent with Figure 7, read approximately."
+    },
+    {
+      "id": "Table 4",
+      "page": 19,
+      "what_is_plotted": "Full Gemma-2-2B causal ablation for all four concepts: node count N, S', Delta S and flip rate for control, probe-exclusive, logit-exclusive and shared subsets.",
+      "takeaway": "Logit-exclusive ablation flips 92-100% with |Delta S| <= 0.70. Probe-exclusive ablation flips 0% except truthfulness (25%). The logit-exclusive subsets are 1.77-4.15x larger than the probe-exclusive ones.",
+      "numbers": "Toxicity: control +102.52; probe-excl N~190, +41.28, -61.24, 0%; logit-excl N~347, +101.82, -0.70, 100%; shared N~166, +36.50, -66.02, 38%. Sentiment: control +28.31; probe-excl N~203, -12.11, -40.42, 0%; logit-excl N~394, +28.70, +0.39, 100%; shared N~174, +0.57, -27.74, 30%. Reasoning: control -21.44; probe-excl N~130, -16.39, +5.05, 0%; logit-excl N~539, -20.91, +0.53, 92%; shared N~195, -11.24, +10.20, 17%. Truthfulness: control +41.87; probe-excl N~168, +29.84, -12.03, 25%; logit-excl N~297, +41.84, -0.03, 100%; shared N~190, +2.93, -38.94, 67%.",
+      "text_matches_figure": "yes - the B.1 text matches. Sentiment probe-exclusive ablation overshoots to a negative score (-12.11 from +28.31), which is not discussed."
+    },
+    {
+      "id": "Table 5",
+      "page": 19,
+      "what_is_plotted": "Gemma-2-2B structural predictor, 5-fold group-aware CV, raw and de-meaned targets: rho and R2 for the layer baseline, Ridge and GB.",
+      "takeaway": "GB stays high on de-meaned targets, but the layer baseline also becomes strong once concept offsets are removed.",
+      "numbers": "Raw: layer baseline rho +0.083, R2 -0.197; Ridge +0.655, +0.325; GB +0.905, +0.835. De-meaned: layer baseline +0.587, +0.240; Ridge +0.819, +0.648; GB +0.925, +0.850.",
+      "text_matches_figure": "yes - the 'Delta rho = 0.83' over baseline holds for raw only; on de-meaned targets the gap is 0.925 - 0.587 = 0.34 (our arithmetic)."
+    },
+    {
+      "id": "Table 6",
+      "page": 20,
+      "what_is_plotted": "Bootstrap 95% CI (500 resamples) and group-aware permutation null (200 shuffles) for the Gemma GB structural predictor.",
+      "takeaway": "The observed rho lies far outside the null.",
+      "numbers": "Raw: observed rho +0.890, CI [+0.724, +0.964], null mean -0.005 +/- 0.128, p < 0.005. De-meaned: +0.908, [+0.817, +0.962], null -0.001 +/- 0.122, p < 0.005.",
+      "text_matches_figure": "partly - observed raw rho 0.890 here vs 0.905 in Table 5 and 0.91 in Table 2."
+    },
+    {
+      "id": "Figure 8",
+      "page": 20,
+      "what_is_plotted": "Gemma-2-2B. Ridge CV Spearman rho between predicted and actual per-prompt probe margin (from binary CLT-feature presence) at each layer 1-25, four concepts, with Lb marked by dashed lines.",
+      "takeaway": "Toxicity margins are well predicted by a few features at every layer. Truthfulness peaks mid-depth (L12) and then decays. Sentiment and reasoning are noisy (0.1-0.5).",
+      "numbers": "Approx, read from figure: Toxicity 0.68 at L1, peak 0.86 at L10, dip 0.75 at L12, about 0.8 late. Truthfulness 0.10 at L1, 0.66 at L12, about 0.52 at L14, about 0.3 at L19-20. Sentiment 0.13-0.54 (peak about 0.54 at L10). Reasoning 0.0 at L1, about 0.5 at L14 and L17, 0.15 at L25.",
+      "text_matches_figure": "yes - matches the B.3 text ('above 0.66 at every layer and peaking at 0.86 at L10'; truthfulness 'peaks at 0.66 at L12')."
+    },
+    {
+      "id": "Figure 9",
+      "page": 21,
+      "what_is_plotted": "Same as Figure 5 but at each concept's highest-validation-accuracy layer.",
+      "takeaway": "Enrichment holds at the best-accuracy layer. Truthfulness enrichment is larger there than at Lb (16x vs 10x).",
+      "numbers": "Approx, read from figure: Toxicity 54.5% vs 2.6% (21x); Sentiment 36% vs 2.3% (15x); Reasoning 21% vs 2.6% (8x); Truthfulness 37% vs 2.3% (16x).",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Figure 10",
+      "page": 22,
+      "what_is_plotted": "Gemma-2-2B. Heatmap of mean per-prompt Jaccard between Truthfulness graphs at layer LT and Reasoning graphs at layer LR, all layer pairs; white boxes mark the early and late blocks.",
+      "takeaway": "Cross-concept overlap is tiny everywhere (< 0.07). It is highest only when both graphs sit at a similar depth (early block LT, LR about 1-6; late block about 12-24).",
+      "numbers": "Approx, read from figure: early block >= 0.06 (colour bar saturates); late block 0.05-0.06; early-T vs late-R about 0.01-0.02; late-T vs early-R about 0.02-0.03; row LT = 0 and column LR = 0 about 0 except cell (0,0).",
+      "text_matches_figure": "yes - the elevated late region also extends to LR about 12-15, so it is a depth band rather than a strict diagonal."
+    },
+    {
+      "id": "Figure 11",
+      "page": 23,
+      "what_is_plotted": "Neuronpedia panels for L9/F14198, L1/F3007, L9/F15693, L9/F3223 and L9/F2578: top activating contexts and top/bottom token predictions.",
+      "takeaway": "The 'truthfulness' features are generic lexical features: city and place names (F14198, F2578), French names and French text (F3007), function words (F15693), title keywords (F3223).",
+      "numbers": "Read from figure headers: L9/F14198 act=1.479 inf=0.896; L1/F3007 act=2.607 inf=0.411; L9/F15693 act=0.234 inf=0.993; L9/F3223 act=1.173 inf=0.956; L9/F2578 act=1.506 inf=0.731.",
+      "text_matches_figure": "partly - the caption matches the panels, but the main text calls L9/F14198 'a truth detector' on 'newswire-style factual claims' and L1/F3007 a feature for 'proper names and academic institutional contexts', while the panels show city names and French text."
+    },
+    {
+      "id": "Table 7",
+      "page": 24,
+      "what_is_plotted": "Full Llama-3.2-1B causal ablation (N, S', Delta S, flip) for all four concepts at their Llama Lb.",
+      "takeaway": "Logit-exclusive ablation flips 100% with |Delta S| <= 0.028. Probe-exclusive ablation flips 0%. The shared subset flips 17-78%.",
+      "numbers": "Toxicity L14: control +0.43; probe-excl N~244, -0.10, -0.53, 0%; logit-excl N~203, +0.43, +0.002, 100%; shared N~169, +0.67, +0.24, 78%. Sentiment L15: control -0.47; probe-excl N~168, +2.40, +2.87, 0%; logit-excl N~289, -0.48, -0.011, 100%; shared N~112, +0.45, +0.92, 25%. Reasoning L9: control +0.60; probe-excl N~115, +0.39, -0.21, 0%; logit-excl N~372, +0.57, -0.028, 100%; shared N~206, -0.33, -0.93, 58%. Truthfulness L1: control +0.11; probe-excl N~11, +0.11, -0.001, 0%; logit-excl N~359, +0.09, -0.020, 100%; shared N~12, +0.08, -0.026, 17%.",
+      "text_matches_figure": "partly - the text says probe-exclusive sentiment ablation makes the score 'rise toward zero', but the table shows -0.47 going to +2.40, an overshoot about 5x past zero. In Llama Toxicity the probe-exclusive subset (244) is larger than the logit-exclusive one (203)."
+    },
+    {
+      "id": "Table 8",
+      "page": 24,
+      "what_is_plotted": "Llama-3.2-1B structural predictor, 5-fold group-aware CV on the raw target.",
+      "takeaway": "Raw prediction replicates. The de-meaned (within-concept) signal does not clearly replicate (given in the text: rho = +0.34, CI straddles 0).",
+      "numbers": "Layer baseline rho -0.437, R2 -0.660; Ridge +0.423, +0.069; GB +0.808, +0.850.",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Table 9",
+      "page": 24,
+      "what_is_plotted": "Bootstrap CI and permutation null for the Llama GB structural predictor (raw).",
+      "takeaway": "Significant, but the CI is wide.",
+      "numbers": "Observed rho +0.780, 95% CI [+0.368, +0.955], null mean -0.011 +/- 0.179, p < 0.005.",
+      "text_matches_figure": "partly - observed rho 0.780 here vs 0.808 in Table 8."
+    },
+    {
+      "id": "Figure 12",
+      "page": 27,
+      "what_is_plotted": "Gemma-2-2B Sentiment: KDEs of the five graph features for high- vs low-accuracy layers.",
+      "takeaway": "Strong separation. High-accuracy layers have higher max activation, edge weight and density.",
+      "numbers": "From panel titles: max CLT activation p < 0.001, d = +1.72; Gini p < 0.01, d = +1.46; max edge weight p < 0.001, d = +2.59; max logit edge p < 0.05, d = +0.93; density p < 0.01, d = +1.27. Approx, read from figure: max activation about 23 (high) vs about 17 (low); max edge about 24 vs about 12.",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Figure 13",
+      "page": 27,
+      "what_is_plotted": "Gemma-2-2B Reasoning: the same five KDEs.",
+      "takeaway": "Separation on four of the five features; Gini is not significant.",
+      "numbers": "From panel titles: max CLT activation p < 0.001, d = +1.64; Gini p = 0.102, d = +0.69; max edge weight p < 0.001, d = +2.00; max logit edge p < 0.01, d = +1.23; density p < 0.01, d = +1.17.",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Figure 14",
+      "page": 28,
+      "what_is_plotted": "Gemma-2-2B Truthfulness: the same five KDEs.",
+      "takeaway": "Little separation. Only density is significant, and in the OPPOSITE direction: lower-accuracy layers are denser. Graph structure barely tracks the truthfulness probe quality.",
+      "numbers": "From panel titles: max CLT activation p = 0.279, d = +0.44; Gini p = 0.981, d = +0.01; max edge weight p = 0.152, d = +0.59; max logit edge p = 0.126, d = -0.64; density p < 0.05, d = -0.84.",
+      "text_matches_figure": "partly - the numbers match, but the caption's closing line ('CTA graphs contain a separable structural signal') overclaims for this concept."
+    },
+    {
+      "id": "Figure 15",
+      "page": 28,
+      "what_is_plotted": "Labelled 'Llama-3.2-1B ... Sentiment': the same five KDEs.",
+      "takeaway": "The panels show strong NEGATIVE effects (low-accuracy layers higher), unlike the caption. This is probably the missing Llama Toxicity figure (D.2 says toxicity separates on density), but that is not confirmed.",
+      "numbers": "From panel titles: max CLT activation p = 0.073, d = -1.03; Gini p < 0.05, d = -1.19; max edge weight p = 0.221, d = -0.67; max logit edge p < 0.01, d = -1.69; density p < 0.001, d = -2.70.",
+      "text_matches_figure": "no - the caption is a verbatim copy of Figure 16's ('No feature reaches significance ... d ranging from -0.98 to +0.58'), but three panels are significant and d reaches -2.70. D.2 also cites '(Figures 17, 16, 17, 18)', so the labelling is broken."
+    },
+    {
+      "id": "Figure 16",
+      "page": 29,
+      "what_is_plotted": "Llama-3.2-1B Sentiment: the same five KDEs.",
+      "takeaway": "No feature is significant. The max-edge-weight distributions collapse to a spike near 12.5 in both groups (looks saturated).",
+      "numbers": "From panel titles: max CLT activation p = 0.587, d = +0.28; Gini p = 0.770, d = +0.15; max edge weight p = 0.281, d = +0.58; max logit edge p = 0.250, d = -0.60; density p = 0.075, d = -0.98.",
+      "text_matches_figure": "yes"
+    },
+    {
+      "id": "Figure 17",
+      "page": 29,
+      "what_is_plotted": "Llama-3.2-1B Reasoning: the same five KDEs.",
+      "takeaway": "Max logit edge and density separate, with NEGATIVE d. The direction is inverted relative to Gemma, so the 'good probe layer' signature is model-specific.",
+      "numbers": "From panel titles: max CLT activation p = 0.113, d = -0.90; Gini p = 0.122, d = +0.84; max edge weight p = 0.310, d = -0.55; max logit edge p < 0.01, d = -2.00; density p < 0.01, d = -1.73.",
+      "text_matches_figure": "partly - the caption says 'p < 0.005', but the panels print p < 0.01."
+    },
+    {
+      "id": "Figure 18",
+      "page": 30,
+      "what_is_plotted": "Llama-3.2-1B Truthfulness: the same five KDEs.",
+      "takeaway": "No separation, which fits the near-flat, weak truthfulness accuracy at 1B.",
+      "numbers": "From panel titles: max CLT activation p = 0.628, d = +0.25; Gini p = 0.568, d = -0.30; max edge weight p = 0.315, d = +0.54; max logit edge p = 0.444, d = -0.40; density p = 0.183, d = +0.71.",
+      "text_matches_figure": "yes"
+    }
+  ],
+  "key_results": [
+    {
+      "claim": "Double dissociation (Gemma-2-2B; replicated in Llama-3.2-1B). Ablating probe-circuit features lowers the internal concept score but rarely changes the next token. Ablating logit-circuit features changes the token 92-100% of the time and leaves the probe score essentially unchanged.",
+      "quote": "Removing probe-relevant features reduces internal concept scores while largely preserving generated tokens, whereas removing logit-relevant features changes the generated token in 92% to 100% of cases",
+      "page": 1
+    },
+    {
+      "claim": "Truthfulness is the exception: its dissociation is weakest, and much of the probe signal runs through nodes shared with the generation graph.",
+      "quote": "The dissociation is weaker for Truthfulness. In this case, probe-exclusive ablation produces a smaller change in concept score, and the shared subgraph carries greater dependence.",
+      "page": 5
+    },
+    {
+      "claim": "For truthfulness, ablating the shared (probe and logit) subgraph removes 93% of the probe score AND flips the token in 67% of prompts. This is the largest joint effect of any concept.",
+      "quote": "For Truthfulness, ablating the shared subgraph causes a 93% drop in probe score (∆S = −38.94 from a baseline of +41.87) with a 67% flip rate",
+      "page": 19
+    },
+    {
+      "claim": "Even truthfulness probe-exclusive ablation flips 25% of tokens. The authors read this as partial routing of the truth representation into generation.",
+      "quote": "The probe-exclusive subgraph produces only a 25% flip rate, unlike the strict 0% seen for Toxicity and Sentiment, suggesting partial routing of the truthfulness representation",
+      "page": 19
+    },
+    {
+      "claim": "The ablated subsets differ in size: logit-exclusive subgraphs are 1.77-4.15x larger than probe-exclusive ones (Gemma), a confound for flip-rate comparisons.",
+      "quote": "The logit-exclusive subgraph is 1.77–4.15× larger than the probe-exclusive subgraph across concepts",
+      "page": 19
+    },
+    {
+      "claim": "The Llama-3.2-1B replication shows the same pattern: 0% flips from probe-exclusive ablation and 100% from logit-exclusive ablation.",
+      "quote": "produces a measurable internal effect on the probe score while causing 0% top-1 prediction flips across all concepts",
+      "page": 24
+    },
+    {
+      "claim": "Graph-structural features of CTA graphs predict layer-wise probe accuracy (Gemma, GB).",
+      "quote": "graph-level features predict probe accuracy across four widely studied concept categories (ρ = 0.91, R2 = 0.84)",
+      "page": 1
+    },
+    {
+      "claim": "The structural predictor beats a layer-depth baseline by Delta rho = 0.83 on the raw target.",
+      "quote": "GB exceeds it by ∆ρ = 0.83 on the target, confirming the signal is not simply a within-concept layer trend",
+      "page": 17
+    },
+    {
+      "claim": "In Llama-3.2-1B the within-concept structural signal is weak and not significant.",
+      "quote": "the withinconcept (de-meaned) signal is substantially weaker: ρ = +0.34 with a bootstrap CI that straddles zero [−0.055, +0.743]",
+      "page": 24
+    },
+    {
+      "claim": "The direction of the structural signature flips between models: in Llama, lower-accuracy layers have higher feature values.",
+      "quote": "Negative d values indicate that lower-accuracy layers exhibit higher feature values, a pattern inverted relative to Gemma-2-2B.",
+      "page": 29
+    },
+    {
+      "claim": "The structural predictor does not transfer to a held-out concept in Llama.",
+      "quote": "Concept-transfer is also poor across the board: held-out concept ρ ranges from −0.74 to +0.48 for the raw target",
+      "page": 25
+    },
+    {
+      "claim": "Distributed concepts (sentiment) are read by the probe as a continuous direction that sparse feature lists do not recover.",
+      "quote": "The probe reads a continuous geometric direction in the full residual stream that the discrete feature list cannot recover.",
+      "page": 20
+    },
+    {
+      "claim": "Truthfulness circuit: sparse, mid-layer, and dominated by falsehood-marking features.",
+      "quote": "Its most informative features are falsehood detectors rather than truth detectors.",
+      "page": 7
+    },
+    {
+      "claim": "Per-prompt feature predictability of the truthfulness probe margin peaks mid-depth (L12) and fades after L15.",
+      "quote": "Truthfulness occupies an intermediate position: Spearman ρ peaks at 0.66 at L12, with meaningful Ridge signal from L7 onward before decaying past L15.",
+      "page": 21
+    },
+    {
+      "claim": "Toxicity probe margin is explained by a few early lexical features at every layer.",
+      "quote": "Toxicity achieves the strongest and most consistent predictability, with Spearman ρ above 0.66 at every layer and peaking at 0.86 at L10.",
+      "page": 19
+    },
+    {
+      "claim": "A shared core of features recurs across prompts, 6-21x the presence rate of a random feature.",
+      "quote": "Top predictive features appear 6–21 times more often than a random feature across both layers",
+      "page": 7
+    },
+    {
+      "claim": "Consecutive-layer graph overlap stabilises at about J = 0.9 by layers 8-12.",
+      "quote": "The features stabilise at approximately J = 0.9 between the early intermediate layers(8-12) and remains there through the final layers.",
+      "page": 7
+    },
+    {
+      "claim": "Even semantically close concepts (truthfulness vs reasoning) use nearly disjoint graphs (Jaccard < 0.07).",
+      "quote": "even on the diagonal, peak values remain below 0.07, well within the low-overlap regime observed in the within-concept analysis.",
+      "page": 22
+    },
+    {
+      "claim": "Belief layers differ by concept and model.",
+      "quote": "Belief layers for Gemma-2-2B are: Toxicity L22, Sentiment L21, Reasoning L15, Truthfulness L14; and for Llama-3.2-1B: Toxicity L14, Sentiment L15, Reasoning L9,",
+      "page": 18
+    },
+    {
+      "claim": "Rationale for the belief layer: high accuracy at a layer can reflect information carried forward by the residual stream, not where it is formed.",
+      "quote": "A layer can therefore be linearly decodable without being the layer where the concept is actively formed.",
+      "page": 18
+    }
+  ],
+  "methods": [
+    {
+      "name": "Probe-rooted vs logit-rooted attribution graphs with exclusive-subset ablation (CTA/LTA double dissociation)",
+      "what_it_measures": "For one prompt, it builds a graph explaining the probe score S at layer Lb and a graph explaining the next-token logit. It then ablates nodes found only in the probe graph, only in the logit graph, or in both, and records Delta S and the top-1 flip rate.",
+      "which_fate_it_could_diagnose": "Bypass (2): the correct-answer probe circuit is separable from the answer-logit circuit, and ablating it does not change the answer. Override (4): the logit graph for the flipped answer is dominated by features reading the user's claim. Shared-node dependence (truthfulness-like) would argue against pure bypass.",
+      "causal_followup_it_allows": "For flipped vs resisted items: ablate or amplify the probe-exclusive and shared nodes and test whether the answer (not just any next token) moves back to the correct one. Compare LTA graphs rooted at the correct vs the sycophantic answer logit.",
+      "data_and_compute_needed": "Needs a trained CLT or transcoder for the model. The paper uses open CLTs for Gemma-2-2B and Llama-3.2-1B only, and availability at 9-27B is not covered by the paper. One graph per prompt per target; the paper's 50 prompts x 4 concepts of ablations took about 3 h on one A100 at 2B.",
+      "code_available": "Stated: github.com/vedantpalit/concept-targeted-attribution; uses Circuit-Tracer and CLT-Forge. Not checked."
+    },
+    {
+      "name": "Concept-Targeted Attribution (CTA): an attribution graph rooted at a probe score",
+      "what_it_measures": "Which sparse transcoder features, and which paths across layers and positions, push the residual stream along a probe direction for one prompt.",
+      "which_fate_it_could_diagnose": "Erased (6) vs present: a near-empty probe graph (as for Llama Truthfulness L1, about 11 nodes) means nothing builds the direction. Transformed (5): the probe graph at a later layer draws on different features than at an earlier one.",
+      "causal_followup_it_allows": "Ablate or steer the identified features. The paper suggests suppressing a concept representationally without changing generation.",
+      "data_and_compute_needed": "Same CLT requirement. Graph extraction at every layer for 100 prompts x 4 concepts was about 10,400 graphs for Gemma-2-2B.",
+      "code_available": "Same repository (stated)."
+    },
+    {
+      "name": "Belief point / encoding velocity (layer of steepest single-step rise in probe score)",
+      "what_it_measures": "The layer where the concept direction is being built rather than carried forward.",
+      "which_fate_it_could_diagnose": "Not a fate test. An analogue (steepest layer-to-layer growth in the separation between flipped and resisted items) could locate a fork point.",
+      "causal_followup_it_allows": "Patch at the fork layer vs one layer earlier or later.",
+      "data_and_compute_needed": "Cheap: per-layer probe projections on cached activations.",
+      "code_available": "Same repository (stated)."
+    },
+    {
+      "name": "Graph-structural predictor of probe quality",
+      "what_it_measures": "Whether 35 summary statistics of CTA graphs (density, Gini influence concentration, max activation, max edge, max logit edge, etc.), averaged per (concept, layer), predict probe validation accuracy.",
+      "which_fate_it_could_diagnose": "Weak. It could flag layers where the correct-answer signal is decodable but has no concentrated circuit behind it. The direction of the signature flips between models.",
+      "causal_followup_it_allows": "None directly (correlational).",
+      "data_and_compute_needed": "Graphs at every layer. About 5 h at 2B, after the graphs are built.",
+      "code_available": "Same repository (stated)."
+    },
+    {
+      "name": "Local feature predictor of probe margin plus rise features",
+      "what_it_measures": "Ridge regression from binary presence of the top-100 CLT features per prompt to the probe margin s - tau. Fisher-test 'rise features' are enriched in prompts that move from incorrect to correct at Lb.",
+      "which_fate_it_could_diagnose": "Readout or threshold (1): which features push a borderline item across the midpoint. With flipped vs resisted labels in place of incorrect-to-correct, it could find features enriched in flipped items (override candidates).",
+      "causal_followup_it_allows": "Ablate the enriched features in flipped items.",
+      "data_and_compute_needed": "Most expensive part of the paper (about 26 h on one A100 at 2B).",
+      "code_available": "Same repository (stated)."
+    },
+    {
+      "name": "Cross-prompt presence enrichment, consecutive-layer Jaccard and cross-concept Jaccard over layer pairs",
+      "what_it_measures": "Set overlap of graph nodes across prompts, adjacent layers, and two concepts at all layer pairs.",
+      "which_fate_it_could_diagnose": "H1 (different pressures give different fate mixes): the Jaccard of correct-answer probe graphs under pushback vs a tempting-option pressure, over layer pairs, is a discrete analogue of RSA/CKA across conditions.",
+      "causal_followup_it_allows": "Ablate condition-exclusive vs shared nodes.",
+      "data_and_compute_needed": "Reuses the graphs already built; cheap once graphs exist.",
+      "code_available": "Same repository (stated)."
+    }
+  ],
+  "controls_worth_copying": [
+    "Report two outcomes per intervention: an internal readout change (Delta S at the probe position) AND a behavioural change (flip rate). We should use the answer flip (correct vs sycophantic answer), not any next-token change.",
+    "Three-way ablation (A-exclusive, B-exclusive, shared) with node counts reported. We should add size-matched random-node ablations, which the paper lacks.",
+    "A layer-depth baseline and a de-meaned (within-concept) target for any cross-layer predictor, so that depth trends and concept offsets cannot drive the result.",
+    "Group-aware permutation test (200 shuffles) and bootstrap CI (500 resamples) for any predictor.",
+    "Separate roles for directions: raw DIM direction for interventions and attribution; LDA-corrected direction only for accuracy evaluation.",
+    "Pick the analysis layer by where the signal is formed (steepest rise), not by peak accuracy, because the residual stream carries old information forward. But compute it on class SEPARATION, and enforce the stated plateau rule.",
+    "Balanced classes, a fixed seed, short inputs (<= 60 tokens) so graphs stay readable.",
+    "Replicate on a second model family and report where results flip sign (the paper did this honestly in Figure 17)."
+  ],
+  "pitfalls": [
+    {
+      "pitfall": "Circular orthogonality claim. Directions are Gram-Schmidt orthogonalised, then their near-orthogonality is presented as a property of the model.",
+      "quote": "Post-correction concept directions are near-orthogonal (maximum | cos(θ̄)| = 0.069), confirming that orthogonality is a property of the model’s representational geometry rather than an artefact of post-processing.",
+      "page": 3
+    },
+    {
+      "pitfall": "The belief-layer plateau rule is not applied consistently. Llama Truthfulness Lb = L1 at 55.2% accuracy, about 13 points below that concept's peak (about 68% at L9, read from Figure 7), and the probe there is near chance. Results at that layer (Delta S about 0) say little.",
+      "quote": "In practice, the belief layer is required to also fall within a 2-8% accuracy plateau of the peak",
+      "page": 18
+    },
+    {
+      "pitfall": "The ablation subsets differ in size, and there is no size-matched random-node ablation. A 100% flip from removing about 300-540 features may be generic damage to next-token prediction, not evidence of a dedicated generation circuit.",
+      "quote": "The logit-exclusive subgraph is 1.77–4.15× larger than the probe-exclusive subgraph across concepts",
+      "page": 19
+    },
+    {
+      "pitfall": "The ablation method (zero, mean, or replacement of CLT features) is not specified.",
+      "quote": "an LTA graph rooted at the next-token logit. We then ablate graph-specific features.",
+      "page": 4
+    },
+    {
+      "pitfall": "Possible built-in asymmetry (our inference, not stated). If the logit graph contains nodes at layers above Lb, ablating them cannot change S at Lb, so Delta S about 0 for logit-exclusive ablation is partly guaranteed. This is most severe for Llama Truthfulness at L1. The paper says both graphs are extracted 'at' Lb without saying how the logit graph is truncated.",
+      "quote": "For each prompt, we extract both graphs at the concept-specific belief point Lb and evaluate four conditions",
+      "page": 4
+    },
+    {
+      "pitfall": "The behavioural outcome is the top-1 next token after a classification sentence, which usually has nothing to do with the concept (our inference). 'Preserving the generated token' does not show that the concept is unused for a concept-relevant action such as answering a question.",
+      "quote": "Internal effect is measured as ∆S (change in probe score at the probe position); behavioral effect as the top-1 next-token flip rate.",
+      "page": 18
+    },
+    {
+      "pitfall": "Graph pruning is described relative to the final logit, which is ambiguous for probe-rooted graphs.",
+      "quote": "we prune it by retaining only the features that cumulatively explain 80% of the effect on the final logit",
+      "page": 17
+    },
+    {
+      "pitfall": "Attention patterns are frozen in the attribution, so CTA cannot show routing failures that happen in QK (which token a head attends to). This is the mechanism we care about for 'heads that read the user's claim vs the model's earlier answer'.",
+      "quote": "In practice, the input-dependent components of the forward pass, including normalization terms, attention computations, and MLP nonlinearities, are treated as constants using stop-gradient operations.",
+      "page": 17
+    },
+    {
+      "pitfall": "The probe direction can be anti-aligned with every test prompt (Reasoning L15), so signs of Delta S invert and the probe reads the absence of a signal.",
+      "quote": "the L15 probe direction is anti-aligned with all test prompts (baseline probe score −21.44; all peak IID values negative), meaning the probe is reading the absence of reasoning signal",
+      "page": 18
+    },
+    {
+      "pitfall": "Text-table mismatch. The Llama Sentiment probe-exclusive ablation is described as moving toward zero, but Table 7 shows -0.47 going to +2.40.",
+      "quote": "ablating probe-exclusive features causes the score to rise toward zero, which is the correct direction",
+      "page": 24
+    },
+    {
+      "pitfall": "Figure 15's caption is copied from Figure 16 and contradicts its own panels (three significant features, d down to -2.70). The Llama Toxicity fingerprint figure is effectively unlabeled.",
+      "quote": "No feature reaches significance at p < 0.05, and effect sizes are small, with Cohen’s d ranging from −0.98 to +0.58",
+      "page": 28
+    },
+    {
+      "pitfall": "The structural signature is not universal: its direction inverts between Gemma and Llama, so a 'good probe layer' fingerprint cannot serve as a model-agnostic monitor.",
+      "quote": "Negative d values indicate that lower-accuracy layers exhibit higher feature values, a pattern inverted relative to Gemma-2-2B.",
+      "page": 29
+    },
+    {
+      "pitfall": "Feature labels shift across sections, and the truthfulness 'anchors' look like dataset artifacts (the truth data include Spanish-English translations). L1/F3007 is called 'proper names and academic institutional contexts' (p7), 'attributed factual claims and neutral encyclopedic register' (p21), and 'French proper names and French-language text' (p23).",
+      "quote": "L1/F3007 captures French proper names and French-language text",
+      "page": 23
+    },
+    {
+      "pitfall": "Cross-layer stability is shown for one prompt per concept. Graphs rooted at adjacent layers share all earlier nodes by construction, so a high J(L, L-1) is expected (our inference).",
+      "quote": "Consecutive-layer Jaccard J(L, L − 1) for a representative prompt per concept",
+      "page": 8
+    },
+    {
+      "pitfall": "The structural predictor has about 100 data points (4 concepts x about 25 layers), one per group, so 'group-aware' CV is plain CV. Adjacent layers of the same concept can fall in train and test, which leaks layer smoothness (our inference).",
+      "quote": "features are averaged across all prompts per (concept, layer) pair, yielding one stable feature vector per pair",
+      "page": 4
+    },
+    {
+      "pitfall": "The presence-enrichment baseline is a 'random feature', not a frequency-matched one. The top features were chosen by a predictor fit on presence in the same prompts, so enrichment is partly built in (our inference).",
+      "quote": "We compare this against the expected presence rate of any other random feature.",
+      "page": 7
+    },
+    {
+      "pitfall": "The text overstates Figure 2: the reasoning scores do not recover above zero after L15.",
+      "quote": "its centred scores fall below zero between L6 and L14 before recovering at L15",
+      "page": 4
+    }
+  ],
+  "limitations_quote": "CTA inherits the quality of the underlying CrossLayer Transcoder: features that the CLT conflates, omits, or represents polysemantically are invisible to attribution graphs",
+  "limitations_page": 9,
+  "future_work_quote": "Future work should pursue broader cross-architecture replication, deeper intervention experiments targeting finegrained concept steering, and scaling the analysis to richer concept taxonomies beyond the four studied here.",
+  "future_work_page": 9,
+  "bears_on_fates": [
+    {
+      "fate": "2 bypass",
+      "how": "The CTA/LTA exclusive-subset ablation is a ready template for 'decodable but not what drives the token'. But the paper's own evidence is weak for our case: the 'action' is an unrelated next token, there are no size-matched random controls, and the models are 1-2B. Truthfulness, the concept closest to ours, is the LEAST bypass-like (25% flips from probe-exclusive ablation, 67% from shared nodes).",
+      "strength": "moderate"
+    },
+    {
+      "fate": "4 override",
+      "how": "An LTA graph rooted at the sycophantic answer logit, compared between flipped and resisted items, would show whether a competing pathway (user-claim features) dominates. The truthfulness shared subgraph is where an override could act. The paper studies no competing signal.",
+      "strength": "weak"
+    },
+    {
+      "fate": "3 not routed",
+      "how": "CTA shows where a direction is built, not whether downstream components read it. Attention patterns are frozen, so QK routing failures are invisible. Useful only together with activation patching.",
+      "strength": "weak"
+    },
+    {
+      "fate": "1 readout/threshold failure",
+      "how": "The margin regression (y = s - tau, midpoint threshold) and rise features (incorrect-to-correct transitions) are a way to find which features push borderline items across a cut-off.",
+      "strength": "weak"
+    },
+    {
+      "fate": "5 transformed",
+      "how": "The Reasoning probe being anti-aligned with all prompts, and the early-layer feature turnover (low J at L1-3), are reminders that sign and basis change across layers. There is no test of whether the same information is re-encoded.",
+      "strength": "weak"
+    },
+    {
+      "fate": "6 erased",
+      "how": "A near-empty probe graph (Llama Truthfulness L1, about 11 nodes) is what 'nothing builds the direction' looks like, but the paper does not frame or test erasure.",
+      "strength": "weak"
+    }
+  ],
+  "bears_on_group_angle": "Helps: it studies GROUPS of sparse features (subgraphs) rather than one direction, and compares sets across prompts, adjacent layers and concepts (Jaccard over layer pairs, Figure 10). That is a discrete analogue of our subspace-tracking and RSA/CKA plans, and its finding that overlap is non-trivial only at matched depth says to compare pressures (H1) at matched relative depth. The belief-point idea (steepest rise) carries over to our fork point if it is computed on flipped-vs-resisted separation. Warns: the authors say feature presence 'discards activation magnitude' and that sentiment is read as 'a continuous geometric direction' that sparse feature lists 'cannot recover'. Truthfulness is likewise distributed, with weak structural signal (Figure 14) and a mid-depth margin predictability that decays. So for correctness information, continuous group geometry (point clouds, principal angles, Procrustes) is probably a better instrument than sparse-feature sets, and CTA-style feature sets should be a complement, not the main tool. Graph-level statistics did not carry over between models (sign flip), which also warns against one-number geometry summaries without per-model checks.",
+  "architecture_location": "Component type: MLP or transcoder features only. Attention is frozen, so the paper cannot localise anything to attention heads. Depth in Gemma-2-2B (26 layers): truthfulness forms at L14 (about mid-depth), peak accuracy about L11-13, margin predictability peak at L12, key features at L9 ('falsehood detectors') plus a lexical L1 feature. Toxicity is driven by L0 lexical features with the belief layer at L22, and sentiment and reasoning form late (L21, L15). Concept-vs-generation separation (probe-exclusive vs logit-exclusive nodes) is reported in both Gemma-2-2B and Llama-3.2-1B. Truthfulness location does NOT replicate cleanly: the Llama Lb is L1 with a near-chance probe. No seeds, checkpoints or models above 2B are tested, and graph-structure signatures invert between the two models.",
+  "actionable_fix": "Monitor: probe-rooted vs logit-rooted circuit overlap could serve as an audit. If the correct-answer probe circuit and the answer-logit circuit share few nodes on flipped items, the decodable signal is not reaching the decision. The authors propose graph topology as a 'probe-free indicator' across checkpoints, but its direction is model-specific. Intervention: the paper proposes suppressing a concept at the representational level without changing generation. For us the useful inverse is to target the SHARED nodes where truth information enters generation (the truthfulness shared subgraph controls both S and the token). In Stage B, check after DPO whether the sycophantic-answer logit graph is still present but disconnected (masked) or gone. None of this is demonstrated in the paper for a concept-relevant action.",
+  "reuse_verdict": "adapt - copy the two-outcome, three-subset ablation design (internal Delta S plus behavioural flip, exclusive vs shared) and the CV, permutation and bootstrap controls. Change four things: the behaviour must be the answer flip, add size-matched random ablations, restrict or truncate the logit graph to layers at or below the probe layer, and add patching for attention routing. Avoid the graph-structural probe-quality predictor and the belief-point definition as written. Practical blocker: needs CLTs or transcoders at 9-27B, which the paper does not provide (it uses open 2B/1B CLTs).",
+  "relevance_to_project": "Moderately relevant as a method idea, less relevant as evidence. The headline 'knowing and saying recruit separable circuits' is close to our bypass fate, but it is shown at 1-2B on classification sentences whose next token is not a decision about the concept, without size-matched random controls. The most useful fact is that truthfulness is the exception: its probe signal is entangled with generation through shared nodes (67% flips when those are ablated). That suggests factual correctness information is less likely to be cleanly bypassed than toxicity or sentiment, which is a useful prior for our fate-split bet. It does not address sycophancy, pressure, or group geometry directly."
+}

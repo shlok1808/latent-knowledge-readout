@@ -1,0 +1,359 @@
+{
+ "slug": "p2-sycophancy-manifold-posttraining-2608.01835",
+ "url": "https://arxiv.org/pdf/2608.01835",
+ "pdf_ok": true,
+ "pages": 68,
+ "chars": 269893,
+ "title_guess": "Rewriting or Reweighting? A Geometric Account in Language Models Juntong Wang\u22171,2 , Shengkun Yang\u22173 , Xiyuan Wang1 , Muhan Zhang\u20201",
+ "figures_tables": [
+  {
+   "id": "Figure 1",
+   "page": 1,
+   "caption_start": " Figure 1: Overview of the behavioral-geometry framework. We extract behavior-relevant token windows and decompose FFN computation into two representations. A sparse selector identifies a compact set "
+  },
+  {
+   "id": "Figure 2",
+   "page": 4,
+   "caption_start": " Figure 2: High NOC with high ACT denotes a strong and frequently used mechanism; high NOC with low ACT denotes a strong but latent or rarely occupied pathway; low NOC with high ACT denotes frequently"
+  },
+  {
+   "id": "Figure 3",
+   "page": 4,
+   "caption_start": " Figure 3: Representative token-level trajectories over learned behavioral energy landscapes. The background is the log-density ratio between behavior-positive and behaviornegative states. In repetiti"
+  },
+  {
+   "id": "Table 1",
+   "page": 6,
+   "caption_start": " Table 1: Per-model Behavioral Anchor Coordinate and ACTspace behavioral-chart statistics for repetition and sycophancy. #bac is the number of selected Behavioral Anchor Coordinates. GuniF measures re"
+  },
+  {
+   "id": "Figure 4",
+   "page": 6,
+   "caption_start": " Figure 4: Causal repetition steering in the Llama family. Solid lines with circular markers report repetition rate on the left axis; dashed lines with square markers report generatedtoken PPL on the "
+  },
+  {
+   "id": "Table 2",
+   "page": 7,
+   "caption_start": " Table 2: Cross-model atlas consistency and traininginduced behavioral geometry. (a) Cross-model sycophancy-atlas results over 23 models. Classifier correlation provides a supervised consistency check"
+  },
+  {
+   "id": "Figure 5",
+   "page": 7,
+   "caption_start": " Figure 5: Behavioral geometry through controlled posttraining. Connected markers follow stored checkpoints in training order. In the phase portraits, open and filled circles denote the first stored p"
+  },
+  {
+   "id": "Table 3",
+   "page": 16,
+   "caption_start": " Table 3: Representative repetition strength measurements in ACT space.  G.2  Sycophancy Low-Rank Statistics  Table 4 summarizes selected sycophancy PCA results. ACTspace PC1 explained variance is usu"
+  },
+  {
+   "id": "Table 4",
+   "page": 17,
+   "caption_start": " Table 4: Selected sycophancy low-rank statistics in NOC and ACT spaces. Objective  Dir.  S  Angle  dproj  RG  G  Repeat  PPL  n-gram  SFT SFT Reward Reward SFT\u2192Reward SFT\u2192Reward  up down up down up d"
+  },
+  {
+   "id": "Table 5",
+   "page": 17,
+   "caption_start": " Table 5: Final checkpoints of the controlled repetition runs.  A large value indicates that the chart contains a stable behavioral coordinate. A small value indicates that apparent separation is domi"
+  },
+  {
+   "id": "Table 6",
+   "page": 18,
+   "caption_start": " Table 6: Final checkpoints of the controlled sycophancy runs.  Run Reward-up Reward-up Reward-up Reward-down Reward-down Reward-down  Step  S  Angle  Syco Prob  6 30 60 6 30 60  0.9498 0.9451 0.9382 "
+  },
+  {
+   "id": "Table 7",
+   "page": 18,
+   "caption_start": " Table 7: Reward-only sycophancy trajectories preserve geometry while moving behavior modestly. 2. Representation stability. tion  (\u00b51 \u2212 \u00b50 )2 . 2 +\u03f5 \u03c3w  (81)  I  Leakage Control and Robustness Analys"
+  },
+  {
+   "id": "Figure 6",
+   "page": 21,
+   "caption_start": " Figure 6: Visualization of the repetition behavioral chart. Behavior-positive and behavior-negative examples form distinguishable regions in both ACT and NOC spaces. The Fisher and logistic direction"
+  },
+  {
+   "id": "Figure 7",
+   "page": 22,
+   "caption_start": " Figure 7: Visualization of the sycophancy behavioral chart. Sycophantic and non-sycophantic states occupy different regions in the learned chart. The agreement between ACT and NOC representations sug"
+  },
+  {
+   "id": "Figure 8",
+   "page": 23,
+   "caption_start": "Figure 8: Repetition trajectories in mean ACT space for examples with matched NOC visualizations. prefix mean and Repetition lead-in Repetition lead-in Repetition lead-in ordinary-generation states pr"
+  },
+  {
+   "id": "Figure 9",
+   "page": 24,
+   "caption_start": "Figure 9: Additional repetition trajectories in ACT space. The gallery Repeated-span demonstrates into the repetition-positive region Repetition lead-in Repetition lead-in need not follow a single pat"
+  },
+  {
+   "id": "Figure 10",
+   "page": 25,
+   "caption_start": "Figure 10: Matched repetition trajectories in NOC space. The NOC Repeated-span representation the transition from a compact Repetition lead-in Repetition lead-in Repetition lead-in behavior-negative c"
+  },
+  {
+   "id": "Figure 12",
+   "page": 26,
+   "caption_start": "Figure 12: Matched steering ACT anddirNOC trajectories for the same sycophancy instance. The two spaces different local path  End Prefixbecause they encode different End shapes aspects of the computat"
+  },
+  {
+   "id": "Figure 13",
+   "page": 27,
+   "caption_start": " Figure 13: Base-anchored ACT candidate-answer paths for four fixed truthful\u2013sycophantic pairs across post-training regimes. Each row uses exactly the same prompt, truthful candidate, and sycophantic "
+  },
+  {
+   "id": "Table 8",
+   "page": 29,
+   "caption_start": " Table 8: Initial repetition probe. A small set of repetition Behavioral Anchor Coordinates predicts on-policy repetition with high accuracy across model families. GuniF  Gocc Gcausal  Tbase #bac  k0."
+  },
+  {
+   "id": "Table 9",
+   "page": 29,
+   "caption_start": " Table 9: Complete repetition-chart statistics in ACT space across 23 models. All rows use q = 1. log P is the natural logarithm of parameter count. ACT causal gain is estimated from subspace steering"
+  },
+  {
+   "id": "Table 10",
+   "page": 30,
+   "caption_start": " Table 10: Complete repetition-chart statistics in normalized outgoing-contribution (NOC) space across 23 models. All rows use q = 1. NOC causal gain is estimated by scaling selected Behavioral Anchor"
+  },
+  {
+   "id": "Table 11",
+   "page": 31,
+   "caption_start": " Table 11: Complete sycophancy PCA statistics in ACT space. Each model is evaluated on 6,678 examples. ACT representations are strongly compressed, requiring only 14.4% of the selected scaffold dimens"
+  },
+  {
+   "id": "Table 12",
+   "page": 32,
+   "caption_start": " Table 12: Complete sycophancy PCA statistics in normalized outgoing-contribution (NOC) space. NOC charts are less compressed than ACT charts but often align more strongly with the supervised classifi"
+  },
+  {
+   "id": "Table 13",
+   "page": 33,
+   "caption_start": " Table 13: Unified per-model Behavioral Anchor Coordinate statistics in the NOC representation space. Repetition is shown on the left and sycophancy on the right using the same retained column schema."
+  },
+  {
+   "id": "Table 14",
+   "page": 34,
+   "caption_start": " Table 14: Model identifiers used in all cross-model heatmaps. A common ordering is necessary for direct visual comparison between behavior-associated and random-coordinate matrices. Repetition  Sycop"
+  },
+  {
+   "id": "Figure 14",
+   "page": 34,
+   "caption_start": " Figure 14: Layer-wise distribution of repetition and sycophancy Behavioral Anchor Coordinates in Llama-3.18B. Each bar reports the number of positively behaviorassociated coordinates selected in the "
+  },
+  {
+   "id": "Table 15",
+   "page": 34,
+   "caption_start": " Table 15: Mean off-diagonal cross-model alignment. Behavior-associated charts exceed matched-size randomcoordinate baselines in both ACT and NOC. The difference is most diagnostic for mean CCA and fu"
+  },
+  {
+   "id": "Table 16",
+   "page": 34,
+   "caption_start": " Table 16: Cross-model alignment stratified by model relationship. \u201cBase/Inst.\u201d denotes the ten matched base/instruction pairs with the same model family and parameter scale; the k-dimensional value a"
+  },
+  {
+   "id": "Figure 15",
+   "page": 35,
+   "caption_start": "Figure 15: Cross-model alignment of sparse classifier-direction scores. Each cell is the absolute Pearson correlation between K: gemma-2-2b C: Qwen2.5-32B-Instruct S: Mistral-7B-v0.3 the two models\u2019 m"
+  },
+  {
+   "id": "Figure 16",
+   "page": 36,
+   "caption_start": " Figure 16: Pairwise CCA alignment of the behavior-associated sycophancy charts. Primary CCA measures the strongest canonical coordinate, whereas Mean CCA averages across the complete retained canonic"
+  },
+  {
+   "id": "Table 17",
+   "page": 36,
+   "caption_start": " Table 17: Aggregate repetition-steering response across 23 models. \u2206R = R(+2) \u2212 R(\u22122), and |\u2206PPL| = |PPL(+2) \u2212 PPL(\u22122)|. Both operators produce a positive endpoint behavioral change for every model. "
+  },
+  {
+   "id": "Figure 17",
+   "page": 37,
+   "caption_start": " Figure 17: CCA alignment after matched-size random coordinate selection. Random coordinates can still produce a large leading canonical correlation, especially in NOC, demonstrating that primary CCA "
+  },
+  {
+   "id": "Table 18",
+   "page": 37,
+   "caption_start": " Table 18: Mean endpoint repetition change R(+2) \u2212 R(\u22122) by model family. Positive responses occur in every family for both intervention operators.  less available headroom and consequently display sm"
+  },
+  {
+   "id": "Figure 18",
+   "page": 38,
+   "caption_start": " Figure 18: Cross-model linear association over matched examples. Rows are source models and columns are target models. Top-2-PC probing selects the most predictable mapping among the first two source"
+  },
+  {
+   "id": "Figure 19",
+   "page": 39,
+   "caption_start": " Figure 19: Linear association after matched-size random coordinate selection. Random top-2-PC NOC scores are moderately elevated because the procedure selects the best of four possible PC mappings an"
+  },
+  {
+   "id": "Figure 20",
+   "page": 40,
+   "caption_start": " Figure 20: Repetition steering in the Qwen family. Solid circles show repetition rate and dashed squares show generated-token PPL. ACT-chart steering produces a pronounced dose\u2013response for several m"
+  },
+  {
+   "id": "Figure 21",
+   "page": 40,
+   "caption_start": " Figure 21: Repetition steering in the Gemma family. ACT-chart steering increases repetition most strongly for the 2B models and produces positive endpoint changes for all seven models. NOC-selected B"
+  },
+  {
+   "id": "Figure 22",
+   "page": 41,
+   "caption_start": " Figure 22: Complete Llama-family repetition steering. All three models exhibit monotonic positive dose\u2013response curves under both operators. The effect is strongest for Llama-3.1-8B-Instruct, while t"
+  },
+  {
+   "id": "Figure 23",
+   "page": 41,
+   "caption_start": " Figure 23: Repetition steering in the Mistral family. ACT-chart steering produces especially large changes for Mistral-7BInstruct-v0.3 and Mistral-Small-3.1-24B-Instruct. The remaining models exhibit"
+  },
+  {
+   "id": "Table 19",
+   "page": 42,
+   "caption_start": " Table 19: Paired Instruct-minus-Base changes, rounded to three decimals. Positive values indicate greater chart reliability or causal gain for the Instruct checkpoint relative to its matched Base che"
+  },
+  {
+   "id": "Figure 24",
+   "page": 42,
+   "caption_start": " Figure 24: Complete cross-model repetition-strength landscape. Horizontal and vertical coordinates are log(GuniF NOC + +\u03f5). Point color denotes baseline repetition \u03f5) and log(GuniF ACT tendency Tm . "
+  },
+  {
+   "id": "Figure 25",
+   "page": 43,
+   "caption_start": " Figure 25: Public Instruct-minus-Base changes for ten matched family/scale pairs. Blue bars denote NOC and gold bars denote ACT. Panel (a) reports \u2206 log GuniF and panel (b) reports \u2206Gcausal . Positiv"
+  },
+  {
+   "id": "Table 20",
+   "page": 43,
+   "caption_start": " Table 20: Repetition dataset construction stages. Stage  Count  Repetition-positive source pool (entries) Positive records selected by reservoir sampling Eligible non-repetition records (all-judge-tr"
+  },
+  {
+   "id": "Table 21",
+   "page": 43,
+   "caption_start": " Table 21: Sycophancy stance-extraction outcomes. Stance-extraction outcome  Pairs  Successful records  Both chosen and rejected extracted Chosen only Rejected only Neither side  3 206 138 128 8  6 41"
+  },
+  {
+   "id": "Figure 26",
+   "page": 45,
+   "caption_start": " Figure 26: Final-checkpoint geometry\u2013occupancy\u2013gain profiles using activation-level causal gain. Geometry and occupancy are measured in NOC space, and each metric is independently max-absolute normal"
+  },
+  {
+   "id": "Figure 27",
+   "page": 45,
+   "caption_start": " Figure 27: Final-checkpoint geometry\u2013occupancy\u2013gain profiles using chart-subspace causal gain. Geometry and occupancy are identical to Figure 26; only the gain estimator changes.  S.2  Final-Checkpoi"
+  },
+  {
+   "id": "Figure 28",
+   "page": 46,
+   "caption_start": " Figure 28: Complete ten-stage trajectories using ACT geometry and occupancy with activation-level causal gain. SFT geometry moves rapidly away from the low-movement reward regime, while sequential tr"
+  },
+  {
+   "id": "Figure 29",
+   "page": 47,
+   "caption_start": " Figure 29: Complete ten-stage trajectories using ACT geometry and occupancy with chart-subspace causal gain. The geometry and occupancy trajectories match Figure 28; the gain curves provide an interv"
+  },
+  {
+   "id": "Figure 30",
+   "page": 48,
+   "caption_start": " Figure 30: Complete ten-stage trajectories using NOC geometry and occupancy with activation-level causal gain. NOC reproduces the central objective asymmetry: SFT-containing lineages move strongly, w"
+  },
+  {
+   "id": "Figure 31",
+   "page": 49,
+   "caption_start": " Figure 31: Complete ten-stage trajectories using NOC geometry and occupancy with chart-subspace causal gain. Comparison with Figure 30 separates the stable geometry and occupancy conclusions from gai"
+  },
+  {
+   "id": "Figure 32",
+   "page": 50,
+   "caption_start": " Figure 32: Early-stage snapshots for ACT geometry and occupancy with activation-level gain. Each embedded plot contains the four behavioral conditions. SFT geometry separates from reward-only geometr"
+  },
+  {
+   "id": "Figure 33",
+   "page": 51,
+   "caption_start": " Figure 33: Late-stage snapshots for ACT geometry and occupancy with activation-level gain. The geometry hierarchy stabilizes, while repetition-down and sycophancy-down show the strongest late gain gr"
+  },
+  {
+   "id": "Figure 34",
+   "page": 52,
+   "caption_start": " Figure 34: Early-stage snapshots for ACT geometry and occupancy with chart-subspace gain. Geometry and occupancy are identical to the corresponding activation-gain snapshots, while the green bars sho"
+  },
+  {
+   "id": "Figure 35",
+   "page": 53,
+   "caption_start": " Figure 35: Late-stage snapshots for ACT geometry and occupancy with chart-subspace gain. Sequential repetition-down develops the clearest positive gain bar, while reward-only changes remain small rel"
+  },
+  {
+   "id": "Figure 36",
+   "page": 54,
+   "caption_start": " Figure 36: Early-stage snapshots for NOC geometry and occupancy with activation-level gain. The NOC views confirm early objective-dependent geometry separation and expose strong occupancy transients "
+  },
+  {
+   "id": "Figure 37",
+   "page": 55,
+   "caption_start": " Figure 37: Late-stage snapshots for NOC geometry and occupancy with activation-level gain. SFT and sequential geometry remain well separated from reward-only geometry; late gain growth is concentrate"
+  },
+  {
+   "id": "Figure 38",
+   "page": 56,
+   "caption_start": " Figure 38: Early-stage snapshots for NOC geometry and occupancy with chart-subspace gain. These panels provide the most functionally oriented view of the decomposition, combining contribution-space s"
+  },
+  {
+   "id": "Figure 39",
+   "page": 57,
+   "caption_start": " Figure 39: Late-stage snapshots for NOC geometry and occupancy with chart-subspace gain. The final stages preserve the SFTversus-reward geometry asymmetry and show that large measured gain shifts are"
+  },
+  {
+   "id": "Figure 40",
+   "page": 59,
+   "caption_start": " Figure 40: Cross-model repetition-strength landscape. Each point represents one model. The horizontal and vertical cooruniF dinates are log(GuniF NOC + \u03f5) and log(GACT + \u03f5), respectively. Color denot"
+  },
+  {
+   "id": "Figure 41",
+   "page": 64,
+   "caption_start": " Figure 41: Visualization of a local behavioral chart. The Fisher and logistic directions align with the dominant separation axis, supporting the interpretation that U\u03b8,b captures behavior-relevant ge"
+  },
+  {
+   "id": "Table 22",
+   "page": 66,
+   "caption_start": "Table 22: Tokenizer-specific stance-span alignment statistics for all 23 models. Chosen, rejected, and total records are constant across models because every entry was successfully aligned. The \u201cClass"
+  },
+  {
+   "id": "Table 23",
+   "page": 67,
+   "caption_start": " Table 23: Checkpoint selected at matched stage s \u2208 {1, . . . , 10}. The stage index aligns relative training progress rather than raw optimizer steps.  Table 24: Post-training dataset configurations."
+  },
+  {
+   "id": "Table 24",
+   "page": 67,
+   "caption_start": " Table 24: Post-training dataset configurations. All four datasets contain 755 920 records derived from the surviving instruction set. SFT-up and SFT-down are stored as separate single-response datase"
+  },
+  {
+   "id": "Table 25",
+   "page": 67,
+   "caption_start": " Table 25: Stage-wise counts for repetition repair and posttraining data construction. Retention is reported only for sequential filtering stages; dashes denote parallel datasetconstruction outputs. S"
+  },
+  {
+   "id": "Table 26",
+   "page": 67,
+   "caption_start": " Table 26: Selected coordinate counts for representative archived classifiers. All models use C = 1.0 and an L1 penalty. Behavior  Solver  Repetition saga Sycophancy (base) saga Hallucination (base) s"
+  },
+  {
+   "id": "Table 27",
+   "page": 68,
+   "caption_start": "Table 27: Controlled post-training configuration for repetition behavioral interventions. Configuration  SFT (Up / Down)  DPO from Base  SFT \u2192 DPO  Base checkpoint meta-llama/Llama-3.1-8B Initializati"
+  },
+  {
+   "id": "Table 28",
+   "page": 68,
+   "caption_start": " Table 28: Controlled post-training configuration for sycophancy behavioral interventions. Configuration  SFT (Up / Down)  DPO from Base  SFT \u2192 DPO  Base checkpoint meta-llama/Llama-3.1-8B Initializat"
+  }
+ ],
+ "n_figures_tables": 68,
+ "section_heading_candidates": [
+  "A Geometric Account in Language Models",
+  "A Llama-3.3-70B-Instruct model was then",
+  "8 GPUs; A100 40GB documented in archived launch-script comments",
+  "8 GPUs; A100 40GB documented in archived launch-script comments"
+ ],
+ "looks_abstract_only": false,
+ "has_references": true
+}

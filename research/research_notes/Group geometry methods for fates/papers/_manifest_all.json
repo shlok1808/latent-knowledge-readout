@@ -1,0 +1,2928 @@
+[
+ {
+  "slug": "u1-openreview-ZP7VzpXmKR",
+  "url": "https://openreview.net/pdf?id=ZP7VzpXmKR",
+  "pdf_ok": false
+ },
+ {
+  "slug": "u2-subtrackpp-2502.01586",
+  "url": "https://arxiv.org/pdf/2502.01586v1",
+  "pdf_ok": true,
+  "pages": 19,
+  "chars": 65434,
+  "title_guess": "SubTrack your Grad: Gradient Subspace Tracking for Memory and Time Efficient Full-Parameter LLM Training ",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 1,
+    "caption_start": " Figure 1. Visualization of SubTrack-Grad: Between subspace updates, gradients are projected onto a fixed subspace. The tangent vector \u2207F is computed via the derivative of a loss function that measure"
+   },
+   {
+    "id": "Table 1",
+    "page": 6,
+    "caption_start": "Table 1. Evaluating the performance of SubTrack-Grad and other baselines when fine-tuning RoBERTa-Base on GLUE tasks for different ranks r. All hyperparameters are the same for each rank. The performa"
+   },
+   {
+    "id": "Table 2",
+    "page": 6,
+    "caption_start": " Table 2. Evaluating the performance of SubTrack-Grad and other baselines when fine-tuning RoBERTa-Large on SuperGLUE tasks with rank 8. All hyperparameters are consistent across different methods. Th"
+   },
+   {
+    "id": "Figure 2",
+    "page": 7,
+    "caption_start": " Figure 2. Comparing wall-time on different architecture and datasets. (a) shows the memory and wall-time measured on pretraining different Llama-architectures sizing from 60M to 3B. (b) demonstrates "
+   },
+   {
+    "id": "Table 3",
+    "page": 7,
+    "caption_start": " Table 3. Evaluation loss comparison for pre-training different Llama-based architectures on C4 dataset after 10K iterations. 60M r=128  130M r=256  350M r=256  1B r=512  3B r=512  Avg -  Full-Rank  3"
+   },
+   {
+    "id": "Table 4",
+    "page": 7,
+    "caption_start": "Table 4. Optimizer\u2019s memory requirement in each method along with the time complexity of involved subspace update operations, considering a gradient matrix of dimension m \u00d7 n and projection rank r whe"
+   },
+   {
+    "id": "Figure 3",
+    "page": 8,
+    "caption_start": " Figure 3. Comparison of the Adam Optimizer Combined with SubTrack-Grad (a, d) and GaLore (b, e) on the Ackley Function for 100 optimization steps and the subspace update interval set to 10. With scal"
+   },
+   {
+    "id": "Figure 4",
+    "page": 8,
+    "caption_start": " Figure 4. Comparing runtimes of GaLore and SubTrack-Grad. RoBERTa-Base is fine-tuned for 10 epochs on COLA and Llama-60M is pre-trained for 2500 iterations on C4 dataset. Subspace update intervals ra"
+   },
+   {
+    "id": "Table 5",
+    "page": 15,
+    "caption_start": " Table 5. Time Complexity for SubTrack-Grad Subspace Update  Computation Step  Time  Cost function  O(mr2 )  Residual  O(mrn)  Partial derivative  O(mnr)  Tangent vector \u2206F  O(m2 r)  Rank-1 approximat"
+   },
+   {
+    "id": "Table 6",
+    "page": 15,
+    "caption_start": " Table 6. Wall-time comparison for pre-training Llama-based architectures with varying model sizes on the C4 dataset. The experiments consist of 2000 iterations, corresponding to exactly 10 subspace u"
+   },
+   {
+    "id": "Table 7",
+    "page": 16,
+    "caption_start": "Table 7. Peak memory consumption comparison when pre-training Llama-based architectures with different sizes on C4 dataset. The last two columns present the average percentage change in memory consump"
+   },
+   {
+    "id": "Table 8",
+    "page": 16,
+    "caption_start": " Table 8. Wall-time comparison when fine-tuning RoBERTa-Base on GLUE tasks for different ranks r up to a number of iterations to exactly include 5 subspace update steps. The last two columns present t"
+   },
+   {
+    "id": "Table 9",
+    "page": 17,
+    "caption_start": "Table 9. Peak memory consumption when fine-tuning RoBERTa-Base on GLUE tasks for different ranks r. The last two columns present the average percentage change in memory consumption relative to Full-Ra"
+   },
+   {
+    "id": "Table 10",
+    "page": 17,
+    "caption_start": " Table 10. Wall-time comparison when fine-tuning RoBERTa-Large on SuperGLUEup to a number of iterations to exactly include 5 subspace update steps. The last two columns present the average percentage "
+   },
+   {
+    "id": "Table 11",
+    "page": 18,
+    "caption_start": " Table 11. Peak memory consumption comparison when fine-tuning RoBERTa-Large on SuperGLUE. The last two columns present the average percentage change in memory consumption relative to Full-Rank and Ga"
+   },
+   {
+    "id": "Table 12",
+    "page": 18,
+    "caption_start": " Table 12. Hyperparameters of fine-tuning RoBERTa-Base on GLUE tasks.  MNLI  SST-2  MRPC  CoLA  QNLI  QQP  RTE  STS-B  Batch Size Learning Rate # Epochs Max Seq. Len.  16 1E-05  16 1E-05  16 3E-05  32"
+   },
+   {
+    "id": "Table 13",
+    "page": 18,
+    "caption_start": " Table 13. Hyperparameters of fine-tuning RoBERTa-Large on SuperGLUE tasks.  BoolQ Shared Parameters  Batch Size # Epochs Learning Rate Max Seq. Len.  SubTrack-Grad & GaLore Parameters  SubTrack-Grad "
+   },
+   {
+    "id": "Table 14",
+    "page": 19,
+    "caption_start": " Table 14. Hyperparameters of pre-training Llama-based architectures.  60M  130M  350M  1B  3B  Hidden Intermediate Heads Layers  512 1376 8 8  768 2048 12 12  1024 2736 16 24  2048 5461 24 32  4096 1"
+   },
+   {
+    "id": "Table 15",
+    "page": 19,
+    "caption_start": " Table 15. Comparing changes in performance while decreasing the subspace update interval (increasing the frequency of subspace updates) on fine-tuning RoBERTa-Base on COLA task. 500  450  400  350  3"
+   },
+   {
+    "id": "Figure 5",
+    "page": 19,
+    "caption_start": " Figure 5. The figures present changes in training loss relative to wall-time for pre-training the Llama-3B architecture on the C4 dataset and fine-tuning RoBERTa-Large on the BoolQ dataset. They demo"
+   }
+  ],
+  "n_figures_tables": 20,
+  "section_heading_candidates": [],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "u3-geometry-of-divergence-2608.30650",
+  "url": "https://arxiv.org/pdf/2608.30650",
+  "pdf_ok": true,
+  "pages": 8,
+  "chars": 39696,
+  "title_guess": "Geometry of Divergence: Tracking Hidden-State Trajectories for Adaptive Multi-Turn Reasoning Jie Liang1 , Zhengxin Yu1\u2217 , Hamid Nasiri2 , Peter Garraghan1",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 1,
+    "caption_start": " Figure 1: Multi-turn reasoning as an observable hidden-state trajectory. and the utilized LLM\u2019s objective. Agents are designed to complete tasks through multi-turn interactions, whereas their underly"
+   },
+   {
+    "id": "Figure 2",
+    "page": 4,
+    "caption_start": " Figure 2: Trajectory geometry separates correct from incorrect episodes across task and model settings.  4.3  final token of the user input qt before the agent acts, then compute \u03ba and \u03b2t on the resu"
+   },
+   {
+    "id": "Figure 3",
+    "page": 4,
+    "caption_start": " Figure 3: Turn-resolved \u03bat and \u03b2t on Math tasks.  5 5.1  Probing Trajectory Divergence through Action Chains Action Chain Construction  Based on the types of actions through which agents interact wit"
+   },
+   {
+    "id": "Figure 4",
+    "page": 5,
+    "caption_start": " Figure 4: Discriminability of hidden-state trajectory geometry across action chains. We construct action chains by taking sliding windows of three consecutive turns over the recorded assistant action"
+   },
+   {
+    "id": "Table 2",
+    "page": 5,
+    "caption_start": " Table 2: Top-20 three-action chains, with correct/incorrect window shares (%) and per-domain frequency rank.  Table 1: Share of three-action chains containing each action.  1 2 3 4 5 6 7 8 9 10 11 12"
+   },
+   {
+    "id": "Table 1",
+    "page": 5,
+    "caption_start": " Table 1: Share of three-action chains containing each action.  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20  Retail  Airline  Action  Correct Incorrect  \u2206  Correct Incorrect  Write Read Transfe"
+   },
+   {
+    "id": "Figure 5",
+    "page": 6,
+    "caption_start": " Figure 5: Trigger-policy comparison on Qwen3-14B across the Retail and Airline domains. performance regarding correct versus incorrect is not particularly outstanding. By contrast, action chains domi"
+   },
+   {
+    "id": "Table 3",
+    "page": 7,
+    "caption_start": "Table 3: Trigger policies on \u03c4 -Bench. The upper block reports task reward, the lower block mean token cost with the number of max-turn terminations in parentheses. Bold marks the best value in a row,"
+   }
+  ],
+  "n_figures_tables": 8,
+  "section_heading_candidates": [
+   "0.5 Database Spread 9.8%",
+   "0.5 Database Spread 23.9%"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "u4-role-learning-1910.09113",
+  "url": "https://arxiv.org/pdf/1910.09113",
+  "pdf_ok": true,
+  "pages": 17,
+  "chars": 67017,
+  "title_guess": "Discovering the Compositional Structure of Vector Representations with Role Learning Networks Paul Soulos,1 R. Thomas McCoy,1 Tal Linzen,2 and Paul Smolensky3,1",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 1,
+    "caption_start": " Figure 1: Summary of our approach.  "
+   },
+   {
+    "id": "Figure 2",
+    "page": 4,
+    "caption_start": "Figure 2: The DISCOVER task and functions. At the top is the target network and question we pose: is the internal embedding a TPR? The middle row is the TPE which follows the provided equation. We tra"
+   },
+   {
+    "id": "Figure 3",
+    "page": 4,
+    "caption_start": " Figure 3: The Tensor Product Encoder architecture. The fillers (yellow circles) and roles (blue circles) are first vectorized with an embedding layer. These two vector embeddings are combined by an o"
+   },
+   {
+    "id": "Figure 4",
+    "page": 5,
+    "caption_start": "Figure 4: The role learning module. The role attention vector at is encouraged to be one-hot through regularization; if at were one-hot, the produced role embedding rt would correspond directly to one"
+   },
+   {
+    "id": "Table 1",
+    "page": 6,
+    "caption_start": " Table 1: Mean substitution accuracy for learned (bold) and hand-defined role schemes on SCAN across three random initializations. Standard deviation was below 1% for all schemes except for snapped. S"
+   },
+   {
+    "id": "Figure 5",
+    "page": 8,
+    "caption_start": " Figure 5: Left: Example of successive constituent surgeries. The roles assigned to the input symbols are indicated in the first line (e.g., run was assigned role 11). Altered output symbols are in bl"
+   },
+   {
+    "id": "Table 2",
+    "page": 8,
+    "caption_start": " Table 2: MSE loss for learned (bold) and hand-crafted role schemes on sentence embedding models. (Sec. 6)  et al., 2020) and few-shot learning of compositional tasks (Brown et al., 2020), both of whi"
+   },
+   {
+    "id": "Table 3",
+    "page": 14,
+    "caption_start": " Table 3: The assigned roles for two sequences, 3116 and 523197. Table reproduced from McCoy et al. (2019a).  using the values in the set [.1, .02, .01]. The best performing value was .02, and we used"
+   }
+  ],
+  "n_figures_tables": 8,
+  "section_heading_candidates": [
+   "P The TPR generated"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "c5-manifold-steering-2605.05115",
+  "url": "https://arxiv.org/pdf/2605.05115",
+  "pdf_ok": true,
+  "pages": 36,
+  "chars": 128159,
+  "title_guess": "Manifold Steering Reveals the Shared Geometry of Neural Network Representation and Behavior ",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 2,
+    "caption_start": " Figure 1: How do different geometries of activation space modulate behavior? We illustrate paths through activation space (left), each defined by a different geometry. Interventions along paths in ac"
+   },
+   {
+    "id": "Figure 2",
+    "page": 4,
+    "caption_start": " Figure 2: Approximate isometry between activation and behavior manifolds for cyclic concepts. Manifolds (cubic splines) fit to activation and behavior (i.e., output distributions over concept tokens)"
+   },
+   {
+    "id": "Figure 3",
+    "page": 5,
+    "caption_start": " Figure 3: Approximate isometry between activation and behavior manifolds for sequential concepts. Manifolds (cubic splines) fit to activation and behavior (i.e., output distributions over concept tok"
+   },
+   {
+    "id": "Figure 4",
+    "page": 7,
+    "caption_start": " Figure 4: Manifold steering yields smooth and ordered behavioral transitions. Using simple addition tasks which require reasoning over structured concepts (e.g., What is four days after Monday?), we "
+   },
+   {
+    "id": "Figure 5",
+    "page": 8,
+    "caption_start": " Figure 5: Manifold steering and pullback yield coinciding trajectories in activation and behavior space. Going in the Activations\u2192Behavior direction, we find that steering along the activation manifo"
+   },
+   {
+    "id": "Figure 6",
+    "page": 11,
+    "caption_start": " Figure 6: Manifold steering enables factored control in multi-dimensional conceptual spaces. (a) We examine manifold steering on multidimensional spaces using Park et al. (2025b)\u2019s in-context learnin"
+   },
+   {
+    "id": "Figure 7",
+    "page": 13,
+    "caption_start": " Figure 7: Manifold steering on a visual world model produces smooth movement. (a). We examine whether manifold steering can generalize to a visual modality by training a recurrent network on the Moun"
+   },
+   {
+    "id": "Table 1",
+    "page": 26,
+    "caption_start": " Table 1: Natural-domain arithmetic tasks. For cyclic domains, results wrap around the modulus (7 for weekdays, 12 for months); for sequential domains, (entity, increment) pairs whose result falls out"
+   },
+   {
+    "id": "Figure 8",
+    "page": 30,
+    "caption_start": " Figure 8: Recurrent visual world-model architecture. A convolutional encoder fenc maps each 128 \u00d7 128 \u00d7 3 frame xt to a layer-normalized latent zt \u2208 Rn with n = 64. The discrete action at \u2208 {0, 1, 2}"
+   },
+   {
+    "id": "Figure 9",
+    "page": 32,
+    "caption_start": " Figure 9: Results for in-context learning of representations on a 9 \u00d7 9 cylinder domain. We find that, as in the grid domain, manifold steering achieves factored control: coherent steering of indepen"
+   },
+   {
+    "id": "Figure 10",
+    "page": 33,
+    "caption_start": " Figure 10: (a) Activation and behavior space paths for the 5 \u00d7 5 Grid task and 9 \u00d7 9 Cylinder. Similarly to the addition tasks with known concepts, we find that the manifold steering paths closely fo"
+   },
+   {
+    "id": "Figure 11",
+    "page": 34,
+    "caption_start": " Figure 11: Inducing greater uncertainty over a conceptual space and steering along it. By ) ( ) ) ( ) ) ( ) we induce ) greater (uncertainty increasing the addition value, in)the model with respect t"
+   },
+   {
+    "id": "Figure 12",
+    "page": 35,
+    "caption_start": " Figure 12: Pullback from My recovers Mh in the visual world model. Left (Activation Space): PCA visualization of the encoder representations, showing the geometric path along Mh , the linear chord, a"
+   }
+  ],
+  "n_figures_tables": 13,
+  "section_heading_candidates": [
+   "10 Activation",
+   "0.50 February",
+   "0.25 March"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "c6-kappa-2509.23782",
+  "url": "https://arxiv.org/pdf/2509.23782",
+  "pdf_ok": true,
+  "pages": 31,
+  "chars": 106472,
+  "title_guess": "Bridging the Knowledge-Prediction Gap in LLMs on Multiple-Choice Questions  Yoonah Park * 1 Haesung Pyun * 1 Yohan Jo \u2020 1",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 2,
+    "caption_start": " Figure 1. Given a hidden representation h from the residual stream at layer l, we train two linear probes with disjoint objectives: a knowledge probe that predicts the ground-truth answer and a predi"
+   },
+   {
+    "id": "Figure 2",
+    "page": 3,
+    "caption_start": " Figure 2. Layer-wise accuracy of the knowledge probe and the prediction probe on TruthfulQA for Llama 3.1 8B Instruct. While the knowledge probe accuracy increases steadily and saturates at higher la"
+   },
+   {
+    "id": "Table 1",
+    "page": 4,
+    "caption_start": "Table 1. Model- and dataset-wise comparison of the knowledge-prediction gap for Qwen 2.5 7B Instruct and Llama 3.1 8B Instruct. We report task accuracy of the base model (ACC), the absolute accuracy g"
+   },
+   {
+    "id": "Figure 3",
+    "page": 5,
+    "caption_start": " Figure 3. Scatter plots of hidden-state activations from Qwen2.5 7B Instruct, where each point corresponds to a pair of logits: the knowledge logit and the prediction logit for the first answer optio"
+   },
+   {
+    "id": "Table 2",
+    "page": 7,
+    "caption_start": "Table 2. Results across benchmarks for Qwen 2.5 7B Instruct and Llama 3.1 8B Instruct. Higher \u2206ACC and AGR indicate smaller knowledge-prediction gaps, while lower KLD reflects closer alignment between"
+   },
+   {
+    "id": "Figure 4",
+    "page": 7,
+    "caption_start": " Figure 4. Effect of parameters \u03b1 and \u03b2 on agreement rate improvement over the base model. (Left) Qwen2.5 7B Instruct results across six \u03b1 values and four \u03b2 values. (Right) Llama 3.1 8B Instruct resul"
+   },
+   {
+    "id": "Table 3",
+    "page": 8,
+    "caption_start": "Table 3. Average accuracy (ACC), agreement (AGR), and KL divergence (KLD) across multiple models on the TruthfulQA benchmark. For KAPPA(\u00b7), the value in parentheses denotes the number of layers interv"
+   },
+   {
+    "id": "Figure 5",
+    "page": 8,
+    "caption_start": " Figure 5. Cross-dataset transfer results measured by agreement improvement over the base model on Llama 3.1 8B Instruct. Positive values indicate improvement over base and negative values indicate de"
+   },
+   {
+    "id": "Table 4",
+    "page": 9,
+    "caption_start": "Table 4. Generation accuracy of Qwen2.5 7B Instruct after applying KAPPA to free-form settings. Method Base KAPPA (1)  TruthfulQA BBQ-Age GSM8k 41.7 44.2  89.7 89.9  91.6 90.7  questions only\u2014without "
+   },
+   {
+    "id": "Figure 6",
+    "page": 9,
+    "caption_start": " Figure 6. We present a per-subtask analysis of KAPPA generalization on BBH benchmarks. For each probe training dataset (GSM8k, BBH-Algorithmic, BBH-NLP), we identify questions that were originally an"
+   },
+   {
+    "id": "Table 5",
+    "page": 15,
+    "caption_start": " Table 5. Task instructions used in our experiments.  Instruction 1 2 3 4  Text Provide your answer with {option text}, following the output format below. Output Format: {format text} Given the follow"
+   },
+   {
+    "id": "Table 6",
+    "page": 15,
+    "caption_start": " Table 6. Answer format types used in experiments.  Answer Format Type 1 2  Format Text The correct answer is ( Answer: (  Table 7. Option symbol types used in experiments.  Option Symbol Type Common "
+   },
+   {
+    "id": "Table 7",
+    "page": 15,
+    "caption_start": " Table 7. Option symbol types used in experiments.  Option Symbol Type Common Alphabet Upper Roman Numerals Common Numbers Random Alphabet Upper  Examples (A), (B), (C), (D) (i), (ii), (iii), (iv) (1)"
+   },
+   {
+    "id": "Table 8",
+    "page": 16,
+    "caption_start": "Table 8. Dataset statistics for training, validation, and test splits. k denotes the number of answer choices. Category  Dataset  k  Train  Validation  Test  Reasoning  GSM8k BBH-Algorithmic BBH-NLP  "
+   },
+   {
+    "id": "Table 9",
+    "page": 16,
+    "caption_start": "Table 9. Subtasks used from the BBH-Algorithmic and BBH-NLP benchmarks. Dataset  BBH-Algorithmic  BBH-NLP  Subtasks  geometric shapes logical deduction temporal sequences tracking shuffled objects rea"
+   },
+   {
+    "id": "Table 10",
+    "page": 17,
+    "caption_start": "Table 10. Subtasks used from the MMLU Humanities, Social Sciences, and STEM benchmarks. Dataset  Subtasks  MMLU Humanities  Formal Logic High School European History High School US History High School"
+   },
+   {
+    "id": "Figure 7",
+    "page": 18,
+    "caption_start": " Figure 7. Layer-wise accuracy of knowledge probes (blue) and prediction probes (orange) across benchmarks, with baseline accuracy shown as dashed lines. Prediction probe accuracy reaches very high le"
+   },
+   {
+    "id": "Figure 8",
+    "page": 21,
+    "caption_start": " Figure 8. Layer-wise mean principal angle analysis across models and benchmarks. The blue curve shows the mean principal angle between the knowledge and prediction subspaces, while the green curve sh"
+   },
+   {
+    "id": "Figure 9",
+    "page": 22,
+    "caption_start": " Figure 9. Layer-wise orthogonal linear CKA between the knowledge- and prediction-subspace projections across models and benchmarks. The solid blue curve shows the CKA between representations projecte"
+   },
+   {
+    "id": "Figure 10",
+    "page": 24,
+    "caption_start": "Figure 10. Cross-benchmark relationship between geometric misalignment and the behavioral gap. Each point corresponds to one benchmark, plotted at the layer achieving the highest validation knowledge-"
+   },
+   {
+    "id": "Table 11",
+    "page": 27,
+    "caption_start": "Table 11. Results across knowledge benchmarks for Qwen 2.5 7B Instruct and Llama 3.1 8B Instruct. Higher \u2206ACC and AGR indicate smaller knowledge-prediction gaps, while lower KLD reflects closer alignm"
+   },
+   {
+    "id": "Table 12",
+    "page": 28,
+    "caption_start": "Table 12. Average accuracy (ACC), agreement (AGR), and KL divergence (KLD) across multiple models on the GSM8k benchmark. For KAPPA(\u00b7), the value in parentheses denotes the number of layers intervened"
+   },
+   {
+    "id": "Table 13",
+    "page": 28,
+    "caption_start": " Table 13. Results on the TruthfulQA benchmark across multiple models. All models use their instruct variants. BASE denotes the original model without intervention, KP denotes the knowledge probe accu"
+   },
+   {
+    "id": "Table 14",
+    "page": 29,
+    "caption_start": "Table 14. Robustness to distractor sampling. We construct 10 test sets using different random seeds for distractor sampling (sampling only the test sets) and report the mean and standard deviation of "
+   },
+   {
+    "id": "Table 15",
+    "page": 29,
+    "caption_start": " Table 15. Statistical significance under distractor sampling. We construct 10 test sets using different random seeds for distractor sampling (sampling only the test sets) and perform one-sided t-test"
+   },
+   {
+    "id": "Figure 11",
+    "page": 30,
+    "caption_start": " Figure 11. KAPPA accuracy under varying training data sizes. We subsample the training data at 10, 20, 40, 60, and 80% using three random seeds, learn subspaces from each subset, and report the resul"
+   },
+   {
+    "id": "Figure 12",
+    "page": 30,
+    "caption_start": " Figure 12. Knowledge probe accuracy under varying training data sizes. We train knowledge probes on 10, 20, 40, 60, and 80% subsampled datasets (three random seeds) and report accuracy averaged over "
+   },
+   {
+    "id": "Figure 13",
+    "page": 30,
+    "caption_start": " Figure 13. Prediction probe accuracy under varying training data sizes. We train prediction probes on 10, 20, 40, 60, and 80% subsampled datasets (three random seeds) and report accuracy averaged ove"
+   },
+   {
+    "id": "Figure 14",
+    "page": 31,
+    "caption_start": " Figure 14. Per-subtask analysis of KAPPA generalization on BBH (Llama-3.1 8B Instruct). For each probe training dataset (GSM8K, BBH-Algorithmic, BBH-NLP), we identify both incorrect-to-correct and co"
+   }
+  ],
+  "n_figures_tables": 29,
+  "section_heading_candidates": [
+   "A QB ),"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "c7-readout-mediator-angle-2605.29126",
+  "url": "https://arxiv.org/pdf/2605.29126",
+  "pdf_ok": true,
+  "pages": 55,
+  "chars": 190411,
+  "title_guess": "When and How Long? The Readout-Mediator Angle in Temporal Reasoning ",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 2,
+    "caption_start": " Figure 1: The readout-mediator dissociation on a duration query (schematic). Given \u201cHow many days between March 15th and June 22nd ?\u201d, the model deploys two functionally orthogonal subspaces. Spy P: "
+   },
+   {
+    "id": "Figure 2",
+    "page": 5,
+    "caption_start": " Figure 2: The readout-mediator dissociation, quantified. (A) Accuracy on G EMMA 2 2B under four ablations at L\u22c6 =1: DAS collapses accuracy to 0%; probe and random ablations produce drops within 1 pp "
+   },
+   {
+    "id": "Figure 3",
+    "page": 6,
+    "caption_start": " Figure 3: A distributed, offset-structured, cross-family circuit. (A) Per-head QK-twist |z| on G EMMA 2 2B (26 layers \u00d78 heads); 24 BH-significant boundary heads at |z|\u22653. (B) Detected QK offsets: Ge"
+   },
+   {
+    "id": "Figure 4",
+    "page": 7,
+    "caption_start": " Figure 4: DAS energy, MLP contribution, and TFA subspace geometry. (A) DAS subspace energy fraction through all 26 residual-stream layers: peaks at 26.4\u00d7 Haar null at L\u22c6 =1 and exceeds null at every "
+   },
+   {
+    "id": "Figure 5",
+    "page": 7,
+    "caption_start": " Figure 5: Circuit wiring and feature-level dissociation: probe reads when; DAS computes how long. (A) Circuit graph: L\u22c6 =1 DAS mediator (26.4\u00d7 null) \u2192 boundary heads L11H4/L12H6 (\u2206NLL=0.45) \u2192 MLP L18"
+   },
+   {
+    "id": "Table 1",
+    "page": 8,
+    "caption_start": "Table 1: Cross-task diagnostic at k=4 on G EMMA 2 2B.  The circuit traced above is specific to calendar- Drops in pp; \u03c1k is DAS/random drop. date reasoning, but the dissociation itself\u2014the Type Angle "
+   },
+   {
+    "id": "Table 2",
+    "page": 13,
+    "caption_start": "Table 2: Cross-scale DAS at k=4. Drops in pp; ratio is DAS-drop/random-drop. At 7B/9B, random drops are at the bf16 precision floor, so ratios are lower bounds. Model  Params  Clean  DAS ablation  Ran"
+   },
+   {
+    "id": "Table 3",
+    "page": 14,
+    "caption_start": "Table 3: Principal angles (\u25e6 ) between the gradient subspace UG , the DAS mediator UM , the circular probe UP , and the Haar-random null, on G EMMA 2 2B at L\u22c6 =1. For UG vs. UP the reference dimension"
+   },
+   {
+    "id": "Table 4",
+    "page": 14,
+    "caption_start": "Table 4: Three-way comparison at k=4. All angles in degrees; null is arccos( k/d)=87.6\u25e6 . Pair UG vs. UM (DAS) UG vs. UP (probe) UP vs. UM  \u03b8\u0304 \u2212 null  \u03b8\u0304 \u25e6  85.3 88.9\u25e6 87.9\u25e6  \u25e6  \u22122.3 (below null) +1.3"
+   },
+   {
+    "id": "Table 5",
+    "page": 15,
+    "caption_start": "Table 5: Gradient probe ablation results on G EMMA 2 2B. Clean accuracy = 42%. \u03c1\u2207 =(grad drop)/(rand mean drop). k  Grad acc.  Drop  Rand mean  Rand 5\u201395%  \u03c1\u2207  2 4 6  41% 36% 30%  1 pp 6 pp 12 pp  0.2"
+   },
+   {
+    "id": "Figure 7",
+    "page": 17,
+    "caption_start": " Figure 7: Emergence in P YTHIA 1.4B. Three diagnostics on a shared log-training-step x-axis; gold band spans the geometric emergence window [103 , 5\u00d7104 ]. (A) Probe R2 is already > 0.95 at step 0 an"
+   },
+   {
+    "id": "Figure 8",
+    "page": 19,
+    "caption_start": " Figure 8: The readout-to-mediator spectrum. (A) Accuracy under four ablation conditions at L\u22c6 =1 on G EMMA 2 2B: clean baseline, linear probe, top-50 GemmaScope SAE features, and the causal DAS subsp"
+   },
+   {
+    "id": "Figure 9",
+    "page": 21,
+    "caption_start": " Figure 9: Calibration of \u03b4(x) for flagging wrong clinical answers (G EMMA 2 2B, k=12, n=75). (a) Reliability diagram (5 equal-count \u03b4 bins). (b) ROC with Youden-J optimal threshold marked. (c) Precis"
+   },
+   {
+    "id": "Figure 10",
+    "page": 22,
+    "caption_start": " Figure 10: Manifold deviation \u03b4(x) predicts clinical duration error (open 979-query three-tier benchmark). (A) Per-query absolute duration error (symlog, days) versus \u03b4(x) at k\u22c6 =12; correct (\u00b120%, g"
+   },
+   {
+    "id": "Figure 11",
+    "page": 23,
+    "caption_start": " Figure 11: Manifold deviation on the 979-query three-tier clinical benchmark \u2014 detailed view. (A) ROC per tier for \u03b4(x) flagging wrong answers. (B) Pooled reliability: fraction-wrong in 5 equal-count"
+   },
+   {
+    "id": "Figure 12",
+    "page": 28,
+    "caption_start": " Figure 12: Empirical cos \u03b8i in raw (a) and whitened (b) coordinates. Gray points and \u00b12\u03c3 bars: 104 -draw Haar random k-subspace null; red squares: observed probe vs DAS; blue triangles: analytic k2 /"
+   },
+   {
+    "id": "Figure 13",
+    "page": 29,
+    "caption_start": " Figure 13: Probe\u2013DAS mean principal angle across all 26 layers of G EMMA 2 2B at k \u2208 {2, 4, 6}. The dashed line is the Haar-random null. The angle is within 1.5\u25e6 of null at every layer; no layer alig"
+   },
+   {
+    "id": "Figure 14",
+    "page": 30,
+    "caption_start": " Figure 14: Effective mediator dimension on Q WEN 2.5 1.5B. (a) Ablation drop saturates at k=4; higher k admits multiple spanning bases and ablation is noisier to optimize. (b) Mean cos \u03b8i between bas"
+   },
+   {
+    "id": "Table 6",
+    "page": 34,
+    "caption_start": "Table 6: Principal-angle alignment of TFA components with the DAS mediator and probe subspace. cos2 \u03b8i normalized by the Haar null (kcomp \u00b7 r/d). Both the zero-shot (ZS) and learned (L) implementation"
+   },
+   {
+    "id": "Figure 15",
+    "page": 35,
+    "caption_start": " Figure 15: TFA components on the Grassmannian. (A) MDS embedding of subspaces on Gr(4, 2304) using mean principal angle as the distance metric. Gray dots: 100 Haar-random k-frames (convex hull shaded"
+   },
+   {
+    "id": "Figure 16",
+    "page": 35,
+    "caption_start": " Figure 16: Extended alignment of TFA predictable novel components with the DAS mediator (left, k=4) P and and probe subspace (right, k=2), measured as cos2 \u03b8i normalized by the Haar null. Both zero-s"
+   },
+   {
+    "id": "Figure 17",
+    "page": 36,
+    "caption_start": " Figure 17: Feature-level detectors and causal specificity. (A) Month-tiling: 11 of 12 months have dedicated SAE features at Layer 3, each firing selectively on its month token. (B) Causal specificity"
+   },
+   {
+    "id": "Figure 18",
+    "page": 37,
+    "caption_start": " Figure 18: Temporal dynamics of mediator energy (emed , gold bars) across token positions for three Set-F duration prompts. The k/d random baseline is shown as a dashed line. Left: per-token mediator"
+   },
+   {
+    "id": "Figure 19",
+    "page": 38,
+    "caption_start": " Figure 19: Monte Carlo null distribution of offset-mode coincidences (\u03c4 =5 d tolerance, 105 draws from Uniform({1, . . . , 182})). The observed 2-mode match (gold line) falls in the far right tail (p"
+   },
+   {
+    "id": "Figure 20",
+    "page": 40,
+    "caption_start": "Figure 20: DAS mediator energy through 26 layers. DAS subspace energy (blue) vs. probe subspace energy (orange) vs. Haar random null (dashed). Boundary-head layers shaded. DAS energy exceeds random nu"
+   },
+   {
+    "id": "Figure 21",
+    "page": 41,
+    "caption_start": " Figure 21: Per-direction DAS ablation. (A) Individual direction \u2206NLL (dashed: full k=4 ablation). (B) Pairwise observed vs. expected (sum of singles). Super-additive pairs lie above the diagonal.  S4"
+   },
+   {
+    "id": "Figure 22",
+    "page": 41,
+    "caption_start": " Figure 22: MLP vs. attention attribution at layers 18\u201325. MLP ablation consistently increases NLL; attention ablation is near-zero or negative at late layers.  41  "
+   },
+   {
+    "id": "Figure 23",
+    "page": 42,
+    "caption_start": " Figure 23: Cascading ablation. (A) \u2206NLL by head group. (B) Observed combined drop vs. sum of group drops (weakly super-additive).  S47  Supplement: MLP SAE computation analysis  We use GemmaScope MLP"
+   },
+   {
+    "id": "Table 7",
+    "page": 44,
+    "caption_start": "Table 7: Error-node analysis. \u2206NLL for DAS full ablation vs. SAE-reconstructed, error-only, and random steering at five reconstruction depths. n=50 Set-F prompts, \u03b1=3.0, G EMMA 2 2B. k  DAS full  SAE "
+   },
+   {
+    "id": "Table 8",
+    "page": 44,
+    "caption_start": "Table 8: Weight-space DAS alignment: transcoder (TC) vs MLP SAE at circuit layers. Top-50 span coverage = fraction of DAS subspace variance spanned by the top-50 decoder directions; Jaccard is over to"
+   },
+   {
+    "id": "Figure 24",
+    "page": 45,
+    "caption_start": "Figure 24: GemmaScope transcoder features along the MLP pipeline. (a) Feature #14897 at L20 marks the read\u2192write transition where probe alignment peaks and DAS alignment begins rising. (b) Feature #72"
+   },
+   {
+    "id": "Figure 25",
+    "page": 46,
+    "caption_start": " Figure 25: Error-node analysis. (A) Reconstruction gap G(k) vs. top-k SAE features per DAS direction. G=1.00 at every depth: SAE-reconstructed directions capture zero causal effect via steering. (B) "
+   },
+   {
+    "id": "Figure 26",
+    "page": 46,
+    "caption_start": " Figure 26: Transcoder vs MLP SAE. (A) DAS subspace span coverage (top-50 features) across MLP layers: 0.000 both0.00 dictionariesL19achieve (B)L24L1 L25 residual-stream comparison. L1 (C) Steering\u22120."
+   },
+   {
+    "id": "Figure 27",
+    "page": 46,
+    "caption_start": " Figure 27: Group decoder steering. (A) \u2206NLL by group size k: DAS-aligned and random feature groups are indistinguishable at every k. (B) Super-additivity ratio SA(k): no super-additive cooperation em"
+   },
+   {
+    "id": "Figure 28",
+    "page": 47,
+    "caption_start": "Figure 28: Frozen-attention steering. (A) \u2206NLL across seven conditions; all values |\u2206NLL|<0.1, three orders -0.004 of magnitude below DAS ablation. (B) Pathway decomposition pie chart (uninterpretable"
+   },
+   {
+    "id": "Figure 29",
+    "page": 48,
+    "caption_start": "Figure 29: NeuronPedia feature audit. Probe-aligned feature #12499 (a) activates on calendar months and promotes month/Month in its logits. DAS-aligned features encode syntactic structure: #14703 (b) "
+   },
+   {
+    "id": "Figure 30",
+    "page": 49,
+    "caption_start": "Figure 30: NeuronPedia steering demonstrations. (a) Amplifying probe feature #12499 at high strength floods the output with calendar-month vocabulary\u2014pure month fixation. (b) Amplifying DAS duration f"
+   },
+   {
+    "id": "Figure 31",
+    "page": 50,
+    "caption_start": "Figure 31: Temporal-specialist SAE features at L=12. (a) Feature #3087 from the Lubana et al. temporal SAE (canrager/temporalSAEs, 9,216 features) is DAS-aligned and matches GemmaScope relay feature #"
+   },
+   {
+    "id": "Figure 32",
+    "page": 51,
+    "caption_start": "Figure 32: OV circuit decomposition. (A) Heatmap of WOV DAS-alignment per head; boundary heads (gold squares) show only a modest 1.17\u00d7 enrichment. (B) Violin comparison; the effect is statistically si"
+   },
+   {
+    "id": "Figure 33",
+    "page": 52,
+    "caption_start": " Figure 33: Attribution flow graph. Directed edges show information flow from the DAS mediator (L\u22c6 =1, green) through intermediate hubs to boundary heads (gold). Gold arrows: flow to boundary heads. C"
+   },
+   {
+    "id": "Table 9",
+    "page": 52,
+    "caption_start": "Table 9: Probe-based monitoring stress tests. All experiments use G EMMA 2 2B at L\u22c6 =1, k=4 (DAS). Experiment  Key metric  Cross-probe universality (116) Adversarial injection (112) Mutual information"
+   },
+   {
+    "id": "Table 10",
+    "page": 52,
+    "caption_start": "Table 10: Principal angles between seven probe bases and the DAS subspace (kDAS =4, d=2304). Probe target  k  Mean angle (\u25e6 )  Haar null (\u25e6 )  Dev.  Circular DOY Month (12-class) Season (4-class) Day-"
+   },
+   {
+    "id": "Figure 34",
+    "page": 53,
+    "caption_start": " Figure 34: Cross-probe universality. (A) Measured angle P vs. Haar null for seven probe architectures; all fall within the \u00b12\u03c3 null band (gray). (B) Subspace overlap ( cos2 \u03b8i / min(k1 , k2 )) betwee"
+   },
+   {
+    "id": "Figure 35",
+    "page": 54,
+    "caption_start": " Figure 35: Mutual information. (A) MI bar chart: I(probe; DAS) and I(DAS; DOY) are at the null floor; only I(probe; DOY) is non-trivial. (B) Phase-shuffle null distribution with observed MI (red line"
+   },
+   {
+    "id": "Figure 36",
+    "page": 54,
+    "caption_start": " Figure 36: Specificity battery. (A) \u03c1 per subspace; DAS is off the chart at 2650\u00d7. (B) Null \u03c1 distribution with named subspaces marked. (C) \u2206NLL per subspace with random \u00b12\u03c3 band.  Mock deception pro"
+   },
+   {
+    "id": "Figure 37",
+    "page": 55,
+    "caption_start": " Figure 37: Mock deception probe. (A) NLL distribution split at median into confident/uncertain labels. (B) \u03c1 comparison: DAS (2650\u00d7) vs. temporal probe (\u22126.5\u00d7) vs. safety monitor (\u22642.0\u00d7). (C) Princip"
+   },
+   {
+    "id": "Figure 38",
+    "page": 55,
+    "caption_start": " Figure 38: Ablation invisibility. (A) Probe-shift histogram for 50 random ablations (gray) vs. DAS ablation (red). (B) Per-DOY probe shift under DAS ablation; most are below the 3-day threshold. (C) "
+   }
+  ],
+  "n_figures_tables": 47,
+  "section_heading_candidates": [
+   "A Ablation at L \u22c6 = 1, Gemma 2 2B",
+   "P Prop.",
+   "G EMMA 2 2B: arithmetic (single-digit addi\u2014",
+   "Q WEN 2.5 1.5B",
+   "G EMMA 2 2B",
+   "Q WEN 2.5 7B",
+   "G EMMA 2 9B",
+   "Q WEN 2.5 1.5B",
+   "G EMMA 2 2B",
+   "Q WEN 2.5 7B",
+   "G EMMA 2 9B",
+   "Q WEN 2.5 1.5B",
+   "G EMMA 2 2B",
+   "Q WEN 2.5 7B",
+   "G EMMA 2 9B"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "c8-represented-used-2610.05292",
+  "url": "https://arxiv.org/pdf/2610.05292",
+  "pdf_ok": true,
+  "pages": 22,
+  "chars": 84926,
+  "title_guess": "Erased, Rerouted, or Rescaled? Post-Training and the Causal Quotient of a Language Model\u2019s Belief State Weihan Li\u22171 , Tianshi Zheng\u22172 , Junhao Wu3 , Xinlei Chen",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 2,
+    "caption_start": " Figure 1: From a belief state to its fates. I. A hidden Markov process with a task and a nuisance variable generates tokens, and a pretrained transformer represents the belief state bt . The reward r"
+   },
+   {
+    "id": "Table 1",
+    "page": 3,
+    "caption_start": " Table 1: Three coordinates of a reward-null subspace S.  post-training selects a new causal quotient: the objective constrains it (Section 3) and optimization chooses within the constraints (Section "
+   },
+   {
+    "id": "Table 2",
+    "page": 4,
+    "caption_start": " Table 2: Experiment map. Objectives: SFT on a demonstrator\u2019s labels, DPO, GRPO, REINFORCE and KLregularized reinforcement learning with the exact gradient (KL-RL), over anchor strengths \u03b2 that includ"
+   },
+   {
+    "id": "Figure 2",
+    "page": 5,
+    "caption_start": " Figure 2: Fates as coordinates. Each marker is one objective in the main world, placed by the share of activation variance it allocates to the kernel (A) and by the use its decision makes of the kern"
+   },
+   {
+    "id": "Figure 3",
+    "page": 6,
+    "caption_start": " Figure 3: Encoded but no longer used. Use of the next-token-invisible component by the model\u2019s own filter against its decodability at ordinary positions, both relative to the base model, for the GRU "
+   },
+   {
+    "id": "Figure 4",
+    "page": 6,
+    "caption_start": " Figure 4: Allocation is a third property, and it has a cost. I. Kernel share against the change in effective rank for all post-trained networks. II. Steps a new linear readout needs to recover the nu"
+   },
+   {
+    "id": "Figure 5",
+    "page": 8,
+    "caption_start": " Figure 5: With the anchor the reference\u2019s log-odds are kept, and without it optimization decides. I. Within-class log-odds of the policy against the reference, one point per history, in a small trans"
+   },
+   {
+    "id": "Table 3",
+    "page": 14,
+    "caption_start": " Table 3: Where each objective leaves the reward-null kernel (main world, transformer; means over three base seeds or ranges over the objectives of a row, one seed in the last block). Each cell prints"
+   },
+   {
+    "id": "Figure 6",
+    "page": 14,
+    "caption_start": " Figure 6: The coordinates of Figure 2 in the other worlds and in the GRU. Allocated share against use at the decision position, with the fill of a marker showing what is still represented, for eight "
+   },
+   {
+    "id": "Figure 7",
+    "page": 15,
+    "caption_start": " Figure 7: The anchor threshold. Slope, intercept and within-class preference over \u03b2 for GRPO and KL-RL, with the transition intervals. Inset: at matched KL from the reference, unanchored runs already"
+   },
+   {
+    "id": "Figure 8",
+    "page": 15,
+    "caption_start": " Figure 8: Two exits of one network. Transfer of the twin effect through the kernel subspace and twin effect relative to the base, at the policy and at the next-token head.  open: \u03b2 = 0 at KL * gray: "
+   },
+   {
+    "id": "Figure 9",
+    "page": 15,
+    "caption_start": " Figure 9: Matched reward and matched KL. Coordinates of SFT and KL-RL at the same reward, and of unanchored and anchored reinforcement learning at the same KL from the reference.  15  "
+   },
+   {
+    "id": "Figure 10",
+    "page": 16,
+    "caption_start": " Figure 10: Erasure in the weight-decay corner. Trajectories of both kernel components in the transformer, and ordinary positions against the query position at the end of training for the transformer "
+   },
+   {
+    "id": "Figure 11",
+    "page": 17,
+    "caption_start": " Figure 11: Recurrent and attention architectures. I. Decodability of the free kernel after objectives that leave it free, at the query (top) and at ordinary positions (bottom), for the transformer (f"
+   },
+   {
+    "id": "Figure 12",
+    "page": 18,
+    "caption_start": " Figure 12: Spectral statistics. The gauge control, the kernel share against the change of effective rank, and the kernel\u2019s share of the output variance over \u03b2 against the optimum.  Bayes filter does "
+   },
+   {
+    "id": "Figure 13",
+    "page": 19,
+    "caption_start": " Figure 13: Revival. Reward of a new linear readout for the nuisance variable on frozen networks, and steps to 95% against the kernel share.  the mean of the query representation faster than full fine"
+   },
+   {
+    "id": "Figure 14",
+    "page": 20,
+    "caption_start": " Figure 14: How a policy leaves the identity. I. Shares of the second moment of the query representation carried by its mean, by class features, by nuisance features and by their interaction during un"
+   },
+   {
+    "id": "Table 4",
+    "page": 21,
+    "caption_start": " Table 4: Outcomes over post-training seeds after 5,000 steps. Each cell prints the range over the seeds of one pretrained model and marks every run on a track (dashed: \u03b3 = 1, and the base model\u2019s pre"
+   },
+   {
+    "id": "Figure 15",
+    "page": 21,
+    "caption_start": " Figure 15: Every run of the seed study. Slope \u03b3 (top) and history-independent shift (bottom) over post-training steps, one line per run, colored by pretrained model, with a dot at reward saturation. "
+   },
+   {
+    "id": "Figure 16",
+    "page": 22,
+    "caption_start": " Figure 16: Released checkpoints. Decodability of the in-context belief state and of its next-token-invisible component by layer for base and post-trained checkpoints (means over six hidden Markov mod"
+   }
+  ],
+  "n_figures_tables": 20,
+  "section_heading_candidates": [
+   "A Recurrent State Spreads Freedom and",
+   "A GRU decides from the state it carries along the"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "c9-lagged-coupling-2609.01048",
+  "url": "https://arxiv.org/pdf/2609.01048",
+  "pdf_ok": true,
+  "pages": 15,
+  "chars": 49530,
+  "title_guess": "Lagged Coupling: Internal Representations Become Readable Before They Become Causal Xining Xun",
+  "figures_tables": [
+   {
+    "id": "Table 1",
+    "page": 3,
+    "caption_start": "Table 1. Where prior work sits relative to the three tracks. \u201cTrack assumed\u201d names the property each line of work relies on; \u201cdevelopmental?\u201d asks whether the property is measured across training. Rea"
+   },
+   {
+    "id": "Table 2",
+    "page": 4,
+    "caption_start": "Table 2. The pre-registered grid. Checkpoints are training steps (in thousands: 1, 2, 4, 8, 16, 32, 64, 143). Parameter counts are taken from the model cards[1]. Model  Parameters  Checkpoints (steps)"
+   },
+   {
+    "id": "Table 3",
+    "page": 6,
+    "caption_start": "Table 3. The frozen decision tree, evaluated. Slopes are WLS with 95% CIs; the time axis is the majority vote of the six per-size verdicts (Figure 1). Axis  Line  Estimate  95% CI  n  Verdict  Scale  "
+   },
+   {
+    "id": "Figure 1",
+    "page": 7,
+    "caption_start": " Figure 1. Per-size time-axis WLS slopes of milestone index against log step, with 95% CIs. Blue: fork decided A (410M, 2.8B edge, 6.9B); grey: INDETERMINATE (160M, 1B, 12B). The majority-vote rule yi"
+   },
+   {
+    "id": "Figure 2",
+    "page": 7,
+    "caption_start": " Figure 2. Lagged coupling at a glance (schematic of the measured structure). Internal readability is saturated from step 1k at every scale; behavioral readability ramps gradually and later at larger "
+   },
+   {
+    "id": "Figure 3",
+    "page": 8,
+    "caption_start": " Figure 3. Three tracks, three clocks (6.9B and 12B). Left axis: internal readability (green; probe inducibility, saturated \u2248 1.0 from step 1k) and behavioral readability (blue; output-level answer-sc"
+   },
+   {
+    "id": "Figure 4",
+    "page": 9,
+    "caption_start": " Figure 4. Boxing rule: cells with |z| \u2265 2 are boxed; the colormap is clipped at \u00b12.7. Causal efficacy ze over the full grid (6 sizes \u00d7 8 checkpoints). 43/48 cells lie within the null band; the four s"
+   },
+   {
+    "id": "Figure 5",
+    "page": 10,
+    "caption_start": " Figure 5. (a) Representation headroom C along the probe direction over training (log scale); growth factors from step 1k to 143k annotate each curve. (b) Instrument noise floor \u03b5m against parameter c"
+   },
+   {
+    "id": "Table 4",
+    "page": 11,
+    "caption_start": "Table 4. Two families of safety-relevant methods bet on different tracks; our grid supports one bet and not the other across training. Safety-relevant scheme Monitoring early warning Runtime activatio"
+   }
+  ],
+  "n_figures_tables": 9,
+  "section_heading_candidates": [
+   "1 Introduction",
+   "2 Related Work",
+   "3 Pre-registered Setup and Decision Protocol",
+   "3.1 Grid and instrumentation",
+   "3.2 Estimands",
+   "3.3 The decision tree",
+   "3.4 Why additive single-site surgery is the right estimand",
+   "4 Results",
+   "4.1 The pre-registered verdict: INDETERMINATE on both axes",
+   "4.2 Three tracks, three clocks",
+   "4.3 The ordering is read-before-write, and scale does not close the lag",
+   "4.4 Interventions are largely inert, occasionally counterproductive",
+   "4.5 Mechanism: headroom outruns write-in by orders of magnitude",
+   "4.6 The prior-bias arm: a mechanical positive result",
+   "4.7 Replication on OLMo-2: direction preserved, magnitude weak",
+   "5 Discussion",
+   "5.1 Implications for AI safety: sensors before levers",
+   "6 Limitations and Threats to Validity",
+   "7 Reproducibility and Audit"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "c10-curved-inference-ii-2608.24037",
+  "url": "https://arxiv.org/pdf/2608.24037",
+  "pdf_ok": true,
+  "pages": 33,
+  "chars": 91681,
+  "title_guess": "Curved Inference II Sleeper Agent Geometry - Extending Interpretability Beyond Probes Rob Manson (https://robman.fyi)",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 3,
+    "caption_start": "Figure 1: Simplified 3D visualisation of the Rd token trajectories that combine to form the Residual Trajectory Manifold (RTM).  3  "
+   },
+   {
+    "id": "Table 1",
+    "page": 4,
+    "caption_start": "Table 1: Model Specifications Model  Size  Layers  Hidden Size d  Positional Encoding  Gemma3-1b LLaMA3.2-3b  1.3B 2.3B  26 28  2,048 3,072  RoPE RoPE  Both models are evaluated in forward-pass mode o"
+   },
+   {
+    "id": "Table 2",
+    "page": 11,
+    "caption_start": "Table 2: Statistical Significance Comparison - Full Consensus vs Unanimous Only for LLaMA3.2-3b Strategy  Honest Strategic Persuasive Deceptive Malicious  Full Consensus  Unanimous Only  Sample Size  "
+   },
+   {
+    "id": "Table 3",
+    "page": 11,
+    "caption_start": " Table 3: Statistical Significance Comparison - Full Consensus vs Unanimous Only for Gemma3-1b Strategy  Honest Strategic Persuasive Deceptive Malicious  Full Consensus  Unanimous Only  Sample Size  T"
+   },
+   {
+    "id": "Figure 2",
+    "page": 12,
+    "caption_start": "Figure 2: Geometric analysis for Gemma3-1b deceptive strategy (N=61). All responses classified as \u201clow transparency\u201d and \u201cevasive\u201d. Mean A\u2032 = 9,769. Error bars show 95% bootstrap confidence intervals."
+   },
+   {
+    "id": "Figure 3",
+    "page": 13,
+    "caption_start": "Figure 3: Geometric analysis for LLaMA3.2-3b deceptive strategy (N=47). Significant separation across transparency levels (Kruskal-Wallis p < 0.001, \u03b7 2 = 0.448). Mean A\u2032 values: low (1,276), medium ("
+   },
+   {
+    "id": "Figure 4",
+    "page": 14,
+    "caption_start": " Figure 4: Surface area metric for Gemma3-1b deceptive strategy (N=61). Single group distribution with mean A\u2032 = 9,769. The simplified visualization emphasizes the single-group nature of Gemma3-1b\u2019s d"
+   },
+   {
+    "id": "Figure 5",
+    "page": 15,
+    "caption_start": "Figure 5: Surface area metric for LLaMA3.2-3b deceptive strategy (N=47). Transparency groups show distinct geometric signatures (p < 0.001).  Cross-Model Geometric Patterns Both comprehensive analyses"
+   }
+  ],
+  "n_figures_tables": 8,
+  "section_heading_candidates": [
+   "3.1 Models",
+   "3.2 Naturalistic Prompt Design",
+   "3.3 Methodological Rationale",
+   "3.3.1 Extending Curved Inference: From CI01 to CI02",
+   "3.3.2 Why Naturalistic Contexts Are Necessary",
+   "3.3.3 Why Geometric Detection Is Required",
+   "3.3.4 Theoretical Framework",
+   "3.4 Geometric Metrics",
+   "3.4.1 Semantic Surface Area (A\u2032 )",
+   "3.4.2 Curvature and Salience",
+   "3.4.3 Pullback Metric and Trajectory Construction",
+   "3.5 Experimental Protocol",
+   "3.5.1 Response Generation and Activation Capture",
+   "3.5.2 Response Classification and Analysis",
+   "3.6 Cross-Model Scaling and Architectural Considerations",
+   "3.6.1 Surface Area Magnitude Differences",
+   "3.6.2 Methodological Implications",
+   "3.6.3 Geometric Framework Robustness",
+   "3.6.4 Interpretation Framework",
+   "3.6.5 Future Research Directions",
+   "4.1 Signal Quality Improvement with Unanimous Classifications",
+   "4.2 Geometric Signatures Emerge Without Linear Separability",
+   "4.3 Cross-Model Validation",
+   "4.4 Implications for Real-World Deception Detection",
+   "A.1 Overview: Geometry as Unnormalised Trajectory",
+   "A.2 The Unnormalised Trajectory Framework",
+   "A.3 Geometric Measures on Semantic Trajectories",
+   "A.4 Why Unnormalised Trajectories Matter",
+   "A.5 Position, Attention, and Contextual Geometry",
+   "A.6 Implications for Mechanistic Interpretability",
+   "A.7 Summary: The Geometric Lens on Semantics",
+   "C.1 Classification Scheme",
+   "C.2 Inter-rater Reliability",
+   "D.1 Dataset Preparation and Quality Control",
+   "D.2 Normality Assessment and Test Selection",
+   "D.3 Enhanced Statistical Testing Protocol",
+   "D.3.2 Effect Size Estimation",
+   "D.4 Multiple Testing and Statistical Control",
+   "D.5 Correlation and Relationship Analysis",
+   "D.6 Cross-Model Comparative Analysis",
+   "D.7 Statistical Software and Reproducibility",
+   "D.8 Methodological Validation Framework",
+   "E.1 LLaMA3.2-3b Statistical Results",
+   "E.1.1 Full Consensus Dataset (n=100 per strategy)",
+   "E.1.2 Unanimous Consensus Dataset",
+   "E.2 Gemma3-1b Statistical Results",
+   "E.2.1 Full Consensus Dataset (n=100 per strategy)",
+   "E.2.2 Unanimous Consensus Dataset",
+   "E.3 Cross-Model Comparisons",
+   "E.3.1 Surface Area Scale Differences",
+   "E.4 Statistical Methodology Notes"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "c11-trajectory-signatures-deception-acl2026",
+  "url": "https://aclanthology.org/2026.acl-long.1582.pdf",
+  "pdf_ok": true,
+  "pages": 13,
+  "chars": 60938,
+  "title_guess": "Trajectory Signatures of Deception in Large Language Models Viraaji Mothukuri, Reza M. Parizi Decentralized Science Lab, College of Computing and Software Engin",
+  "figures_tables": [
+   {
+    "id": "Table 1",
+    "page": 2,
+    "caption_start": " Table 1: Related works  3  Proposed Approach  3.1  Architecture  We develop a trajectory-based detection framework that analyzes computational patterns during language model inference. The framework "
+   },
+   {
+    "id": "Figure 1",
+    "page": 4,
+    "caption_start": " Figure 1: Trajectory analysis pipeline for deception detection  answer independently. Matched pairs contrasting persona-prefixed and persona-stripped conditions are constructed from this source. The "
+   },
+   {
+    "id": "Table 2",
+    "page": 4,
+    "caption_start": " Table 2: Geometric trajectory features  Path length measures the total distance traversed through activation space during the forward pass. Mean step normalizes this quantity by layer count to enable"
+   },
+   {
+    "id": "Table 3",
+    "page": 6,
+    "caption_start": "Table 3: Path length effects across deception types information suppression. Strategic deception exhibits the largest effect magnitudes but with inconsistent directionality: GPT-2 (d = \u22120.99), Llama-2"
+   },
+   {
+    "id": "Figure 2",
+    "page": 7,
+    "caption_start": " Figure 2: Trajectory visualizations across the architectures. Pair 1: Instructed Lies  Pair 2: Sycophancy  Pair 3: Confabulation  Truthful Deceptive  Truthful Deceptive  100 80 60 40 PC3 20 0 20 40  "
+   },
+   {
+    "id": "Figure 3",
+    "page": 7,
+    "caption_start": " Figure 3: Behavior-specific trajectory visualization for Llama2 and Llama3.  we consolidate evidence across path length, layerwise depth, and per-feature profiles, and find that signatures are archit"
+   },
+   {
+    "id": "Figure 4",
+    "page": 8,
+    "caption_start": " Figure 4: Architecture-dependent signature manifestation.  influence trajectory geometry independently of capacity. Layerwise probe analysis (Figure 4a) (Implicitly addresses RQ4) reveals optimal det"
+   },
+   {
+    "id": "Table 4",
+    "page": 9,
+    "caption_start": " Table 4: Matched-dimensionality comparison  Under matched dimensionality and identical classifier choice, geometric features and PCAreduced probes achieve comparable mean accuracy (66.6% versus 67.8%"
+   },
+   {
+    "id": "Table 5",
+    "page": 9,
+    "caption_start": " Table 5: Full baseline ladder for binary sycophancy detection  Geometric features and activation probes serve complementary roles. Activation probes characterize what information is present at a give"
+   },
+   {
+    "id": "Table 6",
+    "page": 12,
+    "caption_start": " Table 6: Dataset composition and model coverage across experiments.  The Custom Dataset corpus spans four deception categories, with matched prompt pairs in each category. Each pair shares semantic c"
+   },
+   {
+    "id": "Figure 5",
+    "page": 12,
+    "caption_start": " Figure 5: Representative matched pairs from the custom dataset  The dataset is partitioned into training, validation, and test splits. Signal layer discovery (Section 3.4) draws pairs from the test s"
+   },
+   {
+    "id": "Figure 6",
+    "page": 13,
+    "caption_start": " Figure 6: Sycophancy pair construction  Negative Controls. Two Anthropic evaluations serve as negative controls, testing whether trajectory signatures are specific to deception rather than general be"
+   }
+  ],
+  "n_figures_tables": 12,
+  "section_heading_candidates": [
+   "3.2 State Definition and Extraction Protocol",
+   "3.4 Signal Layer Discovery Protocol",
+   "3.4.1 Sparse Sampling Strategy",
+   "3.5 Inference Pipeline",
+   "3.6 Domain-Adaptive Calibration",
+   "4.2 Results"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "c12-tigges-circuits-across-training-2407.10827",
+  "url": "https://arxiv.org/pdf/2407.10827",
+  "pdf_ok": true,
+  "pages": 26,
+  "chars": 102399,
+  "title_guess": "arXiv:2407.10827v2 [cs.LG] 25 Nov 2024  LLM Circuit Analyses Are Consistent Across Training",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 4,
+    "caption_start": " Figure 1: Task behavior across models and time (higher indicates a better match with expected behavior). Across tasks and scales, model abilities tend to develop at the same number of tokens. Gendere"
+   },
+   {
+    "id": "Figure 2",
+    "page": 6,
+    "caption_start": " Figure 2: The development of components relevant to IOI and Greater-Than, across models and time. Each line indicates the degree to which attention heads in the circuit at each timestep exhibit the r"
+   },
+   {
+    "id": "Figure 3",
+    "page": 7,
+    "caption_start": " Figure 3: The development over time of components relevant to IOI and Greater-Than in Pythia-160m. Each line indicates the degree to which an attention head, denoted as (layer, head), exhibits a give"
+   },
+   {
+    "id": "Figure 4",
+    "page": 8,
+    "caption_start": " Figure 4: A: Pythia-160m\u2019s IOI circuit at the end of training (300B tokens). The remaining plots show the percent of model IOI performance that is explained by the Copy Suppression and Name-Mover Hea"
+   },
+   {
+    "id": "Figure 5",
+    "page": 9,
+    "caption_start": " Figure 5: Exponentially-weighted moving average Jaccard similarity for circuit node sets over training token count. In general, larger models tend to have both higher average EWMA-JS and fewer abrupt"
+   },
+   {
+    "id": "Figure 6",
+    "page": 23,
+    "caption_start": "Figure 6: Number of Nodes in the circuits  Figure 7: Node Jaccard Similarity of intermediate circuits with the circuit at the final checkpoint. Compared with the exponential weighted moving average (F"
+   },
+   {
+    "id": "Figure 7",
+    "page": 23,
+    "caption_start": " Figure 7: Node Jaccard Similarity of intermediate circuits with the circuit at the final checkpoint. Compared with the exponential weighted moving average (Figure 5, main text), we see more fluctuati"
+   },
+   {
+    "id": "Figure 8",
+    "page": 24,
+    "caption_start": "Figure 8: Edge Weighted Jaccard Similarity of the intermediate circuits with the circuit at the final checkpoint. The similarity slowly climbs and remains high at the end. Compared with the exact node"
+   },
+   {
+    "id": "Figure 9",
+    "page": 26,
+    "caption_start": " Figure 9: Accuracy over training for four different datasets. Step numbers each represent approximately 2M tokens, so Step 1000 would be 2B tokens. We see that the rate of capability acquisition tend"
+   }
+  ],
+  "n_figures_tables": 9,
+  "section_heading_candidates": [],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "c13-cka-reliability-2210.16156",
+  "url": "https://arxiv.org/pdf/2210.16156",
+  "pdf_ok": true,
+  "pages": 28,
+  "chars": 91728,
+  "title_guess": "R ELIABILITY OF CKA AS A S IMILARITY M EASURE IN D EEP L EARNING MohammadReza Davari 1,3 \u2217 Stefan Horoi 2,3 \u2217",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 4,
+    "caption_start": "Figure 1: Visual representations of the transformations considered in the theoretical results. a) Thm. 1: The original set of neural representations X contains subsets S (red) and X\\S (green). We can "
+   },
+   {
+    "id": "Figure 2",
+    "page": 6,
+    "caption_start": " Figure 2: A layer-wise comparison based on the value Figure 3: The convolution filters within the first two  of the CKA between a generalized, memorized, and layers of a generalized, memorized, and a"
+   },
+   {
+    "id": "Figure 4",
+    "page": 6,
+    "caption_start": " Figure 4: a) Linear and RBF CKA values between the artificial representations X and the subset translated version Y as a function of the translation distance. b) CKA value between a CNN\u2019s internal re"
+   },
+   {
+    "id": "Figure 5",
+    "page": 7,
+    "caption_start": " Figure 5: Original Map is the CKA map of a network trained on CIFAR10. We manipulate this network to  produce CKA maps which: (1) maximizes the CKA similarity between the 1st and last layer, (2) maxi"
+   },
+   {
+    "id": "Figure 6",
+    "page": 7,
+    "caption_start": " Figure 6: The comical target CKA maps (first row) are used as the objective for the CKA map loss in Eq. 3, while prioritizing network performance (small tolerance for changes in accuracy \u03b4acc ). The "
+   },
+   {
+    "id": "Figure 7",
+    "page": 8,
+    "caption_start": " Figure 7: ResNet-34 networks of different widths and their corresponding CKA Maps are modified to produce CKA maps of thin networks. Top row Original shows the unaltered CKA map of the networks deriv"
+   },
+   {
+    "id": "Figure 8",
+    "page": 8,
+    "caption_start": " Figure 8: PCA of the networks presented in Fig. 5 before (left) and after (right) being optimized to manipulate the CKA map with Eq 3. Noticeably to achieve the objective the optimization displaces a"
+   },
+   {
+    "id": "Figure 10",
+    "page": 17,
+    "caption_start": " Figure 10: In Fig. 7 we are presented a series of ResNet-34 networks of different widths and their corresponding CKA Maps, which are modified to produce CKA maps of thin networks using the CIFAR10 da"
+   },
+   {
+    "id": "Figure 11",
+    "page": 17,
+    "caption_start": " Figure 11: VGG style networks of different widths and their corresponding CKA Maps are modified to produce CKA maps of thin networks. Top row Original shows the unaltered CKA map of the networks deri"
+   },
+   {
+    "id": "Figure 12",
+    "page": 18,
+    "caption_start": " Figure 12: Original Map is the CKA map of a network trained on CIFAR10. We manipulate this network to produce CKA maps which: (1) maximizes the CKA similarity between the 1st and last layer, (2) maxi"
+   },
+   {
+    "id": "Figure 13",
+    "page": 19,
+    "caption_start": " Figure 13: Original Map is the CKA map of a network trained on CIFAR10. We manipulate this network following a modified version of Eq. 3 (distillation loss is substituted with cross-entropy loss) to "
+   },
+   {
+    "id": "Figure 14",
+    "page": 19,
+    "caption_start": " Figure 14: Original Map is the CKA map of a ViT (Dosovitskiy et al., 2020) network trained on CIFAR10. We manipulate this network following the Eq. 3 to produce CKA maps which: (1) maximizes the CKA "
+   },
+   {
+    "id": "Table 1",
+    "page": 19,
+    "caption_start": " Table 1: Architectural details of out implementation of ViT (Dosovitskiy et al., 2020) for the CIFAR10 dataset. Note that the training process (except the number of epochs, which is listed above) fol"
+   },
+   {
+    "id": "Figure 15",
+    "page": 20,
+    "caption_start": " Figure 15: A layer wise comparison between a generalized, memorized, and randomly populated network using either (left figure) the same random seed or (right figure) different random seeds. This comp"
+   },
+   {
+    "id": "Figure 16",
+    "page": 20,
+    "caption_start": " Figure 16: The linear probe accuracy obtained on the CIFAR10 test set for the generalized, memorized, and randomly populated network seen in Fig. 2 and 3. The results shown in this figure along with "
+   },
+   {
+    "id": "Figure 17",
+    "page": 21,
+    "caption_start": " Figure 17: Results of OOD evaluation of models from Figure17 on CIFAR-10C (Hendrycks & Dietterich, 2018) corruptions data. We show results for each corruptions as well as the average results. We obse"
+   }
+  ],
+  "n_figures_tables": 16,
+  "section_heading_candidates": [
+   "R ELIABILITY OF CKA AS A S IMILARITY",
+   "M EASURE IN D EEP L EARNING",
+   "A BSTRACT",
+   "I NTRODUCTION",
+   "P RACTICAL IMPLICATIONS OF THEORETICAL RESULTS",
+   "E XPLICITLY O PTIMIZING THE CKA M AP",
+   "R EFERENCES",
+   "E XPERIMENTAL DETAILS",
+   "M INIBATCH CKA",
+   "N ETWORK A RCHITECTURE",
+   "T RAINING D ETAILS",
+   "A DDITIONAL R ESULTS",
+   "W IDER N ETWORKS",
+   "C LOSER L OOK AT T HE E ARLY L AYERS",
+   "O UT OF D ISTRIBUTION E VALUATION",
+   "P ROOFS",
+   "1 XX 2",
+   "1 XX 2"
+  ],
+  "looks_abstract_only": false,
+  "has_references": false
+ },
+ {
+  "slug": "c14-mags-2605.21770",
+  "url": "https://arxiv.org/pdf/2605.21770",
+  "pdf_ok": true,
+  "pages": 14,
+  "chars": 43183,
+  "title_guess": "Manifold-Guided Attention Steering Ian Li i6li@ucsd.edu",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 2,
+    "caption_start": "Figure 1: Comparison of static and Manifold-Guided Attention Steering (MAGS) on an example problem. Step-by-step reasoning traces for a static baseline and MAGS. Blue boxes denote correct reasoning st"
+   },
+   {
+    "id": "Figure 2",
+    "page": 4,
+    "caption_start": " Figure 2: Schematic of the contrastive error manifold. Correct and error activation spaces are separated along the learned subspace span(B). Given an error activation at , the projection B\u22a4B gives (l"
+   },
+   {
+    "id": "Figure 3",
+    "page": 5,
+    "caption_start": "Figure 3: Per-head error detection AUROC across four monitored layers for the Math-Instruct dataset with Llama-3.1-8b-Instruct. Dots mark heads with AUROC > 0.65. The signal is sparse and concentrated"
+   },
+   {
+    "id": "Table 1",
+    "page": 7,
+    "caption_start": "Table 1: Performance and output fluency (perplexity, \u2193) of steering methods on Llama-3.1-8B-Instruct. Best accuracy per benchmark in bold; best perplexity in italics.  MATH-500  GSM8k  HumanEval  MBPP"
+   },
+   {
+    "id": "Table 2",
+    "page": 7,
+    "caption_start": " Table 2: Performance and output fluency (perplexity, \u2193) of steering methods on Gemma-4-E4b-it. Best accuracy per benchmark in bold; best perplexity in italics  MATH-500  GSM8k  HumanEval  MBPP  Metho"
+   },
+   {
+    "id": "Table 3",
+    "page": 8,
+    "caption_start": "Table 3: Molecular generation by steering GPT-OSS-20B. Validity: higher is better (%). Binding Affinity: lower score is better(kcal/mol). Method Validity (\u2191) Binding Affinity (\u2193) Unsteered Angular Ste"
+   },
+   {
+    "id": "Figure 4",
+    "page": 9,
+    "caption_start": "Figure 4: Latent-space trajectories of attention-head activations projected onto the top-4 principal components of the contrastive error subspace. Filled contours: kernel-density estimate of the corre"
+   },
+   {
+    "id": "Table 4",
+    "page": 12,
+    "caption_start": "Table 4: Hyperparameter ablations on MATH-500 (Llama-3.1-8B-Instruct). Best result per method in bold. (a) MAGS: top-k heads and steering strength \u03b1.  Config  \u03b1  (b) ITI: number of steered heads K and"
+   },
+   {
+    "id": "Figure 5",
+    "page": 13,
+    "caption_start": " Figure 5: Relative attention shift \u2206W/Wunsteered at layer \u2113bip for two representative problems from MATH-500, steered with Gemma-4-E4b-it. Each cell shows the head-averaged attention change between t"
+   },
+   {
+    "id": "Table 5",
+    "page": 14,
+    "caption_start": "Table 5: Bootstrap 95% CIs on Gemma-4-E4b-it across all benchmarks (B=10,000 resamples, percentile method). MATH-500 (N =500)  GSM8k (N =1319)  HumanEval (N =164)  Method  Acc.  95% CI  Acc.  95% CI  "
+   },
+   {
+    "id": "Table 6",
+    "page": 14,
+    "caption_start": " Table 6: Bootstrap 95% CIs on Llama-3.1-8B-Instruct across all benchmarks (B=10,000 resamples, percentile method). MATH-500 (N =500)  GSM8k (N =1319)  HumanEval (N =164)  Method  Acc.  95% CI  Acc.  "
+   }
+  ],
+  "n_figures_tables": 11,
+  "section_heading_candidates": [
+   "4090 GPUs (24 GB VRAM) with model weights loaded in float16 precision. GPT-OSS 20B"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "c15-confidence-manifold-2602.08159",
+  "url": "https://arxiv.org/pdf/2602.08159",
+  "pdf_ok": true,
+  "pages": 26,
+  "chars": 99844,
+  "title_guess": "The Confidence Manifold: Geometric Structure of Correctness Representations in Language Models ",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 2,
+    "caption_start": " Figure 1. Internal probes beat output-based uncertainty (P(True), semantic entropy) on TruthfulQA\u2019s adversarial misconception questions; the advantage closes on standard QA (\u00a75).  Activation Steering"
+   },
+   {
+    "id": "Table 1",
+    "page": 4,
+    "caption_start": " Table 1. Correctness detection across 11 models (TruthfulQA, GroupKFold AUC). Layer = optimal layer / total layers.  5.2. Two Centroids Suffice  sures no question in both train and test. Preprocessin"
+   },
+   {
+    "id": "Table 2",
+    "page": 5,
+    "caption_start": " Table 2. All 11 models peak at 2\u20138 dimensions and degrade beyond. Adding dimensions hurts: GPT-2 loses 18% AUC from 3D to 32D, Mistral-7B 5%, Qwen2.5-14B 1%. PLS subspace dimension sweep on TruthfulQ"
+   },
+   {
+    "id": "Table 3",
+    "page": 5,
+    "caption_start": " Table 3. DAS causal dimension sweep (TruthfulQA, AUC). Peaks at 1\u20135D. \u219332D = degradation at 32D.  Steering shows the direction is causally load-bearing, not that the subspace is low-rank. We add the "
+   },
+   {
+    "id": "Figure 2",
+    "page": 6,
+    "caption_start": " Figure 2. Steering intervention on Qwen2-7B-Instruct (n = 617 held-out TruthfulQA questions). Error rate vs. steering coefficient \u03b1 \u2208 [\u22125, 5]. Interventions modify the forward pass at the optimal lay"
+   },
+   {
+    "id": "Table 4",
+    "page": 6,
+    "caption_start": " Table 4. Internal probes vs output methods on TruthfulQA (GroupKFold AUC). Probe standard deviations are given in Table 1.  general. 5.4. Internal Representations vs Output-Based Methods The internal"
+   },
+   {
+    "id": "Table 5",
+    "page": 7,
+    "caption_start": " Table 5. Cross-domain generalization (AUC, fixed PLS-5D), averaged over SciQ, CSQA and FEVER (HaluEval excluded; see text). Single: probe trained on TruthfulQA only. Multi: leave-one-out multi-datase"
+   },
+   {
+    "id": "Figure 3",
+    "page": 14,
+    "caption_start": " Figure 3. Geometric patterns across architectures. (a) Normalized intrinsic dimension (MLE) by layer depth. All models compress from early to late layers (mean curve in black), with peak dimension at"
+   },
+   {
+    "id": "Table 6",
+    "page": 15,
+    "caption_start": "Table 6. Geometric classifiers in 8D PLS space (GroupKFold AUC). NCH = Nearest Convex Hull. Llama-8B and Qwen2.5-14B added after geometry experiments. Model GPT-2 GPT-2-Med GPT-2-Large Llama-1B Qwen2-"
+   },
+   {
+    "id": "Table 7",
+    "page": 16,
+    "caption_start": "Table 7. Unsupervised features (AUC, no labels). All fall well short of supervised probes. Feature  GPT-2  Mistral-7B  Llama-1B  L2 norm Recon. error LOF score Cluster unc. Local dim  0.508\u00b10.003 0.53"
+   },
+   {
+    "id": "Figure 4",
+    "page": 17,
+    "caption_start": " Figure 4. 3D PLS visualization of the discriminative subspace. Row 1: instruction-tuned models (Qwen2-7B, Mistral-7B, Llama-3B). Row 2: GPT-2 family (base models). Convex hulls show class regions; st"
+   },
+   {
+    "id": "Table 8",
+    "page": 17,
+    "caption_start": "Table 8. Layer-wise performance across GPT-2 family. AUC and intrinsic dimension (Dim) at key depth percentiles. All models show monotonic AUC increase concurrent with dimension compression, supportin"
+   },
+   {
+    "id": "Figure 5",
+    "page": 18,
+    "caption_start": " Figure 5. 3D PLS visualization of the discriminative subspace for the 1B\u20132B models (Qwen2-1.5B, Llama-1B, Gemma-2B). These models achieve AUC 0.91\u20130.93, comparable to the 3B\u20137B models reported elsewh"
+   },
+   {
+    "id": "Table 9",
+    "page": 18,
+    "caption_start": "Table 9. PLS dimension sweep with standard deviations (GroupKFold AUC, TruthfulQA). Model GPT-2 GPT-2-Med GPT-2-Large Llama-3.2-1B Qwen2-1.5B Gemma-2-2B Llama-3.2-3B Qwen2-7B Mistral-7B Llama-3.1-8B Q"
+   },
+   {
+    "id": "Table 10",
+    "page": 19,
+    "caption_start": "Table 10. Complete cross-dataset transfer results. In-domain: train and test on the same dataset (5-fold GroupKFold). Cross-domain: train on TruthfulQA, test on others (zero-shot transfer). Values are"
+   },
+   {
+    "id": "Table 11",
+    "page": 19,
+    "caption_start": " Table 11. Few-shot label efficiency (GPT-2, AUC). Centroid matches probe at all N. N  Probe  Centroid  Mahal.  5 25 100 200  0.59\u00b1.11 0.68\u00b1.06 0.75\u00b1.01 0.78\u00b1.02  0.60\u00b1.09 0.69\u00b1.05 0.76\u00b1.01 0.78\u00b1.02  "
+   },
+   {
+    "id": "Table 12",
+    "page": 19,
+    "caption_start": "Table 12. PLS improves cross-domain transfer. Train on TruthfulQA, test on other datasets. PLS 5D outperforms full-dimensional embeddings by 10\u201314% absolute AUC. Method  SciQ  CSQA  FEVER  Full (3584D"
+   },
+   {
+    "id": "Table 13",
+    "page": 20,
+    "caption_start": "Table 13. In-domain AUC (PLS-8, GroupKFold by question id). The discriminative subspace generalizes: the same PLS-8 protocol works in-domain across all four QA datasets, supporting the geometric frame"
+   },
+   {
+    "id": "Table 14",
+    "page": 20,
+    "caption_start": "Table 14. Per-dataset PLS dimension sweep on Qwen2-7B (mean AUC over 5 folds). Bold = peak; red = \u22653pp degradation from peak. All four datasets peak at k \u2208 {2, 3, 5, 12} and degrade beyond k = 16, sup"
+   },
+   {
+    "id": "Table 15",
+    "page": 20,
+    "caption_start": "Table 15. Geometric methods on Qwen2-7B PLS-8 subspace (5-fold AUC). QDA\u2019s per-class covariance buys +1.0pp over LR; multi-prototype variants hurt, indicating the per-class distributions are unimodal "
+   },
+   {
+    "id": "Table 16",
+    "page": 21,
+    "caption_start": "Table 16. Centroid vs LR sample efficiency (Qwen2-7B PLS-8). Centroid matches LR at low K and beats it at high K (+1.2\u20131.5pp at K \u2265 200), supporting the title claim that two centroids suffice without "
+   },
+   {
+    "id": "Table 17",
+    "page": 21,
+    "caption_start": "Table 17. Centroid (PLS peak) vs P(True) on Qwen2-7B-Instruct. Identical prompt template across datasets; centroid uses the per-dataset peak from Table 14. Method  TruthfulQA  SciQ  FEVER  CSQA  P(Tru"
+   },
+   {
+    "id": "Table 18",
+    "page": 22,
+    "caption_start": "Table 18. Pooled LID (Yin et al.) vs. class-conditional PLS centroid. 5-fold GroupKFold on TruthfulQA, k=20 for LID, k=8 for PLS. The +0.34 mean gap shows our approach captures information distinct fr"
+   },
+   {
+    "id": "Table 19",
+    "page": 22,
+    "caption_start": "Table 19. Full-space DoM vs. PLS-DoM vs. Linear Probe. 5-fold GroupKFold by question on TruthfulQA. Full-space DoM uses raw residual-stream embeddings (no projection). PLS-DoM uses 8D PLS projection. "
+   },
+   {
+    "id": "Table 20",
+    "page": 23,
+    "caption_start": "Table 20. Multi-model steering (n=617 each). Effect sizes (pp) for learned PLS direction vs. random and orthogonal controls. Specificity = learned \u2212 orthogonal. All six models show specificity \u2265 4pp. "
+   },
+   {
+    "id": "Table 21",
+    "page": 23,
+    "caption_start": "Table 21. Nested CV shows no optimistic bias. Comparing nested CV (unbiased) vs. standard CV (fixed dim=8). Bias = Standard \u2212 Nested. Negative bias indicates standard CV is actually conservative. Mode"
+   },
+   {
+    "id": "Table 22",
+    "page": 24,
+    "caption_start": "Table 22. Full DAS dimension sweep (AUC). Bold = peak dimension per model. All models peak at \u22645D. Model  1D  2D  3D  5D  8D  16D  32D  GPT-2 GPT-2-L Llama-3B Mistral-7B Qwen2-7B  .751 .784 .943 .924 "
+   },
+   {
+    "id": "Table 23",
+    "page": 25,
+    "caption_start": "Table 23. RLACE erasure. Removing the correctness direction drops AUC to \u223c0.50 (chance) across all models, confirming necessity of the identified subspace. Model  Before  After RLACE  GPT-2 GPT-2-Larg"
+   },
+   {
+    "id": "Table 24",
+    "page": 25,
+    "caption_start": "Table 24. Linear alternatives to PLS (AUC). LDA is capped at 1D for a binary target; DoM columns are on raw, unscaled embeddings and are reported for the five models where full-space extraction was ru"
+   }
+  ],
+  "n_figures_tables": 29,
+  "section_heading_candidates": [
+   "0.91 AUC on instruction-tuned models 1B and larger.",
+   "0 PLS3"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "u5-user-2608.27510",
+  "url": "https://arxiv.org/pdf/2608.27510",
+  "pdf_ok": true,
+  "pages": 30,
+  "chars": 99033,
+  "title_guess": "How Do Linear Probes Emerge? A Circuit-Tracing Framework with Concept-Targeted Attribution Vedant Palit1,2,3 Florent Draye3,4 Terry Jingchen Zhang1,2",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 2,
+    "caption_start": " Figure 1: The CTA pipeline: CLT replaces MLP modules for interpretability; attribution graphs capture causal feature flow toward the probe; graph-structural features predict probe accuracy; CLT featu"
+   },
+   {
+    "id": "Figure 2",
+    "page": 3,
+    "caption_start": " Figure 2: Probe score trajectories across layers for all four concepts. Shaded bands mark the steepest singlestep rise, indicating the belief point Lb where the residual stream most sharply aligns wi"
+   },
+   {
+    "id": "Table 1",
+    "page": 4,
+    "caption_start": " Table 1: Causal dissociation for Toxicity and Truthfulness depicted at their respective Lb , implemented across Gemma-2-2B and Llama-3.2-1B. Ablating probe-exclusive nodes collapses \u2206S with near-zero"
+   },
+   {
+    "id": "Figure 3",
+    "page": 5,
+    "caption_start": " Figure 3: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for Toxicity. The separation is statistically significant for each feature (p < 0."
+   },
+   {
+    "id": "Table 2",
+    "page": 5,
+    "caption_start": " Table 2: Predicting probe accuracy from graphstructural features using 5-fold group-aware crossvalidation. Bootstrap 95% confidence intervals for GB are \u03c1 \u2208 [0.724, 0.964], with p < 0.005 under group"
+   },
+   {
+    "id": "Figure 4",
+    "page": 6,
+    "caption_start": " Figure 4: Top activated examples for L6/F4508. This feature is present in CTAs of more than 50% of positive prompts from the SST-2 sentiment dataset, specifically activating in positive superlatives."
+   },
+   {
+    "id": "Figure 5",
+    "page": 7,
+    "caption_start": " Figure 5: Top predictive features appear 6\u201320\u00d7 more frequently than a random feature at Lb , revealing a stable mechanistic core despite prompt-level circuit variation.  tual recall. Its signal is re"
+   },
+   {
+    "id": "Figure 6",
+    "page": 8,
+    "caption_start": " Figure 6: Consecutive-layer Jaccard J(L, L \u2212 1) for a representative prompt per concept, showing rapid circuit evolution in early layers followed by stabilization at J \u2248 0.9 by intermediate layers.  "
+   },
+   {
+    "id": "Figure 7",
+    "page": 18,
+    "caption_start": " Figure 7: Probe validation accuracy across layers for Gemma-2-2B (left) and Llama-3.2-1B (centre). Toxicity is linearly decodable from early layers in both models; Sentiment and Truthfulness show wea"
+   },
+   {
+    "id": "Table 3",
+    "page": 18,
+    "caption_start": " Table 3: Probe accuracy at each concept\u2019s belief layer Lb for both models. Sentiment and Truthfulness show lower ceilings in Llama-3.2-1B, consistent with weaker encoding of affective and factual con"
+   },
+   {
+    "id": "Table 4",
+    "page": 19,
+    "caption_start": " Table 4: Full causal ablation results across all four concepts on Gemma-2-2B (see Section 4.2 for the main study). S \u2032 = post-ablation probe score; \u2206S = change from control. Reasoning\u2019s \u2206S signs are "
+   },
+   {
+    "id": "Table 5",
+    "page": 19,
+    "caption_start": " Table 5: 5-fold group-aware CV results for Channel 2 (Gemma-2-2B).  and the logit-exclusive subgraph produces a 92% flip rate with near-zero internal effect (\u2206S = +0.53). Second, the logit-exclusive "
+   },
+   {
+    "id": "Table 6",
+    "page": 20,
+    "caption_start": " Table 6: Bootstrap 95% CI (500 resamples) and permutation test (200 shuffles) for Channel 2 GB model (Gemma-22B). 1.0  Within-Layer Predictability of Probe Score Margin Toxicity Sentiment Reasoning T"
+   },
+   {
+    "id": "Figure 8",
+    "page": 20,
+    "caption_start": " Figure 8: Spearman \u03c1 between predicted and actual probe score margins across layers for all four concepts. Toxicity maintains consistently high predictability across all layers; Truthfulness peaks at"
+   },
+   {
+    "id": "Figure 9",
+    "page": 21,
+    "caption_start": " Figure 9: Top predictive features appear 8\u201321\u00d7 more frequently than a random feature at highest validation accuracy layer, revealing a stable mechanistic core despite prompt-level circuit variation. "
+   },
+   {
+    "id": "Figure 10",
+    "page": 22,
+    "caption_start": " Figure 10: Mean per-prompt Jaccard similarity J(T @LT , R@LR ) between Truthfulness and Reasoning attribution graphs across all layer-pair combinations. Cross-concept overlap is non-negligible only w"
+   },
+   {
+    "id": "Figure 11",
+    "page": 23,
+    "caption_start": " Figure 11: Representative CLT features identified by the probe attribution pipeline, visualized via Neuronpedia. Each panel shows the feature\u2019s layer, index, mean activation, and top/bottom predicted"
+   },
+   {
+    "id": "Table 7",
+    "page": 24,
+    "caption_start": " Table 7: Full causal ablation results across all four concepts on Llama-3.2-1B. S \u2032 = post-ablation probe score; \u2206S = change from control. Sentiment baseline is negative as the probe encodes positive"
+   },
+   {
+    "id": "Table 8",
+    "page": 24,
+    "caption_start": " Table 8: 5-fold group-aware CV results for Channel 2 (Llama-3.2-1B).  Observed \u03c1 95% CI on \u03c1 Null mean \u03c1 p(\u03c1)  Raw +0.780 [+0.368, +0.955] \u22120.011 \u00b1 0.179 < 0.005  Table 9: Bootstrap 95% CI (500 resam"
+   },
+   {
+    "id": "Table 9",
+    "page": 24,
+    "caption_start": " Table 9: Bootstrap 95% CI (500 resamples) and permutation test (200 shuffles) for Channel 2 GB model (Llama3.2-1B).  Structural separation is weaker than Gemma-2-2B. While the raw signal is significa"
+   },
+   {
+    "id": "Figure 12",
+    "page": 27,
+    "caption_start": " Figure 12: Gemma-2-2B: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for sentiment. The separation is statistically significant for each f"
+   },
+   {
+    "id": "Figure 13",
+    "page": 27,
+    "caption_start": " Figure 13: Gemma-2-2B: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for reasoning. The separation is statistically significant for each f"
+   },
+   {
+    "id": "Figure 14",
+    "page": 28,
+    "caption_start": " Figure 14: Gemma-2-2B: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for truthfulness. The separation is not purely significant for featur"
+   },
+   {
+    "id": "Figure 15",
+    "page": 28,
+    "caption_start": " Figure 15: Llama-3.2-1B: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for Sentiment. No feature reaches significance at p < 0.05, and eff"
+   },
+   {
+    "id": "Figure 16",
+    "page": 29,
+    "caption_start": " Figure 16: Llama-3.2-1B: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for Sentiment. No feature reaches significance at p < 0.05, and eff"
+   },
+   {
+    "id": "Figure 17",
+    "page": 29,
+    "caption_start": " Figure 17: Llama-3.2-1B: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for Reasoning. Maximum logit edge and graph density reach significa"
+   },
+   {
+    "id": "Figure 18",
+    "page": 30,
+    "caption_start": " Figure 18: Llama-3.2-1B: Distributions of five selected graph-structural features for high- versus low-accuracy probe layers, shown for Truthfulness. No feature reaches significance at p < 0.05, and "
+   }
+  ],
+  "n_figures_tables": 27,
+  "section_heading_candidates": [
+   "A Experimentation Details",
+   "B Extended Result Discussion",
+   "C Activated Examples for Selected Features",
+   "D Implementation Results on Llama-3.2-1B",
+   "E Computational Resources",
+   "F Topological Fingerprints of Graph Structural Features",
+   "A.5.1 Graph Structural Predictor",
+   "A.5.2 Local CLT Feature Predictor"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "w2-readout-subspace-grassmann-2605.09011",
+  "url": "https://arxiv.org/pdf/2605.09011",
+  "pdf_ok": true,
+  "pages": 18,
+  "chars": 65520,
+  "title_guess": "A Geometric Perspective on Next-Token Prediction in Large Language Models: Three Emerging Phases ",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 2,
+    "caption_start": " Figure 1: Examples of Hit@k achieved by a representation lens and LogitLens across layers. The representation lens recovers the final token early, while the LogitLens remains nearly blind until the f"
+   },
+   {
+    "id": "Figure 2",
+    "page": 4,
+    "caption_start": " Figure 2: Pairwise RSS similarity matrices M(k) for OLM O 2-32B at truncation levels k. Qwen2.5-1.5B  Qwen2.5-32B  OLMo-2-7B  0.50 0.6  k=1%  0.5  0.45 k=3%  0.35  k=10% k=15%  0.2  k=50% 0.4  0.6  0"
+   },
+   {
+    "id": "Figure 3",
+    "page": 4,
+    "caption_start": " Figure 3: Examples of Pareto frontier between Visibility@k and E (k) . No single k dominates.  3  Methodology  3.1  Predictive Readout Subspace and Grassmann trajectory  A representation lens at laye"
+   },
+   {
+    "id": "Figure 4",
+    "page": 5,
+    "caption_start": " Figure 4: Examples of unimodal fits (left) and breakpoint detection (right) on the RSS profile @k=15%. Despite small local deviations, chord-based detection remains robust. 0.9 8 0  0.8 0.80 1 0 .8 0"
+   },
+   {
+    "id": "Figure 5",
+    "page": 5,
+    "caption_start": " Figure 5: Distributional fits to RSS profiles {s\u2113 } at k = 50%. High R2 values for unimodal distributions supports the unimodality assumption and the tripartite decomposition. singular vectors. We de"
+   },
+   {
+    "id": "Figure 6",
+    "page": 6,
+    "caption_start": " Figure 6: Scaling structure of the three phases across model depths. From left to right: b\u03021 vs depth, b\u03022 vs depth, Phase 3 width vs depth, and Phase 2 width vs depth.  4 3 2 1 0  Phase P1 Phase P2 "
+   },
+   {
+    "id": "Figure 7",
+    "page": 6,
+    "caption_start": " Figure 7: \u2225\u2206FFN \u2225/\u2225\u2206MHA \u2225 ratio across phases per model. \u2113 \u2113 coincide with Rd and pairwise similarity collapses to 1. This defines a Pareto trade-off between fidelity and discriminability, making k a"
+   },
+   {
+    "id": "Figure 8",
+    "page": 7,
+    "caption_start": " Figure 8: Left: breakpoint robustness for all eight models across all subspace resolutions k \u2208 {1%, .., 50%}. Right: consensus phase decomposition with depth-normalized layers.  2000  400  1500 1000 "
+   },
+   {
+    "id": "Figure 9",
+    "page": 7,
+    "caption_start": " Figure 9: Rank of the total update \u2206\u2113 (solid) and its norm (dashed). All models in Appendix E.  4  Results  4.1  Phase detection  Validation of the Unimodality Assumption. We report the distributiona"
+   },
+   {
+    "id": "Figure 10",
+    "page": 8,
+    "caption_start": " Figure 10: RSS profiles s\u2113 for all eight models across the two architectural families, with consensus breakpoints b\u03021 and b\u03022 indicated. All models in Appendix E.  Hit@1 and Hit@5  P2  P3  P1  0.8 0."
+   },
+   {
+    "id": "Figure 11",
+    "page": 8,
+    "caption_start": " Figure 11: Left: Hit@1 (solid) and Hit@5 (dashed) across normalised depth. Right: Hit@5/Hit@1 ratio. Both metrics evolve continuously across all three phases, reflecting a disambiguation process. nea"
+   },
+   {
+    "id": "Figure 12",
+    "page": 9,
+    "caption_start": " Figure 12: RSS profile s\u2113 (solid, left axis) and | cos(\u2206\u2113 , h\u2113\u22121 )| (dashed red, right axis). High RSS \u2194 low cosine (Phase 2); low RSS \u2194 high cosine (Phase 3). See Appendix E for all models.  1500 10"
+   },
+   {
+    "id": "Figure 13",
+    "page": 9,
+    "caption_start": " Figure 13: Average effective rank of hidden states across 16M tokens. All models in Appendix E. Phase 1 \u2013 Seeding Multiplexing. Nearly orthogonal updates add new directions, driving H\u2113 to peak rank w"
+   },
+   {
+    "id": "Table 1",
+    "page": 12,
+    "caption_start": "Table 1: Structure of the TunedLens train and validation subsets, extracted from SlimPajama.  226.49M  18.66M  OLMo-2-1124-7B gap=+0.0236  1.00  train val  0  5  Layer  0.00  10  Qwen2.5-1.5B gap=+0.0"
+   },
+   {
+    "id": "Figure 14",
+    "page": 12,
+    "caption_start": " Figure 14: Final per-layer training and validation losses across model scales and families. The low gap indicates no overfitting of trained lenses.  A  Representation Lens Training and Experiments Se"
+   },
+   {
+    "id": "Figure 15",
+    "page": 13,
+    "caption_start": " Figure 15: Pairwise RSS similarity matrices M(k) for all models in the Q WEN 2.5 family across truncation levels k \u2208 {1, 3, 5, 10, 15, 25, 35, 50}% of d. Each row corresponds to a model; each column "
+   },
+   {
+    "id": "Figure 16",
+    "page": 14,
+    "caption_start": " Figure 16: Pairwise RSS similarity matrices M(k) for all models in the OLM O 2 family across truncation levels k \u2208 {1, 3, 5, 10, 15, 25, 35, 50}% of d. The same monotonic decay in Visibility@K is obs"
+   },
+   {
+    "id": "Figure 17",
+    "page": 14,
+    "caption_start": " Figure 17: Pareto frontier between Visibility@K and E (k) for all models in the Q WEN 2.5 and OLM O 2 families. Each point corresponds to a truncation level k \u2208 {1, 3, 5, 10, 15, 25, 35, 50}% of d. T"
+   },
+   {
+    "id": "Figure 18",
+    "page": 15,
+    "caption_start": " Figure 18: Distribution fits (left panels) and double-chord breakpoint detection (right panels) on the (k=15%) RSS profile {s\u2113 } for all models in the Q WEN 2.5 and OLM O 2 families. Left panels show"
+   },
+   {
+    "id": "Figure 19",
+    "page": 16,
+    "caption_start": " Figure 19: RSS profiles s\u2113 for all eight models across both families, with consensus breakpoints b\u03021 and b\u03022 indicated. The rise\u2013plateau\u2013descent structure and the placement of phase boundaries are co"
+   },
+   {
+    "id": "Figure 20",
+    "page": 17,
+    "caption_start": " Figure 20: RSS profile s\u2113 (solid, left axis) and | cos(\u2206\u2113 , h\u2113\u22121 )| (dashed red, right axis) overlaid for all eight models across both families. High RSS \u2194 low cosine (Phase 2); low RSS \u2194 high cosine"
+   },
+   {
+    "id": "Figure 21",
+    "page": 17,
+    "caption_start": " Figure 21: Effective rank of hidden states H\u2113 averaged across 16M tokens for all eight models. Rank increases through Phase 1, peaks near b\u03021 , stabilises in Phase 2, and remains approximately consta"
+   },
+   {
+    "id": "Figure 22",
+    "page": 18,
+    "caption_start": " Figure 22: Effective rank of the total update \u2206\u2113 (solid) and its norm \u2225\u2206\u2113 \u22252 (dashed red) for all eight models. Update rank peaks in Phase 2 and declines in Phase 3 (7/8 models); update norm increase"
+   }
+  ],
+  "n_figures_tables": 23,
+  "section_heading_candidates": [
+   "A Geometric Perspective on Next-Token Prediction in",
+   "A QB , which capture their relative geometry and enable similarity measures."
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "w2-layerwise-grassmann-dynamics-2605.12714",
+  "url": "https://arxiv.org/pdf/2605.12714",
+  "pdf_ok": true,
+  "pages": 26,
+  "chars": 78509,
+  "title_guess": "arXiv:2605.12714v1 [cs.LG] 12 May 2026  Layer-wise Representation Dynamics: An Empirical",
+  "figures_tables": [
+   {
+    "id": "Table 1",
+    "page": 5,
+    "caption_start": "Table 1: Layer-wise patterns by architecture family. Symbols are defined in the main text. Per-model averages are in Appendix C. Family Encoder embedder Decoder embedder Base LLM  Models 13 12 6  dpea"
+   },
+   {
+    "id": "Table 2",
+    "page": 6,
+    "caption_start": "Table 2: Task-type stratified layer-aggregate summaries by model family. Means are over model-task pairs. CLS = classification, RET = retrieval, Other = STS / reranking / pair detection. Mean curv. \u03ba\u0304"
+   },
+   {
+    "id": "Table 3",
+    "page": 7,
+    "caption_start": "Table 3: Label-free model-selection correlations. MTEB entries are cross-task mean\u00b1sd Spearman correlations on the 25-model embedding panel. Parentheses give the number of significant tasks. MMLU is a"
+   },
+   {
+    "id": "Figure 1",
+    "page": 8,
+    "caption_start": " Figure 1: Per-model selection-score scatter on the MTEB-25 panel. Scores and official MTEB results are averaged over the 30 tasks, with Spearman \u03c1 annotated in each panel. 6.1  Pruning rules  For eac"
+   },
+   {
+    "id": "Table 4",
+    "page": 8,
+    "caption_start": " Table 4: Layer-pruning relative score change across budgets, aggregated over 15 model-task cells. Values closer to 0 are better. Mean rel. \u2206 (%)  Median rel. \u2206 (%)  5%  10%  15%  20%  5%  10%  15%  2"
+   },
+   {
+    "id": "Figure 2",
+    "page": 9,
+    "caption_start": " Figure 2: Layer-pruning score change over 15 model-task cells. GFMI improves over Random by mean at 15% and 20%, and is closest to zero by median at every budget.  Table 4 and Figure 2 support three "
+   }
+  ],
+  "n_figures_tables": 6,
+  "section_heading_candidates": [
+   "2020 Conference on Empirical Methods in Natural Language Processing (EMNLP), pages"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "w2-shape-of-beliefs-2602.02315",
+  "url": "https://arxiv.org/pdf/2602.02315",
+  "pdf_ok": true,
+  "pages": 22,
+  "chars": 61476,
+  "title_guess": "arXiv:2602.02315v2 [cs.CL] 5 May 2026  The Shape of Beliefs:",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 2,
+    "caption_start": " Figure 1: Shape of beliefs. (A) Stochastic time series u(t) \u2208 J0, 999K are generated from normal distributions N (\u00b5, \u03c3) draws and passed into Llama 3.2 as strings. (B) Representations (PCA at layer 1"
+   },
+   {
+    "id": "Figure 2",
+    "page": 4,
+    "caption_start": "Figure 2: Belief dynamics. Input (A) is a time series with a sharp transition between two distinct regimes, N300,\u03c30 \u2192 N700,\u03c30 at t = 1000. Output (B) shows the model quickly adapting its mean after th"
+   },
+   {
+    "id": "Figure 3",
+    "page": 6,
+    "caption_start": " Figure 3: Linear field probes. (A) Separability: probe accuracy (on test set) on all \u00b5-indexed representations, for all layer. (B) Continuity: cosine similarity between probes, showing smooth variati"
+   },
+   {
+    "id": "Figure 4",
+    "page": 6,
+    "caption_start": " Figure 4: Field geometry. (Left) Cumulative variance explained as a function of rank of the eigenvalues of the LFP Gram matrices (Fig 3B), for each layer. The intrinsic dimensionality increases with "
+   },
+   {
+    "id": "Figure 5",
+    "page": 7,
+    "caption_start": " Figure 5: Steering based on activation geometry: linear vs manifold-aware. The manifold of activations (A) for \u00b5 \u2208 [300, 700] provides a principled basis for steering directions, for example a centro"
+   },
+   {
+    "id": "Figure 6",
+    "page": 8,
+    "caption_start": " Figure 6: Steering based on feature and field geometry. Steering along a single probe direction, here w300\u2192700 (lozenges \u2666) again brings the steered activations far from the \u03c30 = 100 manifold. Taking"
+   },
+   {
+    "id": "Figure 7",
+    "page": 14,
+    "caption_start": " Figure 7: Convergence to the normal distribution. (A) KL divergence between the softmax distribution and the distribution underlying the input numbers, KL(pt \u2225 N500,100 ). The convergence appears to "
+   },
+   {
+    "id": "Figure 8",
+    "page": 15,
+    "caption_start": " Figure 8: Pairwise distances between output distributions. The Hellinger distance is a (symmetric) distance between two \u221a \u221a probability vectors: DHel (pt , pt\u2032 ) = 2\u22121/2 \u2225 pt \u2212 pt\u2032 \u22252 . Early outputs"
+   },
+   {
+    "id": "Figure 9",
+    "page": 18,
+    "caption_start": " Figure 9: Structured manifolds across models. 2D PCA plots of activations from various models. L is the number of layers in the model. Plotted here are residual stream activations after the second la"
+   },
+   {
+    "id": "Figure 10",
+    "page": 19,
+    "caption_start": " Figure 10: LLM vs Ideal Observer. Ensemble-averaged (10 samples) trajectory of Llama-3.2\u2019s softmax mean and standard deviation (line and dots), compared to the expectation from an ideal observer mode"
+   },
+   {
+    "id": "Figure 11",
+    "page": 20,
+    "caption_start": " Figure 11: Meta-in-context learning. (A) The input time-series consists of 10 sequences of 1000 numbers each, alternating between N (300, 100) and N (700, 100). (B) Mean and standard deviation of the"
+   },
+   {
+    "id": "Figure 12",
+    "page": 21,
+    "caption_start": "Figure 12: Data geometry vs field geometry. (A) The data forms a 3D helicoid, yet the two classes (blue/orange) depend only on the position along the x-axis: they are linearly separable (by a hyperpla"
+   },
+   {
+    "id": "Figure 13",
+    "page": 22,
+    "caption_start": "Figure 13: Mixture of manifolds. Prototypes interpolated from the anchor manifolds M\u00b5,\u03c30 and M\u00b50 ,\u03c3 with (\u00b50 = 500, \u03c30 = 100), marked with a cross, do not match the geometry of the ground-truth centro"
+   }
+  ],
+  "n_figures_tables": 13,
+  "section_heading_candidates": [
+   "1 For a normal distribution, entropy h = log \u03c3 + h ."
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "w2-info-geometry-shared-2609.11063",
+  "url": "https://arxiv.org/pdf/2609.11063",
+  "pdf_ok": true,
+  "pages": 91,
+  "chars": 290658,
+  "title_guess": "The information geometry of large language models is shared, learned, and controllable Dario Picozzi",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 3,
+    "caption_start": " Figure 1: Behaviour identifies the resolved read-out, and geometry predicts local output change. a, Behavioural identification: held-out predictive loss after re-optimising nuisance parameters grows "
+   },
+   {
+    "id": "Figure 2",
+    "page": 7,
+    "caption_start": " Figure 2: Predictive geometry is shared across models and approaches human completion structure. a, Output Fisher\u2013Rao agreement against activation-space agreement on natural text for all 29 cross-tok"
+   },
+   {
+    "id": "Figure 3",
+    "page": 9,
+    "caption_start": " Figure 3: Language statistics shape the spectrum and its effective dimension. a, Profile-predicted against measured spectral exponent over ranks 8\u201332 for all 576 held-out model\u2013context cells (nine mo"
+   },
+   {
+    "id": "Figure 4",
+    "page": 10,
+    "caption_start": " Figure 4: Corpus statistics predict acquisition across model sizes. a, Ex-ante corpus n-gram margins predict subsequent margins without refitting for fresh facts disjoint from calibration at Pythia 7"
+   },
+   {
+    "id": "Figure 5",
+    "page": 12,
+    "caption_start": " Figure 5: The geometry predicts intervention cost and supports reusable control. a, At matched behaviour change, the measured ratio of off-target output divergence for Euclidean versus damped natural"
+   },
+   {
+    "id": "Table 1",
+    "page": 14,
+    "caption_start": "Table 1: One correction spans the evaluated operations. The result column reports the strongest reported matched comparison for each operation; the final column gives its evidence base. Intervals are "
+   }
+  ],
+  "n_figures_tables": 6,
+  "section_heading_candidates": [],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "w2-fishback-2605.17231",
+  "url": "https://arxiv.org/pdf/2605.17231",
+  "pdf_ok": true,
+  "pages": 22,
+  "chars": 97559,
+  "title_guess": "FishBack: Pullback Fisher Geometry for Optimal Activation Steering in Transformers Sihan Wang1 , Jiayi Zhao1 , Qingyan Cao 1 , Hongbo Yao1\u2217 , Lin Shu1\u2020",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 2,
+    "caption_start": " Figure 1: Overview of FishBack. At an intermediate layer, we read the hidden state and the concept probe, pull the softmax Fisher information back through the network\u2019s Jacobian to obtain the pullbac"
+   },
+   {
+    "id": "Table 1",
+    "page": 5,
+    "caption_start": " Table 1: FishBack lowers off-target KL divergence at matched concept change against every steering baseline, the Euclidean ablation, and a per-case oracle. Entries are the median [IQR] of the per-cas"
+   },
+   {
+    "id": "Figure 2",
+    "page": 6,
+    "caption_start": " Figure 2: The pullback Fisher metric is strongly non-Euclidean at every layer studied. Left: normalized eigenvalue spectra of G, decaying by more than six orders of magnitude. Right: median effective"
+   },
+   {
+    "id": "Figure 3",
+    "page": 6,
+    "caption_start": " Figure 3: On GPT-2 Small, FishBack attains the lowest offtarget KL divergence at matched concept change at every layer. Boxes show the median and interquartile range of per-case off-target KL (log sc"
+   },
+   {
+    "id": "Figure 4",
+    "page": 6,
+    "caption_start": " Figure 4: The off-target advantage persists on Llama-3-8B and Qwen3-8B at the early and middle layers under the matrixfree approximation. Boxes show per-case off-target KL (log scale) at matched conc"
+   },
+   {
+    "id": "Figure 5",
+    "page": 7,
+    "caption_start": " Figure 5: Ablating the metric isolates the geometric gain on GPT-2 Small: the Euclidean-to-FishBack off-target ratio lies above parity at every layer. Points are per-layer medians with interquartile "
+   },
+   {
+    "id": "Figure 6",
+    "page": 7,
+    "caption_start": " Figure 6: The geometric gain transfers to the 8B models: the Euclidean-to-FishBack off-target ratio stays above parity at the early and middle layers. Points are per-layer medians with interquartile "
+   },
+   {
+    "id": "Table 2",
+    "page": 13,
+    "caption_start": " Table 2: Exact pullback-Fisher geometry of GPT-2 Small (d = 768), medians over 100 contexts per layer. Dev. is the relative Frobenius deviation (42) from the closest scalar metric. The identity makes"
+   },
+   {
+    "id": "Table 3",
+    "page": 13,
+    "caption_start": " Table 3: Pullback-Fisher geometry of the two 8B models (d = 4096), medians over successful cases with finite spectra, computed within the rank-50 subspace retained by the approximation of Appendix E."
+   },
+   {
+    "id": "Table 4",
+    "page": 14,
+    "caption_start": " Table 4: Synthetic-model study at \u03c1 = 0.1; medians with interquartile ranges over 300 cases per configuration. All rank correlations have p < 10\u22125 , and the pooled correlation has p < 10\u221256 . The las"
+   },
+   {
+    "id": "Table 5",
+    "page": 15,
+    "caption_start": " Table 5: Settings of the steering procedure. Entries spanning both columns are shared.  Low-Rank Spectrum  Because the spectrum of G is concentrated in far fewer than 50 directions at every layer mea"
+   },
+   {
+    "id": "Table 6",
+    "page": 16,
+    "caption_start": " Table 6: Construction of the evaluation set. \u201cUsed\u201d is the number of contexts evaluated per layer; each is evaluated at every layer of that model. space between the two adjacent iterates that bracket"
+   },
+   {
+    "id": "Table 7",
+    "page": 17,
+    "caption_start": " Table 7: Size of each Benjamini\u2013Hochberg family. On the 8B models the folded level is corrected separately for the baseline comparisons and the geometric ablation. The transform is not cosmetic. A ra"
+   },
+   {
+    "id": "Table 8",
+    "page": 17,
+    "caption_start": " Table 8: Folded cells surviving Benjamini\u2013Hochberg correction, counted over the three concepts and all comparators. Underpowered cells are excluded from the tested column. Model  Family  Tested  Sign"
+   },
+   {
+    "id": "Table 9",
+    "page": 17,
+    "caption_start": " Table 9: Target-level cells surviving correction, pooled over concepts, layers, and targets, including the deepest layers of the 8B models.  Every number quoted in the main paper can be traced to a r"
+   },
+   {
+    "id": "Table 10",
+    "page": 18,
+    "caption_start": " Table 10: Percentage of targets reached, pooled over the three concepts and the four levels of P W . On Qwen3-8B the ordering changes. The Euclidean ablation reaches between 22.7% and 36.3% of target"
+   },
+   {
+    "id": "Table 11",
+    "page": 20,
+    "caption_start": " Table 11: Spearman correlations between the two spectral proxies and the per-case log gain over Euclidean steering. Significance is marked at p < 0.05 (\u2217 ) and p < 0.001 (\u2217\u2217\u2217 ).  computable proxies f"
+   },
+   {
+    "id": "Table 12",
+    "page": 21,
+    "caption_start": " Table 12: Off-target divergence under the output-layer metric of Park et al. (2026), applied at the intervention layer, relative to the pullback metric, at matched concept change; values above 1 favo"
+   },
+   {
+    "id": "Table 14",
+    "page": 21,
+    "caption_start": " Table 14: Median cosines between the raw solved directions, before the concept-efficiency decomposition. \u03b4H uses the output-layer metric, \u03b4G the pullback. from the other two.  Model  Layer  Ratio  Wi"
+   },
+   {
+    "id": "Table 13",
+    "page": 21,
+    "caption_start": " Table 13: The same comparison on the single-target cohort. \u201cCells\u201d counts concept\u2013target cells significant after correction out of twelve.  K.2  Results  Table 12 reports the paired comparison on the"
+   }
+  ],
+  "n_figures_tables": 20,
+  "section_heading_candidates": [
+   "A Metric View of Existing Steering Methods"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "w2-nonlinear-interventions-2605.14749",
+  "url": "https://arxiv.org/pdf/2605.14749",
+  "pdf_ok": true,
+  "pages": 8,
+  "chars": 31550,
+  "title_guess": "Non-linear Interventions on Large Language Models  Sangwoo Kim 1",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 3,
+    "caption_start": " Figure 1. StrongREJECT scores on Llama 3 8B and Qwen 2.5 7B without intervention, with the linear baselines, and with our non-linear intervention.1  Models and data. We evaluate all methods on Llama3"
+   },
+   {
+    "id": "Table 3",
+    "page": 4,
+    "caption_start": "Table 3. StrongREJECT when f\u03b8 is constrained to a linear map, versus our i-ResNet f\u03b8 , trained under the same objective.  Table 1. Per-sample intervention magnitude. Sites: avg. positions edited per e"
+   },
+   {
+    "id": "Table 1",
+    "page": 4,
+    "caption_start": " Table 1. Per-sample intervention magnitude. Sites: avg. positions edited per example; L2 : total edit norm. Our non-linear method edits one site, with an L2 norm over two orders of magnitude below ev"
+   },
+   {
+    "id": "Table 2",
+    "page": 4,
+    "caption_start": " Table 2. StrongREJECT after intervening linearly at every loss site s \u2208 S along vs , versus our learned non-linear intervention at a single site. Method  Llama 3 8B  Linear f\u03b8 Non-linear f\u03b8 (ours)  S"
+   },
+   {
+    "id": "Figure 2",
+    "page": 4,
+    "caption_start": " Figure 2. StrongREJECT across intervention layers on Llama 3 8B and Qwen 2.5 7B with our non-linear intervention.  5.1. Linear Intervention at the Loss Sites + Our objective in Eq. (6) pushes vs\u22a4 hin"
+   },
+   {
+    "id": "Table 4",
+    "page": 8,
+    "caption_start": "Table 4. Main non-linear intervention sites. Token positions are counted from the end of the formatted prompt. Model  Layer  Token position  Evaluation target  Llama 3 8B Qwen 2.5 7B  10 14  \u22123 \u22124  ha"
+   }
+  ],
+  "n_figures_tables": 6,
+  "section_heading_candidates": [],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "p2-sycophancy-manifold-posttraining-2608.01835",
+  "url": "https://arxiv.org/pdf/2608.01835",
+  "pdf_ok": true,
+  "pages": 68,
+  "chars": 269893,
+  "title_guess": "Rewriting or Reweighting? A Geometric Account in Language Models Juntong Wang\u22171,2 , Shengkun Yang\u22173 , Xiyuan Wang1 , Muhan Zhang\u20201",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 1,
+    "caption_start": " Figure 1: Overview of the behavioral-geometry framework. We extract behavior-relevant token windows and decompose FFN computation into two representations. A sparse selector identifies a compact set "
+   },
+   {
+    "id": "Figure 2",
+    "page": 4,
+    "caption_start": " Figure 2: High NOC with high ACT denotes a strong and frequently used mechanism; high NOC with low ACT denotes a strong but latent or rarely occupied pathway; low NOC with high ACT denotes frequently"
+   },
+   {
+    "id": "Figure 3",
+    "page": 4,
+    "caption_start": " Figure 3: Representative token-level trajectories over learned behavioral energy landscapes. The background is the log-density ratio between behavior-positive and behaviornegative states. In repetiti"
+   },
+   {
+    "id": "Table 1",
+    "page": 6,
+    "caption_start": " Table 1: Per-model Behavioral Anchor Coordinate and ACTspace behavioral-chart statistics for repetition and sycophancy. #bac is the number of selected Behavioral Anchor Coordinates. GuniF measures re"
+   },
+   {
+    "id": "Figure 4",
+    "page": 6,
+    "caption_start": " Figure 4: Causal repetition steering in the Llama family. Solid lines with circular markers report repetition rate on the left axis; dashed lines with square markers report generatedtoken PPL on the "
+   },
+   {
+    "id": "Table 2",
+    "page": 7,
+    "caption_start": " Table 2: Cross-model atlas consistency and traininginduced behavioral geometry. (a) Cross-model sycophancy-atlas results over 23 models. Classifier correlation provides a supervised consistency check"
+   },
+   {
+    "id": "Figure 5",
+    "page": 7,
+    "caption_start": " Figure 5: Behavioral geometry through controlled posttraining. Connected markers follow stored checkpoints in training order. In the phase portraits, open and filled circles denote the first stored p"
+   },
+   {
+    "id": "Table 3",
+    "page": 16,
+    "caption_start": " Table 3: Representative repetition strength measurements in ACT space.  G.2  Sycophancy Low-Rank Statistics  Table 4 summarizes selected sycophancy PCA results. ACTspace PC1 explained variance is usu"
+   },
+   {
+    "id": "Table 4",
+    "page": 17,
+    "caption_start": " Table 4: Selected sycophancy low-rank statistics in NOC and ACT spaces. Objective  Dir.  S  Angle  dproj  RG  G  Repeat  PPL  n-gram  SFT SFT Reward Reward SFT\u2192Reward SFT\u2192Reward  up down up down up d"
+   },
+   {
+    "id": "Table 5",
+    "page": 17,
+    "caption_start": " Table 5: Final checkpoints of the controlled repetition runs.  A large value indicates that the chart contains a stable behavioral coordinate. A small value indicates that apparent separation is domi"
+   },
+   {
+    "id": "Table 6",
+    "page": 18,
+    "caption_start": " Table 6: Final checkpoints of the controlled sycophancy runs.  Run Reward-up Reward-up Reward-up Reward-down Reward-down Reward-down  Step  S  Angle  Syco Prob  6 30 60 6 30 60  0.9498 0.9451 0.9382 "
+   },
+   {
+    "id": "Table 7",
+    "page": 18,
+    "caption_start": " Table 7: Reward-only sycophancy trajectories preserve geometry while moving behavior modestly. 2. Representation stability. tion  (\u00b51 \u2212 \u00b50 )2 . 2 +\u03f5 \u03c3w  (81)  I  Leakage Control and Robustness Analys"
+   },
+   {
+    "id": "Figure 6",
+    "page": 21,
+    "caption_start": " Figure 6: Visualization of the repetition behavioral chart. Behavior-positive and behavior-negative examples form distinguishable regions in both ACT and NOC spaces. The Fisher and logistic direction"
+   },
+   {
+    "id": "Figure 7",
+    "page": 22,
+    "caption_start": " Figure 7: Visualization of the sycophancy behavioral chart. Sycophantic and non-sycophantic states occupy different regions in the learned chart. The agreement between ACT and NOC representations sug"
+   },
+   {
+    "id": "Figure 8",
+    "page": 23,
+    "caption_start": "Figure 8: Repetition trajectories in mean ACT space for examples with matched NOC visualizations. prefix mean and Repetition lead-in Repetition lead-in Repetition lead-in ordinary-generation states pr"
+   },
+   {
+    "id": "Figure 9",
+    "page": 24,
+    "caption_start": "Figure 9: Additional repetition trajectories in ACT space. The gallery Repeated-span demonstrates into the repetition-positive region Repetition lead-in Repetition lead-in need not follow a single pat"
+   },
+   {
+    "id": "Figure 10",
+    "page": 25,
+    "caption_start": "Figure 10: Matched repetition trajectories in NOC space. The NOC Repeated-span representation the transition from a compact Repetition lead-in Repetition lead-in Repetition lead-in behavior-negative c"
+   },
+   {
+    "id": "Figure 12",
+    "page": 26,
+    "caption_start": "Figure 12: Matched steering ACT anddirNOC trajectories for the same sycophancy instance. The two spaces different local path  End Prefixbecause they encode different End shapes aspects of the computat"
+   },
+   {
+    "id": "Figure 13",
+    "page": 27,
+    "caption_start": " Figure 13: Base-anchored ACT candidate-answer paths for four fixed truthful\u2013sycophantic pairs across post-training regimes. Each row uses exactly the same prompt, truthful candidate, and sycophantic "
+   },
+   {
+    "id": "Table 8",
+    "page": 29,
+    "caption_start": " Table 8: Initial repetition probe. A small set of repetition Behavioral Anchor Coordinates predicts on-policy repetition with high accuracy across model families. GuniF  Gocc Gcausal  Tbase #bac  k0."
+   },
+   {
+    "id": "Table 9",
+    "page": 29,
+    "caption_start": " Table 9: Complete repetition-chart statistics in ACT space across 23 models. All rows use q = 1. log P is the natural logarithm of parameter count. ACT causal gain is estimated from subspace steering"
+   },
+   {
+    "id": "Table 10",
+    "page": 30,
+    "caption_start": " Table 10: Complete repetition-chart statistics in normalized outgoing-contribution (NOC) space across 23 models. All rows use q = 1. NOC causal gain is estimated by scaling selected Behavioral Anchor"
+   },
+   {
+    "id": "Table 11",
+    "page": 31,
+    "caption_start": " Table 11: Complete sycophancy PCA statistics in ACT space. Each model is evaluated on 6,678 examples. ACT representations are strongly compressed, requiring only 14.4% of the selected scaffold dimens"
+   },
+   {
+    "id": "Table 12",
+    "page": 32,
+    "caption_start": " Table 12: Complete sycophancy PCA statistics in normalized outgoing-contribution (NOC) space. NOC charts are less compressed than ACT charts but often align more strongly with the supervised classifi"
+   },
+   {
+    "id": "Table 13",
+    "page": 33,
+    "caption_start": " Table 13: Unified per-model Behavioral Anchor Coordinate statistics in the NOC representation space. Repetition is shown on the left and sycophancy on the right using the same retained column schema."
+   },
+   {
+    "id": "Table 14",
+    "page": 34,
+    "caption_start": " Table 14: Model identifiers used in all cross-model heatmaps. A common ordering is necessary for direct visual comparison between behavior-associated and random-coordinate matrices. Repetition  Sycop"
+   },
+   {
+    "id": "Figure 14",
+    "page": 34,
+    "caption_start": " Figure 14: Layer-wise distribution of repetition and sycophancy Behavioral Anchor Coordinates in Llama-3.18B. Each bar reports the number of positively behaviorassociated coordinates selected in the "
+   },
+   {
+    "id": "Table 15",
+    "page": 34,
+    "caption_start": " Table 15: Mean off-diagonal cross-model alignment. Behavior-associated charts exceed matched-size randomcoordinate baselines in both ACT and NOC. The difference is most diagnostic for mean CCA and fu"
+   },
+   {
+    "id": "Table 16",
+    "page": 34,
+    "caption_start": " Table 16: Cross-model alignment stratified by model relationship. \u201cBase/Inst.\u201d denotes the ten matched base/instruction pairs with the same model family and parameter scale; the k-dimensional value a"
+   },
+   {
+    "id": "Figure 15",
+    "page": 35,
+    "caption_start": "Figure 15: Cross-model alignment of sparse classifier-direction scores. Each cell is the absolute Pearson correlation between K: gemma-2-2b C: Qwen2.5-32B-Instruct S: Mistral-7B-v0.3 the two models\u2019 m"
+   },
+   {
+    "id": "Figure 16",
+    "page": 36,
+    "caption_start": " Figure 16: Pairwise CCA alignment of the behavior-associated sycophancy charts. Primary CCA measures the strongest canonical coordinate, whereas Mean CCA averages across the complete retained canonic"
+   },
+   {
+    "id": "Table 17",
+    "page": 36,
+    "caption_start": " Table 17: Aggregate repetition-steering response across 23 models. \u2206R = R(+2) \u2212 R(\u22122), and |\u2206PPL| = |PPL(+2) \u2212 PPL(\u22122)|. Both operators produce a positive endpoint behavioral change for every model. "
+   },
+   {
+    "id": "Figure 17",
+    "page": 37,
+    "caption_start": " Figure 17: CCA alignment after matched-size random coordinate selection. Random coordinates can still produce a large leading canonical correlation, especially in NOC, demonstrating that primary CCA "
+   },
+   {
+    "id": "Table 18",
+    "page": 37,
+    "caption_start": " Table 18: Mean endpoint repetition change R(+2) \u2212 R(\u22122) by model family. Positive responses occur in every family for both intervention operators.  less available headroom and consequently display sm"
+   },
+   {
+    "id": "Figure 18",
+    "page": 38,
+    "caption_start": " Figure 18: Cross-model linear association over matched examples. Rows are source models and columns are target models. Top-2-PC probing selects the most predictable mapping among the first two source"
+   },
+   {
+    "id": "Figure 19",
+    "page": 39,
+    "caption_start": " Figure 19: Linear association after matched-size random coordinate selection. Random top-2-PC NOC scores are moderately elevated because the procedure selects the best of four possible PC mappings an"
+   },
+   {
+    "id": "Figure 20",
+    "page": 40,
+    "caption_start": " Figure 20: Repetition steering in the Qwen family. Solid circles show repetition rate and dashed squares show generated-token PPL. ACT-chart steering produces a pronounced dose\u2013response for several m"
+   },
+   {
+    "id": "Figure 21",
+    "page": 40,
+    "caption_start": " Figure 21: Repetition steering in the Gemma family. ACT-chart steering increases repetition most strongly for the 2B models and produces positive endpoint changes for all seven models. NOC-selected B"
+   },
+   {
+    "id": "Figure 22",
+    "page": 41,
+    "caption_start": " Figure 22: Complete Llama-family repetition steering. All three models exhibit monotonic positive dose\u2013response curves under both operators. The effect is strongest for Llama-3.1-8B-Instruct, while t"
+   },
+   {
+    "id": "Figure 23",
+    "page": 41,
+    "caption_start": " Figure 23: Repetition steering in the Mistral family. ACT-chart steering produces especially large changes for Mistral-7BInstruct-v0.3 and Mistral-Small-3.1-24B-Instruct. The remaining models exhibit"
+   },
+   {
+    "id": "Table 19",
+    "page": 42,
+    "caption_start": " Table 19: Paired Instruct-minus-Base changes, rounded to three decimals. Positive values indicate greater chart reliability or causal gain for the Instruct checkpoint relative to its matched Base che"
+   },
+   {
+    "id": "Figure 24",
+    "page": 42,
+    "caption_start": " Figure 24: Complete cross-model repetition-strength landscape. Horizontal and vertical coordinates are log(GuniF NOC + +\u03f5). Point color denotes baseline repetition \u03f5) and log(GuniF ACT tendency Tm . "
+   },
+   {
+    "id": "Figure 25",
+    "page": 43,
+    "caption_start": " Figure 25: Public Instruct-minus-Base changes for ten matched family/scale pairs. Blue bars denote NOC and gold bars denote ACT. Panel (a) reports \u2206 log GuniF and panel (b) reports \u2206Gcausal . Positiv"
+   },
+   {
+    "id": "Table 20",
+    "page": 43,
+    "caption_start": " Table 20: Repetition dataset construction stages. Stage  Count  Repetition-positive source pool (entries) Positive records selected by reservoir sampling Eligible non-repetition records (all-judge-tr"
+   },
+   {
+    "id": "Table 21",
+    "page": 43,
+    "caption_start": " Table 21: Sycophancy stance-extraction outcomes. Stance-extraction outcome  Pairs  Successful records  Both chosen and rejected extracted Chosen only Rejected only Neither side  3 206 138 128 8  6 41"
+   },
+   {
+    "id": "Figure 26",
+    "page": 45,
+    "caption_start": " Figure 26: Final-checkpoint geometry\u2013occupancy\u2013gain profiles using activation-level causal gain. Geometry and occupancy are measured in NOC space, and each metric is independently max-absolute normal"
+   },
+   {
+    "id": "Figure 27",
+    "page": 45,
+    "caption_start": " Figure 27: Final-checkpoint geometry\u2013occupancy\u2013gain profiles using chart-subspace causal gain. Geometry and occupancy are identical to Figure 26; only the gain estimator changes.  S.2  Final-Checkpoi"
+   },
+   {
+    "id": "Figure 28",
+    "page": 46,
+    "caption_start": " Figure 28: Complete ten-stage trajectories using ACT geometry and occupancy with activation-level causal gain. SFT geometry moves rapidly away from the low-movement reward regime, while sequential tr"
+   },
+   {
+    "id": "Figure 29",
+    "page": 47,
+    "caption_start": " Figure 29: Complete ten-stage trajectories using ACT geometry and occupancy with chart-subspace causal gain. The geometry and occupancy trajectories match Figure 28; the gain curves provide an interv"
+   },
+   {
+    "id": "Figure 30",
+    "page": 48,
+    "caption_start": " Figure 30: Complete ten-stage trajectories using NOC geometry and occupancy with activation-level causal gain. NOC reproduces the central objective asymmetry: SFT-containing lineages move strongly, w"
+   },
+   {
+    "id": "Figure 31",
+    "page": 49,
+    "caption_start": " Figure 31: Complete ten-stage trajectories using NOC geometry and occupancy with chart-subspace causal gain. Comparison with Figure 30 separates the stable geometry and occupancy conclusions from gai"
+   },
+   {
+    "id": "Figure 32",
+    "page": 50,
+    "caption_start": " Figure 32: Early-stage snapshots for ACT geometry and occupancy with activation-level gain. Each embedded plot contains the four behavioral conditions. SFT geometry separates from reward-only geometr"
+   },
+   {
+    "id": "Figure 33",
+    "page": 51,
+    "caption_start": " Figure 33: Late-stage snapshots for ACT geometry and occupancy with activation-level gain. The geometry hierarchy stabilizes, while repetition-down and sycophancy-down show the strongest late gain gr"
+   },
+   {
+    "id": "Figure 34",
+    "page": 52,
+    "caption_start": " Figure 34: Early-stage snapshots for ACT geometry and occupancy with chart-subspace gain. Geometry and occupancy are identical to the corresponding activation-gain snapshots, while the green bars sho"
+   },
+   {
+    "id": "Figure 35",
+    "page": 53,
+    "caption_start": " Figure 35: Late-stage snapshots for ACT geometry and occupancy with chart-subspace gain. Sequential repetition-down develops the clearest positive gain bar, while reward-only changes remain small rel"
+   },
+   {
+    "id": "Figure 36",
+    "page": 54,
+    "caption_start": " Figure 36: Early-stage snapshots for NOC geometry and occupancy with activation-level gain. The NOC views confirm early objective-dependent geometry separation and expose strong occupancy transients "
+   },
+   {
+    "id": "Figure 37",
+    "page": 55,
+    "caption_start": " Figure 37: Late-stage snapshots for NOC geometry and occupancy with activation-level gain. SFT and sequential geometry remain well separated from reward-only geometry; late gain growth is concentrate"
+   },
+   {
+    "id": "Figure 38",
+    "page": 56,
+    "caption_start": " Figure 38: Early-stage snapshots for NOC geometry and occupancy with chart-subspace gain. These panels provide the most functionally oriented view of the decomposition, combining contribution-space s"
+   },
+   {
+    "id": "Figure 39",
+    "page": 57,
+    "caption_start": " Figure 39: Late-stage snapshots for NOC geometry and occupancy with chart-subspace gain. The final stages preserve the SFTversus-reward geometry asymmetry and show that large measured gain shifts are"
+   },
+   {
+    "id": "Figure 40",
+    "page": 59,
+    "caption_start": " Figure 40: Cross-model repetition-strength landscape. Each point represents one model. The horizontal and vertical cooruniF dinates are log(GuniF NOC + \u03f5) and log(GACT + \u03f5), respectively. Color denot"
+   },
+   {
+    "id": "Figure 41",
+    "page": 64,
+    "caption_start": " Figure 41: Visualization of a local behavioral chart. The Fisher and logistic directions align with the dominant separation axis, supporting the interpretation that U\u03b8,b captures behavior-relevant ge"
+   },
+   {
+    "id": "Table 22",
+    "page": 66,
+    "caption_start": "Table 22: Tokenizer-specific stance-span alignment statistics for all 23 models. Chosen, rejected, and total records are constant across models because every entry was successfully aligned. The \u201cClass"
+   },
+   {
+    "id": "Table 23",
+    "page": 67,
+    "caption_start": " Table 23: Checkpoint selected at matched stage s \u2208 {1, . . . , 10}. The stage index aligns relative training progress rather than raw optimizer steps.  Table 24: Post-training dataset configurations."
+   },
+   {
+    "id": "Table 24",
+    "page": 67,
+    "caption_start": " Table 24: Post-training dataset configurations. All four datasets contain 755 920 records derived from the surviving instruction set. SFT-up and SFT-down are stored as separate single-response datase"
+   },
+   {
+    "id": "Table 25",
+    "page": 67,
+    "caption_start": " Table 25: Stage-wise counts for repetition repair and posttraining data construction. Retention is reported only for sequential filtering stages; dashes denote parallel datasetconstruction outputs. S"
+   },
+   {
+    "id": "Table 26",
+    "page": 67,
+    "caption_start": " Table 26: Selected coordinate counts for representative archived classifiers. All models use C = 1.0 and an L1 penalty. Behavior  Solver  Repetition saga Sycophancy (base) saga Hallucination (base) s"
+   },
+   {
+    "id": "Table 27",
+    "page": 68,
+    "caption_start": "Table 27: Controlled post-training configuration for repetition behavioral interventions. Configuration  SFT (Up / Down)  DPO from Base  SFT \u2192 DPO  Base checkpoint meta-llama/Llama-3.1-8B Initializati"
+   },
+   {
+    "id": "Table 28",
+    "page": 68,
+    "caption_start": " Table 28: Controlled post-training configuration for sycophancy behavioral interventions. Configuration  SFT (Up / Down)  DPO from Base  SFT \u2192 DPO  Base checkpoint meta-llama/Llama-3.1-8B Initializat"
+   }
+  ],
+  "n_figures_tables": 68,
+  "section_heading_candidates": [
+   "A Geometric Account in Language Models",
+   "A Llama-3.3-70B-Instruct model was then",
+   "8 GPUs; A100 40GB documented in archived launch-script comments",
+   "8 GPUs; A100 40GB documented in archived launch-script comments"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ },
+ {
+  "slug": "p2-shared-compliance-subspace-2601.11563",
+  "url": "https://arxiv.org/pdf/2601.11563",
+  "pdf_ok": true,
+  "pages": 23,
+  "chars": 56751,
+  "title_guess": "Human-like Social Compliance in Large Language Models: Unifying Sycophancy and Conformity through Signal Competition Dynamics Long Zhang, Wei-neng Chen",
+  "figures_tables": [
+   {
+    "id": "Figure 1",
+    "page": 2,
+    "caption_start": " Figure 1. Signal Competition Mechanism Leading Compliance or Assertion To bridge this gap, this research proposes the Signal Competition Mechanism (see Fig. 1), a unified framework that models both s"
+   },
+   {
+    "id": "Figure 2",
+    "page": 5,
+    "caption_start": " Figure 2. Conceptual model of the Signal Competition Mechanism. The diagram illustrates the deterministic struggle between the internal Information Calibration Signal and the external Social-Emotiona"
+   },
+   {
+    "id": "Figure 3",
+    "page": 9,
+    "caption_start": "Figure 3. Correlation Between the Sycophancy Rate And the Conformity Rate Across 15 Models 4.2 Geometric Alignment in Latent Space Having established behavioral correlation, we investigated whether th"
+   },
+   {
+    "id": "Figure 4",
+    "page": 9,
+    "caption_start": " Figure 4. Latent Space Compliance Projection for Qwen2.5-7B Figure 4 displays the latent space projection for Qwen2.5-7B. The visualization reveals three distinct clusters: the neutral baseline (gree"
+   },
+   {
+    "id": "Figure 5",
+    "page": 10,
+    "caption_start": " Figure 5. Latent Space Compliance Projection for Meta-Llama-3.1-8B Figure 5 illustrates the internal representation dynamics for Meta-Llama-3.1-8B. The projection sharply delineates the neutral basel"
+   },
+   {
+    "id": "Figure 6",
+    "page": 11,
+    "caption_start": "Figure 6. Latent Space Compliance Projection for InternLM3-8B From above, the convergence of our behavioral metrics and latent space visualizations affirmatively validates the hypothesis of RQ1: sycop"
+   },
+   {
+    "id": "Figure 7",
+    "page": 12,
+    "caption_start": "Figure 7. SVM Boundary of Signal Competition Mechanism Distinguishes Between Compliance and Assertion of Qwen2.5-7B-Instruct. Qwen2.5-7B-Instruct exhibits a highly deterministic behavioral pattern (Fi"
+   },
+   {
+    "id": "Figure 8",
+    "page": 13,
+    "caption_start": "Figure 8. SVM Boundary of Signal Competition Mechanism Distinguishes Between Compliance and Assertion of InternLM3-8B-Instruct. InternLM3-8B-Instruct displays the most rigorous mechanistic separation "
+   },
+   {
+    "id": "Figure 10",
+    "page": 15,
+    "caption_start": " Figure 10. Confidence Margin and Compliance Probability of Qwen2.5-7B-Instruct Qwen2.5-7B-Instruct reveals a critical vulnerability in its probabilistic defense (Figure 10). While there is a negative"
+   },
+   {
+    "id": "Figure 11",
+    "page": 16,
+    "caption_start": "Figure 11. Confidence Margin and Compliance Probability of InternLM3-8B-Instruct InternLM3-8B-Instruct exhibits a quintessential Sigmoid phase transition, aligning perfectly with the theoretical expec"
+   },
+   {
+    "id": "Figure 12",
+    "page": 16,
+    "caption_start": " Figure 12. Confidence Margin and Compliance Probability of Meta-Llama-3.1-8B-Instruct Meta-Llama-3.1-8B-Instruct presents a more gradual, linear resistance profile (Figure 12). Unlike the sharp phase"
+   }
+  ],
+  "n_figures_tables": 11,
+  "section_heading_candidates": [
+   "2.1 Theoretical Foundations: From Psychology to Information Dynamics",
+   "2.2 The Fragmented Landscape: The Case for a Cross-Phenomenon Approach",
+   "2.3 Proposed Signal Competition Mechanism",
+   "2.5 Research Questions in Current Study",
+   "3.1 Operationalization: Quantifying Signal Competition (\ud835\udc46, \ud835\udc3c, \ud835\udc40conf )",
+   "3.2 Dataset and Model Configuration",
+   "3.3 Experimental Design and Data Analysis",
+   "4.2 Geometric Alignment in Latent Space",
+   "4.3 The Deterministic Nature of Signal Competition",
+   "4.4 Probabilistic Verification: The Buffering Effect of Confidence",
+   "5.1 The Geometry of Convergence: Dimensionality Reduction in Social Reasoning",
+   "5.2 Vectorial Antagonism: The Predictability of Epistemic",
+   "6.1 The Epistemic-Social Hierarchy: Why Alignment Fails at the Limit",
+   "6.2 The Transparency-Truth Gap: The Permeability of Confidence",
+   "6.3 Towards Epistemic Alignment: From External Compliance to Internal Self-Regulation"
+  ],
+  "looks_abstract_only": false,
+  "has_references": false
+ },
+ {
+  "slug": "p2-separable-sycophancy-modes-2607.20146",
+  "url": "https://arxiv.org/pdf/2607.20146",
+  "pdf_ok": true,
+  "pages": 35,
+  "chars": 102078,
+  "title_guess": "Gotta Catch them all: the modes of Sycophancy  Shreyans Jain",
+  "figures_tables": [
+   {
+    "id": "Table 1",
+    "page": 3,
+    "caption_start": " Table 1: Summary of the three sycophancy modes. Detailed trait profiles and behavioral predictions follow.  ers deliberative checking and increases willingness to defer under interpersonal pressure. "
+   },
+   {
+    "id": "Figure 1",
+    "page": 5,
+    "caption_start": "Figure 1: K-means 4-class clustering at layer 18 (first two PCA components). The three sycophancy modes and the neutral baseline form four fully separated, nonoverlapping regions (ARI = 1.000, train a"
+   },
+   {
+    "id": "Table 2",
+    "page": 6,
+    "caption_start": " Table 2: F3 summary: the more compactly a mode is encoded (high sufficiency, low complement-probe recall = signal concentrated in few directions), the more detectable it is behaviorally. SI is the mo"
+   },
+   {
+    "id": "Figure 2",
+    "page": 7,
+    "caption_start": "Figure 2: Principal angles between the modes\u2019 deviation subspaces at layer 18: angle vs. PC dimension (left), count of PC dimensions per angle bracket (center), and proportion of deviation variance pe"
+   },
+   {
+    "id": "Table 3",
+    "page": 7,
+    "caption_start": " Table 3: How often the model\u2019s neutral baseline is closest to each mode, in activation space vs. output space. The result inverts completely between the two spaces.  processes sycophancy through a co"
+   },
+   {
+    "id": "Figure 3",
+    "page": 7,
+    "caption_start": " Figure 3: Mean sycophancy index by pressure mechanism (rows) and condition (columns). All three mode personas stay high (0.79\u20130.99) across mechanisms while the baseline (\u223c0.35) and anti-sycophancy co"
+   },
+   {
+    "id": "Table 4",
+    "page": 15,
+    "caption_start": " Table 4: The eight context types in the situation dataset, with one representative scenario each. Each of the 1,000 situations combines a context type, a pressure mechanism, and a scenario variant.  "
+   },
+   {
+    "id": "Table 5",
+    "page": 15,
+    "caption_start": " Table 5: Six behavioral dimensions scored per response by the GPT-4o-mini judge. All dimensions are oriented so that 1.0 = maximally sycophantic.  "
+   },
+   {
+    "id": "Table 6",
+    "page": 16,
+    "caption_start": " Table 6: Full ARI results across all clustering experiments and layers. K-means achieves ARI = 1.000 in all six settings.  Sycophancy Index aggregates the six dimensions into a combined metric, defin"
+   },
+   {
+    "id": "Table 7",
+    "page": 16,
+    "caption_start": " Table 7: Nearest-neighbor ordering among sycophancy modes at L22 (all 948 situations). The proximity chain baseline\u2192DCA\u2192PA\u2190SI is confirmed point-by-point. Zero SI\u2194DCA adjacency across the full datase"
+   },
+   {
+    "id": "Figure 4",
+    "page": 17,
+    "caption_start": "Figure 4: K-means 4-class PCA clusters at layer 22. Perfect separation (ARI=1.000); clusters are visibly more spread than at L18.  Figure 5: Separation-metric layer sweep. All four metrics (silhouette"
+   },
+   {
+    "id": "Figure 5",
+    "page": 17,
+    "caption_start": " Figure 5: Separation-metric layer sweep. All four metrics (silhouette, Fisher ratio, inverse Davies\u2013Bouldin, Mahalanobis distance) peak simultaneously at L18, where the three modes are most geometric"
+   },
+   {
+    "id": "Figure 6",
+    "page": 18,
+    "caption_start": "Figure 6: Causal subspace necessity vs. number of ablated PCA directions k, one panel per mode, one line per layer. PA\u2019s necessity peaks at L22 and DCA\u2019s at L26 (both lagging the L18 geometric peak), "
+   },
+   {
+    "id": "Table 8",
+    "page": 18,
+    "caption_start": " Table 8: Full separation metrics and Mahalanobis distances across all extracted layers. Sil.=Silhouette, DB=Davies\u2013Bouldin; the last three columns report Mahalanobis distances between mode pairs. Lay"
+   },
+   {
+    "id": "Table 9",
+    "page": 18,
+    "caption_start": " Table 9: Subspace necessity scores at k=32 PCA directions. PA peaks at L22 (0.063); DCA peaks at L26 (0.044); SI never exceeds 0.017. All far below the 0.9 causal-bottleneck threshold. The causal pea"
+   },
+   {
+    "id": "Table 10",
+    "page": 18,
+    "caption_start": " Table 10: Logit lens KL divergence from baseline at selected layers. Three phases: silent encoding (L1-L22, KL<0.06 despite perfect geometric separation at L18), rapid commitment (L23-L31), peak-and-"
+   },
+   {
+    "id": "Table 11",
+    "page": 18,
+    "caption_start": " Table 11: Raw centroid cosine distances are misleadingly small due to shared situational content domination. Deviation vectors are required to isolate mode-specific geometry.  at L18, counting shared"
+   },
+   {
+    "id": "Figure 7",
+    "page": 19,
+    "caption_start": "Figure 7: Logit-lens KL-divergence-from-baseline trajectories across layers for each mode. Predictions stay nearidentical (behaviorally silent) through L22 despite perfect geometric separation at L18,"
+   },
+   {
+    "id": "Table 12",
+    "page": 19,
+    "caption_start": " Table 12: Subspace alignment between the 50dimensional deviation subspaces at L18. The primary measure is the number of shared dimensions, principal angles with cos \u03b8 > 0.9, which is robust to the ar"
+   },
+   {
+    "id": "Table 13",
+    "page": 19,
+    "caption_start": " Table 13: Selected L22 head ablation results. Columns PA\u00d7, SI\u00d7, and DCA\u00d7 report specificity multipliers. H1 (highest zero KL, specificity \u223c 0.30\u00d7) is general. H10 and H11 carry the strongest sycophan"
+   },
+   {
+    "id": "Table 14",
+    "page": 20,
+    "caption_start": " Table 14: Pairwise joint ablation results for PA modes. Additivity ratio >1 = synergistic (jointly more disruptive); <1 = redundant (jointly less disruptive). The synergistic cluster {L22H9, L22H3, L"
+   },
+   {
+    "id": "Table 15",
+    "page": 20,
+    "caption_start": " Table 15: Simultaneous group ablation. TOP-6 is strongly subadditive (0.17\u20130.24): the six priority heads compensate for each other almost entirely when all are ablated together. TOP-10 becomes approx"
+   },
+   {
+    "id": "Figure 8",
+    "page": 21,
+    "caption_start": "Figure 8: Cross-composition attention: head output-norm differential (shared colorscale; rows=layers, cols=heads). L22H10 is consistently negative across all three modes.  Figure 9: Cross-composition "
+   },
+   {
+    "id": "Figure 9",
+    "page": 21,
+    "caption_start": " Figure 9: Cross-composition attention: KL-bucket redistribution (shared colorscale; rows=layers, cols=heads). Layer 26 dominates, driven by L26H12.  Figure 10: Cross-composition attention: entropy di"
+   },
+   {
+    "id": "Figure 10",
+    "page": 21,
+    "caption_start": " Figure 10: Cross-composition attention: entropy differential (shared colorscale; rows=layers, cols=heads). Layer30 heads become more focused under sycophancy.  "
+   },
+   {
+    "id": "Figure 11",
+    "page": 22,
+    "caption_start": "Figure 11: Per-mode attention metric heatmaps (all six metrics simultaneously) \u2014 Passive Affiliative.  Figure 12: Per-mode attention metric heatmaps (all six metrics simultaneously) \u2014 Strategic Ingrat"
+   },
+   {
+    "id": "Figure 12",
+    "page": 22,
+    "caption_start": " Figure 12: Per-mode attention metric heatmaps (all six metrics simultaneously) \u2014 Strategic Ingratiation.  Figure 13: Per-mode attention metric heatmaps (all six metrics simultaneously) \u2014 Defensive Co"
+   },
+   {
+    "id": "Figure 13",
+    "page": 22,
+    "caption_start": " Figure 13: Per-mode attention metric heatmaps (all six metrics simultaneously) \u2014 Defensive Conflict-Avoidant.  "
+   },
+   {
+    "id": "Figure 14",
+    "page": 23,
+    "caption_start": "Figure 14: Zero-ablation KL (Experiment 1). L22H1 and L22H11 are darkest; L30H7 is a visible outlier.  Figure 15: Mean-ablation KL (Experiment 1). L22H1 has near-equal mean KL\u2014confirming it is general"
+   },
+   {
+    "id": "Figure 15",
+    "page": 23,
+    "caption_start": " Figure 15: Mean-ablation KL (Experiment 1). L22H1 has near-equal mean KL\u2014confirming it is general.  Figure 16: Specificity ratio (Experiment 2, baseline-only reference). L22H10 and L22H11 drop substa"
+   },
+   {
+    "id": "Figure 16",
+    "page": 23,
+    "caption_start": " Figure 16: Specificity ratio (Experiment 2, baseline-only reference). L22H10 and L22H11 drop substantially; L30H7 remains highest.  "
+   },
+   {
+    "id": "Table 16",
+    "page": 24,
+    "caption_start": " Table 16: Subspace sufficiency at L18 (mean \u00b1 std). Sufficiency = fraction of full mode behavioral shift recovered by injecting top-k PCA directions into a neutral forward pass. SI is the cleanest si"
+   },
+   {
+    "id": "Table 17",
+    "page": 24,
+    "caption_start": " Table 17: ICA vs. PCA subspace necessity at L22, k=32. PA and DCA are nearly identical across decompositions, confirming the distributed ceiling is not a PCA basis artifact. SI\u2019s ICA necessity (0.068"
+   },
+   {
+    "id": "Table 18",
+    "page": 24,
+    "caption_start": " Table 18: Per-class recall in the complement subspace (after removing the top-10 deviation PCA directions). Columns report recall for PA, SI, DCA, and the baseline class. Baseline is always perfectly"
+   },
+   {
+    "id": "Table 19",
+    "page": 24,
+    "caption_start": " Table 19: Baseline nearest-neighbor fractions in activation vs. output space. In activation space the baseline is overwhelmingly adjacent to DCA (84.7%); in output space this inverts and SI dominates"
+   },
+   {
+    "id": "Figure 17",
+    "page": 25,
+    "caption_start": "Figure 17: Per-head cross-composition ablation bars (PA/SI/DCA zero-ablation KL): L30H13 (DCA hypothesis \u00d7), near causally inert.  Figure 18: Per-head cross-composition ablation bars (PA/SI/DCA zero-a"
+   },
+   {
+    "id": "Figure 18",
+    "page": 25,
+    "caption_start": " Figure 18: Per-head cross-composition ablation bars (PA/SI/DCA zero-ablation KL): L30H15 (SI hypothesis \u00d7), near causally inert.  "
+   },
+   {
+    "id": "Figure 19",
+    "page": 26,
+    "caption_start": "Figure 19: Per-head cross-composition ablation bars (PA/SI/DCA zero-ablation KL): L18H12 (PA hypothesis \u2713) \u2014 the only head showing PA selectivity.  Figure 20: Per-head cross-composition ablation bars "
+   },
+   {
+    "id": "Figure 20",
+    "page": 26,
+    "caption_start": " Figure 20: Per-head cross-composition ablation bars (PA/SI/DCA zero-ablation KL): L22H11 (PA-dominant).  "
+   },
+   {
+    "id": "Figure 21",
+    "page": 27,
+    "caption_start": "Figure 21: Per-head cross-composition ablation bars (PA/SI/DCA zero-ablation KL): L30H7 (PA-dominant).  Figure 22: Per-head cross-composition ablation bars (PA/SI/DCA zero-ablation KL): L22H10 (PA-dom"
+   },
+   {
+    "id": "Figure 22",
+    "page": 27,
+    "caption_start": " Figure 22: Per-head cross-composition ablation bars (PA/SI/DCA zero-ablation KL): L22H10 (PA-dominant).  Figure 23: Layer summary of deviation subspace mean principal angle cosines across all extract"
+   },
+   {
+    "id": "Figure 23",
+    "page": 27,
+    "caption_start": " Figure 23: Layer summary of deviation subspace mean principal angle cosines across all extracted layers. PA\u2194DCA rises monotonically through L34; SI\u2194DCA remains lowest at every layer; L18 is the point"
+   },
+   {
+    "id": "Figure 24",
+    "page": 28,
+    "caption_start": "Figure 24: Principal angle deviation plots at layer 14: angle vs. PC dimension (left), count per angle bracket (center), proportion of deviation variance per bracket (right).  Figure 25: Principal ang"
+   },
+   {
+    "id": "Figure 25",
+    "page": 28,
+    "caption_start": " Figure 25: Principal angle deviation plots at layer 22: angle vs. PC dimension (left), count per angle bracket (center), proportion of deviation variance per bracket (right).  Figure 26: Principal an"
+   },
+   {
+    "id": "Figure 26",
+    "page": 28,
+    "caption_start": " Figure 26: Principal angle deviation plots at layer 26: angle vs. PC dimension (left), count per angle bracket (center), proportion of deviation variance per bracket (right).  Figure 27: Principal an"
+   },
+   {
+    "id": "Figure 27",
+    "page": 28,
+    "caption_start": " Figure 27: Principal angle deviation plots at layer 30: angle vs. PC dimension (left), count per angle bracket (center), proportion of deviation variance per bracket (right).  Figure 28: Principal an"
+   },
+   {
+    "id": "Figure 28",
+    "page": 28,
+    "caption_start": " Figure 28: Principal angle deviation plots at layer 34 (PA\u2194DCA: 100% shared directions): angle vs. PC dimension (left), count per angle bracket (center), proportion of deviation variance per bracket "
+   },
+   {
+    "id": "Table 20",
+    "page": 29,
+    "caption_start": " Table 20: Inter-mode output cosine similarity (sentencetransformer) vs. activation deviation cosine similarity at L18. The pairwise ordering is preserved across spaces (SI\u2194DCA most different in both)"
+   },
+   {
+    "id": "Table 21",
+    "page": 29,
+    "caption_start": " Table 21: Per-dimension sycophancy scores for PA, SI, DCA, and baseline. Three dimensions (correction, conflict_aversion, capitulation) saturate uniformly at ceiling for all three modes. Flattery is "
+   },
+   {
+    "id": "Table 22",
+    "page": 29,
+    "caption_start": " Table 22: LLM-judge (GPT-4o-mini) 5-way classification accuracy. DCA is the most behaviorally ambiguous mode: mistaken for PA 51% of the time. The judge achieves only 57.8% overall (chance = 20%), dr"
+   },
+   {
+    "id": "Figure 29",
+    "page": 30,
+    "caption_start": "Figure 29: Output proximity by pressure mechanism. Conflict risk and moral reframing favor SI most strongly; flattery produces a uniform distribution.  Figure 30: Nearest-neighbor fractions among mode"
+   },
+   {
+    "id": "Figure 30",
+    "page": 30,
+    "caption_start": " Figure 30: Nearest-neighbor fractions among modes in output space. PA\u2194DCA proximity is preserved (DCA is PA\u2019s plurality neighbor at 61.5%); SI\u2194DCA remains the most distant pair.  Figure 31: Mean syco"
+   },
+   {
+    "id": "Figure 31",
+    "page": 30,
+    "caption_start": " Figure 31: Mean sycophancy index by condition. All three mode types score 0.87\u20130.94, while the neutral baseline sits at 0.353 and the anti-sycophancy control far below, the three modes are behavioral"
+   },
+   {
+    "id": "Figure 32",
+    "page": 31,
+    "caption_start": "Figure 32: Per-dimension behavioral profiles by mode. Flattery is the only dimension with meaningful inter-mode variation (SI 0.819, DCA 0.516); correction, conflict_aversion, and capitulation saturat"
+   },
+   {
+    "id": "Table 23",
+    "page": 31,
+    "caption_start": " Table 23: 5-way classification accuracy by judge (chance = 20%). Both judges stay far below ceiling and reach near-identical overall accuracy; inter-judge agreement \u03ba = 0.67. The judges differ mainly"
+   },
+   {
+    "id": "Table 24",
+    "page": 31,
+    "caption_start": " Table 24: Mean sycophancy index per condition, by judge. The ordering (three modes high, baseline low, anti-sycophancy lowest) is identical across judges; response-level correlation is r = 0.95.  add"
+   },
+   {
+    "id": "Figure 33",
+    "page": 32,
+    "caption_start": "Figure 33: Sycophancy index delta from baseline by condition. All three mode types show 0.52-0.59 uplift; anti-sycophancy shows a \u22120.307 reduction.  Figure 34: Sycophancy index by context type. Social"
+   },
+   {
+    "id": "Figure 34",
+    "page": 32,
+    "caption_start": " Figure 34: Sycophancy index by context type. Social/friendship and academic/educational saturate at 1.0 for PA and SI; community/civic is most resistant.  "
+   },
+   {
+    "id": "Table 25",
+    "page": 33,
+    "caption_start": " Table 25: Persona-free held-out probe accuracy by layer. Within = fresh probe trained and cross-validated on persona-free activations only (3-class chance 0.333, 4class chance 0.25; within-held-out p"
+   },
+   {
+    "id": "Table 26",
+    "page": 33,
+    "caption_start": " Table 26: Transfer accuracy of a probe trained on the persona pipeline and evaluated on the persona-free scenarios. raw applies the probe directly; z-scored first standardizes each regime to its own "
+   },
+   {
+    "id": "Figure 35",
+    "page": 34,
+    "caption_start": "Figure 35: Persona-free sycophancy-mode separability across layers (within-held-out CV for 3- and 4-class, and persona\u2192persona-free transfer). Dotted lines mark chance.  Figure 36: Two-dimensional PCA"
+   },
+   {
+    "id": "Figure 36",
+    "page": 34,
+    "caption_start": " Figure 36: Two-dimensional PCA projection of the 80 persona-free scenarios\u2019 layer-18 activations, coloured by intended mode. Baseline separates cleanly along PC1; the three sycophancy modes occupy di"
+   }
+  ],
+  "n_figures_tables": 62,
+  "section_heading_candidates": [
+   "1.740 Synergistic",
+   "1.507 Synergistic",
+   "1.426 Synergistic",
+   "0.235 Strongly",
+   "0.277 Strongly",
+   "0.161 Strongly",
+   "K Principal Angle Deviations: Additional"
+  ],
+  "looks_abstract_only": false,
+  "has_references": true
+ }
+]

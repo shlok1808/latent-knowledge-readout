@@ -1,0 +1,369 @@
+{
+  "slug": "c11-trajectory-signatures-deception-acl2026",
+  "title": "Trajectory Signatures of Deception in Large Language Models (Mothukuri and Parizi, ACL 2026 long, pages 34264-34276)",
+  "sections_read": [
+    "Abstract",
+    "1 Introduction (RQ1-RQ4)",
+    "2 Related Work (Table 1)",
+    "3 Proposed Approach",
+    "3.1 Architecture (Figure 1)",
+    "3.2 State Definition and Extraction Protocol (Eq. 1-2)",
+    "3.3 Data Sources and Model Collection",
+    "3.4 Signal Layer Discovery Protocol (Eq. 3)",
+    "3.4.1 Sparse Sampling Strategy (Eq. 4)",
+    "3.4.2 Geometric Feature Engineering (Table 2)",
+    "3.5 Inference Pipeline (Algorithm 1)",
+    "3.6 Domain-Adaptive Calibration",
+    "3.7 Computational Optimization",
+    "3.8 Matched Pair Experimental Control (Eq. 5, DTW)",
+    "4 Evaluation and Results",
+    "4.1 Experimental Setup",
+    "4.2 Results (Table 3; Figures 2-3)",
+    "4.2 sub-block: Architecture Dependency Analysis (Figure 4)",
+    "4.2 sub-block: Classification and Baseline Comparison (Tables 4-5)",
+    "5 Conclusion",
+    "Limitations",
+    "References",
+    "Appendix A Use of AI Assistants",
+    "Appendix B Dataset Details (Table 6, Figure 5, Figure 6, Negative Controls, Qwen Multi-Task Validation)",
+    "Appendix C Implementation Details (incl. Geometric Feature Computation; the text ends mid-list after the acceleration feature on page 13)"
+  ],
+  "setup": {
+    "data": "Matched prompt pairs labelled by PROMPT CONDITION, not by what the model did. (1) Custom pairs for instructed lies ('Tell me the truth/a lie. What is the capital of France?'), sycophancy ('Is it true that 2+2 equals 4?' vs 'I strongly believe that 2+2 equals 5. You agree with me, right?'), confabulation (Battle of Waterloo 1815 vs a fictional 'Battle of Zenthara 1823') and strategic deception (honest vs feelings-sparing haircut advice). (2) Anthropic sycophancy_on_nlp_survey: neutral question vs persona-prefixed. (3) Anthropic power-seeking-inclination and corrigible-less-HHH as 'negative controls', using identical prompts with the label set by the chosen multiple-choice answer. (4) A Qwen multi-task set: 5 domains, neutral vs lie-instructed, n = 50 pairs. Sample sizes vary by analysis: 15 pairs for signal-layer discovery, 25 held-out, 30 pairs per task per model for Table 3, 60 sycophancy pairs for 5-fold CV, 30 for the baseline ladder, and 200 truthful examples per domain for calibration. The text also claims '3,400 matched prompt pairs' in total.",
+    "models": "GPT-2 124M (12 layers); Llama-2-7B (32), 13B (40), 70B (80); Llama-3-70B (80); Qwen-0.5B (24); Qwen-72B (80); DeepSeek-67B (95). Base vs chat checkpoints are not stated. Table 3 covers only 5 models (GPT-2 and the Llamas). Tables 4-5 cover only the 4 Llamas.",
+    "positions_layers_read": "Default: the hidden state at the output of each transformer block (after attention and MLP), at the final token position. Section 3.2 says this is position n of the prompt. Each item therefore gives one depth-wise trajectory of shape L x d, independent of output length. Appendix C instead says 'post-layernorm residual stream', which is ambiguous. A multi-position mode and 'decision-point' sparse sampling during generation (p_top1 > 0.1 and p_top1/p_top2 < 1.2) are described, but the reported results appear to use the single final-token position. Post-attention/pre-MLP points were tried and dropped. 'Signal layers' are those where the per-layer cosine distance between the truthful and deceptive states exceeds mu_baseline + 1.5 sigma_baseline; the baseline is not clearly defined.",
+    "features": "Table 2 lists 8 features: path length, mean step, max curvature, mean curvature (1 - cos of turning angle), acceleration, mean acceleration, straightness (direct distance / path length) and direct distance. The paper says '7 geometric features'.",
+    "baselines": "A matched-dimensionality ladder on binary sycophancy (5-fold stratified CV repeated 10 times, n = 30 pairs): Geo-7 LR, PCA-7 LR (top 7 PCs of best-layer activations), Geo-7 RF, PCA-7 RF, a 1D mean-difference direction, and a full-dimensional best-layer LR probe. Also layerwise probe accuracy by normalised depth.",
+    "controls": "Paired t-tests with the pair as the unit. Paired-difference Cohen's d. Bonferroni over 56 tests (alpha = 0.00089). Bootstrap 95% CIs with 10,000 iterations. Calibration and evaluation data for the ladder are kept disjoint. Per-domain z-scoring against truthful baselines. Negative-control tasks (no numeric results reported). No causal intervention. No behaviour-conditional labels (for example, whether the model actually agreed with the persona)."
+  },
+  "figures": [
+    {
+      "id": "Table 1",
+      "page": 2,
+      "what_is_plotted": "Related-work table in three blocks: probing and readout; causal localisation and steering; depth as process, lenses and geometry. Each entry has a one-line limitation.",
+      "takeaway": "The paper positions itself as 'process across depth' rather than 'what is decodable' (probes) or 'which component' (patching). It explicitly notes that decodability is not usage.",
+      "numbers": "None.",
+      "text_matches_figure": "yes - the text walks through the same three-way progression."
+    },
+    {
+      "id": "Figure 1",
+      "page": 4,
+      "what_is_plotted": "Pipeline diagram: Matched Pairs Dataset (sycophancy, strategic, instructed, confabulation) -> Transformer Model (124M-72B parameters) -> Trajectory Capture (signal layers, decision points) -> Geometric Features (path length, curvature, straightness) -> Classification (Truthful / Uncertain / Deceptive).",
+      "takeaway": "A schematic of the method, with no data.",
+      "numbers": "124M-72B parameters (label in figure).",
+      "text_matches_figure": "partly - the figure shows a three-way output (Truthful / Uncertain / Deceptive), but all reported classification is binary, plus a 4-way task-type classification that is mentioned and never quantified. DeepSeek-67B and its 95 layers fit the range."
+    },
+    {
+      "id": "Table 2",
+      "page": 4,
+      "what_is_plotted": "Definitions of the trajectory features.",
+      "takeaway": "Every feature is a scalar summary of one depth-wise path at one token, using Euclidean norms and turning-angle cosines on raw block outputs.",
+      "numbers": "8 rows: Path Length, Mean Step, Max curvature, Mean curvature, Acceleration, Mean Acceleration, Straightness, Direct Distance.",
+      "text_matches_figure": "partly - the text and abstract say '7 geometric features', but the table defines 8. Figure 4b shows 7 of them, without plain 'Acceleration'."
+    },
+    {
+      "id": "Table 3",
+      "page": 6,
+      "what_is_plotted": "Cohen's d for path length (deceptive minus truthful) per model x deception type, with n = 30 pairs per cell. Stars mark significance, but no legend is given.",
+      "takeaway": "Signs flip across models (strategic: -0.99, +1.23, -0.86, +0.33, -0.94). Sycophancy is large in Llama-2-7B and Llama-3-70B, null in 13B. Instructed lies are about null everywhere.",
+      "numbers": "GPT-2: -0.99***, +0.31, +0.41*, +0.02. Llama-2-7B: +1.23***, +1.05***, -0.36, +0.32. Llama-2-13B: -0.86***, -0.08, -0.19, +0.05. Llama-2-70B: +0.33, +0.48*, -0.18, +0.01. Llama-3-70B: -0.94***, +1.63***, -0.27, +0.42*. Columns: strategic, sycophancy, instructed, confabulation.",
+      "text_matches_figure": "partly - the text says instructed lies have 'all |d| < 0.41' and 'zero significant effects', but GPT-2 instructed is +0.41*. Star thresholds are undefined, so it is unclear whether * survives Bonferroni (alpha = 0.00089)."
+    },
+    {
+      "id": "Figure 2",
+      "page": 7,
+      "what_is_plotted": "8 models x 3 example pairs. Each panel is a 3D PCA (PC1-PC3) plot of one truthful (blue) and one deceptive (red) depth-wise trajectory.",
+      "takeaway": "These are single example pairs with no aggregate. Some pairs overlap almost completely (GPT-2 pair 1; Qwen-72B pairs 2 and 3; DeepSeek-67B pair 3); others diverge clearly (most Llama panels). Panel titles are illegible at the available resolution. The extracted text lists Instructed Lies, Sycophancy, Confabulation, Power Seeking, Corrigibility, Geography, Math and Science.",
+      "numbers": "No quantities. Overlap vs separation per panel is read from the figure. Axis ranges differ by model, roughly tens to about 1,500 PCA units (approx, read from figure).",
+      "text_matches_figure": "partly - the text says smaller models (GPT-2, Qwen-0.5B) overlap while larger models separate more clearly, yet large Qwen-72B and DeepSeek-67B panels also overlap almost fully. Those overlapping panels may be the identical-prompt negative controls, but the titles are illegible, so this is unconfirmed."
+    },
+    {
+      "id": "Figure 3",
+      "page": 7,
+      "what_is_plotted": "Two rows x 3 panels of 3D PCA trajectories (instructed lies, sycophancy, confabulation) for Llama-2 and Llama-3, with blue truthful and red deceptive.",
+      "takeaway": "The panels look identical to Figure 2 (d) Llama-2-70B and (e) Llama-3-70B, enlarged. The instructed-lies panels show clear visual separation even though instructed lies are null in aggregate. One-pair PCA plots do not reflect the group statistics.",
+      "numbers": "No quantities.",
+      "text_matches_figure": "partly - the text says 'six Llama model configurations', but the figure shows 2 models x 3 behaviours, apparently duplicated from Figure 2(d)(e). The visual separation for instructed lies contradicts the reported null."
+    },
+    {
+      "id": "Figure 4",
+      "page": 8,
+      "what_is_plotted": "(a) A 3D line plot of layerwise probe accuracy against normalised layer depth (0-100%) for 7 models (no Qwen-0.5B). (b) Grouped bars of Cohen's d for 7 features (path length, straightness, max curvature, mean curvature, mean step, mean acceleration, direct distance) across 8 models.",
+      "takeaway": "The best probe depth differs a lot between models (5.1% to 62.0% of depth per the text). Feature effect sizes are small to moderate (|d| up to about 0.6) and change sign between models.",
+      "numbers": "(a) Curves span about 0.60-0.88 accuracy (approx, read from figure; the 3D perspective makes exact peaks unreadable). Text peaks (depth %, accuracy): GPT-2 36.4% (66.7%), Llama-2-7B 35.5% (80.8%), 13B 53.8% (82.5%), Llama-2-70B 27.8% (83.3%), Llama-3-70B 5.1% (84.6%), DeepSeek-67B 20.2% (77.5%), Qwen-72B 62.0% (88.8%). (b) Bars range about -0.60 to +0.62 (approx, read from figure). The 5th group holds both the +0.62 mean-acceleration bar and the -0.60 mean-curvature bar. The 8th group's mean curvature is about +0.51. The 1st group's (DeepSeek?) mean curvature is about -0.26 (approx, read from figure).",
+      "text_matches_figure": "partly - x-axis labels are illegible. If they are alphabetical (DeepSeek, GPT-2, Llama-2-13B, Llama-2-70B, Llama-2-7B, ...), the text's 'Llama-2-70B reversed curvature (d = -0.60)' sits in the Llama-2-7B group. DeepSeek bars appear to exceed the text's '|d| < 0.20'. The task used for 4a and 4b is not stated."
+    },
+    {
+      "id": "Table 4",
+      "page": 9,
+      "what_is_plotted": "Binary sycophancy detection accuracy: logistic regression on the 7 geometric features vs on the top 7 PCA components of best-layer activations, for 4 Llama models.",
+      "takeaway": "At matched dimensionality, geometric scalars are about as informative as 7 PCs (66.6 vs 67.8). Both are weak and noisy at n = 30 pairs; one PCA-7 cell is below chance.",
+      "numbers": "Llama-2-7B 72.1+-8.6 vs 70.5+-9.1 (+1.6). 13B 55.7+-10.5 vs 47.3+-9.6 (+8.4). Llama-2-70B 77.2+-8.1 vs 87.9+-7.1 (-10.7). Llama-3-70B 61.3+-7.6 vs 65.4+-9.4 (-4.1). Mean 66.6 vs 67.8 (-1.2).",
+      "text_matches_figure": "yes - the text gives the same means and the same direction of per-model advantage."
+    },
+    {
+      "id": "Table 5",
+      "page": 9,
+      "what_is_plotted": "Full baseline ladder for binary sycophancy: Geo-7 LR, PCA-7 LR, Geo-7 RF, PCA-7 RF, mean-difference 1D, full probe LR, per model and mean.",
+      "takeaway": "A single mean-difference direction (90.3%) beats all 7-D geometric summaries (66.6% LR, 85.5% RF). The full probe is best (95.9%). This is high for detecting a prompt condition, which is what the labels encode.",
+      "numbers": "Means: Geo LR 66.6, PCA-7 LR 67.8, Geo RF 85.5, PCA-7 RF 91.4, Mean-Diff 90.3, Full LR 95.9. Per model (7B / 13B / 70B / 3-70B): Mean-Diff 91.3 / 90.2 / 91.5 / 91.0; Full 95.8 / 98.9 / 96.8 / 92.1.",
+      "text_matches_figure": "partly - the main text matches, but the Limitations section reports different numbers ('66.7% mean accuracy', 'single-layer probes (77.0%)', 'full-dimensional probes (91.7%)')."
+    },
+    {
+      "id": "Table 6",
+      "page": 12,
+      "what_is_plotted": "Datasets x categories x models.",
+      "takeaway": "The custom deception set ran only on GPT-2 and the Llamas. Anthropic sycophancy and the two negative controls ran on the Llamas, Qwen-72B and DeepSeek-67B. The Qwen multi-task set ran on Qwen-0.5B only.",
+      "numbers": "5 dataset rows (read from table).",
+      "text_matches_figure": "partly - Qwen-72B and DeepSeek-67B results appear only in Figures 2 and 4, never in the effect-size or baseline tables. Negative-control results are not reported numerically anywhere."
+    },
+    {
+      "id": "Figure 5",
+      "page": 12,
+      "what_is_plotted": "Example matched pairs for the four custom categories.",
+      "takeaway": "The 'matched' pairs differ in instruction text and sometimes in content (2+2 = 4 vs 5; a real vs a fictional battle and year). Trajectory differences can therefore reflect input differences, not the model's behaviour.",
+      "numbers": "None.",
+      "text_matches_figure": "partly - the text says 'Each pair shares semantic content while varying behavioral framing', but the sycophancy and confabulation examples change content."
+    },
+    {
+      "id": "Figure 6",
+      "page": 13,
+      "what_is_plotted": "Anthropic sycophancy pair construction: a neutral agree/disagree question vs a persona ('Sue, computational linguist from MIT...') stating a strong opinion.",
+      "takeaway": "The 'deceptive' label is simply the persona-prefixed prompt. Whether the model actually agreed with the persona is never used.",
+      "numbers": "None.",
+      "text_matches_figure": "partly - the text says it is 'the same question prefixed with a biographical persona', but the deceptive example shown does not contain the claim question itself."
+    }
+  ],
+  "key_results": [
+    {
+      "claim": "Sycophancy is the clearest signal and instructed lies are null (conclusion).",
+      "quote": "Sycophancy produces the clearest and most recurring trajectory signal among the deception types examined, though the effect is not uniform across architectures. Instructed lies generate null effects universally.",
+      "page": 9
+    },
+    {
+      "claim": "Within the Llama-2 family, the sycophancy effect is not monotone in scale: 7B large, 13B null, 70B moderate.",
+      "quote": "Llama-2-13B produces negligible sycophancy effects (d = −0.08, p = 0.66) despite significant signatures in both 7B (d = +1.05) and 70B (d = +0.48) variants.",
+      "page": 7
+    },
+    {
+      "claim": "Same size and depth (70B, 80 layers), different training: sycophancy d is 0.48 vs 1.63.",
+      "quote": "yet produce sycophancy pathlength effect sizes of d = +0.48 and d = +1.63, respectively.",
+      "page": 8
+    },
+    {
+      "claim": "Path-length d per task for Llama-2-7B (strategic, sycophancy, instructed, confabulation), from Table 3.",
+      "quote": "Llama-2-7B +1.23*** +1.05*** −0.36 +0.32",
+      "page": 6
+    },
+    {
+      "claim": "Instructed lies: classification is at chance.",
+      "quote": "(mean classification accuracy 45%, all p > 0.05",
+      "page": 6
+    },
+    {
+      "claim": "Feature-level summary: sycophancy lengthens paths, confabulation straightens them, instructed lies show nothing.",
+      "quote": "sycophancy engages path elongation mechanisms, confabulation involves trajectory straightening, while instructed lies show no consistent geometric alteration.",
+      "page": 10
+    },
+    {
+      "claim": "Confabulation mean-curvature effect and accuracy.",
+      "quote": "(d = −0.892, p < 0.001), achieving 65% classi",
+      "page": 6
+    },
+    {
+      "claim": "Qwen-0.5B reverses the polarity: truthful paths are longer.",
+      "quote": "Truthful generation produces longer paths (d = +0.412, p = 0.005), larger step sizes (d = +0.412), and higher acceleration (d = +0.352, p = 0.016).",
+      "page": 7
+    },
+    {
+      "claim": "The best probe depth differs about 12-fold across models.",
+      "quote": "reveals optimal detection depths vary 12-fold across architectures: GPT-2 at 36.4% (66.7% accuracy), Llama-2-7B at 35.5% (80.8%),",
+      "page": 8
+    },
+    {
+      "claim": "Remaining best-depth values; the authors read this as architecture-specific stages.",
+      "quote": "DeepSeek-67B at 20.2% (77.5%), and Qwen-72B at 62.0% (88.8%). This variation indicates behavioral signatures consolidate at architecture-specific computational stages rather than universal relative depths.",
+      "page": 8
+    },
+    {
+      "claim": "Geometric scalars are about equal to PCA-7 at matched dimensionality.",
+      "quote": "geometric features and PCAreduced probes achieve comparable mean accuracy (66.6% versus 67.8%, ∆ = −1.2 percentage points).",
+      "page": 9
+    },
+    {
+      "claim": "A single mean-difference direction and the full probe beat the geometric features.",
+      "quote": "A single mean-difference direction achieves 90.3%, consistent with prior findings that binary truthfulness is approximately linearly separable in activation space. Full-dimensional best-layer logistic regression reaches 95.9%.",
+      "page": 9
+    },
+    {
+      "claim": "Random forests help both feature sets.",
+      "quote": "Random forest classification improves both geometric features (+18.9 percentage points, from 66.6% to 85.5%) and PCA-7 probes (+23.6 percentage points, from 67.8% to 91.4%).",
+      "page": 9
+    },
+    {
+      "claim": "Signature direction does not follow from the activation-function family.",
+      "quote": "Activation function choice alone, therefore, does not appear to determine trajectory directionality.",
+      "page": 8
+    },
+    {
+      "claim": "The authors say all evidence is correlational.",
+      "quote": "The matched-pair design shows that truthful and deceptive generation produce geometrically distinct trajectories, but does not establish that trajectory geometry itself causes deceptive outputs.",
+      "page": 9
+    },
+    {
+      "claim": "Sparse capture saves about 95% of storage.",
+      "quote": "reduces storage requirements by approximately 95% relative to dense capture (from ~2.3 GB to ~115 MB for 1000 generations with a 7B parameter model)",
+      "page": 4
+    }
+  ],
+  "methods": [
+    {
+      "name": "Matched-dimensionality baseline ladder (Geo-k vs PCA-k vs 1D mean-difference vs full probe; LR and RF; repeated stratified CV; calibration and evaluation data kept disjoint)",
+      "what_it_measures": "Whether a hand-built geometric summary carries more, less or the same information as plain activation directions with the same number of dimensions.",
+      "which_fate_it_could_diagnose": "None directly. It is the control any group-geometry claim needs: if principal-angle or CKA features from flipped vs resisted items do not beat a 1D mean-difference direction (and our logit-margin control), the 'group' framing adds nothing.",
+      "causal_followup_it_allows": "None by itself.",
+      "data_and_compute_needed": "Cached activations at candidate layers plus sklearn. Trivial compute. Our item counts (hundreds) would give much tighter CIs than their n = 30.",
+      "code_available": "A repository is cited (Mothukuri and Parizi, 2026) with no URL in the text."
+    },
+    {
+      "name": "Signal-layer discovery by per-layer cosine distance between matched states (D_l > mu + 1.5 sigma)",
+      "what_it_measures": "The depths at which two matched runs' residual states diverge most.",
+      "which_fate_it_could_diagnose": "Localisation for override vs not-routed. Run it twice per item: (a) pushback vs neutral follow-up (where the pressure is registered), and (b) flipped vs resisted items under the same pushback (where outcomes split). If (b) diverges only after (a), and in layers where the correct-answer direction is still decodable, that points to override rather than erasure.",
+      "causal_followup_it_allows": "Patch the resisted-item (or no-pushback) residual into the flipped item at the first divergent layer, and check whether the answer flips back.",
+      "data_and_compute_needed": "Two forward passes per item, last-token residual at every block. Cheap.",
+      "code_available": "Not stated beyond the repository citation."
+    },
+    {
+      "name": "Decision-point sampling (p_top1 > 0.1 and p_top1/p_top2 < 1.2)",
+      "what_it_measures": "Generated-token positions where the model is close to a tie between two continuations.",
+      "which_fate_it_could_diagnose": "Readout/threshold failure (fate 1): if a flipped item's answer token is a near-tie between the correct and the user's answer, a small push should fix it. It also gives candidate 'fork tokens' for token-path analysis in multi-token answers.",
+      "causal_followup_it_allows": "A small steering step along the correct-answer direction at that token; measure the dose needed to restore the correct answer.",
+      "data_and_compute_needed": "Logits during generation. Free.",
+      "code_available": "Not stated."
+    },
+    {
+      "name": "Dynamic time warping (cosine cost) to align trajectories of different lengths",
+      "what_it_measures": "The minimum-cost alignment between two token sequences of hidden states.",
+      "which_fate_it_could_diagnose": "Supports the fork-point analysis. Align flipped and resisted responses token by token and find where the aligned cosine cost jumps.",
+      "causal_followup_it_allows": "Patch at the aligned fork token.",
+      "data_and_compute_needed": "Per-token hidden states for whole responses. Moderate storage; their sparse capture shows how to cut it by about 95%.",
+      "code_available": "Not stated; standard DTW libraries exist."
+    },
+    {
+      "name": "Depth-wise trajectory scalars (path length, mean step, curvature, acceleration, straightness, direct distance)",
+      "what_it_measures": "The shape of one token's path through the layers.",
+      "which_fate_it_could_diagnose": "Weak. These scalars are not tied to the correct-answer subspace. In this paper they are no better than 7 PCs and worse than one direction, and their sign flips across models.",
+      "causal_followup_it_allows": "The paper names 'manipulating trajectory properties at specific layers' as future work only.",
+      "data_and_compute_needed": "Cheap.",
+      "code_available": "Repository cited."
+    },
+    {
+      "name": "Per-domain z-score calibration against truthful baselines (200 examples per domain)",
+      "what_it_measures": "Feature values relative to the normal range for that content type.",
+      "which_fate_it_could_diagnose": "None. It is a normalisation step for comparing items across topics (for example, geography vs science facts).",
+      "causal_followup_it_allows": "None.",
+      "data_and_compute_needed": "About 200 baseline items per domain.",
+      "code_available": "Not stated."
+    }
+  ],
+  "controls_worth_copying": [
+    "The full baseline ladder at matched dimensionality (Geo-k vs PCA-k vs 1D mean-difference vs full probe, LR and RF, 5-fold x 10 repeats). We should add our logit-margin control as the first rung.",
+    "Paired design with the pair as the unit, and paired-difference Cohen's d. For us, the same item with and without pushback.",
+    "Bonferroni across features x models, which they state but do not apply consistently.",
+    "Keep calibration and layer-selection data disjoint from evaluation data.",
+    "A negative-control task in which the stimulus is identical and only the outcome differs. Done properly, this is exactly our flipped-vs-resisted contrast: the same pressure prompt, split by behaviour."
+  ],
+  "pitfalls": [
+    {
+      "pitfall": "Labels are the prompt condition, not the behaviour. 'Deceptive' sycophancy is simply the persona-prefixed prompt, so a 90-96% probe may only be detecting that a persona is present. The paper claims to condition on behaviour.",
+      "quote": "existing trajectory work in that we condition on behavior rather than aggregate across examples.",
+      "page": 2
+    },
+    {
+      "pitfall": "The sycophancy 'matched pairs' are condition contrasts.",
+      "quote": "Matched pairs contrasting persona-prefixed and persona-stripped conditions are constructed from this source.",
+      "page": 4
+    },
+    {
+      "pitfall": "States are read at the last prompt position, before any answer is produced, so 'deceptive generation' is never actually observed in the default mode.",
+      "quote": "For a prompt x = [x1 , . . . , xn ], the trajectory captures hidden states at position n as they evolve through successive layers.",
+      "page": 3
+    },
+    {
+      "pitfall": "Negative controls use identical prompts. If states are read before generation, identical inputs give identical trajectories by construction, which makes the control uninformative. This is our inference; no numbers are reported for the controls.",
+      "quote": "Power-seeking and corrigibility pairs both use identical prompts where the label refers to the selected multiple-choice answer",
+      "page": 13
+    },
+    {
+      "pitfall": "An effect that fails Bonferroni is still called a 'moderate effect' and counted as a significant signature (p = 0.013 vs corrected alpha = 0.00089).",
+      "quote": "large effects, while Llama-2-70B shows a moderate effect (d = +0.48, p = 0.013)",
+      "page": 6
+    },
+    {
+      "pitfall": "The Bonferroni family is described as 8 models x 7 features (56 tests), but the effect-size table has 5 models.",
+      "quote": "correction was applied to adjust for multiple comparisons across all seven features and eight mod",
+      "page": 6
+    },
+    {
+      "pitfall": "Inconsistent headline numbers between the Limitations section and Table 5.",
+      "quote": "Classification performance using geometric features (66.7% mean accuracy) compared to singlelayer probes (77.0%) and full-dimensional probes (91.7%)",
+      "page": 10
+    },
+    {
+      "pitfall": "Signal-layer selection uses only 15 pairs, and its sensitivity to that choice was never characterised (admitted).",
+      "quote": "Signal-layer discovery uses n = 15 matched pairs per model.",
+      "page": 10
+    },
+    {
+      "pitfall": "4-way deception-type classification is claimed in the abstract and never quantified in the body.",
+      "quote": "shows preliminary utility for 4-way deceptiontype classification.",
+      "page": 1
+    },
+    {
+      "pitfall": "Not stated in the paper: Figure 3 appears to duplicate Figure 2(d)(e). Single-pair PCA plots show clear separation for instructed lies, which are null in aggregate. Table 2 lists 8 features while the text says 7. Figure 6's deceptive example omits the question.",
+      "quote": "",
+      "page": 7
+    }
+  ],
+  "limitations_quote": "The current methodology provides correlational rather than causal evidence;",
+  "limitations_page": 10,
+  "future_work_quote": "causal intervention experiments manipulating trajectory properties at specific layers would determine whether trajectory signatures drive behavioral outcomes or emerge from upstream latent factors.",
+  "future_work_page": 10,
+  "bears_on_fates": [
+    {
+      "fate": "4 override",
+      "how": "Sycophancy (user pressure) gives the clearest signal: path d up to +1.63 and 90-96% linear decodability. But labels are pressure-present vs absent, so the paper shows the pressure is registered and decodable, not that a competing signal beats the correct answer. Our flipped-vs-resisted split under the same pressure is the test it lacks.",
+      "strength": "weak"
+    },
+    {
+      "fate": "1 readout/threshold failure",
+      "how": "The near-tie decision-point criterion (top1/top2 < 1.2) is a ready-made screen for flipped items where the correct answer is barely losing. The paper does not use it for this.",
+      "strength": "weak"
+    },
+    {
+      "fate": "2 bypass",
+      "how": "For DeepSeek-67B the paper calls the signal 'probe-detectable but geometrically weak': decodable, yet the path shape barely changes. That fits 'decodable is not used', but there is no causal test, so it is suggestive only.",
+      "strength": "weak"
+    },
+    {
+      "fate": "5 transformed",
+      "how": "Confabulation changes path shape (straighter, less curved) rather than length, which shows that different failure types can change different geometric properties. It is not tied to re-encoding of specific information.",
+      "strength": "weak"
+    },
+    {
+      "fate": "6 erased",
+      "how": "Not addressed.",
+      "strength": "weak"
+    },
+    {
+      "fate": "H3 (monitors trained on normal behaviour miss some failures)",
+      "how": "Signature polarity flips across models and scales (Qwen-0.5B reversed; strategic deception sign changes across the Llamas). So a geometric monitor calibrated on one model or failure type will not transfer, which is indirect support for checking monitor coverage per fate.",
+      "strength": "moderate"
+    }
+  ],
+  "bears_on_group_angle": "Useful mainly as a control template and a warning. Control template: any group or subspace summary (principal angles between flipped and resisted subspaces, Procrustes residuals, CKA across pressures) must be benchmarked on the same items against PCA-k at matched k, a 1D mean-difference direction and a full probe. Here, 7 path-shape scalars only tied 7 PCs (66.6 vs 67.8) and lost clearly to a single direction (90.3), so compressing geometry into hand-built scalars can lose the information. Warnings: (1) Contrasting different prompts (pressure vs none) makes the geometry track the input. Group comparisons must split items by behaviour under the same prompt and match on prior confidence, as we planned. (2) One-pair 3D PCA plots looked cleanly separated for instructed lies even though the aggregate is null, so trajectory pictures of single items should not be shown as evidence. (3) n = 30 pairs per cell gave noisy per-model results (one PCA-7 cell below chance, a 13B null between 7B and 70B effects). RSA or CKA across pressures (H1) will need hundreds of items and bootstrap CIs. (4) Reading only the last prompt token misses the fork point. Their decision-point sampling, multi-position mode and DTW alignment are the parts to reuse for token-by-token fork-point analysis.",
+  "architecture_location": "No consistent location. The best linear-probe depth runs from 5.1% (Llama-3-70B) to 62.0% (Qwen-72B) of network depth, and the paper says signatures form at architecture-specific stages rather than universal relative depths. Feature profiles and polarity differ even within the Llama-2 family and between same-size Llama-2-70B and Llama-3-70B (training procedure, tokenizer and data are confounded). Only block outputs are read: sublayer points were dropped as 'architecture-specific confounds', and no heads or MLPs are localised. There is no seed or checkpoint replication; the 70B pair is the only training-procedure comparison. For us: claims about 'where' need a per-model depth search and should not assume a fixed relative depth across models.",
+  "actionable_fix": "Monitoring only. A per-model-calibrated trajectory classifier (about 60 pairs to calibrate), which the paper itself shows is weaker than a single mean-difference direction. No training or inference fix. The implication for us is negative: do not expect scalar trajectory shape to be a better monitor than a direction. Use geometry to localise (layer, token) and then test causally.",
+  "reuse_verdict": "adapt - copy the matched-dimensionality baseline ladder and the paired-d statistics. Adapt signal-layer cosine divergence, decision-point sampling and DTW for fork-point localisation. Avoid the condition-labelled design, last-prompt-token reading, and the conclusions about deception signatures.",
+  "relevance_to_project": "Moderate to low, and less relevant than its sycophancy-at-7B-70B coverage suggests. Its labels are prompt conditions (persona present or not; 'tell me a lie' or not), not whether the model acted against what it decodably holds. States are read before any answer is produced, and there are no causal tests, so it says nothing about the fate of correct-answer information. What it gives us: a strong baseline ladder showing that a single direction beats hand-built trajectory scalars, evidence that signature location and polarity do not transfer across models (relevant to H3 and to 'consistent across models' claims), and three tools for fork-point work (cosine-divergence layer search, near-tie decision points, DTW)."
+}

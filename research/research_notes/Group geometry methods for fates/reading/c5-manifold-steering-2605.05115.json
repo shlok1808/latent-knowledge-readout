@@ -1,0 +1,434 @@
+{
+  "slug": "c5-manifold-steering-2605.05115",
+  "title": "Manifold Steering Reveals the Shared Geometry of Neural Network Representation and Behavior (Wurgaft, Rager, Kowal, ... Geiger, Fel, Goodman, Lubana; Stanford / Goodfire et al.; arXiv 2605.05115v1, 6 May 2026)",
+  "sections_read": [
+    "Abstract",
+    "1 Introduction",
+    "2 The Geometry of Representation and Behavior",
+    "2.1 Setup (running example, concept geometry, notation, experimental tasks)",
+    "2.2 Fitting the Manifolds",
+    "2.3 Conceptual Structure Appears in Behavior and Activation Space",
+    "3 Connecting Representation and Behavior via Intervention",
+    "3.1 Steering Intervention Notation",
+    "3.2 Steering Along the Activation Manifold Follows the Behavior Manifold (incl. An Energy-based View of Naturalness)",
+    "3.3 Behavior Space Geometry Recovers the Activation Manifold",
+    "3.4 Unifying Steering Strategies Through Geometry (Definition 1: flat, density, pullback geometries)",
+    "4 Manifold Steering Yields Factored Control in Multi-Dimensional Spaces (ICLR tasks, manifold fitting, isometry results, manifold vs linear steering)",
+    "5 Manifold Steering on a Visual World Model: Mountain Car Task",
+    "6 Related Work",
+    "7 Discussion",
+    "8 Future Work and Limitations",
+    "Acknowledgments",
+    "References",
+    "A Experimental Details for Language Tasks",
+    "A.1 Tasks and Datasets (Table 1)",
+    "A.2 Model, Intervention Site, and Output Distribution",
+    "A.3 Fitting the Activation Manifold Mh",
+    "A.4 Fitting the Behavior Manifold My",
+    "A.5 Geodesic Distances and the Isometry Test",
+    "A.6 Steering Interventions",
+    "A.7 Naturalness Metric",
+    "A.8 Pullback Optimization",
+    "A.9 Pullback Recovery R2",
+    "B Experimental Details for the Vision Task",
+    "B.1 Mountain Car",
+    "C Additional Results",
+    "C.1 In-Context Learning of Representations",
+    "C.2 Manifold steering allows manipulation of uncertainty without loss of structure",
+    "C.3 Mountain Car (structural correspondence; pullback: behavior space steering)"
+  ],
+  "setup": {
+    "data": "Four template arithmetic tasks with known concept geometry (Table 1): weekdays (cyclic, |D|=49), months (cyclic, 84), letters C-Z (sequential, 48), ages 10-100 (sequential, 909). Two in-context-learning-of-representations (ICLR) tasks: random walks of 2048 noun tokens on a 5x5 grid and a 9x9 cylinder. A Mountain Car world model fit on 100 rollouts. Concept centroids = mean activation (or mean output distribution) over all prompts with the same ground-truth answer.",
+    "models": "Llama 3.1 8B (all main LM results); Llama 3.1 70B (one appendix experiment, Fig. 11); a GRU visual world model with a 64-d encoder latent trained by the authors (Mountain Car). No 9B-27B models, no instruction-tuned or chat models.",
+    "positions_layers": "Residual stream at the last token (answer position), layer 28 of Llama 3.1 8B (chosen a priori as a late layer), layer 70 of Llama 3.1 70B; encoder output for the world model. No layer sweep, no attention/MLP component analysis.",
+    "representation_of_geometry": "Activations reduced to 64-d PCA; cubic splines (periodic for cyclic, natural for sequential) or thin-plate splines (2-D ICLR) interpolate the centroids using ground-truth intrinsic coordinates (atan2 of PC1/PC2 for cyclic). Behavior = next-token distribution restricted to concept tokens (spelling variants summed) plus an 'other' bin, mapped to Hellinger coordinates sqrt(p) and splined in the tangent plane of the sphere.",
+    "baselines": "Linear (diff-in-means) steering between raw centroids, replacing the whole residual vector; Euclidean chord distances for the isometry test; the straight chord in PCA space as the baseline for pullback R2.",
+    "controls": "Euclidean vs geodesic distances computed on the same vertices; sub-arc pairs excluded from the isometry correlation; 16 base prompts (5 for ICLR) per pair with varying ground truth; up to 50 start/end pairs; mean +/- SE across pairs and paired t-tests; Ridge-probe sanity check for the world model.",
+    "metrics": "Pearson r between geodesic distance matrices (isometry), MDS embeddings, cumulative output energy E_BC (Bhattacharyya distance of steered outputs to the behavior manifold), intrinsic R2 of pullback paths vs manifold-steering paths, mean Euclidean distance to Mh (world model)."
+  },
+  "figures": [
+    {
+      "id": "Figure 1",
+      "page": 2,
+      "what_is_plotted": "Schematic: a curved activation-space surface with a straight linear path (grey), a manifold path (black) and a pullback path (teal); the induced paths on a three-concept probability simplex; small insets of P(concept) along each path.",
+      "takeaway": "Conceptual picture: the linear path passes through an 'unnatural' state where probability sits off the concepts; manifold and pullback paths move mass smoothly between neighbours and should coincide.",
+      "numbers": "None (schematic, no data).",
+      "text_matches_figure": "yes - it is an illustration of the hypothesis, not a result."
+    },
+    {
+      "id": "Figure 2",
+      "page": 4,
+      "what_is_plotted": "Weekdays (a) and months (b): 3-D PCA top/side views of behavior-space and activation-space manifolds; MDS of on-manifold distances (both spaces) and of linear activation distances; scatter of behavior-manifold path length vs activation path length for manifold paths and for linear paths.",
+      "takeaway": "Activation and behavior manifolds are both loops in the right day/month order; geodesic distances on the two are proportional; Euclidean (chord) distances are not.",
+      "numbers": "Panel labels: weekdays manifold r=0.99, linear r=0.89; months manifold r=0.89, linear r=0.53. The weekday linear scatter is clearly curved (saturating); the months manifold scatter shows a second off-diagonal band of points (approx, read from figure).",
+      "text_matches_figure": "yes for the r values (text p6 gives the same numbers); partly for 'isometry' in months: the second band in the months scatter is not discussed."
+    },
+    {
+      "id": "Figure 3",
+      "page": 5,
+      "what_is_plotted": "Same layout as Fig. 2 for letters (a) and ages (b): open-curve manifolds, MDS, and path-length scatters.",
+      "takeaway": "Sequential concepts lie on open curves in both spaces; geodesic distances match almost perfectly; linear activation distances are a poor proxy, worst for ages.",
+      "numbers": "Panel labels: letters manifold r=0.999, linear r=0.71; ages manifold r=0.999, linear r=0.36. In the ages linear scatter, activation chord lengths sit in a narrow band while behavior path lengths span the whole range (approx, read from figure). The linear-distance MDS for ages is scrambled.",
+      "text_matches_figure": "yes."
+    },
+    {
+      "id": "Figure 4",
+      "page": 7,
+      "what_is_plotted": "Top: behavior-space and activation-space 3-D PCA with manifold-steering path (black dots) and linear path (grey) for weekdays, months, letters, ages. Bottom: P(token) for each concept and 'other' along the steering path t in [0,1] (Tuesday->Friday, January->July, C->Z, 10->100) for manifold vs linear steering, mean over 16 prompts with bands.",
+      "takeaway": "Manifold steering hands probability from one neighbouring concept to the next; linear steering fades the start concept and grows the end concept with no intermediate concepts, and raises off-concept ('other') mass near the midpoint.",
+      "numbers": "Approx, read from figure: weekdays manifold - Wednesday and Thursday each peak near 0.70, 'other' about 0.18-0.23 throughout; weekdays linear - Tuesday 0.72 -> 0, Friday 0 -> 0.75, intermediates below 0.05, 'other' peaks near 0.33 at t about 0.5. Months linear - 'other' peaks near 0.45 at t about 0.4, above January and July at that point. Letters manifold peaks about 0.8 early decaying toward 0.6. Ages manifold traces are very noisy (many thin spikes).",
+      "text_matches_figure": "partly - matches for weekdays, months and letters; for ages the manifold-steering output is visibly spiky, so 'smooth' is weakest there (consistent with the ages pullback R2 of only 0.47)."
+    },
+    {
+      "id": "Figure 5",
+      "page": 8,
+      "what_is_plotted": "Behavior space (top) and activation space (bottom) paths for manifold steering (black), pullback-optimized paths (teal) and the linear chord (grey dotted). Paths: weekdays Thursday->Sunday, months August->December, letters C->Q, ages 36->91.",
+      "takeaway": "Paths optimized only to reproduce natural output trajectories bend the way the activation manifold bends, rather than following the chord.",
+      "numbers": "None printed on the figure; text gives R2 pullback vs linear: weekdays 0.77 vs 0.42, months 0.75 vs 0.32, ages 0.47 vs 0.24, letters 0.78 vs 0.23.",
+      "text_matches_figure": "partly - weekdays and months pullback paths closely shadow the manifold path; letters and ages pullback paths are jagged and only loosely follow it."
+    },
+    {
+      "id": "Figure 6",
+      "page": 11,
+      "what_is_plotted": "(a) 5x5 ICLR grid with example random walk; (b) MDS of linear activation distances, activation-manifold distances, behavior-manifold distances; (c) thin-plate-spline activation surfaces with steering paths and 5x5 heatmaps of output mass over grid nodes at five waypoints, manifold vs linear, for paths (0,3)->(4,3) and (2,0)->(2,4).",
+      "takeaway": "A 2-D manifold with two intrinsic coordinates; steering along one coordinate moves the predicted position along one grid axis (factored control).",
+      "numbers": "Text: geodesic r=.99, linear r=0.90 (grid). Heatmaps: approx, read from figure - on (0,3)->(4,3) the manifold path visits intermediate rows; on (2,0)->(2,4) the manifold and linear heatmaps look similar at this resolution.",
+      "text_matches_figure": "partly - the MDS panels clearly show a lattice for manifold distances and a warped one for linear; the 'teleportation' contrast in the heatmaps is not obvious for the (2,0)->(2,4) path."
+    },
+    {
+      "id": "Figure 7",
+      "page": 13,
+      "what_is_plotted": "Mountain Car: (a) world-model schematic; (b) MDS of linear vs on-manifold distances in activation and behavior space; (c) decoded frames ('Nearest Neighbor Decoder Outputs') at five waypoints from pos=-0.40 to 0.40 for linear vs manifold steering, the PCA of the encoder manifold with both paths, and p(position) histograms at each waypoint.",
+      "takeaway": "Linear midpoints give blurred or missing cars and broad or bimodal position distributions; manifold steering gives one sharp position peak that moves smoothly.",
+      "numbers": "Text: arc-length correlation r=0.99 vs r=0.06 for chord distances. Histograms: linear waypoint 3 shows a split/broad distribution, manifold waypoints each show one narrow peak (approx, read from figure).",
+      "text_matches_figure": "yes - though the 'behavior' here is the nearest-centroid readout F, not a model decoder output (see pitfalls)."
+    },
+    {
+      "id": "Table 1",
+      "page": 26,
+      "what_is_plotted": "Task templates, entity sets, increments, structure and dataset size after filtering.",
+      "takeaway": "Very small, templated datasets; letters use only increments one and two.",
+      "numbers": "|D|: weekdays 49, months 84, letters 48, ages 909.",
+      "text_matches_figure": "yes."
+    },
+    {
+      "id": "Figure 8",
+      "page": 30,
+      "what_is_plotted": "World-model architecture: CNN encoder to a layer-normalized 64-d latent, concatenated with a 16-d action embedding, GRU, convolutional decoder predicting a residual next frame.",
+      "takeaway": "Architecture reference only.",
+      "numbers": "n = 64 latent, action embedding R^16, 128x128x3 frames (caption).",
+      "text_matches_figure": "yes."
+    },
+    {
+      "id": "Figure 9",
+      "page": 32,
+      "what_is_plotted": "9x9 cylinder ICLR task: TPS surfaces and 9x9 heatmaps of output mass along geometric vs linear steering paths (0,0)->(0,8) and (0,5)->(10pi/9,5).",
+      "takeaway": "Factored control claimed to extend to a periodic dimension.",
+      "numbers": "Text: Llama 3.1 8B reaches above 80% neighbourhood accuracy with 2048 tokens; geodesic r=.99, linear r=0.81. Heatmaps: approx, read from figure - on (0,0)->(0,8) the linear path splits mass between the two ends mid-path while the geometric path passes through the middle; on (0,5)->(10pi/9,5) both look similar.",
+      "text_matches_figure": "partly - clear for the first path, weak for the second."
+    },
+    {
+      "id": "Figure 10",
+      "page": 33,
+      "what_is_plotted": "(a) Activation- and behavior-space manifold surfaces with steering paths for the 9x9 cylinder and 5x5 grid; (b) MDS of manifold and linear distances.",
+      "takeaway": "Manifold steering paths follow the behavior manifold in the ICLR tasks too; manifold-distance MDS recovers the lattice, linear-distance MDS distorts it.",
+      "numbers": "None beyond the r values in the main text.",
+      "text_matches_figure": "yes (the cylinder linear MDS is distorted but still roughly ordered)."
+    },
+    {
+      "id": "Figure 11",
+      "page": 34,
+      "what_is_plotted": "Llama 3.1 70B layer 70: weekday centroids grouped by addition value into four groups forming a cylinder-like shape; P(token) along Tuesday->Friday for geodesic (manifold) vs linear (ambient) steering in each group.",
+      "takeaway": "Uncertainty is a second manifold axis; along the circle, ordered day-to-day transitions survive while entropy rises from group to group.",
+      "numbers": "Approx, read from figure: group 0 manifold intermediate peaks about 0.5-0.55 with 'other' about 0.3; group 1 similar; group 2 peaks only about 0.25 with 'other' about 0.4 above every concept; group 3 no clear ordered peaks, 'other' about 0.35-0.4.",
+      "text_matches_figure": "partly - caption says the first three groups keep ordered transitions, but in group 2 'other' dominates and the gap between manifold and linear shrinks as uncertainty grows."
+    },
+    {
+      "id": "Figure 12",
+      "page": 35,
+      "what_is_plotted": "World model pullback: PCA of activation manifold (grey), linear chord, pullback path (teal) and endpoints; right, behavior manifold with the belief target and pushforwards.",
+      "takeaway": "Optimizing an activation path to match a behavior-manifold target pulls it back onto the encoder's spiral manifold even when initialized at the chord.",
+      "numbers": "Text: mean distance to Mh - chord 2.22, geometric 0.20, pullback 0.29; pullback beats chord on 30/30 pairs.",
+      "text_matches_figure": "yes."
+    }
+  ],
+  "key_results": [
+    {
+      "claim": "Geodesic distances on the activation manifold and on the behavior manifold are almost perfectly correlated in all four arithmetic tasks.",
+      "quote": "The two distances are highly correlated (r = 0.99 weekdays, r = 0.89 months, r = .999 letters, r = .999 ages) indicating that Mh and My are approximately isometric",
+      "page": 6
+    },
+    {
+      "claim": "Straight-line (Euclidean) activation distances match behavior geodesics much less well (r = 0.89, 0.53, 0.71, 0.36).",
+      "quote": "linear paths between the same activation-space points correlate less well with My geodesics, with the relationship showing clear non-linear patterns",
+      "page": 6
+    },
+    {
+      "claim": "Linear steering moves probability directly from start to end concept, skipping neighbours; manifold steering passes through them.",
+      "quote": "linear steering instead exhibits ‘teleportation’: mass jumps between non-adjacent concepts as the straight line cuts through the manifold’s interior",
+      "page": 6
+    },
+    {
+      "claim": "Manifold steering yields lower cumulative output energy (more natural outputs).",
+      "quote": "manifold steering (weekdays EBC = 0.34 ± 0.03; months EBC = 0.36 ± 0.01; letters 2.42 ± 0.07; ages EBC = 5.21 ± 0.09)",
+      "page": 8
+    },
+    {
+      "claim": "Linear steering energies for comparison.",
+      "quote": "linear steering (weekdays EBC = 0.93 ± 0.11; months EBC = 1.09 ± 0.06; letters 6.95 ± 0.27; ages EBC = 13.49 ± 0.29)",
+      "page": 8
+    },
+    {
+      "claim": "Average naturalness gain of 2.8x, all comparisons significant.",
+      "quote": "on average, we see an improvement of a factor of 2.8×, with all statistical comparisons yielding p < 0.001",
+      "page": 8
+    },
+    {
+      "claim": "Pullback paths (optimized to reproduce natural outputs) resemble the manifold path more than the chord does: weekdays and months.",
+      "quote": "paths of §3.2 (weekdays Rpullback = 0.77 ± 0.03 vs. Rlinear = 0.42 ± 0.07; months Rpullback",
+      "page": 9
+    },
+    {
+      "claim": "Pullback R2 for months and ages (ages much weaker).",
+      "quote": "0.75 ± 0.04 vs. Rlinear = 0.32 ± 0.05; ages Rpullback = 0.47 ± 0.05 vs. Rlinear = 0.24 ± 0.01; letters",
+      "page": 9
+    },
+    {
+      "claim": "Pullback R2 for letters.",
+      "quote": "Rpullback = 0.78 ± 0.04 vs. Rlinear = 0.23 ± 0.03. All statistical comparisons yield p < 0.001",
+      "page": 9
+    },
+    {
+      "claim": "The isometry also holds for in-context-learned 2-D graph geometries.",
+      "quote": "We find very high correlations between geodesic paths on the activation and behavior manifolds (r = .99 for both the 5 × 5 grid and 9 × 9 cylinder domains)",
+      "page": 11
+    },
+    {
+      "claim": "Linear distances are weaker there too.",
+      "quote": "reduced correlations for linear paths (5 × 5 grid r = 0.90 ;9 × 9 cylinder r = 0.81)",
+      "page": 11
+    },
+    {
+      "claim": "Steering one intrinsic coordinate moves output along one graph axis (factored control).",
+      "quote": "This demonstrates the manifold has an intrinsic coordinate system corresponding to the two dimensions of the grid, enabling factored control.",
+      "page": 12
+    },
+    {
+      "claim": "In the folded encoder geometry of the world model, chord distances are almost unrelated to the conceptual ordering.",
+      "quote": "the Pearson correlation between the two arc-length distance matrices is r = 0.99, while correlation between activation-space linear paths and behavior manifold arc-length falls to r = 0.06",
+      "page": 14
+    },
+    {
+      "claim": "Linear-steering midpoints in the world model decode to ambiguous states.",
+      "quote": "decoded frames exhibit blurred or ambiguous car placement, reflecting an incoherent superposition",
+      "page": 13
+    },
+    {
+      "claim": "World-model pullback recovers the manifold on every pair.",
+      "quote": "The pullback path is at 95.4% of the chord-to-geometric recovery and dominates the chord baseline on 30/30 pairs.",
+      "page": 36
+    },
+    {
+      "claim": "Confidence/uncertainty forms an extra manifold dimension at 70B; steering along the circle keeps order with rising entropy.",
+      "quote": "This suggests manifold geometry can serve as a handle for calibrating model confidence in a controlled fashion.",
+      "page": 34
+    },
+    {
+      "claim": "The 70B result is one model, one layer.",
+      "quote": "The experiment was conducted with Llama 3.1 70B layer 70.",
+      "page": 34
+    },
+    {
+      "claim": "Pullback geometry only constrains as many directions as there are output classes minus one; the rest of activation space is left Euclidean (a null space for behavior).",
+      "quote": "The regularization ϵ In ensures positive definiteness, since JF has rank at most |Z| − 1 ≪ n",
+      "page": 10
+    },
+    {
+      "claim": "Steering only changes behavior if the intervened site mediates the input-output effect.",
+      "quote": "The behavioral trajectory will be non-stationary only if the target h mediates the causal effect from input to output",
+      "page": 6
+    },
+    {
+      "claim": "Authors' framing: steering is choosing a geometry and an operator to move on it.",
+      "quote": "the question of optimally steering model behavior boils down to isolating the geometry of a concept and defining operators to navigate it",
+      "page": 10
+    },
+    {
+      "claim": "Proposed unit of causal analysis.",
+      "quote": "the appropriate units of causal analysis are intrinsic coordinates on manifolds in activation space",
+      "page": 15
+    },
+    {
+      "claim": "Sycophancy is named as a target for future geometry-aware steering, hedged as hypothetical.",
+      "quote": "navigating the geometry of sycophancy (were it to exist) should allow us to alter the extent or type of sycophancy exhibited in model outputs",
+      "page": 16
+    }
+  ],
+  "methods": [
+    {
+      "name": "Activation-behavior isometry test (centroid splines + Hellinger behavior manifold + distance-matrix correlation, MDS)",
+      "what_it_measures": "Whether distances along the fitted activation manifold (class centroids in 64-d PCA, splined) are proportional to distances between the corresponding output distributions in Hellinger geometry, vs a Euclidean-chord null.",
+      "which_fate_it_could_diagnose": "Direction 2 (where shared geometry breaks). Fit the map on resisted items; for each flipped item ask: is its activation on the manifold at the correct-answer coordinate while its output sits at the wrong answer (mapping broken: readout/threshold failure, fate 1), on the manifold at the user-claim coordinate (state moved along natural geometry: override or transformed, fates 4/5), or off the manifold (unnatural state)?",
+      "causal_followup_it_allows": "Manifold steering between the correct-answer and claimed-answer centroids to test whether the coordinate is causally used (controllability, not mediation).",
+      "data_and_compute_needed": "Forward passes only; tens to hundreds of prompts per class (they used 48-909 prompts in total). Needs several output classes with known structure; with only {correct, user claim, other} the manifold is a 1-D path between two centroids and the test is weak unless we add structure (confidence bins, pushback strength, multiple candidate answers).",
+      "code_available": "yes - https://github.com/goodfire-ai/causalab/tree/manifold_steering (linked on title page)"
+    },
+    {
+      "name": "Manifold steering (interpolate in intrinsic coordinates, replace only the top-64 PCA components, keep the off-subspace residual)",
+      "what_it_measures": "Behavioral trajectory induced by moving the activation along the natural class manifold.",
+      "which_fate_it_could_diagnose": "Not routed (fate 3): inject the on-manifold correct-answer point at a chosen layer for a flipped item; if the answer returns, the information can drive behavior from there. On-manifold injection reduces the off-distribution worry of plain patching.",
+      "causal_followup_it_allows": "Is itself an intervention; compare with linear steering of the same subspace (not of the whole residual, see pitfalls).",
+      "data_and_compute_needed": "Centroids + spline; 50 waypoints x 16 base prompts x up to 50 pairs; cheap at 9B-27B.",
+      "code_available": "yes (same repo)"
+    },
+    {
+      "name": "Cumulative output energy E_BC (sum of Bhattacharyya distances from steered outputs to the natural behavior manifold)",
+      "what_it_measures": "How natural the output distributions along an intervention path are, relative to unintervened outputs.",
+      "which_fate_it_could_diagnose": "Monitor/side-effect check: are sycophantic outputs 'natural' (on My, like a confident normal answer) or off-manifold (high 'other' mass, hedging)? Also a Stage B check that a fix does not push outputs into unnatural states.",
+      "causal_followup_it_allows": "None by itself; a scoring function for interventions.",
+      "data_and_compute_needed": "Output distributions over answer tokens; trivial compute.",
+      "code_available": "yes (same repo)"
+    },
+    {
+      "name": "Pullback optimization (L-BFGS on a spline activation path in 32 PCA dims so that intervening yields a target output path; intrinsic R2 vs manifold path)",
+      "what_it_measures": "Which activation states produce a given natural output trajectory, and whether they coincide with the natural activation manifold.",
+      "which_fate_it_could_diagnose": "Bypass (fate 2), weakly: if injecting the natural correct-answer centroid fails but an optimized pullback finds a correct-output state far from it, the decision is driven by other directions than the decodable one.",
+      "causal_followup_it_allows": "Compare pullback solutions for resisted vs flipped prompts (do they need different activation states?).",
+      "data_and_compute_needed": "Backprop through the model per waypoint; 16 prompts x 20 waypoints x 50 outer L-BFGS steps per pair; moderate at 9B-27B.",
+      "code_available": "yes (same repo)"
+    },
+    {
+      "name": "Riemannian view of steering (flat metric G_I, density metric G_E, pullback metric G_F = J^T g J + eps I)",
+      "what_it_measures": "Formalizes steering strategies as geodesics under different metrics; the pullback metric is rank at most |Z|-1.",
+      "which_fate_it_could_diagnose": "Bypass (fate 2) conceptually: directions in the null space of the output Jacobian are decodable-but-inert by construction; a probe direction with little projection onto the row space of J_F at the decision position is a bypass candidate.",
+      "causal_followup_it_allows": "Project probe directions onto the Jacobian row space and test their causal effect.",
+      "data_and_compute_needed": "Jacobian of answer-token logits w.r.t. the residual at one position; cheap per item.",
+      "code_available": "theory only in paper; Jacobian code not described"
+    },
+    {
+      "name": "Uncertainty as a second manifold dimension (group centroids by difficulty/addition value)",
+      "what_it_measures": "Whether confidence is geometrically encoded as an extra axis of the concept manifold.",
+      "which_fate_it_could_diagnose": "Confound control for all fates: matching flipped vs resisted items on prior confidence matters because confidence moves items along its own manifold axis.",
+      "causal_followup_it_allows": "Steer along the confidence axis to see if low-confidence states flip more easily.",
+      "data_and_compute_needed": "Same as isometry test; shown only at 70B layer 70.",
+      "code_available": "yes (same repo, presumably)"
+    }
+  ],
+  "controls_worth_copying": [
+    {
+      "control": "Exclude vertex pairs lying on the same centroid-pair geodesic from the isometry correlation, since they inflate r by construction.",
+      "quote": "since those distances are sub-arcs of the same geodesic and would inflate the correlation by construction",
+      "page": 28
+    },
+    {
+      "control": "Always compute the Euclidean-chord version of every geometric statistic on the same points as the null geometry."
+    },
+    {
+      "control": "Sum probability over spelling variants of each answer and keep an explicit 'other' bin, then work in Hellinger coordinates (sqrt p), so output geometry is well defined on the open simplex."
+    },
+    {
+      "control": "Average steering effects over base prompts whose ground truth varies (16 per pair), report mean +/- SE across pairs with paired t-tests."
+    },
+    {
+      "control": "Pullback norm regularizer to stop optimization finding high-norm shortcuts.",
+      "quote": "This discourages the optimizer from drifting into a high-norm shortcut basin.",
+      "page": 29
+    },
+    {
+      "control": "Linear-probe sanity check that the representation encodes the variable before fitting a manifold.",
+      "quote": "a Ridge regression probe recovers position with R2 ≈ 0.95 and velocity with R2 ≈ 0.90",
+      "page": 30
+    }
+  ],
+  "pitfalls": [
+    {
+      "pitfall": "Unfair linear baseline: manifold steering keeps the prompt's own off-subspace residual and only edits 64 PCA dims, while linear steering overwrites the whole residual vector with a chord point. Some of the linear 'unnaturalness' may come from erasing prompt-specific information, not from flat geometry. If we compare steering fixes, give the linear baseline the same subspace.",
+      "quote": "combine it with the prompt’s unchanged off-subspace residual – so the steered activation differs from the base only in its top-64 PCA components",
+      "page": 28
+    },
+    {
+      "pitfall": "Same point, linear side (stated in the paper, not flagged as a limitation).",
+      "quote": "the entire residual-stream activation is replaced by π(t) at each step",
+      "page": 28
+    },
+    {
+      "pitfall": "Pullback R2 baseline is a geometric chord, not the actual result of linear steering.",
+      "quote": "The linear baseline used in the same comparison is the straight chord between ca and cb in the 64-dimensional PCA subspace—not the linear-steering trajectory after intervention.",
+      "page": 29
+    },
+    {
+      "pitfall": "Pullback is searched inside the manifold's own PCA subspace and initialized at the chord, which partly builds in the result that it recovers manifold-like paths.",
+      "quote": "Each control vector is restricted to the first 32 PCA components of the 64-dimensional subspace",
+      "page": 28
+    },
+    {
+      "pitfall": "World-model 'behavior' is a softmax over distances to activation-manifold centroids, not the world model's own output, so the activation-behavior isometry there (r=0.996) is close to circular.",
+      "quote": "F is a smooth, deterministic map from activations to position distributions.",
+      "page": 30
+    },
+    {
+      "pitfall": "The behavior-manifold bin centers for the world model are themselves taken from the activation spline.",
+      "quote": "obtained by evaluating the activation-manifold spline at B evenly spaced positions",
+      "page": 30
+    },
+    {
+      "pitfall": "Needs ground-truth intrinsic coordinates (supervised) to fit splines; an unsupervised version is future work.",
+      "quote": "For the domains analyzed in this work, we have ground-truth knowledge about how different states of the concept relate to each other",
+      "page": 16
+    },
+    {
+      "pitfall": "One late layer chosen a priori, one model family, no layer/component sweep; nothing tests where the geometry is formed or used.",
+      "quote": "We chose to examine a late layer of the model to ensure that concept geometries are fully computed.",
+      "page": 26
+    },
+    {
+      "pitfall": "Inconsistent pullback target description: App. C.3 describes an alpha-weighted conformal geodesic 'via the procedure of 3.3', but 3.3/A.8 describe a plain spline geodesic on My.",
+      "quote": "we construct the conformal behavior target γ̂α via the procedure of §3.3 (geodesic on the simplex under cost c(p) = exp(α · dH (p, My )))",
+      "page": 35
+    },
+    {
+      "pitfall": "Small templated datasets and next-token outputs only; the ages task (the one with many classes) has the noisiest steering and weakest pullback (R2 0.47). Not stated as a limitation by the authors beyond the general simplicity caveat."
+    }
+  ],
+  "limitations_quote": "To illustrate our arguments, we focused on simple settings for which the concept of interest had a well-defined domain (e.g., weekdays), and the expected task outputs are the concepts themselves",
+  "limitations_page": 16,
+  "future_work_quote": "future work is needed to explore more abstract concepts, e.g., refusals (Arditi et al., 2024), sycophancy (Vennemeyer et al., 2025), and persuasion (Costello et al., 2026)",
+  "future_work_page": 16,
+  "bears_on_fates": [
+    {
+      "fate": "5 transformed",
+      "how": "Gives a concrete test of 'still present but re-encoded': is a flipped item's activation on the natural class manifold but at the claimed-answer coordinate, or off-manifold? Distance-to-manifold plus intrinsic coordinate is a richer readout than one probe score. The paper itself never studies failures.",
+      "strength": "moderate"
+    },
+    {
+      "fate": "1 readout/threshold failure",
+      "how": "Per-item residuals from the activation->behavior map: activation coordinate near the correct centroid but output at the wrong answer means the mapping, not the representation, failed.",
+      "strength": "weak"
+    },
+    {
+      "fate": "3 not routed",
+      "how": "On-manifold injection of the correct-answer point at a late layer is a cleaner 'inject and see' test than linear patching, because it stays in natural activation space.",
+      "strength": "moderate"
+    },
+    {
+      "fate": "2 bypass",
+      "how": "The pullback metric's rank bound (at most |Z|-1 behavior-relevant directions) formalizes that most residual directions are causally inert for the answer; a decodable correctness direction with little projection on the output Jacobian's row space is a bypass candidate. Pullback can find which states actually produce the correct output.",
+      "strength": "weak"
+    },
+    {
+      "fate": "4 override",
+      "how": "No competing signals are studied; only indirectly via the uncertainty axis (Fig. 11).",
+      "strength": "weak"
+    },
+    {
+      "fate": "6 erased",
+      "how": "Not addressed.",
+      "strength": "weak"
+    }
+  ],
+  "bears_on_group_angle": "Helps: a worked recipe for treating class-conditional point clouds as a manifold (centroids + splines in a PCA subspace), comparing two geometries by correlating distance matrices (an RSA-like test) and visualizing with MDS, plus a causal check (steering and pullback). It shows Euclidean distances can be badly misleading on curved or folded manifolds (chord r as low as 0.06). It also suggests confidence is an extra manifold axis, which supports matching flipped vs resisted items on prior confidence. Warns: the method needs many classes with known intrinsic coordinates; for a binary correct-vs-claimed answer the 'manifold' collapses to a path between two centroids, so the group angle needs added structure (confidence bins, pushback strength, several candidate answers, or token position as a coordinate). Their isometry is only shown on normal behavior, not on cases where representation and behavior disagree, which is exactly what we need.",
+  "architecture_location": "Residual stream, last token, layer 28 of 32 in Llama 3.1 8B (picked a priori as late); one appendix result at layer 70 of 80 in Llama 3.1 70B; encoder output in a toy GRU world model. No component types (heads vs MLPs), no depth sweep, no seeds or checkpoints, and only one model family for LMs. The paper says essentially nothing tested about WHERE.",
+  "actionable_fix": "For Stage B steering fixes: move a flipped item back toward the correct answer along the fitted class manifold inside a low-dimensional subspace, keeping the off-subspace residual, and score the fix with both accuracy and E_BC (naturalness of output distributions). For monitoring: distance of the decision-position activation from the natural activation manifold, and distance of the output distribution from the natural behavior manifold, as cheap 'unnatural state' flags. Neither is tested on sycophancy in the paper.",
+  "reuse_verdict": "adapt - reuse the code, the isometry test, E_BC and the pullback as tools for direction 2; give any linear baseline the same subspace and residual-keeping treatment; do not expect the method to work out of the box on two-answer factual flips without adding structure to the output space.",
+  "relevance_to_project": "Moderately relevant: it is the anchor paper for direction 2 (shared representation-behavior geometry) and its future-work section names sycophancy explicitly. But every experiment is a clean task where the model behaves normally; it never looks at cases where representation and behavior disagree, so it gives a measurement template, not evidence about our fates. On Canberra/Sydney-style flips with two answer options it is less useful than the title suggests, because the manifold degenerates to a 1-D path."
+}
