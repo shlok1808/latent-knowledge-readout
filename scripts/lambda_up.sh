@@ -54,8 +54,11 @@ else
 fi
 printf '%s\n' "$TOKEN" | ssh lambda 'umask 077; read -r t; printf "https://x-access-token:%s@github.com\n" "$t" > ~/.git-credentials; git config --global credential.helper store'
 ssh lambda "git config --global user.name '$(git config user.name)'; git config --global user.email '$(git config user.email)'"
-if [ -s "$HOME/.cache/huggingface/token" ]; then
-  ssh lambda 'mkdir -p ~/.cache/huggingface' && scp -q "$HOME/.cache/huggingface/token" lambda:.cache/huggingface/token
+# HF token: from `hf auth login`, else HF_TOKEN in ~/.kyc-secrets (the file mechanistic-kyc/scripts/lambda.sh uses)
+HF="$(cat "$HOME/.cache/huggingface/token" 2>/dev/null || true)"
+[ -n "$HF" ] || HF="$( [ -f "$HOME/.kyc-secrets" ] && . "$HOME/.kyc-secrets"; printf '%s' "${HF_TOKEN:-}")"
+if [ -n "$HF" ]; then
+  printf '%s\n' "$HF" | ssh lambda 'umask 077; mkdir -p ~/.cache/huggingface; read -r t; printf "%s" "$t" > ~/.cache/huggingface/token'
 else
   echo "WARNING: no HF token on the laptop (run 'hf auth login'). Gated models and 'hf upload' will fail on the instance."
 fi
