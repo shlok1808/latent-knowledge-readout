@@ -9,6 +9,14 @@ description = "TextCraft early failure probe reproduction and within-task diagno
 requires-python = ">=3.11"
 dependencies = ["torch>=2.6", "transformers>=4.56,<6", "huggingface-hub>=0.30", "numpy>=1.26", "scikit-learn>=1.5", "gymnasium>=1.0", "safetensors>=0.5"]
 
+[dependency-groups]
+# Scribe notebook MCP for the experimenter agent (pinned commit; see the research plugin's SETUP.md)
+agent = ["scribe @ git+https://github.com/goodfire-ai/scribe.git@981047904e8ef874dc200689d9f2286afc779219"]
+
+[tool.uv]
+# Keep Scribe on every plain `uv sync`; without it, sync removes Scribe and the MCP server breaks.
+default-groups = ["agent"]
+
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 

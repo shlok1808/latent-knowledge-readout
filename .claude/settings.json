@@ -1,0 +1,20 @@
+{
+  "enabledMcpjsonServers": ["scribe"],
+  "permissions": {
+    "allow": [
+      "mcp__scribe__start_new_session",
+      "mcp__scribe__start_session_continue_notebook",
+      "mcp__scribe__start_session_resume_notebook",
+      "mcp__scribe__execute_code",
+      "mcp__scribe__add_markdown",
+      "mcp__scribe__edit_cell",
+      "Bash(git push *)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f*)"
+    ]
+  }
+}

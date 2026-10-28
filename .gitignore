@@ -21,3 +21,9 @@ wandb/
 writeup/
 .lambda_instance*
 .lambda_ip*
+
+# local-only: lab notebook, laptop research folder, personal Claude settings
+LAB_NOTEBOOK.md
+research/
+CLAUDE.local.md
+.claude/settings.local.json

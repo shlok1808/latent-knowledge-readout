@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "scribe": {
+      "type": "stdio",
+      "command": "${HOME}/.local/bin/uv",
+      "args": ["run", "--no-sync", "python", "-m", "scribe.notebook.notebook_mcp_server"],
+      "env": { "NOTEBOOK_OUTPUT_DIR": "notebooks", "JUPYTER_PREFER_ENV_PATH": "1" }
+    }
+  }
+}
