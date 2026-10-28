@@ -28,9 +28,14 @@ else
 Host lambda
   HostName $IP
   User ubuntu
-  IdentityFile ~/.ssh/lambda_final
+  # Launch instances with Lambda key 'afp-lambda-key' (= lambda_key, no passphrase). 'final' (= lambda_final) has a
+  # passphrase: scripts and Desktop can't type it until you run once: ssh-add --apple-use-keychain ~/.ssh/lambda_final
   IdentityFile ~/.ssh/lambda_key
+  IdentityFile ~/.ssh/lambda_final
   IdentitiesOnly yes
+  IgnoreUnknown UseKeychain
+  UseKeychain yes
+  AddKeysToAgent yes
   StrictHostKeyChecking accept-new
   ServerAliveInterval 60
 EOF

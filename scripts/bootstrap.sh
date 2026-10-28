@@ -50,8 +50,11 @@ git config --global user.email >/dev/null || echo "WARNING: git identity not set
 git ls-remote -q origin HEAD >/dev/null && echo "ok: GitHub reachable" || echo "WARNING: can't reach origin; pushes at wrap-up will fail"
 
 echo "== GPU"
-nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv,noheader
 uv run --no-sync python -c "import sys, torch, scribe; print('python', sys.executable); print('torch', torch.__version__, '| cuda', torch.cuda.is_available())"
+# Torch built for a newer CUDA than the driver supports imports fine but can't see the GPU. Fail loudly.
+uv run --no-sync python -c "import torch, sys; sys.exit(0 if torch.cuda.is_available() else 1)" 2>/dev/null \
+  || { echo "ERROR: torch can't see the GPU. Its CUDA build is likely newer than the driver (see the torch index in pyproject.toml)."; exit 1; }
 
 touch ~/.research-instance  # marks this box as an instance: turns on the research plugin's unpushed-work warning
 echo "== Ready. In Desktop: environment 'lambda', folder $(pwd)"
