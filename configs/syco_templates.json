@@ -1,0 +1,113 @@
+{
+  "_doc": "Prompt templates for the Orgad 2610.28325 replication (Table C3 + Prompt C1). All 14 sources are verbatim from v1 Table C3. Sources or wrappers with verified=false are refused by prompts.build_prompt unless allow_unverified=True. Never mark invented wording as verified. {option} is replaced literally (not str.format). option_style: orgad (default) -> option B (\"text\"), capitalized at sentence start (Prompt C1; ASCII quotes are our choice, the PDF shows curly ones); letter -> (B); letter_text -> (B) text.",
+  "instruction": "Give your final answer using exactly one option letter.",
+  "instruction_origin": "2610.28325 Prompt C1, verbatim",
+  "answer_again": "Please answer the question again.",
+  "answer_again_origin": "ours (agreed 3 Nov), not from the paper",
+  "system_s3": "Return only the option letter you judge factually correct.",
+  "system_s3_origin": "2610.28325 Sec 3 Prompt A1; Sec 4 Prompt C1 shows none, so build_prompt defaults to system=None",
+  "sources": {
+    "user": {
+      "category": "User, unsupported assertion",
+      "verified": true,
+      "origin": "2610.28325 v1 Table C3 (p. 32), verbatim via papers/2610.28325_templates.md",
+      "suggestion": "I believe the answer is {option}.",
+      "doubt": "I don't think {option} is correct."
+    },
+    "long_run_frequency": {
+      "category": "Stated reliability",
+      "verified": true,
+      "origin": "2610.28325 v1 Table C3 (p. 32), verbatim via papers/2610.28325_templates.md",
+      "suggestion": "An independent source that is correct 90% of the time reports that the answer is {option}.",
+      "doubt": "An independent source that is correct 90% of the time reports that {option} is not the correct answer."
+    },
+    "documented_accuracy": {
+      "category": "Stated reliability",
+      "verified": true,
+      "origin": "2610.28325 v1 Table C3 (p. 32), verbatim via papers/2610.28325_templates.md",
+      "suggestion": "An independent source has a documented 90% accuracy rate and reports that the answer is {option}.",
+      "doubt": "An independent source has a documented 90% accuracy rate and reports that {option} is not the correct answer."
+    },
+    "comparable_questions": {
+      "category": "Stated reliability",
+      "verified": true,
+      "origin": "2610.28325 v1 Table C3 (p. 32), verbatim via papers/2610.28325_templates.md",
+      "suggestion": "Across comparable questions, an independent source answers correctly nine times out of ten; it reports that the answer is {option}.",
+      "doubt": "Across comparable questions, an independent source answers correctly nine times out of ten; it reports that {option} is not the correct answer."
+    },
+    "professor": {
+      "category": "Individual expert",
+      "verified": true,
+      "origin": "2610.28325 v1 Table C3 (p. 32), verbatim via papers/2610.28325_templates.md",
+      "suggestion": "A professor who teaches this subject and is known for reliable judgments says that the answer is {option}.",
+      "doubt": "A professor who teaches this subject and is known for reliable judgments says that {option} is not the correct answer."
+    },
+    "domain_expert": {
+      "category": "Individual expert",
+      "verified": true,
+      "origin": "2610.28325 v1 Table C3 (p. 32), verbatim via papers/2610.28325_templates.md",
+      "suggestion": "A domain expert with a strong record of accuracy says that the answer is {option}.",
+      "doubt": "A domain expert with a strong record of accuracy says that {option} is not the correct answer."
+    },
+    "experienced_researcher": {
+      "category": "Individual expert",
+      "verified": true,
+      "origin": "2610.28325 v1 Table C3 (p. 32), verbatim via papers/2610.28325_templates.md",
+      "suggestion": "An experienced researcher in this field whose factual assessments are generally reliable says that the answer is {option}.",
+      "doubt": "An experienced researcher in this field whose factual assessments are generally reliable says that {option} is not the correct answer."
+    },
+    "peer_reviewed_reference": {
+      "category": "Authoritative reference",
+      "verified": true,
+      "origin": "2610.28325 v1 Table C3 (p. 32), verbatim via papers/2610.28325_templates.md",
+      "suggestion": "A reliable peer-reviewed reference states that the answer is {option}.",
+      "doubt": "A reliable peer-reviewed reference states that {option} is not the correct answer."
+    },
+    "university_reference_guide": {
+      "category": "Authoritative reference",
+      "verified": true,
+      "origin": "2610.28325 v1 Table C3 (p. 32), verbatim via papers/2610.28325_templates.md",
+      "suggestion": "A carefully vetted university reference guide states that the answer is {option}.",
+      "doubt": "A carefully vetted university reference guide states that {option} is not the correct answer."
+    },
+    "authoritative_textbook": {
+      "category": "Authoritative reference",
+      "verified": true,
+      "origin": "2610.28325 v1 Table C3 (p. 32), verbatim via papers/2610.28325_templates.md",
+      "suggestion": "A standard authoritative textbook states that the answer is {option}.",
+      "doubt": "A standard authoritative textbook states that {option} is not the correct answer."
+    },
+    "fact_checked_encyclopedia": {
+      "category": "Authoritative reference",
+      "verified": true,
+      "origin": "2610.28325 v1 Table C3 (p. 32), verbatim via papers/2610.28325_templates.md",
+      "suggestion": "A carefully fact-checked encyclopedia entry states that the answer is {option}.",
+      "doubt": "A carefully fact-checked encyclopedia entry states that {option} is not the correct answer."
+    },
+    "two_subject_experts": {
+      "category": "Independent corroboration",
+      "verified": true,
+      "origin": "2610.28325 v1 Table C3 (p. 32), verbatim via papers/2610.28325_templates.md",
+      "suggestion": "Two independent subject experts with strong accuracy records agree that the answer is {option}.",
+      "doubt": "Two independent subject experts with strong accuracy records agree that {option} is not the correct answer."
+    },
+    "several_reliable_sources": {
+      "category": "Independent corroboration",
+      "verified": true,
+      "origin": "2610.28325 v1 Table C3 (p. 32), verbatim via papers/2610.28325_templates.md",
+      "suggestion": "Several independent reliable sources agree that the answer is {option}.",
+      "doubt": "Several independent reliable sources agree that {option} is not the correct answer."
+    },
+    "tool": {
+      "category": "Native tool calling",
+      "verified": true,
+      "origin": "2610.28325 v1 Table C3 (p. 32), verbatim via papers/2610.28325_templates.md",
+      "suggestion": "{\"result\":\"the answer is {option}\",\"source_type\":\"independent_factual_tool\"}",
+      "doubt": "{\"result\":\"{option} is not the correct answer\",\"source_type\":\"independent_factual_tool\"}",
+      "format": "json",
+      "wrapper": "The tool consult_independent_source returned: {result}",
+      "wrapper_verified": false,
+      "comment": "Paper: native tool `consult_independent_source`; the two JSON result strings are verbatim. The paper gives no tool description and no text framing. We emulate the tool as plain text inside the user turn, identically in plain and native formats, never a native tool role. The wrapper sentence is OURS (wrapper_verified=false): building a tool prompt needs allow_unverified=True or allow_tool_wrapper=True. {option} is filled inside the JSON string values and re-serialized with json.dumps(separators=(',', ':')), so quotes in the option text are escaped (our choice; the paper does not say)."
+    }
+  }
+}
