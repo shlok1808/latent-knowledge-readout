@@ -1,0 +1,11 @@
+{
+  "checkpoints": [
+    {"name": "base", "hf_id": "meta-llama/Llama-3.1-8B", "gated": true, "has_chat_template": false},
+    {"name": "tulu_sft", "hf_id": "allenai/Llama-3.1-Tulu-3-8B-SFT", "gated": false, "has_chat_template": true},
+    {"name": "tulu_dpo", "hf_id": "allenai/Llama-3.1-Tulu-3-8B-DPO", "gated": false, "has_chat_template": true},
+    {"name": "tulu_final", "hf_id": "allenai/Llama-3.1-Tulu-3-8B", "gated": false, "has_chat_template": true},
+    {"name": "meta_instruct", "hf_id": "meta-llama/Llama-3.1-8B-Instruct", "gated": true, "has_chat_template": true, "sanity_gate": true}
+  ],
+  "main_format": "plain",
+  "secondary_format": "native"
+}
