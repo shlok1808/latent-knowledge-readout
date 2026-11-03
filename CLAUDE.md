@@ -89,11 +89,11 @@ Sweeps never met their stopping rule; recall was 22 of 31 known-relevant papers 
 - Never delete, force-push or publish without asking. Pushes only as the `research-rules` wrap-up allows, otherwise ask. If an answer card is missing, ask again in plain text.
 
 ## Repo rules
-- Git holds the reusable pipeline (`failure_probes/`, `tests/`, `configs/debug.json`, `vendor/`) plus the research record: `CLAUDE.md`, `RESEARCH_LOG.md`, `notebooks/`, `results/`, `figures/`, `papers/`, and `scripts/` (`bootstrap.sh`, `lambda_up.sh`). Local data (`runs/`, `logs/`, `wandb/`) and `research/` stay out of git.
+- Git holds the pipeline (`failure_probes/syco/` Orgad replication, `failure_probes/common.py`, `tests/`, `configs/syco_*.json`; the old TextCraft pipeline was removed 2026-11-03, preserved at tag `textcraft-pipeline-final`) plus the research record: `CLAUDE.md`, `RESEARCH_LOG.md`, `notebooks/`, `results/`, `figures/`, `papers/`, and `scripts/` (`bootstrap.sh`, `lambda_up.sh`). Local data (`runs/`, `logs/`, `wandb/`) and `research/` stay out of git.
 - Run tests with `pytest -q` in the `.venv` before committing pipeline code. If uv rebuilt the venv, run `uv sync --extra dev` first, since pytest is an extra.
 
 ## Lab mod (added 2026-10-23)
-- The `lab` plugin (`~/claude-mods/lab`) runs here. `failure-probes collect` and `analyze` are gated until Shlok has committed a bet; `prepare`, `extract` and `audit` are not. An open bet covers runs until it is settled, so one long collect needs one bet.
+- The `lab` plugin (`~/claude-mods/lab`) runs here. NOTE (2026-11-03): the `failure-probes` CLI was removed with the old pipeline, so the gate below has no command to guard; the syco runs (`failure_probes.syco.scorer.run_checkpoint`) need a new gate. Old text: `failure-probes collect` and `analyze` are gated until Shlok has committed a bet; `prepare`, `extract` and `audit` are not. An open bet covers runs until it is settled, so one long collect needs one bet.
 - First bet: the per-item fate test (idea 1 above). Before its first collect, seal a prediction of the fate split (readout failure / bypass / not routed / override / transformed / erased) with numbers, then ask for Shlok's.
 - Real design choices for the fate test (model and size, item set, controls such as the logit margin) go through `/decide`: seal your proposal, get Shlok's, merge.
 - Notebook: `LAB_NOTEBOOK.md` in this folder, local-only (git-ignored). `/lin` drafts Dr. Lin updates from it, `/kill` audits a result, `/park` holds tangents.
