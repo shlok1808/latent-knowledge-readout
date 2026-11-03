@@ -11,7 +11,7 @@ Studying what happens to what a language model knows at the moment it acts again
 
 ## Earlier project (archived)
 
-The earlier multi-step probe-transfer project is preserved in full on branch `archive/stage-transfer-v1` (tag `stage-transfer-v1`), and `main` as it was before cleanup is tagged `main-before-clean`. The TextCraft pipeline that sat on main afterwards (`actor.py`, `environment.py`, `pipeline.py`, `cli.py`, `vendor/AgentGym`) was removed on 2026-11-03 and is preserved at tag `textcraft-pipeline-final`.
+The earlier multi-step probe-transfer project is preserved in full on branch `archive/stage-transfer-v1` (tag `stage-transfer-v1`), and `main` as it was before cleanup is tagged `main-before-clean`. The TextCraft pipeline that sat on main afterwards (`actor.py`, `environment.py`, `pipeline.py`, `cli.py`, `vendor/AgentGym`) was removed on 2026-11-03 and is preserved on branch `archive/textcraft-pipeline-final`.
 
 ## Setup
 

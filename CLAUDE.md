@@ -89,7 +89,7 @@ Sweeps never met their stopping rule; recall was 22 of 31 known-relevant papers 
 - Never delete, force-push or publish without asking. Pushes only as the `research-rules` wrap-up allows, otherwise ask. If an answer card is missing, ask again in plain text.
 
 ## Repo rules
-- Git holds the pipeline (`failure_probes/syco/` Orgad replication, `failure_probes/common.py`, `tests/`, `configs/syco_*.json`; the old TextCraft pipeline was removed 2026-11-03, preserved at tag `textcraft-pipeline-final`) plus the research record: `CLAUDE.md`, `RESEARCH_LOG.md`, `notebooks/`, `results/`, `figures/`, `papers/`, and `scripts/` (`bootstrap.sh`, `lambda_up.sh`). Local data (`runs/`, `logs/`, `wandb/`) and `research/` stay out of git.
+- Git holds the pipeline (`failure_probes/syco/` Orgad replication, `failure_probes/common.py`, `tests/`, `configs/syco_*.json`; the old TextCraft pipeline was removed 2026-11-03, preserved on branch `archive/textcraft-pipeline-final`) plus the research record: `CLAUDE.md`, `RESEARCH_LOG.md`, `notebooks/`, `results/`, `figures/`, `papers/`, and `scripts/` (`bootstrap.sh`, `lambda_up.sh`). Local data (`runs/`, `logs/`, `wandb/`) and `research/` stay out of git.
 - Run tests with `pytest -q` in the `.venv` before committing pipeline code. If uv rebuilt the venv, run `uv sync --extra dev` first, since pytest is an extra.
 
 ## Lab mod (added 2026-10-23)
