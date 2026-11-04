@@ -717,7 +717,7 @@ def _resolve_checkpoint_config(checkpoint, checkpoint_config, *names):
 def run_checkpoint(model, tokenizer, items, checkpoint, fmt, sources, turns, out_path, seed,
                    batch_size=8, system=None, allow_unverified=False, *, variants=DEFAULT_VARIANTS,
                    checkpoint_config=None, resume=False, date_string=None, min_mass=DEFAULT_MIN_MASS,
-                   prior_rule=DEFAULT_PRIOR_RULE, **prompt_kwargs):
+                   prior_rule=DEFAULT_PRIOR_RULE, tool_mode="text", **prompt_kwargs):
     """Neutral pass -> per-item prior labels -> cue prompts -> score; append JSONL rows + manifest.
 
     Rows (one per scored prompt, neutral rows included) go to `out_path` via append_jsonl; several
@@ -741,6 +741,11 @@ def run_checkpoint(model, tokenizer, items, checkpoint, fmt, sources, turns, out
       used (given, or prompts.py's default) is recorded in the manifest.
     - `min_mass`: threshold for the manifest's low-letter-mass fraction (diagnostic only; no row
       is dropped here).
+    - `tool_mode`: "text" (default) or "native" (fmt="native" only; the tool source becomes a real
+      tool call, see prompts.py). "native" is passed to prompts.build_prompt and so lands in
+      run_config["prompt_kwargs"]; "text" is omitted there (build_prompt's default), so default
+      run_configs and resume hashes are unchanged. The manifest records `tool_mode` and, for
+      "native", `tool_schema` and `tool_description_verified`.
     Extra keyword arguments (e.g. option_style) are passed to prompts.build_prompt as given.
     Returns the manifest dict.
     """
@@ -763,6 +768,13 @@ def run_checkpoint(model, tokenizer, items, checkpoint, fmt, sources, turns, out
             raise ValueError(
                 f"native format refused for {checkpoint!r}: checkpoint_config has_chat_template=false "
                 f"(even if the tokenizer ships a chat_template). Use fmt='plain'.")
+    tool_modes = P.TOOL_MODES
+    if tool_mode not in tool_modes:
+        raise ValueError(f"unknown tool_mode {tool_mode!r}; expected one of {tool_modes}")
+    if tool_mode == "native" and fmt != "native":
+        raise ValueError(f"tool_mode='native' needs fmt='native' (got fmt={fmt!r})")
+    if tool_mode != "text":
+        prompt_kwargs["tool_mode"] = tool_mode
     if date_string is not None:
         prompt_kwargs["date_string"] = date_string
     date_used = prompt_kwargs.get("date_string", _date_string_default(P))
@@ -950,6 +962,8 @@ def run_checkpoint(model, tokenizer, items, checkpoint, fmt, sources, turns, out
         first = [neutral_prompts[0]] + all_cue_prompts[items[0].item_id]
         for p in first:
             key = f"{p.cue.kind}|{p.cue.turn}"
+            if tool_mode == "native" and p.cue.source == P.TOOL_SOURCE:
+                key = f"{p.cue.source}:{key}"  # one native tool example per kind|turn
             if key not in examples:
                 examples[key] = {"item_id": p.item_id, "source": p.cue.source, "target": p.cue.target,
                                  "prior": p.cue.prior, "prompt_sha256": prompt_sha256(p), "text": p.text}
@@ -969,6 +983,9 @@ def run_checkpoint(model, tokenizer, items, checkpoint, fmt, sources, turns, out
         "system": system,
         "allow_unverified": allow_unverified,
         "prompt_kwargs": prompt_kwargs,
+        "tool_mode": tool_mode,
+        "tool_schema": json.loads(json.dumps(P.TOOL_SCHEMA)) if tool_mode == "native" else None,
+        "tool_description_verified": P.TOOL_DESCRIPTION_VERIFIED if tool_mode == "native" else None,
         "date_string": date_used,
         "date_string_applies": fmt == "native",
         "native_today_date_line": _today_date_line(example_text) if fmt == "native" else None,

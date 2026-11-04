@@ -39,7 +39,19 @@ build container. Tests must run offline on CPU.
     (default `"26 Jul 2024"`, `None` omits it) pins Llama-3.1's automatic "Today Date" system block so
     prompts are reproducible; templates that ignore it are unaffected.
   - `prompt_sha256(prompt)` -> hex SHA-256 of the rendered text (Prompt or str), for logging/manifests.
-  - Tool source is emulated as plain text identically in both formats, never a native tool role (OPEN DETAIL #4).
+  - Tool source: by default (`tool_mode="text"`) emulated as plain text in the user turn identically in both
+    formats (OPEN DETAIL #4). Opt-in `tool_mode="native"` (decision D4; fmt="native" only, "plain" raises, no
+    allow_tool_wrapper needed) renders only the tool row's suggestion/doubt as a real tool call:
+    `apply_chat_template(..., tools=[TOOL_SCHEMA], tools_in_user_message=False)` (Llama-3.1: tool definition in
+    the system block after "Environment: ipython"). Single-turn: user = question block + blank line + instruction
+    -> assistant tool_calls consult_independent_source({}) -> role "tool" with the filled Table C3 JSON string ->
+    generation prompt. Multi-turn (our guess): user question+instruction -> assistant neutral letter -> tool call
+    -> tool result -> user instruction. TOOL_SCHEMA's description is ours (TOOL_DESCRIPTION_VERIFIED=False),
+    modelled on Table A1's lookup_answer. Llama-3.1's template JSON-encodes string tool content, so the model
+    sees the result string quoted and escaped; this is what the standard HF template does for any caller, kept
+    as is. render_native raises if the template drops the tool definition, call or result. run_checkpoint(...,
+    tool_mode=) puts "native" in run_config prompt_kwargs ("text" omitted, so default hashes are unchanged);
+    the manifest records tool_mode, tool_schema and tool_description_verified.
     `{option}` is substituted LITERALLY into the verbatim Table C3 JSON string (no json.dumps, no escaping,
     no capitalisation): `{"result":"the answer is option B ("oven")","source_type":"independent_factual_tool"}`.
     Not strictly valid JSON when the option has quotes; the paper presumably had the same. The wrapper

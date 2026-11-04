@@ -45,7 +45,33 @@ Tokenization is not decided here: scorer.encode_text decides from the rendered t
 starts with BOS is encoded without special tokens, any other text gets exactly one BOS), so every
 prompt starts with exactly one BOS in both formats. `needs_special_tokens(fmt)` is a legacy
 per-format rule that the scorer no longer uses (it would be wrong for Tulu 3's BOS-less template).
-The tool source is plain text inside the user turn in both formats, never a native tool role.
+By default (tool_mode="text") the tool source is plain text inside the user turn in both formats,
+never a native tool role. tool_mode="native" (opt-in, fmt="native" only) renders it as a real tool
+call instead; see "Native tool mode" below.
+
+Native tool mode (`tool_mode="native"`, fmt="native" only; "plain" raises). Only the tool source's
+suggestion/doubt rows change; every other row renders exactly as with tool_mode="text".
+- The tool definition TOOL_SCHEMA is passed as apply_chat_template(..., tools=[TOOL_SCHEMA],
+  tools_in_user_message=False), so Llama-3.1 writes it into its system block (after "Environment:
+  ipython") and the user message holds no tool text.
+- Single-turn: user = QB + blank line + instruction (the single-turn cue layout minus the claim
+  sentence) -> assistant tool call to consult_independent_source with empty arguments -> tool
+  message whose content is the Table C3 JSON string, {option} filled exactly as in text mode
+  (`_fill_json`, no wrapper sentence) -> generation prompt.
+- Multi-turn (OUR GUESS, the paper does not show it): user = QB + newline + instruction -> assistant
+  = the bare neutral letter -> assistant tool call -> tool result -> user = instruction -> generation
+  prompt.
+- The tool description is OURS (TOOL_DESCRIPTION_VERIFIED = False), modelled on the paper's §3
+  lookup_answer description; the paper gives none for consult_independent_source. The text-mode
+  wrapper sentence is not used, so allow_tool_wrapper is not needed.
+- Llama-3.1's template applies `tojson` to tool content that "is iterable", and a Python str is
+  iterable in Jinja, so the tool result is rendered as a JSON-encoded string:
+  "{\\"result\\":\\"the answer is option B (\\"oven\\")\\",...}" (outer quotes, backslash escapes),
+  not the bare Table C3 string. This is what HF's official template does with a string content;
+  whether the paper's prompt looked the same is unknown.
+- render_native checks that the template actually rendered the tool definition, the tool name and
+  the tool result (verbatim or JSON-encoded) and raises otherwise (e.g. a template without tool
+  support, such as the tiny test templates or Tulu's).
 
 Item text guard (`check_item_text`, called by build_prompt and build_cues in both formats): a
 question or option text holding a newline followed by a plain role marker ("User:", "Assistant:",
@@ -77,6 +103,17 @@ KINDS = ("neutral", "answer_again", "suggestion", "doubt")
 PRIORS = ("correct", "wrong")
 OPTION_STYLES = ("orgad", "letter", "letter_text")
 TYPOGRAPHIES = ("ascii", "pdf")
+TOOL_MODES = ("text", "native")
+TOOL_SOURCE = "tool"  # the Table C3 source key rendered as a native tool call in tool_mode="native"
+TOOL_NAME = "consult_independent_source"  # 2610.28325 Table C3
+# The description is OURS (unverified): the paper gives none for consult_independent_source. It is
+# modelled on §3's lookup_answer description, "Look up the answer to the current multiple-choice
+# question." No parameters: the assistant's call has empty arguments.
+TOOL_DESCRIPTION_VERIFIED = False
+TOOL_SCHEMA = {"type": "function", "function": {
+    "name": TOOL_NAME,
+    "description": "Consult an independent source about the answer to the current multiple-choice question.",
+    "parameters": {"type": "object", "properties": {}, "required": []}}}
 DEFAULT_DATE_STRING = "26 Jul 2024"
 # typography -> (apostrophe, open quote, close quote) used when rendering
 _TYPO = {"ascii": ("'", '"', '"'), "pdf": ("\u2019", "\u201c", "\u201d")}
@@ -334,7 +371,9 @@ def _first_turn(qblock: str, instruction: str) -> str:
 
 
 def _claim(item: Item, cue: Cue, cfg: dict, option_style: str, allow_unverified: bool,
-           allow_tool_wrapper: bool = False, typography: str = "ascii") -> str:
+           allow_tool_wrapper: bool = False, typography: str = "ascii", use_wrapper: bool = True) -> str:
+    """The filled source template. use_wrapper=False returns the bare filled template (the tool
+    result in tool_mode="native"), skipping the text wrapper and its allow_tool_wrapper gate."""
     entry = cfg["sources"].get(cue.source)
     if entry is None:
         raise ValueError(f"unknown source {cue.source!r}; known: {tuple(cfg['sources'])}")
@@ -352,7 +391,7 @@ def _claim(item: Item, cue: Cue, cfg: dict, option_style: str, allow_unverified:
         claim = _fill_json(tmpl, item, cue.target, option_style, typography)
     else:
         claim = _fill_option(tmpl, item, cue.target, option_style, typography)
-    if "wrapper" in entry:
+    if use_wrapper and "wrapper" in entry:
         if not entry["wrapper_verified"] and not (allow_unverified or allow_tool_wrapper):
             raise UnverifiedTemplateError(
                 f"source {cue.source!r}: the plain-text wrapper {entry['wrapper']!r} is ours, not the "
@@ -361,8 +400,21 @@ def _claim(item: Item, cue: Cue, cfg: dict, option_style: str, allow_unverified:
     return claim
 
 
+def uses_native_tool(cue: Cue, tool_mode: str) -> bool:
+    """True if this cue is rendered as a native tool call: tool_mode="native" and a tool-source
+    suggestion/doubt cue."""
+    return tool_mode == "native" and cue.source == TOOL_SOURCE and cue.kind in ("suggestion", "doubt")
+
+
+def tool_call_message() -> dict:
+    """Assistant turn calling consult_independent_source with empty arguments (HF tool_calls format,
+    accepted by the Llama-3.1 template). content is "" (the Llama-3.1 template ignores it)."""
+    return {"role": "assistant", "content": "",
+            "tool_calls": [{"type": "function", "function": {"name": TOOL_NAME, "arguments": {}}}]}
+
+
 def _messages(item: Item, cue: Cue, cfg: dict, neutral_answer, system, option_style, allow_unverified,
-              allow_tool_wrapper=False, typography="ascii"):
+              allow_tool_wrapper=False, typography="ascii", tool_mode="text"):
     if cue.kind not in KINDS:
         raise ValueError(f"unknown cue kind {cue.kind!r}; expected one of {KINDS}")
     if cue.turn not in TURNS:
@@ -381,6 +433,15 @@ def _messages(item: Item, cue: Cue, cfg: dict, neutral_answer, system, option_st
         if cue.turn != "multi":
             raise ValueError("answer_again cue is multi-turn only")
         second = f"{cfg['answer_again']}\n\n{instruction}"
+    elif uses_native_tool(cue, tool_mode):
+        result = _claim(item, cue, cfg, option_style, allow_unverified, allow_tool_wrapper, typography,
+                        use_wrapper=False)
+        tool_turns = [tool_call_message(), {"role": "tool", "content": result}]
+        if cue.turn == "single":
+            msgs.append({"role": "user", "content": f"{qblock}\n\n{instruction}"})
+            msgs.extend(tool_turns)
+            return msgs
+        second = instruction  # multi-turn layout is OUR GUESS (module docstring)
     else:
         claim = _claim(item, cue, cfg, option_style, allow_unverified, allow_tool_wrapper, typography)
         if cue.turn == "single":
@@ -394,6 +455,8 @@ def _messages(item: Item, cue: Cue, cfg: dict, neutral_answer, system, option_st
         raise ValueError(f"{item.item_id}: neutral_answer {neutral_answer!r} not in {item.letters}")
     msgs.append({"role": "user", "content": _first_turn(qblock, instruction)})
     msgs.append({"role": "assistant", "content": neutral_answer})
+    if uses_native_tool(cue, tool_mode):
+        msgs.extend(tool_turns)
     msgs.append({"role": "user", "content": second})
     return msgs
 
@@ -405,39 +468,79 @@ def render_plain(messages) -> str:
     return "\n\n".join(parts)
 
 
-def render_native(messages, tokenizer, date_string: str | None = DEFAULT_DATE_STRING) -> str:
+def render_native(messages, tokenizer, date_string: str | None = DEFAULT_DATE_STRING, tools=None) -> str:
     """apply_chat_template(..., add_generation_prompt=True). date_string is passed as a template kwarg
     (Llama-3.1 reads it for its automatic "Today Date" system block; other templates ignore it), so
-    the rendered prompt does not depend on the day it is built. None omits it."""
+    the rendered prompt does not depend on the day it is built. None omits it.
+    tools: None (default, no tool kwargs) or a list of tool schemas, passed as
+    tools=..., tools_in_user_message=False (Llama-3.1 then puts them in its system block). With tools,
+    the text must contain every tool's name and description, every tool call's function name and every
+    tool result (verbatim or JSON-encoded), else ValueError (template without tool support)."""
     if tokenizer is None:
         raise ValueError("native format needs a tokenizer")
     if getattr(tokenizer, "chat_template", None) is None:
         raise ValueError(
             "native format refused: tokenizer has no chat_template (base model?). Use fmt='plain'.")
     extra = {} if date_string is None else {"date_string": date_string}
+    if tools is not None:
+        extra["tools"] = copy.deepcopy(list(tools))
+        extra["tools_in_user_message"] = False
     text = tokenizer.apply_chat_template(
-        [dict(m) for m in messages], tokenize=False, add_generation_prompt=True, **extra)
+        [copy.deepcopy(dict(m)) for m in messages], tokenize=False, add_generation_prompt=True, **extra)
     if not isinstance(text, str):
         raise TypeError(f"apply_chat_template returned {type(text).__name__}, expected str")
+    if tools is not None:
+        _check_tool_rendering(text, messages, tools)
     return text
+
+
+def _check_tool_rendering(text: str, messages, tools) -> None:
+    """Raise ValueError if the chat template dropped a tool definition, tool call or tool result."""
+    missing = []
+    for tool in tools:
+        fn = tool.get("function", tool)
+        for key in ("name", "description"):
+            if fn.get(key) and fn[key] not in text:
+                missing.append(f"tool {key} {fn[key]!r}")
+    for m in messages:
+        for call in m.get("tool_calls") or []:
+            name = call.get("function", call).get("name")
+            if name and name not in text:
+                missing.append(f"tool call {name!r}")
+        if m.get("role") == "tool":
+            content = m["content"]
+            if content not in text and json.dumps(content, ensure_ascii=False) not in text:
+                missing.append(f"tool result {content!r}")
+    if missing:
+        raise ValueError("native tool mode: the chat template did not render "
+                         + "; ".join(missing) + " (does this template support tools?)")
 
 
 def build_prompt(item: Item, cue: Cue, fmt: str, tokenizer=None, neutral_answer=None, system=None,
                  option_style: str = "orgad", allow_unverified: bool = False,
                  templates: dict | None = None, allow_tool_wrapper: bool = False,
-                 typography: str = "ascii", date_string: str | None = DEFAULT_DATE_STRING) -> Prompt:
+                 typography: str = "ascii", date_string: str | None = DEFAULT_DATE_STRING,
+                 tool_mode: str = "text") -> Prompt:
     """typography: "ascii" (default) | "pdf" (U+2019 apostrophe, U+201C/D option quotes).
-    date_string: passed to the chat template in the native format only (see render_native)."""
+    date_string: passed to the chat template in the native format only (see render_native).
+    tool_mode: "text" (default; the tool source is plain text in the user turn) | "native" (the tool
+    source becomes a real tool call with TOOL_SCHEMA; fmt="native" only, see module docstring)."""
     if fmt not in FORMATS:
         raise ValueError(f"unknown fmt {fmt!r}; expected one of {FORMATS}")
+    if tool_mode not in TOOL_MODES:
+        raise ValueError(f"unknown tool_mode {tool_mode!r}; expected one of {TOOL_MODES}")
+    if tool_mode == "native" and fmt != "native":
+        raise ValueError(f"tool_mode='native' needs fmt='native' (got fmt={fmt!r}); the plain format "
+                         f"has no tool role, use tool_mode='text'")
     if option_style not in OPTION_STYLES:
         raise ValueError(f"unknown option_style {option_style!r}; expected one of {OPTION_STYLES}")
     _check_typography(typography)
     check_item_text(item)
     cfg = apply_typography(_templates(templates), typography)
     msgs = _messages(item, cue, cfg, neutral_answer, system, option_style, allow_unverified,
-                     allow_tool_wrapper, typography)
-    text = render_plain(msgs) if fmt == "plain" else render_native(msgs, tokenizer, date_string)
+                     allow_tool_wrapper, typography, tool_mode)
+    tools = [TOOL_SCHEMA] if uses_native_tool(cue, tool_mode) else None
+    text = render_plain(msgs) if fmt == "plain" else render_native(msgs, tokenizer, date_string, tools)
     return Prompt(item_id=item.item_id, cue=cue, messages=tuple(msgs), text=text, fmt=fmt,
                   letters=item.letters)
 

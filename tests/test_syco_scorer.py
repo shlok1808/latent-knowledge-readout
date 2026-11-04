@@ -913,3 +913,62 @@ def test_any_letter_all_minus_inf_raises_before_writing(tok, tmp_path):
     assert not out.exists() and not scorer.inprogress_path(out, "tiny", "plain").exists()
     three = [Item("csqa:x:1", "csqa", "x", "Q?", (("A", "a"), ("B", "b"), ("C", "c")), "A")]  # no D: fine
     scorer.run_checkpoint(FixedLogits(logits), tok, three, "tiny", "plain", ["user"], ["single"], out, seed=0)
+
+
+# ----------------------------------------------------------------- native tool mode
+
+# tiny Llama-3.1-like tool template (tools -> system block, tool call, ipython result)
+TOOL_CHAT_TEMPLATE = (
+    "{{ bos_token }}"
+    "{% if tools is defined and tools is not none %}<|system|>\nEnvironment: ipython\n"
+    "{% for t in tools %}{{ t | tojson }}\n{% endfor %}{% endif %}"
+    "{% for m in messages %}"
+    "{% if m.tool_calls is defined %}<|assistant|>\n{{ m.tool_calls[0].function.name }}()\n"
+    "{% elif m.role == 'tool' %}<|system|>\nipython: {{ m.content }}\n"
+    "{% else %}<|{{ m.role }}|>\n{{ m.content }}\n{% endif %}"
+    "{% endfor %}"
+    "{% if add_generation_prompt %}<|assistant|>\n{% endif %}"
+)
+
+
+def test_run_checkpoint_native_tool_mode(tmp_path):
+    from knowledge_readout.syco import prompts as P
+
+    t = tiny_tokenizer(chat_template=TOOL_CHAT_TEMPLATE)
+    model = tiny_model(t)
+    out = tmp_path / "rows.jsonl"
+    m = scorer.run_checkpoint(model, t, ITEMS, "tiny", "native", ["user", "tool"], ["single", "multi"], out,
+                              seed=0, tool_mode="native")
+    assert m["tool_mode"] == "native" and m["run_config"]["prompt_kwargs"] == {"tool_mode": "native"}
+    assert m["tool_schema"] == P.TOOL_SCHEMA and m["tool_description_verified"] is False
+    assert {"tool:suggestion|single", "tool:doubt|multi"} <= set(m["example_prompts"])
+    assert "Environment: ipython" in m["example_prompts"]["tool:suggestion|single"]["text"]
+    assert "Environment: ipython" not in m["example_prompts"]["suggestion|single"]["text"]
+    rows = read_rows(out)
+    tool_rows = [r for r in rows if r["source"] == "tool"]
+    assert len(tool_rows) == 4 * len(ITEMS)
+    by_id = {i.item_id: i for i in ITEMS}
+    for r in tool_rows:  # each tool row was scored on the native tool prompt
+        c = Cue(r["kind"], r["source"], r["turn"], r["target"], r["prior"])
+        p = build_prompt(by_id[r["item_id"]], c, "native", tokenizer=t, neutral_answer=r["neutral_answer"],
+                         tool_mode="native")
+        assert r["extra"]["prompt_sha256"] == scorer.prompt_sha256(p)
+        assert [x["role"] for x in p.messages][-2:] in (["assistant", "tool"], ["tool", "user"])
+
+
+def test_run_checkpoint_tool_mode_default_and_plain_refusal(model, tok, tmp_path):
+    out = tmp_path / "rows.jsonl"
+    with pytest.raises(ValueError, match="tool_mode='native' needs fmt='native'"):
+        scorer.run_checkpoint(model, tok, ITEMS, "tiny", "plain", ["user"], ["single"], out, seed=0,
+                              tool_mode="native")
+    with pytest.raises(ValueError, match="unknown tool_mode"):
+        scorer.run_checkpoint(model, tok, ITEMS, "tiny", "native", ["user"], ["single"], out, seed=0,
+                              tool_mode="json")
+    assert not out.exists()
+    a = scorer.run_checkpoint(model, tok, ITEMS, "tiny", "plain", ["user"], ["single"], out, seed=0)
+    b = scorer.run_checkpoint(model, tok, ITEMS, "tiny2", "plain", ["user"], ["single"], out, seed=0,
+                              tool_mode="text")
+    assert a["tool_mode"] == b["tool_mode"] == "text" and a["tool_schema"] is None
+    assert "tool_mode" not in a["run_config"]["prompt_kwargs"]  # default run_config unchanged
+    assert {k: v for k, v in a["run_config"].items() if k != "checkpoint"} == \
+        {k: v for k, v in b["run_config"].items() if k != "checkpoint"}
