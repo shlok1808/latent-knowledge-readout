@@ -4,9 +4,9 @@ import os
 
 import pytest
 
-from failure_probes.syco import scorer
-from failure_probes.syco.preflight import preflight
-from failure_probes.syco.types import Item
+from knowledge_readout.syco import scorer
+from knowledge_readout.syco.preflight import preflight
+from knowledge_readout.syco.types import Item
 from syco_tiny import CHAT_TEMPLATE_DATED, CHAT_TEMPLATE_NO_BOS, tiny_model, tiny_tokenizer
 
 
@@ -135,7 +135,7 @@ def test_with_model_custom_variants(model, tok):
 
 
 def test_expected_letter_spelling_checked(tok, monkeypatch):
-    from failure_probes.syco import prompts as P
+    from knowledge_readout.syco import prompts as P
 
     rep = preflight(tok)
     exp = rep["expected_letter_spelling"]

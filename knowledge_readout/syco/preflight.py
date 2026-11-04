@@ -1,6 +1,6 @@
 """Cheap pre-run checks for one checkpoint on Lambda (no writes, no generation).
 
-    from failure_probes.syco.preflight import preflight
+    from knowledge_readout.syco.preflight import preflight
     report = preflight(tokenizer, model, items[:64])
     report["problems"]   # human-readable list; empty means nothing obviously wrong
 
@@ -28,8 +28,8 @@ The report is a plain JSON-serializable dict:
 """
 from __future__ import annotations
 
-from failure_probes.syco import scorer
-from failure_probes.syco.types import Cue, Item
+from knowledge_readout.syco import scorer
+from knowledge_readout.syco.types import Cue, Item
 
 LETTER_SPELLINGS = ("{L}", " {L}", "({L}", " ({L}")
 PREFLIGHT_LETTERS = "ABCDE"
@@ -139,7 +139,7 @@ def preflight(tokenizer, model=None, items=None, fmt_list=("plain", "native"), *
               checkpoint=None, variants=scorer.DEFAULT_VARIANTS, date_string=None, n_compare=20, batch_size=8,
               min_mass=scorer.DEFAULT_MIN_MASS, max_batch_diff=1e-3):
     """Run the cheap checks and return a dict report (see module docstring). Writes nothing."""
-    from failure_probes.syco import prompts as P
+    from knowledge_readout.syco import prompts as P
 
     items = list(items) if items is not None else None
     problems = []

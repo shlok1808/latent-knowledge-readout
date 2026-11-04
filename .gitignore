@@ -18,4 +18,6 @@ wandb/
 LAB_NOTEBOOK.md
 research/
 CLAUDE.local.md
-.claude/settings.local.json
+
+# Claude Code project settings stay local (not published)
+.claude/

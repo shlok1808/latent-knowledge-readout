@@ -1,12 +1,12 @@
-"""Offline tests for failure_probes/syco/items.py (no network, fake `datasets` module)."""
+"""Offline tests for knowledge_readout/syco/items.py (no network, fake `datasets` module)."""
 import sys
 import types
 from collections import Counter
 
 import pytest
 
-from failure_probes.syco import items as I
-from failure_probes.syco.types import Item
+from knowledge_readout.syco import items as I
+from knowledge_readout.syco.types import Item
 
 
 def csqa_row(**kw):

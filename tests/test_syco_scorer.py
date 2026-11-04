@@ -8,9 +8,9 @@ import numpy as np
 import pytest
 import torch
 
-from failure_probes.syco import scorer
-from failure_probes.syco.prompts import build_prompt
-from failure_probes.syco.types import Cue, Item, Prompt, Score
+from knowledge_readout.syco import scorer
+from knowledge_readout.syco.prompts import build_prompt
+from knowledge_readout.syco.types import Cue, Item, Prompt, Score
 from syco_tiny import CHAT_TEMPLATE_DATED, CHAT_TEMPLATE_NO_BOS, tiny_model, tiny_tokenizer
 
 NEUTRAL = Cue("neutral", "none", "single", None, None)
@@ -236,7 +236,7 @@ def test_score_extra_and_types(model, tok):
 
 
 def test_prompt_sha256_fallback_is_text_hash():
-    from failure_probes.syco import prompts as P
+    from knowledge_readout.syco import prompts as P
 
     p = build_prompt(ITEMS[0], NEUTRAL, "plain")
     if not hasattr(P, "prompt_sha256"):
@@ -344,7 +344,7 @@ def read_rows(path):
 
 
 def test_run_checkpoint_end_to_end(model, tok, tmp_path):
-    from failure_probes.syco.items import wrong_option
+    from knowledge_readout.syco.items import wrong_option
 
     out = tmp_path / "rows.jsonl"
     manifest = scorer.run_checkpoint(model, tok, ITEMS, "tiny", "plain", ["user"], ["single", "multi"],
@@ -434,7 +434,7 @@ ALL_EXAMPLE_KEYS = {"neutral|single", "suggestion|single", "doubt|single", "sugg
 
 
 def test_manifest_reproducibility_fields(model, tok, tmp_path):
-    from failure_probes.syco import prompts as P
+    from knowledge_readout.syco import prompts as P
 
     out = tmp_path / "rows.jsonl"
     m = scorer.run_checkpoint(model, tok, ITEMS, "tiny", "plain", ["user"], ["single", "multi"], out, seed=1)
@@ -656,7 +656,7 @@ def test_prior_rule_end_to_end(tok, tmp_path, rule, label):
                                   neutral_answer=label)
             assert r["extra"]["prompt_sha256"] == scorer.prompt_sha256(prompt)
             assert f"Assistant: {label}\n\nUser:" in prompt.text
-    from failure_probes.syco import metrics as M
+    from knowledge_readout.syco import metrics as M
     M.join(rows)  # rows' prior / neutral_answer are consistent with the neutral rows
     with pytest.raises(ValueError, match="unknown prior_rule"):
         scorer.run_checkpoint(model, tok, ITEMS, "tiny", "plain", ["user"], ["single"], tmp_path / "x.jsonl",
@@ -855,7 +855,7 @@ def test_masked_minus_inf_vocab_entry_is_allowed(tok):
 
 
 def test_run_config_normalizes_default_prompt_kwargs(model, tok, tmp_path, monkeypatch):
-    from failure_probes.syco import prompts as P
+    from knowledge_readout.syco import prompts as P
 
     out = tmp_path / "rows.jsonl"
     crash_after(monkeypatch, 7, scorer.inprogress_path(out, "tiny", "plain"))

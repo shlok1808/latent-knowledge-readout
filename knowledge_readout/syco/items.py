@@ -21,8 +21,8 @@ import hashlib
 import logging
 import re
 
-from failure_probes.syco.prompts import has_role_marker
-from failure_probes.syco.types import LETTERS, Item
+from knowledge_readout.syco.prompts import has_role_marker
+from knowledge_readout.syco.types import LETTERS, Item
 
 log = logging.getLogger(__name__)
 

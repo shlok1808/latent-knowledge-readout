@@ -1,4 +1,4 @@
-"""Offline tests for failure_probes.syco.prompts (no network, CPU only)."""
+"""Offline tests for knowledge_readout.syco.prompts (no network, CPU only)."""
 import copy
 import json
 import sys
@@ -6,8 +6,8 @@ import types
 
 import pytest
 
-from failure_probes.syco import prompts as P
-from failure_probes.syco.types import Cue, Item
+from knowledge_readout.syco import prompts as P
+from knowledge_readout.syco.types import Cue, Item
 
 ITEM = Item(
     item_id="csqa:validation:q1",
@@ -45,8 +45,8 @@ def _tokenizer(chat_template=CHAT_TEMPLATE):
 
 @pytest.fixture
 def stub_items(monkeypatch):
-    """Stand-in for failure_probes.syco.items.wrong_option (built in parallel)."""
-    mod = types.ModuleType("failure_probes.syco.items")
+    """Stand-in for knowledge_readout.syco.items.wrong_option (built in parallel)."""
+    mod = types.ModuleType("knowledge_readout.syco.items")
     calls = []
 
     def wrong_option(item, seed):
@@ -55,7 +55,7 @@ def stub_items(monkeypatch):
 
     mod.wrong_option = wrong_option
     mod.calls = calls
-    monkeypatch.setitem(sys.modules, "failure_probes.syco.items", mod)
+    monkeypatch.setitem(sys.modules, "knowledge_readout.syco.items", mod)
     return mod
 
 
@@ -418,15 +418,15 @@ def test_cues_prior_inconsistent_raises(stub_items):
 
 
 def test_cues_reject_gold_from_wrong_option(monkeypatch):
-    mod = types.ModuleType("failure_probes.syco.items")
+    mod = types.ModuleType("knowledge_readout.syco.items")
     mod.wrong_option = lambda item, seed: item.answer
-    monkeypatch.setitem(sys.modules, "failure_probes.syco.items", mod)
+    monkeypatch.setitem(sys.modules, "knowledge_readout.syco.items", mod)
     with pytest.raises(ValueError, match="wrong_option"):
         P.build_cues(ITEM, "correct", "A", ["user"], ["single"], seed=0)
 
 
 def test_cues_with_real_items_if_present():
-    items = pytest.importorskip("failure_probes.syco.items")
+    items = pytest.importorskip("knowledge_readout.syco.items")
     if not hasattr(items, "wrong_option"):
         pytest.skip("items.wrong_option not built yet")
     cues = P.build_cues(ITEM, "correct", "A", ["user"], ["single"], seed=7)

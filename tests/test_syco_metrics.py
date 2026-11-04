@@ -3,7 +3,7 @@ import math
 import numpy as np
 import pytest
 
-from failure_probes.syco import metrics as M
+from knowledge_readout.syco import metrics as M
 
 
 def L(p):

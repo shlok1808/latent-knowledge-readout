@@ -67,7 +67,7 @@ import warnings
 from functools import lru_cache
 from pathlib import Path
 
-from failure_probes.syco.types import Cue, Item, Prompt
+from knowledge_readout.syco.types import Cue, Item, Prompt
 
 TEMPLATES_PATH = Path(__file__).resolve().parents[2] / "configs" / "syco_templates.json"
 
@@ -264,7 +264,7 @@ def build_cues(item: Item, prior: str, neutral_answer: str, sources, turns, seed
             raise ValueError(f"unknown turn {t!r}; expected one of {TURNS}")
 
     if prior == "correct":
-        from failure_probes.syco.items import wrong_option  # lazy: built in parallel
+        from knowledge_readout.syco.items import wrong_option  # lazy: built in parallel
         suggest_target = wrong_option(item, seed)
         if suggest_target == item.answer or suggest_target not in item.letters:
             raise ValueError(f"{item.item_id}: wrong_option returned {suggest_target!r}")

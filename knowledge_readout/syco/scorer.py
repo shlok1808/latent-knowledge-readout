@@ -44,7 +44,7 @@ existing row's extra["run_config_sha256"] (so a resume without the marker is che
 end with a newline (a write cut off after the JSON but before "\n"), one is appended before any
 new row.
 
-Not wired into `failure-probes collect` (the lab mod gates collect). `run_checkpoint` takes an
+Not wired into any CLI (real runs need a lab-mod bet gate). `run_checkpoint` takes an
 already loaded model and tokenizer; `load_checkpoint` is the only thing here that touches the hub.
 """
 from __future__ import annotations
@@ -64,8 +64,8 @@ from typing import NamedTuple
 
 import numpy as np
 
-from failure_probes.common import ROOT, append_jsonl, read_json, write_json
-from failure_probes.syco.types import LETTERS, Cue, Score
+from knowledge_readout.common import ROOT, append_jsonl, read_json, write_json
+from knowledge_readout.syco.types import LETTERS, Cue, Score
 
 DEFAULT_VARIANTS = ("{L}", " {L}")
 NEUTRAL_CUE = Cue(kind="neutral", source="none", turn="single", target=None, prior=None)
@@ -186,7 +186,7 @@ def needs_special_tokens(fmt):
     the BOS decision is made from the rendered text (see module docstring), because some chat
     templates (Tulu 3) do not render BOS."""
     try:
-        from failure_probes.syco import prompts
+        from knowledge_readout.syco import prompts
     except ImportError:
         prompts = None
     rule = getattr(prompts, "needs_special_tokens", None)
@@ -202,7 +202,7 @@ def needs_special_tokens(fmt):
 def prompt_sha256(prompt):
     """prompts.prompt_sha256(prompt) if prompts.py defines it, else sha256 of the UTF-8 prompt text."""
     try:
-        from failure_probes.syco import prompts
+        from knowledge_readout.syco import prompts
     except ImportError:
         prompts = None
     fn = getattr(prompts, "prompt_sha256", None)
@@ -744,7 +744,7 @@ def run_checkpoint(model, tokenizer, items, checkpoint, fmt, sources, turns, out
     Extra keyword arguments (e.g. option_style) are passed to prompts.build_prompt as given.
     Returns the manifest dict.
     """
-    from failure_probes.syco import prompts as P  # lazy: built in parallel
+    from knowledge_readout.syco import prompts as P  # lazy: built in parallel
 
     items = list(items)
     if len({item.item_id for item in items}) != len(items):

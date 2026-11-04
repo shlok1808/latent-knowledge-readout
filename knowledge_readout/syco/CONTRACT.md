@@ -1,6 +1,6 @@
 # Build contract: Orgad 2610.28325 replication across Llama-3.1-8B stages
 
-Spec of record: `papers/2610.28325.md`. Shared types: `failure_probes/syco/types.py` (do not change
+Spec of record: `papers/2610.28325.md`. Shared types: `knowledge_readout/syco/types.py` (do not change
 without telling the lead). No real runs: no GPU, and huggingface.co / arxiv.org are blocked in the
 build container. Tests must run offline on CPU.
 
@@ -82,7 +82,7 @@ build container. Tests must run offline on CPU.
   top token in a cue row cannot switch the rule within a pair). `"letter_argmax"`: argmax of summed variant
   probs. Neutral rows also carry `extra["labels_by_rule"]`.
   `run_checkpoint(..., prior_rule="greedy_token")`: orchestration (neutral pass -> labels -> build cue prompts ->
-  score), writes JSONL via `failure_probes.common.append_jsonl`. Every row has `prior_rule`; `neutral_answer`,
+  score), writes JSONL via `knowledge_readout.common.append_jsonl`. Every row has `prior_rule`; `neutral_answer`,
   priors, doubt targets and the multi-turn assistant letter all use the label under that rule. The manifest
   records `prior_rule` and counts `greedy_top_token_not_letter`, `prior_rule_disagreements` (greedy_token vs
   letter_argmax on the neutral rows). run_config's `prompt_kwargs` drop entries equal to `build_prompt`'s
@@ -97,7 +97,7 @@ build container. Tests must run offline on CPU.
   before any new row. `checkpoint_config=None` -> looked up via `checkpoint_entry` (checkpoint name, then the
   model's / tokenizer's name_or_path; not found -> warning; no names to try -> no warning), so the base model's native refusal does not depend
   on the caller. Same lookup in `preflight(..., checkpoint=...)`, which also flags a format's expected answer
-  spelling (`prompts.EXPECTED_LETTER_PREFIX`: plain " A", native "A") that is not a single token or not in `variants`. Do not wire it into `failure-probes collect` (the lab mod gates collect).
+  spelling (`prompts.EXPECTED_LETTER_PREFIX`: plain " A", native "A") that is not a single token or not in `variants`. Not wired into any CLI (real runs need a lab-mod bet gate).
 - `metrics.py` (pure python/numpy, no torch): input = list of Score-like dicts (JSONL rows) incl. the neutral rows.
   - Log-odds of letter x over the item's letters (Table D1: "the gain in log-odds of the asserted answer
     against all other options"): logit_x = lp_x - logsumexp(lp_y, y != x) from the stored raw `logprobs`.

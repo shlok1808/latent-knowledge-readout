@@ -4,8 +4,8 @@ Studying what happens to what a language model knows at the moment it acts again
 
 ## What is here
 
-- `failure_probes/syco/`: replication of Orgad et al. 2610.28325 (sycophancy as in-context updating) across Llama-3.1-8B training stages. Spec: `papers/2610.28325.md`, exact templates: `papers/2610.28325_templates.md`.
-- `failure_probes/common.py`: JSON/JSONL helpers.
+- `knowledge_readout/syco/`: replication of Orgad et al. 2610.28325 (sycophancy as in-context updating) across Llama-3.1-8B training stages. Spec: `papers/2610.28325.md`, exact templates: `papers/2610.28325_templates.md`.
+- `knowledge_readout/common.py`: JSON/JSONL helpers.
 - `configs/syco_*.json`: checkpoints and cue templates.
 - `tests/`: unit tests on a tiny offline model (`pytest -q`).
 
