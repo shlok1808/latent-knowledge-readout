@@ -21,6 +21,9 @@ This file is tracked in git (private repo), so Lambda sessions get it. Last upda
 - **Reports:** group geometry `~/latent-knowledge-readout/research/reports/Group geometry methods for fates.md` (21+3 papers, re-ranked ideas in section 5, pass-2 papers in section 8).
 - **Setup (28 Oct):** experiments run as Scribe notebooks on Lambda through a Desktop SSH session. Git is the source of truth (see SETUP.md). Ledger: `RESEARCH_LOG.md`. Paper notes: `papers/<arxiv-id>.md`.
 
+## Progress tracker (added 2026-11-04)
+- Flowchart page the user keeps in the sidebar: https://claude.ai/artifact/BaYq7D9CYNfbTy1fEuy1wn. Steps live in its db (collection `steps`, fields phase/order/status todo|now|done/title/plain/note; doc `meta/next` = {text, updated}). Update it with ArtifactData whenever a step changes, and always rewrite `meta/next` in plain words.
+
 ## What this project is
 Studying what happens to correctness-relevant information inside a language model at the moment it acts against it. Goal: actionable interpretability for safety. Findings should point to a fix (training, inference, monitoring, architecture), not only a description.
 Repo: github.com/shlok1808/latent-knowledge-readout (this folder). The old multi-step probe-transfer project is archived on branch `archive/stage-transfer-v1` (tags `stage-transfer-v1`, `main-before-clean`).
