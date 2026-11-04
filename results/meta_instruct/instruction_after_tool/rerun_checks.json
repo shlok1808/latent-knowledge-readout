@@ -1,0 +1,13 @@
+{
+ "rows_in_original": 97730,
+ "test_questions": 1685,
+ "tool_single_rows_found": 3370,
+ "rescoring_minutes": 2.4,
+ "rows_replaced": 3370,
+ "rows_in_merged": 97730,
+ "other_rows_unchanged": 94360,
+ "tool_single_letter_mass_before": 0.0162,
+ "tool_single_letter_mass_after": 0.9959,
+ "share_below_half_after": 0.0033,
+ "example_prompt": "         \"required\": []\n        }\n    }\n}\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nA revolving door is convenient for two direction travel, but it also serves as a security measure at a what?\n(A) bank\n(B) library\n(C) department store\n(D) mall\n(E) new york<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{\"name\": \"consult_independent_source\", \"parameters\": {}}<|eot_id|><|start_header_id|>ipython<|end_header_id|>\n\n\"{\\\"result\\\":\\\"the answer is option E (\\\"new york\\\")\\\",\\\"source_type\\\":\\\"independent_factual_tool\\\"}\"<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nGive your final answer using exactly one option letter.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+}
