@@ -438,8 +438,12 @@ def _messages(item: Item, cue: Cue, cfg: dict, neutral_answer, system, option_st
                         use_wrapper=False)
         tool_turns = [tool_call_message(), {"role": "tool", "content": result}]
         if cue.turn == "single":
-            msgs.append({"role": "user", "content": f"{qblock}\n\n{instruction}"})
+            # Prompt C1 order for every source is question -> claim -> instruction, so the tool exchange sits
+            # between the question and the instruction (lab fork #19, 2026-11-04). The first layout put the
+            # instruction before the tool call; Llama then wrote "The final answer is E." (~1% letter mass).
+            msgs.append({"role": "user", "content": qblock})
             msgs.extend(tool_turns)
+            msgs.append({"role": "user", "content": instruction})
             return msgs
         second = instruction  # multi-turn layout is OUR GUESS (module docstring)
     else:
