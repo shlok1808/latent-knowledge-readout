@@ -47,7 +47,7 @@ def tiny(monkeypatch):
     tok = tiny_tokenizer(chat_template=TOOL_TEMPLATE)
     model = tiny_model(tok)
     monkeypatch.setattr(I, "load_items", fake_items)
-    monkeypatch.setattr(script, "load_model_and_tokenizer", lambda hf_id, dtype, device: (model, tok))
+    monkeypatch.setattr(script, "load_model_and_tokenizer", lambda hf_id, dtype, device, allow_tf32=False: (model, tok))
     return model, tok
 
 

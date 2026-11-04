@@ -90,7 +90,10 @@ def parse_args(argv=None):
     p.add_argument("--smoke", type=int, default=None, metavar="N",
                    help="end-to-end check on the first N test questions per dataset (own output folders)")
     p.add_argument("--batch-size", type=int, default=32)
-    p.add_argument("--dtype", default="bfloat16")
+    p.add_argument("--dtype", default="float32",
+                   help="float32 (default): bf16 makes batched and one-at-a-time letter probs differ by up to 0.05")
+    p.add_argument("--allow-tf32", action="store_true",
+                   help="use the GPU's fast TF32 matmuls for float32 (about 8x faster on A100, slightly less exact)")
     p.add_argument("--device", default="cuda")
     p.add_argument("--preflight-questions", type=int, default=32, help="test questions per dataset for preflight")
     p.add_argument("--ignore-preflight-problems", action="store_true")
@@ -231,8 +234,12 @@ def save_or_check_question_split(record, results_dir):
 
 # ---------------------------------------------------------------- model and preflight
 
-def load_model_and_tokenizer(hf_id, dtype, device):
+def load_model_and_tokenizer(hf_id, dtype, device, allow_tf32=False):
     """transformers, given dtype, eval mode (scorer.load_checkpoint). Replaced in tests."""
+    if allow_tf32:
+        import torch
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
     return S.load_checkpoint(hf_id, dtype=dtype, device=device)
 
 
@@ -487,7 +494,8 @@ def run(args):
         # 2. model + preflight
         log.info("loading %s (%s on %s)", entry["hf_id"], args.dtype, args.device)
         t0 = time.time()
-        model, tokenizer = load_model_and_tokenizer(entry["hf_id"], args.dtype, args.device)
+        log.info("TF32 matmuls: %s", "on" if args.allow_tf32 else "off")
+        model, tokenizer = load_model_and_tokenizer(entry["hf_id"], args.dtype, args.device, args.allow_tf32)
         log.info("model loaded in %.0f s", time.time() - t0)
         run_preflight(args, model, tokenizer, entry, test_by_dataset, options, results_dir)
 
