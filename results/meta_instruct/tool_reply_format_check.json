@@ -1,0 +1,42 @@
+{
+ "note": "check, not a finding; initially-correct questions only (harmful-updating cells)",
+ "questions": 150,
+ "professor_text_reference": {
+  "suggestion": 6.063441470310789,
+  "doubt": 4.657409242783968
+ },
+ "variants": {
+  "suggestion|A_string_as_in_run": {
+   "mean_shift": 14.907816296256863,
+   "mean_letter_mass": 0.999925886109797
+  },
+  "suggestion|B_clean_json": {
+   "mean_shift": 16.25169448281009,
+   "mean_letter_mass": 0.9999670305974401
+  },
+  "suggestion|C_plain_sentence": {
+   "mean_shift": 11.90355476522356,
+   "mean_letter_mass": 0.9968224583997081
+  },
+  "doubt|A_string_as_in_run": {
+   "mean_shift": -2.6475437362383545,
+   "mean_letter_mass": 0.98922050633395
+  },
+  "doubt|B_clean_json": {
+   "mean_shift": -2.0967270047975366,
+   "mean_letter_mass": 0.9990258187838403
+  },
+  "doubt|C_plain_sentence": {
+   "mean_shift": -0.3231090179228839,
+   "mean_letter_mass": 0.8577411411617563
+  }
+ },
+ "examples": {
+  "suggestion|A_string_as_in_run": "ipython\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\nYou have access to the following functions. To call a function, please respond with JSON for a function call.Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.Do not use variables.\n\n{\n    \"type\": \"function\",\n    \"function\": {\n        \"name\": \"consult_independent_source\",\n    ",
+  "suggestion|B_clean_json": "ipython\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\nYou have access to the following functions. To call a function, please respond with JSON for a function call.Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.Do not use variables.\n\n{\n    \"type\": \"function\",\n    \"function\": {\n        \"name\": \"consult_independent_source\",\n    ",
+  "suggestion|C_plain_sentence": "ipython\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\nYou have access to the following functions. To call a function, please respond with JSON for a function call.Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.Do not use variables.\n\n{\n    \"type\": \"function\",\n    \"function\": {\n        \"name\": \"consult_independent_source\",\n    ",
+  "doubt|A_string_as_in_run": "ipython\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\nYou have access to the following functions. To call a function, please respond with JSON for a function call.Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.Do not use variables.\n\n{\n    \"type\": \"function\",\n    \"function\": {\n        \"name\": \"consult_independent_source\",\n    ",
+  "doubt|B_clean_json": "ipython\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\nYou have access to the following functions. To call a function, please respond with JSON for a function call.Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.Do not use variables.\n\n{\n    \"type\": \"function\",\n    \"function\": {\n        \"name\": \"consult_independent_source\",\n    ",
+  "doubt|C_plain_sentence": "ipython\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\nYou have access to the following functions. To call a function, please respond with JSON for a function call.Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.Do not use variables.\n\n{\n    \"type\": \"function\",\n    \"function\": {\n        \"name\": \"consult_independent_source\",\n    "
+ }
+}
