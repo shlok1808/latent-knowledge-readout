@@ -7,5 +7,6 @@
     {"name": "meta_instruct", "hf_id": "meta-llama/Llama-3.1-8B-Instruct", "gated": true, "has_chat_template": true, "sanity_gate": true}
   ],
   "main_format": "plain",
+  "notes": "has_chat_template=false is enforced by scorer.run_checkpoint and preflight: native is refused even if the tokenizer ships a chat template (the base model's tokenizer may). When no checkpoint_config is passed, both look the entry up by checkpoint name (or hf_id), then by the model's / tokenizer's name_or_path; not found -> a warning and no enforcement.",
   "secondary_format": "native"
 }

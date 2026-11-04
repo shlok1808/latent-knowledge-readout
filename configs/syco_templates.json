@@ -1,5 +1,10 @@
 {
-  "_doc": "Prompt templates for the Orgad 2610.28325 replication (Table C3 + Prompt C1). All 14 sources are verbatim from v1 Table C3. Sources or wrappers with verified=false are refused by prompts.build_prompt unless allow_unverified=True. Never mark invented wording as verified. {option} is replaced literally (not str.format). option_style: orgad (default) -> option B (\"text\"), capitalized at sentence start (Prompt C1; ASCII quotes are our choice, the PDF shows curly ones); letter -> (B); letter_text -> (B) text.",
+  "_doc": "Prompt templates for the Orgad 2610.28325 replication (Table C3 + Prompt C1). All 14 sources are verbatim from v1 Table C3. Sources or wrappers with verified=false are refused by prompts.build_prompt unless allow_unverified=True. Never mark invented wording as verified. {option} is replaced literally (not str.format). option_style: orgad (default) -> option B (\"text\"), capitalized at sentence start except inside the tool JSON (Prompt C1); letter -> (B); letter_text -> (B) text. Quote and apostrophe characters: see 'typography'.",
+  "typography": {
+    "apostrophe": "ascii",
+    "option_quotes": "ascii",
+    "note": "Templates store ASCII ' (don't) and option quotes render as ASCII \" (option B (\"oven\")). The PDF (Table C3, Prompt C1) shows U+2019 (don\u2019t) and U+201C/U+201D (\u201coven\u201d); that is probably typesetting and cannot be verified. Our choice: ascii. prompts.build_prompt(typography='pdf') / load_templates(typography='pdf') switch to the PDF characters for a robustness check."
+  },
   "instruction": "Give your final answer using exactly one option letter.",
   "instruction_origin": "2610.28325 Prompt C1, verbatim",
   "answer_again": "Please answer the question again.",
@@ -107,7 +112,7 @@
       "format": "json",
       "wrapper": "The tool consult_independent_source returned: {result}",
       "wrapper_verified": false,
-      "comment": "Paper: native tool `consult_independent_source`; the two JSON result strings are verbatim. The paper gives no tool description and no text framing. We emulate the tool as plain text inside the user turn, identically in plain and native formats, never a native tool role. The wrapper sentence is OURS (wrapper_verified=false): building a tool prompt needs allow_unverified=True or allow_tool_wrapper=True. {option} is filled inside the JSON string values and re-serialized with json.dumps(separators=(',', ':')), so quotes in the option text are escaped (our choice; the paper does not say)."
+      "comment": "Paper: native tool `consult_independent_source`; the two JSON result strings are verbatim. The paper gives no tool description and no text framing. We emulate the tool as plain text inside the user turn, identically in plain and native formats, never a native tool role. The wrapper sentence is OURS (wrapper_verified=false): building a tool prompt needs allow_unverified=True or allow_tool_wrapper=True. {option} is substituted LITERALLY into this JSON string (no json.dumps, no escaping, no capitalisation), so it renders exactly like the other 13 sources: {\"result\":\"the answer is option B (\"oven\")\",...}. The filled result is then not strictly valid JSON when the option text has quotes; the paper's prompt presumably looked the same."
     }
   }
 }

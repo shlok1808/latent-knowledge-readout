@@ -2,23 +2,15 @@
 __pycache__/
 .pytest_cache/
 *.egg-info/
-runs/
 .DS_Store
 .env
 *.pt
 *.safetensors
-writeup/*.aux
-writeup/*.log
-writeup/*.out
-.lambda_instance*
-results/multistep/**/acts/
-logs/
-.lambda_ip*
 
-# local data and bookkeeping
+# local run data and bookkeeping
+runs/
 logs/
 wandb/
-writeup/
 .lambda_instance*
 .lambda_ip*
 

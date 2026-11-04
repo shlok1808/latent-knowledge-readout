@@ -17,6 +17,11 @@ Tokenizer (``tiny_tokenizer()``):
   tokenized with ``add_special_tokens=False`` or they get a double BOS.
 - ``tiny_tokenizer(chat_template=False)`` gives a tokenizer without a chat template (like the base
   model); ``tiny_tokenizer(pad=False)`` gives one without a pad token (to test the eos fallback).
+- ``tiny_tokenizer(chat_template=CHAT_TEMPLATE_NO_BOS)`` renders no BOS (like Tulu 3's template),
+  ``CHAT_TEMPLATE_DATED`` renders BOS plus a Llama-3.1-style "Today Date: {date_string}" system
+  header (default "26 Jul 2024"). Any other string is used as the template as given.
+- ``tiny_tokenizer(add_bos=False)`` does not prepend ``<s>`` on ``add_special_tokens=True`` (no
+  post-processor), to test the scorer prepending BOS itself.
 
 Model (``tiny_model(tokenizer)``): ``LlamaForCausalLM`` with 2 layers, hidden 32, 2 heads,
 vocab = len(tokenizer), float32, eval mode, weights seeded (``seed=0`` by default), so outputs are
@@ -44,6 +49,18 @@ CHAT_TEMPLATE = (
     "{% endfor %}"
     "{% if add_generation_prompt %}{{ '<|assistant|>\n' }}{% endif %}"
 )
+# Tulu-3-like: no BOS in the template (the tokenizer's add_special_tokens adds it, or nobody does).
+CHAT_TEMPLATE_NO_BOS = CHAT_TEMPLATE.replace("{{ bos_token }}", "", 1)
+# Llama-3.1-like date header: date_string defaults to "26 Jul 2024" when the caller passes none.
+CHAT_TEMPLATE_DATED = (
+    "{{ bos_token }}"
+    "{% if date_string is not defined %}{% set date_string = '26 Jul 2024' %}{% endif %}"
+    "{{ '<|system|>\nToday Date: ' + date_string + '\n' }}"
+    "{% for message in messages %}"
+    "{{ '<|' + message['role'] + '|>\n' + message['content'] + '\n' }}"
+    "{% endfor %}"
+    "{% if add_generation_prompt %}{{ '<|assistant|>\n' }}{% endif %}"
+)
 # GPT-2-style split: optional leading space + letters / digits / punctuation, or whitespace runs.
 SPLIT = r" ?[A-Za-z]+| ?[0-9]+| ?[^\sA-Za-z0-9]+|\s+(?!\S)|\s+"
 
@@ -62,15 +79,16 @@ def _vocab_and_merges():
     return vocab, merges
 
 
-def tiny_tokenizer(chat_template=True, pad=True):
+def tiny_tokenizer(chat_template=True, pad=True, add_bos=True):
     vocab, merges = _vocab_and_merges()
     backend = Tokenizer(models.BPE(vocab=vocab, merges=merges, unk_token="<unk>"))
     backend.pre_tokenizer = pre_tokenizers.Split(Regex(SPLIT), behavior="isolated")
     backend.decoder = decoders.Fuse()
     backend.add_special_tokens(SPECIALS)
-    backend.post_processor = processors.TemplateProcessing(
-        single="<s> $A", pair="<s> $A <s> $B", special_tokens=[("<s>", vocab["<s>"])]
-    )
+    if add_bos:
+        backend.post_processor = processors.TemplateProcessing(
+            single="<s> $A", pair="<s> $A <s> $B", special_tokens=[("<s>", vocab["<s>"])]
+        )
     tokenizer = PreTrainedTokenizerFast(
         tokenizer_object=backend,
         bos_token="<s>",
@@ -79,7 +97,9 @@ def tiny_tokenizer(chat_template=True, pad=True):
         pad_token="<pad>" if pad else None,
         additional_special_tokens=["<|system|>", "<|user|>", "<|assistant|>"],
     )
-    if chat_template:
+    if isinstance(chat_template, str):
+        tokenizer.chat_template = chat_template
+    elif chat_template:
         tokenizer.chat_template = CHAT_TEMPLATE
     return tokenizer
 
