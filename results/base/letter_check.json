@@ -1,0 +1,4573 @@
+{
+  "what_this_is": "plumbing check: probability on answer letters for neutral prompts (no claims, no cues); not a finding",
+  "checkpoint": "base",
+  "model_id": "meta-llama/Llama-3.1-8B",
+  "prompt_format": "plain",
+  "questions_requested": 200,
+  "questions_used": 200,
+  "datasets": {
+    "csqa": {
+      "split": "validation",
+      "requested": 67,
+      "kept": 67,
+      "duplicate_option_text": 3,
+      "rows": 70,
+      "skipped": 3
+    },
+    "arc_challenge": {
+      "split": "test",
+      "requested": 67,
+      "kept": 67,
+      "rows": 67,
+      "skipped": 0
+    },
+    "obqa": {
+      "split": "test",
+      "requested": 66,
+      "kept": 66,
+      "rows": 66,
+      "skipped": 0
+    }
+  },
+  "letter_spellings_counted": [
+    "{L}",
+    " {L}"
+  ],
+  "answer_rules": {
+    "answer_by_top_letter_token": "the letter of the single most likely letter token (the package's 'greedy_token' rule, its default)",
+    "answer_by_total_letter_probability": "the letter with the highest probability summed over its spellings (the package's 'letter_argmax' rule)"
+  },
+  "dtype_requested": "bfloat16",
+  "model_dtype": "bfloat16",
+  "model_fingerprint": {
+    "sha256": "c2e8ae8a561dc6b545d5b0f362dcd2d0e7e6f4b93f251e8f4d1b10639a3d487e",
+    "name_or_path": "meta-llama/Llama-3.1-8B",
+    "n_params": 8030261248,
+    "params_hashed": [
+      "model.embed_tokens.weight",
+      "model.layers.10.mlp.down_proj.weight",
+      "model.layers.21.mlp.gate_proj.weight",
+      "lm_head.weight"
+    ]
+  },
+  "batch_size": 16,
+  "git_commit": {
+    "commit": "5283add44c9a33940a8122735793c654b961284a",
+    "dirty": false
+  },
+  "library_versions": {
+    "torch": "2.11.0+cu128",
+    "transformers": "5.21.0",
+    "tokenizers": "0.23.3"
+  },
+  "created_utc": "2026-11-04T16:04:43+00:00",
+  "preflight_problems": [
+    "no pad token: scoring pads with eos (fine under left padding + mask, but check)"
+  ],
+  "preflight_report": {
+    "variants": [
+      "{L}",
+      " {L}"
+    ],
+    "checkpoint": "base",
+    "checkpoint_config": {
+      "name": "base",
+      "hf_id": "meta-llama/Llama-3.1-8B",
+      "gated": true,
+      "has_chat_template": false
+    },
+    "checkpoint_config_source": "lookup",
+    "problems": [
+      "no pad token: scoring pads with eos (fine under left padding + mask, but check)"
+    ],
+    "expected_letter_spelling": {
+      "plain": {
+        "pattern": " {L}",
+        "in_variants": true,
+        "letters": {
+          "A": {
+            "text": " A",
+            "ids": [
+              362
+            ],
+            "single_token": true
+          },
+          "B": {
+            "text": " B",
+            "ids": [
+              426
+            ],
+            "single_token": true
+          },
+          "C": {
+            "text": " C",
+            "ids": [
+              356
+            ],
+            "single_token": true
+          },
+          "D": {
+            "text": " D",
+            "ids": [
+              423
+            ],
+            "single_token": true
+          },
+          "E": {
+            "text": " E",
+            "ids": [
+              469
+            ],
+            "single_token": true
+          }
+        }
+      }
+    },
+    "letters": {
+      "A": {
+        "letter": "A",
+        "pattern": "{L}",
+        "ids": [
+          32
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": "A"
+      },
+      "B": {
+        "letter": "B",
+        "pattern": "{L}",
+        "ids": [
+          33
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": "B"
+      },
+      "C": {
+        "letter": "C",
+        "pattern": "{L}",
+        "ids": [
+          34
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": "C"
+      },
+      "D": {
+        "letter": "D",
+        "pattern": "{L}",
+        "ids": [
+          35
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": "D"
+      },
+      "E": {
+        "letter": "E",
+        "pattern": "{L}",
+        "ids": [
+          36
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": "E"
+      },
+      " A": {
+        "letter": "A",
+        "pattern": " {L}",
+        "ids": [
+          362
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": " A"
+      },
+      " B": {
+        "letter": "B",
+        "pattern": " {L}",
+        "ids": [
+          426
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": " B"
+      },
+      " C": {
+        "letter": "C",
+        "pattern": " {L}",
+        "ids": [
+          356
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": " C"
+      },
+      " D": {
+        "letter": "D",
+        "pattern": " {L}",
+        "ids": [
+          423
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": " D"
+      },
+      " E": {
+        "letter": "E",
+        "pattern": " {L}",
+        "ids": [
+          469
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": " E"
+      },
+      "(A": {
+        "letter": "A",
+        "pattern": "({L}",
+        "ids": [
+          4444
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": "(A"
+      },
+      "(B": {
+        "letter": "B",
+        "pattern": "({L}",
+        "ids": [
+          5462
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": "(B"
+      },
+      "(C": {
+        "letter": "C",
+        "pattern": "({L}",
+        "ids": [
+          3100
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": "(C"
+      },
+      "(D": {
+        "letter": "D",
+        "pattern": "({L}",
+        "ids": [
+          5549
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": "(D"
+      },
+      "(E": {
+        "letter": "E",
+        "pattern": "({L}",
+        "ids": [
+          10953
+        ],
+        "single_token": true,
+        "is_unk": false,
+        "token": "(E"
+      },
+      " (A": {
+        "letter": "A",
+        "pattern": " ({L}",
+        "ids": [
+          320,
+          32
+        ],
+        "single_token": false,
+        "is_unk": false,
+        "token": null
+      },
+      " (B": {
+        "letter": "B",
+        "pattern": " ({L}",
+        "ids": [
+          320,
+          33
+        ],
+        "single_token": false,
+        "is_unk": false,
+        "token": null
+      },
+      " (C": {
+        "letter": "C",
+        "pattern": " ({L}",
+        "ids": [
+          320,
+          34
+        ],
+        "single_token": false,
+        "is_unk": false,
+        "token": null
+      },
+      " (D": {
+        "letter": "D",
+        "pattern": " ({L}",
+        "ids": [
+          320,
+          35
+        ],
+        "single_token": false,
+        "is_unk": false,
+        "token": null
+      },
+      " (E": {
+        "letter": "E",
+        "pattern": " ({L}",
+        "ids": [
+          320,
+          36
+        ],
+        "single_token": false,
+        "is_unk": false,
+        "token": null
+      }
+    },
+    "collisions": [],
+    "letter_token_ids": {
+      "A": [
+        32,
+        362
+      ],
+      "B": [
+        33,
+        426
+      ],
+      "C": [
+        34,
+        356
+      ],
+      "D": [
+        35,
+        423
+      ],
+      "E": [
+        36,
+        469
+      ]
+    },
+    "tokenizer": {
+      "has_chat_template": false,
+      "bos_token": "<|begin_of_text|>",
+      "bos_token_id": 128000,
+      "eos_token": "<|end_of_text|>",
+      "eos_token_id": 128001,
+      "pad_token": null,
+      "pad_token_id": null,
+      "pad_falls_back_to_eos": true,
+      "padding_side": "right",
+      "len_tokenizer": 128256
+    },
+    "items_with_special_tokens": {},
+    "formats": {
+      "plain": {
+        "neutral": {
+          "starts_with_bos": false,
+          "contains_today_date": false,
+          "today_date_line": null,
+          "tail": "ur final answer using exactly one option letter.\n\nAssistant:",
+          "n_chars": 246,
+          "encode_ok": true,
+          "n_tokens": 59,
+          "n_bos": 1,
+          "bos_added_by_scorer": true,
+          "last_tokens": [
+            " option",
+            " letter",
+            ".\n\n",
+            "Assistant",
+            ":"
+          ]
+        },
+        "multi": {
+          "starts_with_bos": false,
+          "contains_today_date": false,
+          "today_date_line": null,
+          "tail": "ur final answer using exactly one option letter.\n\nAssistant:",
+          "n_chars": 367,
+          "encode_ok": true,
+          "n_tokens": 85,
+          "n_bos": 1,
+          "bos_added_by_scorer": true,
+          "last_tokens": [
+            " option",
+            " letter",
+            ".\n\n",
+            "Assistant",
+            ":"
+          ]
+        }
+      }
+    }
+  },
+  "output_path": "/home/ubuntu/latent-knowledge-readout/results/base/letter_check.json",
+  "summary": {
+    "number_of_questions": 200,
+    "letter_mass": {
+      "mean": 0.020603471385772006,
+      "median": 0.013159164828918636,
+      "10th_percentile": 0.008131061557532493,
+      "90th_percentile": 0.04489929251856962,
+      "minimum": 0.004846321017811579,
+      "share_at_least_0.5": 0.0,
+      "share_at_least_0.9": 0.0
+    },
+    "share_top_token_is_answer_letter": 0.01,
+    "share_top_token_is_any_spelling_of_A_to_E": 0.01,
+    "share_where_two_answer_rules_disagree": 0.0,
+    "number_top_token_not_answer_letter": 198,
+    "most_common_non_letter_top_tokens": [
+      {
+        "token_id": 5321,
+        "token": " Please",
+        "count": 123
+      },
+      {
+        "token_id": 3639,
+        "token": " What",
+        "count": 51
+      },
+      {
+        "token_id": 220,
+        "token": " ",
+        "count": 8
+      },
+      {
+        "token_id": 578,
+        "token": " The",
+        "count": 7
+      },
+      {
+        "token_id": 16299,
+        "token": " Which",
+        "count": 3
+      },
+      {
+        "token_id": 2209,
+        "token": " Is",
+        "count": 2
+      },
+      {
+        "token_id": 1226,
+        "token": " We",
+        "count": 1
+      },
+      {
+        "token_id": 10771,
+        "token": " According",
+        "count": 1
+      },
+      {
+        "token_id": 21335,
+        "token": " Give",
+        "count": 1
+      },
+      {
+        "token_id": 36539,
+        "token": " Okay",
+        "count": 1
+      }
+    ]
+  },
+  "per_dataset": {
+    "csqa": {
+      "number_of_questions": 67,
+      "letter_mass": {
+        "mean": 0.012370988792220625,
+        "median": 0.010188643579933297,
+        "10th_percentile": 0.007306665783079436,
+        "90th_percentile": 0.016715347071939793,
+        "minimum": 0.006335920482558499,
+        "share_at_least_0.5": 0.0,
+        "share_at_least_0.9": 0.0
+      },
+      "share_top_token_is_answer_letter": 0.0,
+      "share_top_token_is_any_spelling_of_A_to_E": 0.0,
+      "share_where_two_answer_rules_disagree": 0.0,
+      "number_top_token_not_answer_letter": 67,
+      "most_common_non_letter_top_tokens": [
+        {
+          "token_id": 5321,
+          "token": " Please",
+          "count": 31
+        },
+        {
+          "token_id": 3639,
+          "token": " What",
+          "count": 28
+        },
+        {
+          "token_id": 220,
+          "token": " ",
+          "count": 5
+        },
+        {
+          "token_id": 578,
+          "token": " The",
+          "count": 1
+        },
+        {
+          "token_id": 2209,
+          "token": " Is",
+          "count": 1
+        },
+        {
+          "token_id": 36539,
+          "token": " Okay",
+          "count": 1
+        }
+      ]
+    },
+    "arc_challenge": {
+      "number_of_questions": 67,
+      "letter_mass": {
+        "mean": 0.027616748475597596,
+        "median": 0.01986052387344971,
+        "10th_percentile": 0.009782542824507478,
+        "90th_percentile": 0.05759232453977062,
+        "minimum": 0.006121228554244248,
+        "share_at_least_0.5": 0.0,
+        "share_at_least_0.9": 0.0
+      },
+      "share_top_token_is_answer_letter": 0.029850746268656716,
+      "share_top_token_is_any_spelling_of_A_to_E": 0.029850746268656716,
+      "share_where_two_answer_rules_disagree": 0.0,
+      "number_top_token_not_answer_letter": 65,
+      "most_common_non_letter_top_tokens": [
+        {
+          "token_id": 5321,
+          "token": " Please",
+          "count": 51
+        },
+        {
+          "token_id": 578,
+          "token": " The",
+          "count": 4
+        },
+        {
+          "token_id": 3639,
+          "token": " What",
+          "count": 4
+        },
+        {
+          "token_id": 220,
+          "token": " ",
+          "count": 3
+        },
+        {
+          "token_id": 16299,
+          "token": " Which",
+          "count": 2
+        },
+        {
+          "token_id": 10771,
+          "token": " According",
+          "count": 1
+        }
+      ]
+    },
+    "obqa": {
+      "number_of_questions": 66,
+      "letter_mass": {
+        "mean": 0.021841149700160323,
+        "median": 0.014134134754700779,
+        "10th_percentile": 0.009476893470433465,
+        "90th_percentile": 0.04672049589581105,
+        "minimum": 0.004846321017811579,
+        "share_at_least_0.5": 0.0,
+        "share_at_least_0.9": 0.0
+      },
+      "share_top_token_is_answer_letter": 0.0,
+      "share_top_token_is_any_spelling_of_A_to_E": 0.0,
+      "share_where_two_answer_rules_disagree": 0.0,
+      "number_top_token_not_answer_letter": 66,
+      "most_common_non_letter_top_tokens": [
+        {
+          "token_id": 5321,
+          "token": " Please",
+          "count": 41
+        },
+        {
+          "token_id": 3639,
+          "token": " What",
+          "count": 19
+        },
+        {
+          "token_id": 578,
+          "token": " The",
+          "count": 2
+        },
+        {
+          "token_id": 1226,
+          "token": " We",
+          "count": 1
+        },
+        {
+          "token_id": 2209,
+          "token": " Is",
+          "count": 1
+        },
+        {
+          "token_id": 16299,
+          "token": " Which",
+          "count": 1
+        },
+        {
+          "token_id": 21335,
+          "token": " Give",
+          "count": 1
+        }
+      ]
+    }
+  },
+  "package_neutral_diagnostics": {
+    "n": 200,
+    "top_tokens": [
+      {
+        "token_id": 5321,
+        "token": " Please",
+        "count": 123
+      },
+      {
+        "token_id": 3639,
+        "token": " What",
+        "count": 51
+      },
+      {
+        "token_id": 220,
+        "token": " ",
+        "count": 8
+      },
+      {
+        "token_id": 578,
+        "token": " The",
+        "count": 7
+      },
+      {
+        "token_id": 16299,
+        "token": " Which",
+        "count": 3
+      },
+      {
+        "token_id": 362,
+        "token": " A",
+        "count": 2
+      },
+      {
+        "token_id": 2209,
+        "token": " Is",
+        "count": 2
+      },
+      {
+        "token_id": 1226,
+        "token": " We",
+        "count": 1
+      },
+      {
+        "token_id": 10771,
+        "token": " According",
+        "count": 1
+      },
+      {
+        "token_id": 21335,
+        "token": " Give",
+        "count": 1
+      },
+      {
+        "token_id": 36539,
+        "token": " Okay",
+        "count": 1
+      }
+    ],
+    "n_distinct_top_tokens": 11,
+    "letter_mass_mean": 0.020603471385772006,
+    "letter_mass_min": 0.004846321017811579,
+    "min_mass": 0.5,
+    "frac_letter_mass_below_min": 1.0,
+    "frac_top_token_is_letter": 0.01
+  },
+  "sample_prompt": {
+    "question_id": "csqa:validation:1afa02df02c908a558b4036e80242fac",
+    "text": "User: A revolving door is convenient for two direction travel, but it also serves as a security measure at a what?\n(A) bank\n(B) library\n(C) department store\n(D) mall\n(E) new york\nGive your final answer using exactly one option letter.\n\nAssistant:"
+  },
+  "questions": [
+    {
+      "question_id": "csqa:validation:1afa02df02c908a558b4036e80242fac",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.05859175933533005,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9536180334119895,
+        "B": 0.01693097787035385,
+        "C": 0.013185089453832448,
+        "D": 0.007753349573175518,
+        "E": 0.008512549690648677
+      },
+      "prompt_length_in_tokens": 59
+    },
+    {
+      "question_id": "csqa:validation:a7ab086045575bb497933726e4e6ad28",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.00915803011298066,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8733789761049678,
+        "B": 0.034950756931876596,
+        "C": 0.04214884254573596,
+        "D": 0.020554354245579068,
+        "E": 0.028967070171840466
+      },
+      "prompt_length_in_tokens": 53
+    },
+    {
+      "question_id": "csqa:validation:b8c0a4703079cf661d7261a60a1bcbff",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.01018554248355486,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8696727252116195,
+        "B": 0.03270039121127328,
+        "C": 0.04330371362383901,
+        "D": 0.025478092174890637,
+        "E": 0.028845077778377252
+      },
+      "prompt_length_in_tokens": 49
+    },
+    {
+      "question_id": "csqa:validation:e68fb2448fd74e402aae9982aa76e527",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.009053745863905427,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8398758952261459,
+        "B": 0.05722529639336905,
+        "C": 0.05370921920709003,
+        "D": 0.020445289141283653,
+        "E": 0.028744300032111154
+      },
+      "prompt_length_in_tokens": 52
+    },
+    {
+      "question_id": "csqa:validation:2435de612dd69f2012b9e40d6af4ce38",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.010743460521385476,
+      "top_token_id": 220,
+      "top_token": " ",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8571799251047327,
+        "B": 0.02934907488897474,
+        "C": 0.0401031148346749,
+        "D": 0.04012792452706145,
+        "E": 0.03323996064455656
+      },
+      "prompt_length_in_tokens": 56
+    },
+    {
+      "question_id": "csqa:validation:a4892551cb4beb279653ae52d0de4c89",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.01117158271136032,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9444758046240775,
+        "B": 0.01575855928542947,
+        "C": 0.018417421013459053,
+        "D": 0.007447973229780146,
+        "E": 0.013900241847253967
+      },
+      "prompt_length_in_tokens": 49
+    },
+    {
+      "question_id": "csqa:validation:118a9093a30695622363455e4d911866",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.010467947708674014,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8778475018056044,
+        "B": 0.02200006869716437,
+        "C": 0.06360452415343004,
+        "D": 0.017151046385669465,
+        "E": 0.019396858958131636
+      },
+      "prompt_length_in_tokens": 57
+    },
+    {
+      "question_id": "csqa:validation:05ea49b82e8ec519e82d6633936ab8bf",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.010071565976639626,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8545225135833927,
+        "B": 0.03528660296064864,
+        "C": 0.058157465257000565,
+        "D": 0.022791009010665435,
+        "E": 0.02924240918829228
+      },
+      "prompt_length_in_tokens": 51
+    },
+    {
+      "question_id": "csqa:validation:c0c07ce781653b2a2c01871ba2bcba93",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.012614933023665205,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9103394306463153,
+        "B": 0.025033815341384574,
+        "C": 0.026646360538093848,
+        "D": 0.015190102290761289,
+        "E": 0.022790291183444805
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "csqa:validation:1d24f406b6828492040b405d3f35119c",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.008333537208757343,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8971191228831035,
+        "B": 0.03373038477025436,
+        "C": 0.03703408296275508,
+        "D": 0.011666377494210022,
+        "E": 0.020450031889676812
+      },
+      "prompt_length_in_tokens": 46
+    },
+    {
+      "question_id": "csqa:validation:57f92025d860e32c4e780c0d51c1c20c",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.006335920482558499,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8894628568908703,
+        "B": 0.023718867815273798,
+        "C": 0.044290137677762374,
+        "D": 0.020942569655371973,
+        "E": 0.021585567960721613
+      },
+      "prompt_length_in_tokens": 47
+    },
+    {
+      "question_id": "csqa:validation:81eb4b2ee66edd8bc91ee944697c4e9f",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.007228492298107074,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8626335676681016,
+        "B": 0.02301263532545771,
+        "C": 0.048674910860235454,
+        "D": 0.02777015329636214,
+        "E": 0.03790873284984311
+      },
+      "prompt_length_in_tokens": 57
+    },
+    {
+      "question_id": "csqa:validation:d807e7ae60976324920c8d29eb42dad6",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.01054608229685805,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8516078240694128,
+        "B": 0.051175725854609735,
+        "C": 0.04805414734686586,
+        "D": 0.01715363838555509,
+        "E": 0.03200866434355627
+      },
+      "prompt_length_in_tokens": 49
+    },
+    {
+      "question_id": "csqa:validation:7ea9f721ffc662918bb0c0937a487f04",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.009810654616059877,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9044670647987728,
+        "B": 0.02566434975180761,
+        "C": 0.033992770931357455,
+        "D": 0.012513783183688561,
+        "E": 0.023362031334373555
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "csqa:validation:fc1d33a2301a30214523c12573f81aba",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.011757764399431787,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.7281311746090596,
+        "B": 0.06366744599089812,
+        "C": 0.0677526109156706,
+        "D": 0.07681580942129533,
+        "E": 0.06363295906307628
+      },
+      "prompt_length_in_tokens": 47
+    },
+    {
+      "question_id": "csqa:validation:3b8e1d236f5169b6c833a994d6d9c39a",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.007873327861035333,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8918120594814917,
+        "B": 0.028691020303382015,
+        "C": 0.03681375063618107,
+        "D": 0.02035459980628086,
+        "E": 0.02232856977266463
+      },
+      "prompt_length_in_tokens": 49
+    },
+    {
+      "question_id": "csqa:validation:c5c4166f2ed3c2b3517b79e6848e9ae2",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.007589897715240205,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8743951568166622,
+        "B": 0.033919867112872426,
+        "C": 0.03964126148288956,
+        "D": 0.017061683729668185,
+        "E": 0.03498203085790724
+      },
+      "prompt_length_in_tokens": 52
+    },
+    {
+      "question_id": "csqa:validation:6dc5b2884737e66543ce65f8dc40c992",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.044552732500927346,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9244685237268342,
+        "B": 0.021747530721225993,
+        "C": 0.026227511800272763,
+        "D": 0.015918541803486987,
+        "E": 0.011637891948180032
+      },
+      "prompt_length_in_tokens": 53
+    },
+    {
+      "question_id": "csqa:validation:8af63d58cc35061dec38e5448c325988",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.01495475288142823,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8067798408559861,
+        "B": 0.04848052835182471,
+        "C": 0.04846560397957626,
+        "D": 0.05853405486069627,
+        "E": 0.03773997195191636
+      },
+      "prompt_length_in_tokens": 51
+    },
+    {
+      "question_id": "csqa:validation:768fb09deab56046e1565b6a2556ad5c",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.014204783082778002,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9431008067966848,
+        "B": 0.02019879169043865,
+        "C": 0.018388848675044964,
+        "D": 0.005272480502193447,
+        "E": 0.01303907233563792
+      },
+      "prompt_length_in_tokens": 45
+    },
+    {
+      "question_id": "csqa:validation:cd639cf3ff82f825ace7dd2b087562bd",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.007160233311819597,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8785209429550842,
+        "B": 0.03515545304622105,
+        "C": 0.04656173939403517,
+        "D": 0.015605775622901108,
+        "E": 0.024156088981758632
+      },
+      "prompt_length_in_tokens": 45
+    },
+    {
+      "question_id": "csqa:validation:8d79cc5e4eea11f50fab18fdea20fd4f",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.010519741009588864,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8867426918817854,
+        "B": 0.02598325576700838,
+        "C": 0.03438810578252763,
+        "D": 0.036642263754768895,
+        "E": 0.016243682813910133
+      },
+      "prompt_length_in_tokens": 54
+    },
+    {
+      "question_id": "csqa:validation:b8b287b6277fccd4b7c9c72577177328",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.01132742128942531,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.895326214115896,
+        "B": 0.03365695120680359,
+        "C": 0.035819623049778614,
+        "D": 0.012782250266398319,
+        "E": 0.02241496136112359
+      },
+      "prompt_length_in_tokens": 48
+    },
+    {
+      "question_id": "csqa:validation:b0f7d7978ac41c465108a92660d70e84",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.009485105770930377,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8854770039115332,
+        "B": 0.026747710913631796,
+        "C": 0.03655095490411566,
+        "D": 0.01897066052678896,
+        "E": 0.03225366974393051
+      },
+      "prompt_length_in_tokens": 55
+    },
+    {
+      "question_id": "csqa:validation:54075de8b8b89ecef2e4eb4eaee2713d",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.011631757685599172,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.79746212504093,
+        "B": 0.05778506901628581,
+        "C": 0.0789619974470468,
+        "D": 0.03850213105209025,
+        "E": 0.027288677443647096
+      },
+      "prompt_length_in_tokens": 59
+    },
+    {
+      "question_id": "csqa:validation:65435b996ce9d1685bebb74b49c1ba7f",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.014107059153922106,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8016486133894242,
+        "B": 0.06582635459145456,
+        "C": 0.051257403972370316,
+        "D": 0.048177734158520016,
+        "E": 0.03308989388823054
+      },
+      "prompt_length_in_tokens": 52
+    },
+    {
+      "question_id": "csqa:validation:9889e5389917d812c09d6e5d382d333d",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.010582286599651039,
+      "top_token_id": 578,
+      "top_token": " The",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8666263414742871,
+        "B": 0.043168179841438316,
+        "C": 0.03157712623965906,
+        "D": 0.021721773209645877,
+        "E": 0.036906579234969455
+      },
+      "prompt_length_in_tokens": 51
+    },
+    {
+      "question_id": "csqa:validation:a651ffa44ac5febf0aede6748899b981",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.01973801366369131,
+      "top_token_id": 2209,
+      "top_token": " Is",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.7818162588774482,
+        "B": 0.05664866113140769,
+        "C": 0.0532106793959472,
+        "D": 0.064213851890839,
+        "E": 0.04411054870435776
+      },
+      "prompt_length_in_tokens": 46
+    },
+    {
+      "question_id": "csqa:validation:bdcfbe2132295d437e4c5701085f19c0",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.009918977329949133,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8147092702230087,
+        "B": 0.050494251130690275,
+        "C": 0.06282904117896883,
+        "D": 0.04320238851864235,
+        "E": 0.028765048948689764
+      },
+      "prompt_length_in_tokens": 59
+    },
+    {
+      "question_id": "csqa:validation:8d3dc21a53523850ec80771daaa5ff20",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.012427190962650238,
+      "top_token_id": 220,
+      "top_token": " ",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8240409520618635,
+        "B": 0.0385605813178165,
+        "C": 0.04507006144720693,
+        "D": 0.05611774602367903,
+        "E": 0.036210659149433874
+      },
+      "prompt_length_in_tokens": 62
+    },
+    {
+      "question_id": "csqa:validation:a80ee7775e934c423012fe98e20ba28b",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.014377328152408775,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.7281897476802086,
+        "B": 0.059821385384753394,
+        "C": 0.07212952549861988,
+        "D": 0.08710333391202232,
+        "E": 0.05275600752439558
+      },
+      "prompt_length_in_tokens": 62
+    },
+    {
+      "question_id": "csqa:validation:48a315cfa3ce11f7a9d615bc854331d5",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.008794435348267167,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8669382547887852,
+        "B": 0.038102660006276934,
+        "C": 0.04891255551500696,
+        "D": 0.014467807958125476,
+        "E": 0.03157872173180578
+      },
+      "prompt_length_in_tokens": 54
+    },
+    {
+      "question_id": "csqa:validation:4acd496cc78d96c2431279a5fd87de7c",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.017444760415997206,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.817886177628325,
+        "B": 0.039475476383962725,
+        "C": 0.061135569104713246,
+        "D": 0.04203373895195251,
+        "E": 0.03946903793104681
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "csqa:validation:91e0f4ab62c9d2fd440d73a3f5308d96",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.006723160319724726,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8333298827313602,
+        "B": 0.0500609580731245,
+        "C": 0.07281874236063993,
+        "D": 0.02087790138630503,
+        "E": 0.022912515448570217
+      },
+      "prompt_length_in_tokens": 63
+    },
+    {
+      "question_id": "csqa:validation:b61e849e44db16a581f0b65e28ab95dc",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.014853380538474167,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8763675083604409,
+        "B": 0.032945397538673635,
+        "C": 0.038507766390461065,
+        "D": 0.024874225822788847,
+        "E": 0.027305101887635495
+      },
+      "prompt_length_in_tokens": 46
+    },
+    {
+      "question_id": "csqa:validation:ba6bd1bdef02d0ebfe5370f92365ae18",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.008750768417662036,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.7869625172182627,
+        "B": 0.0503513277650268,
+        "C": 0.06877931355514279,
+        "D": 0.05709374366461051,
+        "E": 0.03681309779695698
+      },
+      "prompt_length_in_tokens": 49
+    },
+    {
+      "question_id": "csqa:validation:dc55d473c22b04877b11d584f9548194",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.027405494964531204,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9529145282409449,
+        "B": 0.014472814244087416,
+        "C": 0.01977798922853425,
+        "D": 0.007511429653885961,
+        "E": 0.00532323863254726
+      },
+      "prompt_length_in_tokens": 55
+    },
+    {
+      "question_id": "csqa:validation:113aaea2b1a27a976547f54e531d99bb",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.007261004447206031,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8626273361882622,
+        "B": 0.04165818495719732,
+        "C": 0.05181024600659153,
+        "D": 0.02230589599338219,
+        "E": 0.021598336854566948
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "csqa:validation:ba640b9634ad6b4ad98b17b4f152e562",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.009135176306511155,
+      "top_token_id": 220,
+      "top_token": " ",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8437196126033355,
+        "B": 0.057464477630930946,
+        "C": 0.03483771079885198,
+        "D": 0.0359929689644055,
+        "E": 0.02798523000247613
+      },
+      "prompt_length_in_tokens": 60
+    },
+    {
+      "question_id": "csqa:validation:750ebdf36a0b3b407be0fe2163e3700b",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.01475125516297645,
+      "top_token_id": 220,
+      "top_token": " ",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8011410298047675,
+        "B": 0.04247631299009637,
+        "C": 0.06577429418240345,
+        "D": 0.048145972562253635,
+        "E": 0.0424623904604786
+      },
+      "prompt_length_in_tokens": 67
+    },
+    {
+      "question_id": "csqa:validation:8f01273422a370a8dbda6bf473a395a0",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.012002530897637977,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.7369814236087718,
+        "B": 0.048628652092640015,
+        "C": 0.0880414550093677,
+        "D": 0.07773399574260162,
+        "E": 0.04861447354661919
+      },
+      "prompt_length_in_tokens": 49
+    },
+    {
+      "question_id": "csqa:validation:e6586bba9fe96d38792e6e6d4f2703dc",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.008333790931014225,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8554646951132159,
+        "B": 0.03318012131702309,
+        "C": 0.058218529767792515,
+        "D": 0.018912813355737596,
+        "E": 0.034223840446231016
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "csqa:validation:6e433471d0e2590b8c73ceef275022b1",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.011737411020033853,
+      "top_token_id": 220,
+      "top_token": " ",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.7306328608908838,
+        "B": 0.04973636673995329,
+        "C": 0.08727841823195853,
+        "D": 0.0723738164161498,
+        "E": 0.059978537721054735
+      },
+      "prompt_length_in_tokens": 68
+    },
+    {
+      "question_id": "csqa:validation:1bc986f8aea88d6927d8a45367855a94",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.010461853197704716,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.7667006761765341,
+        "B": 0.06298111931738234,
+        "C": 0.08082967966068166,
+        "D": 0.04756297497978482,
+        "E": 0.04192554986561664
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "csqa:validation:91f512273a2da7ae796919069b20d6cf",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.008915556191938942,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.7377848347614001,
+        "B": 0.05350438690812134,
+        "C": 0.06058859112534325,
+        "D": 0.10649453133779567,
+        "E": 0.041627655867340047
+      },
+      "prompt_length_in_tokens": 67
+    },
+    {
+      "question_id": "csqa:validation:49cda7eedbf63b3f38e59ba72f1ee1f9",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.009161333674535524,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8665692938778977,
+        "B": 0.03692435132160958,
+        "C": 0.043149192616475145,
+        "D": 0.028771244511856146,
+        "E": 0.024585917672161863
+      },
+      "prompt_length_in_tokens": 56
+    },
+    {
+      "question_id": "csqa:validation:a588407ecaecf0f30c2241c30b470fe2",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.012791166163614778,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8437209116368245,
+        "B": 0.03825795492056587,
+        "C": 0.052282535189580565,
+        "D": 0.02980739188392671,
+        "E": 0.03593120636910247
+      },
+      "prompt_length_in_tokens": 52
+    },
+    {
+      "question_id": "csqa:validation:011096bcfff30fd38046cf9db3a411c5",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.009815364736284393,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8962077533998866,
+        "B": 0.03369485417641358,
+        "C": 0.036995117313158125,
+        "D": 0.012024454753284787,
+        "E": 0.02107782035725691
+      },
+      "prompt_length_in_tokens": 51
+    },
+    {
+      "question_id": "csqa:validation:435a728f45d32faa4b3c4553c966fd6b",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.011311737972997669,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8452880888682961,
+        "B": 0.036021598859327486,
+        "C": 0.05404567594681644,
+        "D": 0.03385044597091535,
+        "E": 0.030794190354644924
+      },
+      "prompt_length_in_tokens": 59
+    },
+    {
+      "question_id": "csqa:validation:e953dee48c70159ad879143a319ec607",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.008159698634921065,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.857010331293298,
+        "B": 0.03885632340700131,
+        "C": 0.04835108122546778,
+        "D": 0.023574509414245198,
+        "E": 0.03220775465998781
+      },
+      "prompt_length_in_tokens": 49
+    },
+    {
+      "question_id": "csqa:validation:9c784727afd7176b54764055df7a7927",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.031716657163958016,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9280509442454433,
+        "B": 0.023244195796821892,
+        "C": 0.028031941343850095,
+        "D": 0.010986547793357384,
+        "E": 0.00968637082052705
+      },
+      "prompt_length_in_tokens": 57
+    },
+    {
+      "question_id": "csqa:validation:b47d912136e3304cb5e5890b6b879551",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.016231960300316425,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8744184117136685,
+        "B": 0.03186018429866505,
+        "C": 0.03724056368989247,
+        "D": 0.025609324967550095,
+        "E": 0.030871515330224298
+      },
+      "prompt_length_in_tokens": 60
+    },
+    {
+      "question_id": "csqa:validation:49b4c9e1bd7946a819e173ce8fa4c7c9",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.009134668804437564,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8818849788572789,
+        "B": 0.02502901395165587,
+        "C": 0.04673925868160969,
+        "D": 0.0220982960736803,
+        "E": 0.024248452435775513
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "csqa:validation:950af0b765c298960ce3dada66df8db1",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.007319997580850721,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9011336691732945,
+        "B": 0.027228592052933563,
+        "C": 0.04215053992939024,
+        "D": 0.018142481678995594,
+        "E": 0.01134471716538627
+      },
+      "prompt_length_in_tokens": 49
+    },
+    {
+      "question_id": "csqa:validation:63cf1adb5fe302b9867ead8bc8103d0b",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.007818720380976415,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8656198668627231,
+        "B": 0.03358755575602897,
+        "C": 0.03573646253838696,
+        "D": 0.03808277766319608,
+        "E": 0.02697333717966461
+      },
+      "prompt_length_in_tokens": 54
+    },
+    {
+      "question_id": "csqa:validation:ede4d302fc2ffe07703158f83c1493f2",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.007385221451531917,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8124894727605741,
+        "B": 0.055358380995772186,
+        "C": 0.07100039091812327,
+        "D": 0.029645316746743637,
+        "E": 0.03150643857878694
+      },
+      "prompt_length_in_tokens": 53
+    },
+    {
+      "question_id": "csqa:validation:74ad13a03634e79c85382f1b90969b74",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.007379031677232868,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8921294999336637,
+        "B": 0.026954500846725238,
+        "C": 0.04305533398833658,
+        "D": 0.01687802003653776,
+        "E": 0.020982645194736135
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "csqa:validation:49e466b1782aa4837dae53ff891fcdee",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.007176541029228472,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8509917949353287,
+        "B": 0.04512690991735407,
+        "C": 0.061653743223087795,
+        "D": 0.018825794698069286,
+        "E": 0.023401757226160363
+      },
+      "prompt_length_in_tokens": 56
+    },
+    {
+      "question_id": "csqa:validation:a8a8ae7792901c7179ff5538c701af1f",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.009221663345187961,
+      "top_token_id": 36539,
+      "top_token": " Okay",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9062562124982355,
+        "B": 0.03742354546173542,
+        "C": 0.025712007764094522,
+        "D": 0.01293786531347191,
+        "E": 0.017670368962462917
+      },
+      "prompt_length_in_tokens": 47
+    },
+    {
+      "question_id": "csqa:validation:2ffa3808ce26181926990b454e429c85",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.015624791431126116,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8868718443136059,
+        "B": 0.025968430518125345,
+        "C": 0.041486103245875726,
+        "D": 0.01625931550948356,
+        "E": 0.029414306412909173
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "csqa:validation:4319eaa36d256a92b72445c0392f9c94",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.010188643579933297,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8367626719488382,
+        "B": 0.04167654554571495,
+        "C": 0.0645299228010753,
+        "D": 0.01909803996306378,
+        "E": 0.03793281974130805
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "csqa:validation:ec79ef747bb89281923edb89ba26786d",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.01114196422624584,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9135383872437275,
+        "B": 0.022178221510465494,
+        "C": 0.035423813891097305,
+        "D": 0.010482131032743588,
+        "E": 0.018377446321966247
+      },
+      "prompt_length_in_tokens": 51
+    },
+    {
+      "question_id": "csqa:validation:2d33cde5e3987adc8fa2bca0af4dd3dd",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.007818578456352747,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8633406531874832,
+        "B": 0.03795178027242981,
+        "C": 0.0429856080908769,
+        "D": 0.01534196695447704,
+        "E": 0.04037999149473315
+      },
+      "prompt_length_in_tokens": 55
+    },
+    {
+      "question_id": "csqa:validation:cc46d936bf69d69a3863b0cb85d75c17",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.012425038702318385,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.7138828874426714,
+        "B": 0.07074799107622778,
+        "C": 0.08011893925555427,
+        "D": 0.08019328208892061,
+        "E": 0.05505690013662636
+      },
+      "prompt_length_in_tokens": 52
+    },
+    {
+      "question_id": "csqa:validation:46bc1a50eeead10509a43a048e01194e",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.00921416828094099,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8828609112555447,
+        "B": 0.03424390818468044,
+        "C": 0.04535324433997387,
+        "D": 0.014737582856160177,
+        "E": 0.0228043533636414
+      },
+      "prompt_length_in_tokens": 49
+    },
+    {
+      "question_id": "csqa:validation:4336a8c55b7cb17275d1c60206cd2f18",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.017440427229374854,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9232142772038829,
+        "B": 0.024608030337855104,
+        "C": 0.025385715445630317,
+        "D": 0.009345501321035109,
+        "E": 0.017446475691596387
+      },
+      "prompt_length_in_tokens": 51
+    },
+    {
+      "question_id": "csqa:validation:a287575d3ba4b9f958536fc14a1f5b5a",
+      "dataset": "csqa",
+      "number_of_options": 5,
+      "letter_mass": 0.007286668086422509,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8224587606254087,
+        "B": 0.039713557303444814,
+        "C": 0.059587759560582265,
+        "D": 0.025657216416723624,
+        "E": 0.05258270609384091
+      },
+      "prompt_length_in_tokens": 47
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7175875",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.02765684960722127,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9471461739951585,
+        "B": 0.013512056682140216,
+        "C": 0.020282153556279055,
+        "D": 0.01905961576642223
+      },
+      "prompt_length_in_tokens": 77
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_SC_409171",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.07275569637209804,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9781572482693257,
+        "B": 0.007016428283795036,
+        "C": 0.009008796830037632,
+        "D": 0.005817526616841308
+      },
+      "prompt_length_in_tokens": 92
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_SC_408547",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.020128442400585422,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.938855884382398,
+        "B": 0.023507138843668764,
+        "C": 0.025814363548637222,
+        "D": 0.011822613225296178
+      },
+      "prompt_length_in_tokens": 84
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_407327",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.07085618751301233,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.980020679079738,
+        "B": 0.007029385420785324,
+        "C": 0.007965219318428557,
+        "D": 0.004984716181048179
+      },
+      "prompt_length_in_tokens": 101
+    },
+    {
+      "question_id": "arc_challenge:test:MCAS_2006_9_44",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.014876633413075878,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9488405768982404,
+        "B": 0.01850220326281749,
+        "C": 0.016326154909517866,
+        "D": 0.016331064929424717
+      },
+      "prompt_length_in_tokens": 121
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7270393",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.053522830387457296,
+      "top_token_id": 220,
+      "top_token": " ",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8957537617477602,
+        "B": 0.02106909185121689,
+        "C": 0.03263099362328046,
+        "D": 0.050546152777742465
+      },
+      "prompt_length_in_tokens": 124
+    },
+    {
+      "question_id": "arc_challenge:test:MCAS_2014_5_7",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.07358243169803577,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9605876061779377,
+        "B": 0.012873065877169847,
+        "C": 0.015526965716993864,
+        "D": 0.011012362227898241
+      },
+      "prompt_length_in_tokens": 121
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7086660",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.025903568458743295,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9285440284923716,
+        "B": 0.02325413676385921,
+        "C": 0.021840948454366692,
+        "D": 0.026360886289402575
+      },
+      "prompt_length_in_tokens": 86
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7168805",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.020269105146047618,
+      "top_token_id": 16299,
+      "top_token": " Which",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8216459197873768,
+        "B": 0.04935588513632126,
+        "C": 0.0525320318374927,
+        "D": 0.07646616323880923
+      },
+      "prompt_length_in_tokens": 110
+    },
+    {
+      "question_id": "arc_challenge:test:MCAS_2003_8_11",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.026475729967848978,
+      "top_token_id": 578,
+      "top_token": " The",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8262723007119338,
+        "B": 0.049630349334520985,
+        "C": 0.06784343666898274,
+        "D": 0.05625391328456275
+      },
+      "prompt_length_in_tokens": 61
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7250058",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.0239680379342882,
+      "top_token_id": 10771,
+      "top_token": " According",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8965519186315081,
+        "B": 0.02882851239619033,
+        "C": 0.02707719508069093,
+        "D": 0.047542373891610555
+      },
+      "prompt_length_in_tokens": 73
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7012740",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.00998003932083996,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9100706018546485,
+        "B": 0.029258458449087445,
+        "C": 0.03640833775834359,
+        "D": 0.02426260193792043
+      },
+      "prompt_length_in_tokens": 67
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_LBS10610",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.014793437830181692,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9565134428978035,
+        "B": 0.019854195452460397,
+        "C": 0.01698050477973581,
+        "D": 0.0066518568700006655
+      },
+      "prompt_length_in_tokens": 77
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_SC_407400",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.17406885170301914,
+      "top_token_id": 362,
+      "top_token": " A",
+      "top_token_is_answer_letter": true,
+      "top_token_is_any_spelling_of_A_to_E": true,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9857239326885744,
+        "B": 0.003555153503990137,
+        "C": 0.005861362524150385,
+        "D": 0.004859551283284892
+      },
+      "prompt_length_in_tokens": 73
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7212993",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.01218026965580344,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8967672414988656,
+        "B": 0.0394057110284868,
+        "C": 0.04065341246516191,
+        "D": 0.023173635007485947
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_SC_413240",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.00841777604973809,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9022028967587143,
+        "B": 0.05090199744010835,
+        "C": 0.030872522821525805,
+        "D": 0.016022582979651128
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7186358",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.06777487203534766,
+      "top_token_id": 220,
+      "top_token": " ",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9082976239049863,
+        "B": 0.0146828695727107,
+        "C": 0.025768584847017093,
+        "D": 0.051250921675285784
+      },
+      "prompt_length_in_tokens": 104
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7166425",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.03967986463131518,
+      "top_token_id": 362,
+      "top_token": " A",
+      "top_token_is_answer_letter": true,
+      "top_token_is_any_spelling_of_A_to_E": true,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9130032014599222,
+        "B": 0.018371067239315524,
+        "C": 0.025902705405830093,
+        "D": 0.04272302589493223
+      },
+      "prompt_length_in_tokens": 94
+    },
+    {
+      "question_id": "arc_challenge:test:MDSA_2007_8_3",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.02376921467567144,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9189559441510937,
+        "B": 0.029544695363503553,
+        "C": 0.02775261528088849,
+        "D": 0.023746745204514343
+      },
+      "prompt_length_in_tokens": 110
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7094290",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.02078249385874222,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.755968825073617,
+        "B": 0.10237566154765773,
+        "C": 0.04541211741688006,
+        "D": 0.09624339596184521
+      },
+      "prompt_length_in_tokens": 81
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7186568",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.034530987575552945,
+      "top_token_id": 578,
+      "top_token": " The",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9048854098038763,
+        "B": 0.030012186140745266,
+        "C": 0.035086999238841635,
+        "D": 0.030015404816536417
+      },
+      "prompt_length_in_tokens": 84
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_402216",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.010717825123541878,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.888547186792805,
+        "B": 0.03446762201286763,
+        "C": 0.05013377384473984,
+        "D": 0.026851417349587712
+      },
+      "prompt_length_in_tokens": 135
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_404894",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.01065644210410924,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8920435963946062,
+        "B": 0.04175151522392633,
+        "C": 0.03920119042278218,
+        "D": 0.027003697958685725
+      },
+      "prompt_length_in_tokens": 59
+    },
+    {
+      "question_id": "arc_challenge:test:MCAS_2002_8_11",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.05471967130314068,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9796662320406263,
+        "B": 0.007480565723703568,
+        "C": 0.0070268302993419796,
+        "D": 0.005826371936328496
+      },
+      "prompt_length_in_tokens": 102
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_SC_405086",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.023672238236174474,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9110813445487951,
+        "B": 0.030219831551127854,
+        "C": 0.03117672457030082,
+        "D": 0.027522099329776287
+      },
+      "prompt_length_in_tokens": 44
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_SC_408324",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.01983821708250728,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9085013801587589,
+        "B": 0.022047987221826708,
+        "C": 0.03309352817117773,
+        "D": 0.036357104448236685
+      },
+      "prompt_length_in_tokens": 70
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7218820",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.04859850088297757,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9742944341509674,
+        "B": 0.009856501723271825,
+        "C": 0.008170759627774356,
+        "D": 0.007678304497986347
+      },
+      "prompt_length_in_tokens": 99
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_412202",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.025983603262248668,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9324987192885196,
+        "B": 0.02564046890268008,
+        "C": 0.020601953498267423,
+        "D": 0.021258858310532838
+      },
+      "prompt_length_in_tokens": 126
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_SC_409139",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.030664694086001285,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9286511207934767,
+        "B": 0.021842229690668142,
+        "C": 0.024748959776206288,
+        "D": 0.024757689739648946
+      },
+      "prompt_length_in_tokens": 87
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_400687",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.011373047208966846,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9395347474097472,
+        "B": 0.022799640935298588,
+        "C": 0.025832971684898565,
+        "D": 0.011832639970056296
+      },
+      "prompt_length_in_tokens": 52
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7171605",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.04801833267735028,
+      "top_token_id": 578,
+      "top_token": " The",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9423806520966493,
+        "B": 0.015234590042474076,
+        "C": 0.017261368387466412,
+        "D": 0.025123389473410324
+      },
+      "prompt_length_in_tokens": 89
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7210245",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.028198591028408534,
+      "top_token_id": 578,
+      "top_token": " The",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.7955817599293828,
+        "B": 0.06953283416941751,
+        "C": 0.06531525349674247,
+        "D": 0.06957015240445719
+      },
+      "prompt_length_in_tokens": 72
+    },
+    {
+      "question_id": "arc_challenge:test:AKDE&ED_2008_4_25",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.008769320502293171,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9384204354630338,
+        "B": 0.023499815622089193,
+        "C": 0.0266221248386664,
+        "D": 0.011457624076211084
+      },
+      "prompt_length_in_tokens": 59
+    },
+    {
+      "question_id": "arc_challenge:test:AKDE&ED_2008_4_19",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.012906618504274462,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9435822758114426,
+        "B": 0.022192996229060402,
+        "C": 0.024372496833382894,
+        "D": 0.009852231126114054
+      },
+      "prompt_length_in_tokens": 64
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_SC_400402",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.010646370299544374,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9443952135806128,
+        "B": 0.022215548240001298,
+        "C": 0.022211525532950395,
+        "D": 0.01117771264643521
+      },
+      "prompt_length_in_tokens": 43
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7234308",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.06190130439471555,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9709780580480636,
+        "B": 0.01078766033802163,
+        "C": 0.011482546829609397,
+        "D": 0.006751734784305038
+      },
+      "prompt_length_in_tokens": 97
+    },
+    {
+      "question_id": "arc_challenge:test:ACTAAP_2014_5_8",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.006121228554244248,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9243881947082403,
+        "B": 0.019808080862981522,
+        "C": 0.03263589678524271,
+        "D": 0.023167827643535654
+      },
+      "prompt_length_in_tokens": 96
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_400407",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.01076522922308228,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9189256301419487,
+        "B": 0.02449097338674549,
+        "C": 0.03563111831633021,
+        "D": 0.020952278154975693
+      },
+      "prompt_length_in_tokens": 71
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7116288",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.016653774583954718,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9231990099904293,
+        "B": 0.02460805908522489,
+        "C": 0.035797947991822725,
+        "D": 0.016394982932522582
+      },
+      "prompt_length_in_tokens": 72
+    },
+    {
+      "question_id": "arc_challenge:test:MCAS_2004_9_15-v1",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.017893356920662844,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9383142610877048,
+        "B": 0.025802298254012722,
+        "C": 0.022068113413388154,
+        "D": 0.013815327244894794
+      },
+      "prompt_length_in_tokens": 89
+    },
+    {
+      "question_id": "arc_challenge:test:NYSEDREGENTS_2015_4_26",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.016673458570910144,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8902312136321227,
+        "B": 0.04718525630339355,
+        "C": 0.04163816611536509,
+        "D": 0.020945363949119018
+      },
+      "prompt_length_in_tokens": 69
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_SC_401620",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.009464076910584898,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9302300808517939,
+        "B": 0.021882918430209182,
+        "C": 0.03284220039005652,
+        "D": 0.015044800327940472
+      },
+      "prompt_length_in_tokens": 55
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_400877",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.023155921735714954,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.962650956575444,
+        "B": 0.014169303171019996,
+        "C": 0.016054341360629498,
+        "D": 0.007125398892906618
+      },
+      "prompt_length_in_tokens": 60
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7174213",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.014832181558048604,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8925939898497964,
+        "B": 0.03922797531500019,
+        "C": 0.034611233697504455,
+        "D": 0.03356680113769897
+      },
+      "prompt_length_in_tokens": 76
+    },
+    {
+      "question_id": "arc_challenge:test:NYSEDREGENTS_2008_8_34",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.02001907791405348,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9523748421408781,
+        "B": 0.015884786959797385,
+        "C": 0.018568938159303817,
+        "D": 0.013171432740020857
+      },
+      "prompt_length_in_tokens": 82
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7212398",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.019682159594747593,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9488857012445756,
+        "B": 0.019090010249631025,
+        "C": 0.01969406545033841,
+        "D": 0.012330223055454795
+      },
+      "prompt_length_in_tokens": 47
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_SC_401290",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.016780105316900967,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9415784071450602,
+        "B": 0.021466163620658403,
+        "C": 0.025093744929041314,
+        "D": 0.011861684305239784
+      },
+      "prompt_length_in_tokens": 48
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_SC_402120",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.012601054665367484,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9025432576005564,
+        "B": 0.030887082396118638,
+        "C": 0.0384358349762294,
+        "D": 0.028133825027095348
+      },
+      "prompt_length_in_tokens": 52
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_184975",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.009486298080008752,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8173246023068125,
+        "B": 0.0631203497754942,
+        "C": 0.05227476835099745,
+        "D": 0.06728027956669566
+      },
+      "prompt_length_in_tokens": 56
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_SC_400578",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.011101338893068167,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.945992181676405,
+        "B": 0.018450394582114647,
+        "C": 0.026836630540429805,
+        "D": 0.008720793201050406
+      },
+      "prompt_length_in_tokens": 64
+    },
+    {
+      "question_id": "arc_challenge:test:MCAS_2001_8_4",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.03142180720027184,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9369372956356791,
+        "B": 0.016122868428733027,
+        "C": 0.022734816321047003,
+        "D": 0.024205019614540836
+      },
+      "prompt_length_in_tokens": 108
+    },
+    {
+      "question_id": "arc_challenge:test:MCAS_2003_5_33",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.026713386693640036,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.863935441422429,
+        "B": 0.03147069072166465,
+        "C": 0.03795955529854424,
+        "D": 0.06663431255736184
+      },
+      "prompt_length_in_tokens": 79
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7068513",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.01125237892533695,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9108128960817073,
+        "B": 0.0321646552780566,
+        "C": 0.031169434197316558,
+        "D": 0.025853014442919365
+      },
+      "prompt_length_in_tokens": 56
+    },
+    {
+      "question_id": "arc_challenge:test:AKDE&ED_2008_4_26",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.008781983587460568,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9225734728100115,
+        "B": 0.027862577646485306,
+        "C": 0.03156900389620258,
+        "D": 0.017994945647300448
+      },
+      "prompt_length_in_tokens": 69
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7235638",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.026843482847902507,
+      "top_token_id": 220,
+      "top_token": " ",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8298798040261302,
+        "B": 0.049847167123286934,
+        "C": 0.06012295223954476,
+        "D": 0.06015007661103821
+      },
+      "prompt_length_in_tokens": 76
+    },
+    {
+      "question_id": "arc_challenge:test:MDSA_2009_5_20",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.01816416080614437,
+      "top_token_id": 16299,
+      "top_token": " Which",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9380764314188503,
+        "B": 0.025017395599231117,
+        "C": 0.01614309063595077,
+        "D": 0.020763082345967826
+      },
+      "prompt_length_in_tokens": 137
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_178325",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.07928193537838332,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9644324626628861,
+        "B": 0.00888303462947614,
+        "C": 0.012924277872686038,
+        "D": 0.013760224834951833
+      },
+      "prompt_length_in_tokens": 77
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_7212678",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.05442063102068749,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9580623430394575,
+        "B": 0.014548940786132322,
+        "C": 0.01454776203677409,
+        "D": 0.012840954137636288
+      },
+      "prompt_length_in_tokens": 93
+    },
+    {
+      "question_id": "arc_challenge:test:TAKS_2009_8_32",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.016378252386533013,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9104355028264102,
+        "B": 0.035303325580105266,
+        "C": 0.03757972822632597,
+        "D": 0.016681443367158884
+      },
+      "prompt_length_in_tokens": 47
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_412681",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.014376031158817542,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8863453277405244,
+        "B": 0.03229303893603242,
+        "C": 0.03436966839579016,
+        "D": 0.0469919649276527
+      },
+      "prompt_length_in_tokens": 143
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_400440",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.006437211243579975,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9302625734246605,
+        "B": 0.02257801103528979,
+        "C": 0.033885649909356295,
+        "D": 0.013273765630693421
+      },
+      "prompt_length_in_tokens": 64
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_SC_416529",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.013886846498659122,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8895319404409021,
+        "B": 0.03788852710348201,
+        "C": 0.04569597350295199,
+        "D": 0.02688355895266365
+      },
+      "prompt_length_in_tokens": 57
+    },
+    {
+      "question_id": "arc_challenge:test:MCAS_2006_8_1",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.02235459214056942,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9395877708221574,
+        "B": 0.024271177944636322,
+        "C": 0.021418123948746044,
+        "D": 0.014722927284460147
+      },
+      "prompt_length_in_tokens": 58
+    },
+    {
+      "question_id": "arc_challenge:test:TIMSS_2003_8_pg80",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.01729733829736108,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8880073034011493,
+        "B": 0.037819244337420996,
+        "C": 0.045616945136437714,
+        "D": 0.028556507124991724
+      },
+      "prompt_length_in_tokens": 48
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_416645",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.02491015453452923,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8850492180823688,
+        "B": 0.02845718183448741,
+        "C": 0.036537272562435226,
+        "D": 0.04995632752070832
+      },
+      "prompt_length_in_tokens": 122
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_406777",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.01986052387344971,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9463447003616103,
+        "B": 0.022263241175232977,
+        "C": 0.017885006321157533,
+        "D": 0.013507052141999439
+      },
+      "prompt_length_in_tokens": 64
+    },
+    {
+      "question_id": "arc_challenge:test:Mercury_LBS11018",
+      "dataset": "arc_challenge",
+      "number_of_options": 4,
+      "letter_mass": 0.010074071819483287,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9165546575651521,
+        "B": 0.036675286850959624,
+        "C": 0.021556273612950243,
+        "D": 0.02521378197093796
+      },
+      "prompt_length_in_tokens": 87
+    },
+    {
+      "question_id": "obqa:test:8-343",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.05079856955505041,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9794405969775095,
+        "B": 0.007248742441760191,
+        "C": 0.009306829583992664,
+        "D": 0.004003830996737689
+      },
+      "prompt_length_in_tokens": 85
+    },
+    {
+      "question_id": "obqa:test:1129",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.013812226688855525,
+      "top_token_id": 2209,
+      "top_token": " Is",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.894874124280325,
+        "B": 0.030642458088150932,
+        "C": 0.04743396863518072,
+        "D": 0.027049448996343213
+      },
+      "prompt_length_in_tokens": 46
+    },
+    {
+      "question_id": "obqa:test:880",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.013062385272961176,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.7918446700915546,
+        "B": 0.10070163616940332,
+        "C": 0.06919807938368652,
+        "D": 0.03825561435535536
+      },
+      "prompt_length_in_tokens": 37
+    },
+    {
+      "question_id": "obqa:test:7-999",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.039229434558216744,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9323094070376874,
+        "B": 0.01875641467156916,
+        "C": 0.024846377056265242,
+        "D": 0.02408780123447822
+      },
+      "prompt_length_in_tokens": 80
+    },
+    {
+      "question_id": "obqa:test:8-464",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.022896262355535463,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9135112670778135,
+        "B": 0.03433432344541581,
+        "C": 0.034331880098623306,
+        "D": 0.01782252937814729
+      },
+      "prompt_length_in_tokens": 43
+    },
+    {
+      "question_id": "obqa:test:9-794",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.014021943980926134,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8473757594044153,
+        "B": 0.05950908734462964,
+        "C": 0.05089388112821058,
+        "D": 0.04222127212274495
+      },
+      "prompt_length_in_tokens": 45
+    },
+    {
+      "question_id": "obqa:test:9-1163",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.017641305546884218,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8645156192884386,
+        "B": 0.03799237559361044,
+        "C": 0.05702708454314035,
+        "D": 0.04046492057481035
+      },
+      "prompt_length_in_tokens": 42
+    },
+    {
+      "question_id": "obqa:test:9-322",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.01068092366029047,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8871578684593657,
+        "B": 0.0428183055032817,
+        "C": 0.041494716672045386,
+        "D": 0.02852910936530717
+      },
+      "prompt_length_in_tokens": 56
+    },
+    {
+      "question_id": "obqa:test:7-1140",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.009439527824567298,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9035893913327991,
+        "B": 0.03615920246932382,
+        "C": 0.03614904918685179,
+        "D": 0.024102357011025182
+      },
+      "prompt_length_in_tokens": 44
+    },
+    {
+      "question_id": "obqa:test:7-903",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.021537671969429465,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8329471759441454,
+        "B": 0.0728089808956786,
+        "C": 0.05002460292129694,
+        "D": 0.04421924023887895
+      },
+      "prompt_length_in_tokens": 40
+    },
+    {
+      "question_id": "obqa:test:7-511",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.012247146796007006,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8616143185125454,
+        "B": 0.05179632074364919,
+        "C": 0.05512955981137326,
+        "D": 0.031459800932432586
+      },
+      "prompt_length_in_tokens": 44
+    },
+    {
+      "question_id": "obqa:test:9-937",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.08603796525098933,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9300752647775605,
+        "B": 0.026385804604343283,
+        "C": 0.03182627091677417,
+        "D": 0.01171265970132195
+      },
+      "prompt_length_in_tokens": 41
+    },
+    {
+      "question_id": "obqa:test:8-201",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.0326985019973391,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9710224650547236,
+        "B": 0.010136052474110778,
+        "C": 0.014744813612646573,
+        "D": 0.004096668858519089
+      },
+      "prompt_length_in_tokens": 56
+    },
+    {
+      "question_id": "obqa:test:1618",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.010972697573152683,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9390321945098987,
+        "B": 0.02075207351050937,
+        "C": 0.02502506751200378,
+        "D": 0.015190664467588504
+      },
+      "prompt_length_in_tokens": 46
+    },
+    {
+      "question_id": "obqa:test:758",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.060785000498413504,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.962583946339088,
+        "B": 0.015559959318354586,
+        "C": 0.01211753852220435,
+        "D": 0.009738555820353201
+      },
+      "prompt_length_in_tokens": 64
+    },
+    {
+      "question_id": "obqa:test:7-414",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.02098076369215038,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8985717056140266,
+        "B": 0.032735234754899104,
+        "C": 0.032732380804354325,
+        "D": 0.035960678826720216
+      },
+      "prompt_length_in_tokens": 61
+    },
+    {
+      "question_id": "obqa:test:9-675",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.0407179837310165,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9504156439374121,
+        "B": 0.01585013197094038,
+        "C": 0.020997649901812812,
+        "D": 0.012736574189834565
+      },
+      "prompt_length_in_tokens": 72
+    },
+    {
+      "question_id": "obqa:test:9-163",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.03018789829705422,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9468604570532618,
+        "B": 0.025261892410364258,
+        "C": 0.017344264800070442,
+        "D": 0.010533385736303425
+      },
+      "prompt_length_in_tokens": 47
+    },
+    {
+      "question_id": "obqa:test:1032",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.011255696902585436,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.929764518408494,
+        "B": 0.028081863391967676,
+        "C": 0.03181683860991015,
+        "D": 0.010336779589628305
+      },
+      "prompt_length_in_tokens": 41
+    },
+    {
+      "question_id": "obqa:test:889",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.012416594701323707,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8905479128744258,
+        "B": 0.031453344507041354,
+        "C": 0.05348429833382011,
+        "D": 0.024514444284712653
+      },
+      "prompt_length_in_tokens": 41
+    },
+    {
+      "question_id": "obqa:test:1160",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.0071882321818070045,
+      "top_token_id": 1226,
+      "top_token": " We",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9246176475262774,
+        "B": 0.026247544686489432,
+        "C": 0.03164333153141252,
+        "D": 0.01749147625582072
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "obqa:test:9-298",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.023413201783767164,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9139160526674275,
+        "B": 0.03772486759875906,
+        "C": 0.02937931577928863,
+        "D": 0.01897976395452481
+      },
+      "prompt_length_in_tokens": 41
+    },
+    {
+      "question_id": "obqa:test:1189",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.010024254774261719,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8991560962461721,
+        "B": 0.03951915165481933,
+        "C": 0.04205778026616593,
+        "D": 0.019266971832842678
+      },
+      "prompt_length_in_tokens": 44
+    },
+    {
+      "question_id": "obqa:test:8-395",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.013329211213909413,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8859202726697574,
+        "B": 0.0515711953672459,
+        "C": 0.03656838930803697,
+        "D": 0.02594014265495945
+      },
+      "prompt_length_in_tokens": 58
+    },
+    {
+      "question_id": "obqa:test:7-238",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.01728184322694186,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9098330531004325,
+        "B": 0.024251828789653162,
+        "C": 0.03755522363386116,
+        "D": 0.02835989447605323
+      },
+      "prompt_length_in_tokens": 58
+    },
+    {
+      "question_id": "obqa:test:7-372",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.007260489611762988,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.7863946404154162,
+        "B": 0.060702260075737736,
+        "C": 0.08824173303114882,
+        "D": 0.06466136647769712
+      },
+      "prompt_length_in_tokens": 67
+    },
+    {
+      "question_id": "obqa:test:8-35",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.008285649634858271,
+      "top_token_id": 16299,
+      "top_token": " Which",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9048345193091691,
+        "B": 0.03001862669718305,
+        "C": 0.04101959793664149,
+        "D": 0.024127256057005764
+      },
+      "prompt_length_in_tokens": 59
+    },
+    {
+      "question_id": "obqa:test:9-271",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.018896052123356002,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9261644273229287,
+        "B": 0.023189284218636173,
+        "C": 0.028857522980979204,
+        "D": 0.02178876547745595
+      },
+      "prompt_length_in_tokens": 59
+    },
+    {
+      "question_id": "obqa:test:9-409",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.014246325528475424,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8944850530719952,
+        "B": 0.03159357347766459,
+        "C": 0.03578902985613652,
+        "D": 0.03813234359420331
+      },
+      "prompt_length_in_tokens": 49
+    },
+    {
+      "question_id": "obqa:test:530",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.010144510217156257,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8902987355986763,
+        "B": 0.041654259537194295,
+        "C": 0.04573603240957663,
+        "D": 0.022310972454552727
+      },
+      "prompt_length_in_tokens": 44
+    },
+    {
+      "question_id": "obqa:test:1426",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.004846321017811579,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8726336355941542,
+        "B": 0.04925970388043741,
+        "C": 0.05407286232986085,
+        "D": 0.024033798195547518
+      },
+      "prompt_length_in_tokens": 42
+    },
+    {
+      "question_id": "obqa:test:8-466",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.011365236770759176,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9390940391878141,
+        "B": 0.022798013308285847,
+        "C": 0.026642250126461348,
+        "D": 0.011465697377438688
+      },
+      "prompt_length_in_tokens": 61
+    },
+    {
+      "question_id": "obqa:test:1577",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.01156481588679058,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9275289318193313,
+        "B": 0.024723829091172267,
+        "C": 0.037108252520903266,
+        "D": 0.010638986568593219
+      },
+      "prompt_length_in_tokens": 41
+    },
+    {
+      "question_id": "obqa:test:8-257",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.014609820076650435,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.925142904850678,
+        "B": 0.02624761453882094,
+        "C": 0.031657339916120436,
+        "D": 0.01695214069438071
+      },
+      "prompt_length_in_tokens": 59
+    },
+    {
+      "question_id": "obqa:test:378",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.01301417427195595,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8677418403011619,
+        "B": 0.047465757571688895,
+        "C": 0.04895838626335345,
+        "D": 0.03583401586379532
+      },
+      "prompt_length_in_tokens": 57
+    },
+    {
+      "question_id": "obqa:test:8-41",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.026701386253396884,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8084098456243661,
+        "B": 0.05857187150918785,
+        "C": 0.07064601942644208,
+        "D": 0.06237226344000368
+      },
+      "prompt_length_in_tokens": 44
+    },
+    {
+      "question_id": "obqa:test:9-540",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.02244201878736972,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9564299598216301,
+        "B": 0.012821972143238651,
+        "C": 0.01751895401460603,
+        "D": 0.013229114020525146
+      },
+      "prompt_length_in_tokens": 79
+    },
+    {
+      "question_id": "obqa:test:266",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.0071883543871906685,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8378912079507798,
+        "B": 0.05884589558465022,
+        "C": 0.0779405971555739,
+        "D": 0.02532229930899662
+      },
+      "prompt_length_in_tokens": 42
+    },
+    {
+      "question_id": "obqa:test:1309",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.020468759335686024,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8788194102137249,
+        "B": 0.03203205698322778,
+        "C": 0.03628540726753385,
+        "D": 0.052863125535513554
+      },
+      "prompt_length_in_tokens": 40
+    },
+    {
+      "question_id": "obqa:test:7-1197",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.016146204230539467,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8212670204799813,
+        "B": 0.05949678177095312,
+        "C": 0.06333203073310101,
+        "D": 0.05590416701596459
+      },
+      "prompt_length_in_tokens": 43
+    },
+    {
+      "question_id": "obqa:test:7-891",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.07204413781718118,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9418089108513148,
+        "B": 0.02215182453723991,
+        "C": 0.020808356526055345,
+        "D": 0.015230908085389856
+      },
+      "prompt_length_in_tokens": 41
+    },
+    {
+      "question_id": "obqa:test:1180",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.009817732670150276,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8456390585470343,
+        "B": 0.07392455757894321,
+        "C": 0.05406713620636418,
+        "D": 0.026369247667658774
+      },
+      "prompt_length_in_tokens": 45
+    },
+    {
+      "question_id": "obqa:test:1204",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.011144792511967606,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9062975685921819,
+        "B": 0.035143357566078295,
+        "C": 0.0351415723304008,
+        "D": 0.02341750151133921
+      },
+      "prompt_length_in_tokens": 64
+    },
+    {
+      "question_id": "obqa:test:7-52",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.026324270700332164,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.7255878215780946,
+        "B": 0.12612119483180692,
+        "C": 0.055958030177665256,
+        "D": 0.09233295341243314
+      },
+      "prompt_length_in_tokens": 41
+    },
+    {
+      "question_id": "obqa:test:1759",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.02205937830169422,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8921543671732657,
+        "B": 0.04305561261972151,
+        "C": 0.04172980193087395,
+        "D": 0.02306021827613862
+      },
+      "prompt_length_in_tokens": 56
+    },
+    {
+      "question_id": "obqa:test:9-655",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.015629795282412304,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9276898737183752,
+        "B": 0.018667497190696953,
+        "C": 0.028905276308363342,
+        "D": 0.024737352782564476
+      },
+      "prompt_length_in_tokens": 70
+    },
+    {
+      "question_id": "obqa:test:132",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.009598810011912862,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9139791197455288,
+        "B": 0.034352255408645206,
+        "C": 0.035439594663231884,
+        "D": 0.016229030182594004
+      },
+      "prompt_length_in_tokens": 46
+    },
+    {
+      "question_id": "obqa:test:8-79",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.06570283884427887,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9606022779278983,
+        "B": 0.018729470846025283,
+        "C": 0.012092365369983255,
+        "D": 0.008575885856093268
+      },
+      "prompt_length_in_tokens": 65
+    },
+    {
+      "question_id": "obqa:test:1835",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.014803341957274207,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9015911277286042,
+        "B": 0.03496644239765231,
+        "C": 0.0435119849598883,
+        "D": 0.019930444913855115
+      },
+      "prompt_length_in_tokens": 46
+    },
+    {
+      "question_id": "obqa:test:9-149",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.009514259116299632,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8036338182543437,
+        "B": 0.05472553140756117,
+        "C": 0.07958403399837931,
+        "D": 0.062056616339716035
+      },
+      "prompt_length_in_tokens": 40
+    },
+    {
+      "question_id": "obqa:test:695",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.011119417150047564,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.7496773042374173,
+        "B": 0.10823375730417992,
+        "C": 0.0841264978620737,
+        "D": 0.0579624405963292
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "obqa:test:8-179",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.05861185291582806,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9669541240967083,
+        "B": 0.014683766540086345,
+        "C": 0.010742099643312224,
+        "D": 0.007620009719893272
+      },
+      "prompt_length_in_tokens": 44
+    },
+    {
+      "question_id": "obqa:test:7-50",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.02955882484977225,
+      "top_token_id": 578,
+      "top_token": " The",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8666819832640562,
+        "B": 0.05205718505214553,
+        "C": 0.03808473450505907,
+        "D": 0.04317609717873931
+      },
+      "prompt_length_in_tokens": 57
+    },
+    {
+      "question_id": "obqa:test:508",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.013048625423867624,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9710595400853386,
+        "B": 0.011489566393387036,
+        "C": 0.011484841478393458,
+        "D": 0.005966052042880817
+      },
+      "prompt_length_in_tokens": 47
+    },
+    {
+      "question_id": "obqa:test:1674",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.06362959070636388,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.977420645265373,
+        "B": 0.009582492237319336,
+        "C": 0.00900177711730039,
+        "D": 0.003995085380007435
+      },
+      "prompt_length_in_tokens": 46
+    },
+    {
+      "question_id": "obqa:test:163",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.012004000991677607,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9312703966945922,
+        "B": 0.02482691466656753,
+        "C": 0.032879962836812125,
+        "D": 0.011022725802028436
+      },
+      "prompt_length_in_tokens": 44
+    },
+    {
+      "question_id": "obqa:test:7-49",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.0395066221426053,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9305125156051963,
+        "B": 0.028104684884781312,
+        "C": 0.028099836534562626,
+        "D": 0.013282962975459589
+      },
+      "prompt_length_in_tokens": 38
+    },
+    {
+      "question_id": "obqa:test:8-393",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.0426424222365717,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9524342459219288,
+        "B": 0.018574746354236636,
+        "C": 0.013587091775992962,
+        "D": 0.015403915947841513
+      },
+      "prompt_length_in_tokens": 118
+    },
+    {
+      "question_id": "obqa:test:788",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.013255944384876095,
+      "top_token_id": 21335,
+      "top_token": " Give",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.941706836431279,
+        "B": 0.028439166824662594,
+        "C": 0.01836105850307148,
+        "D": 0.011492938240987335
+      },
+      "prompt_length_in_tokens": 47
+    },
+    {
+      "question_id": "obqa:test:9-29",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.014870324648933404,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.9471047524078402,
+        "B": 0.0168160884181831,
+        "C": 0.022981522868981745,
+        "D": 0.013097636304994236
+      },
+      "prompt_length_in_tokens": 88
+    },
+    {
+      "question_id": "obqa:test:9-368",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.022070785662478158,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8913594738037202,
+        "B": 0.0416933177685405,
+        "C": 0.039166303886623254,
+        "D": 0.027780904541116137
+      },
+      "prompt_length_in_tokens": 40
+    },
+    {
+      "question_id": "obqa:test:7-671",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.009106656044940075,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8758099994967963,
+        "B": 0.03505153099572789,
+        "C": 0.04941263465406963,
+        "D": 0.039725834853405806
+      },
+      "prompt_length_in_tokens": 59
+    },
+    {
+      "question_id": "obqa:test:1272",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.009703364713857363,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8720510186530483,
+        "B": 0.06726360075714001,
+        "C": 0.04079005728037574,
+        "D": 0.01989532330943586
+      },
+      "prompt_length_in_tokens": 54
+    },
+    {
+      "question_id": "obqa:test:648",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.011573117117037334,
+      "top_token_id": 3639,
+      "top_token": " What",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8257256681347224,
+        "B": 0.08178039013777925,
+        "C": 0.056195655347024,
+        "D": 0.03629828638047473
+      },
+      "prompt_length_in_tokens": 46
+    },
+    {
+      "question_id": "obqa:test:9-1180",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.011895642091202502,
+      "top_token_id": 5321,
+      "top_token": " Please",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8786518267125891,
+        "B": 0.04514587325786115,
+        "C": 0.052771135194699434,
+        "D": 0.023431164834850228
+      },
+      "prompt_length_in_tokens": 50
+    },
+    {
+      "question_id": "obqa:test:9-227",
+      "dataset": "obqa",
+      "number_of_options": 4,
+      "letter_mass": 0.012441969749823508,
+      "top_token_id": 578,
+      "top_token": " The",
+      "top_token_is_answer_letter": false,
+      "top_token_is_any_spelling_of_A_to_E": false,
+      "answer_by_top_letter_token": "A",
+      "answer_by_total_letter_probability": "A",
+      "letter_probabilities": {
+        "A": 0.8467297270160237,
+        "B": 0.05765024707928305,
+        "C": 0.047774525751546504,
+        "D": 0.04784550015314714
+      },
+      "prompt_length_in_tokens": 39
+    }
+  ],
+  "seconds": {
+    "loading": 16.9,
+    "total": 18.7
+  }
+}
