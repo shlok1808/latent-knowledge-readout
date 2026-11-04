@@ -1,0 +1,151 @@
+[0] What do people aim to do at work? | A:complete job B:learn from each other C:kill animals D:wear hats E:talk to each other || GOLD A:complete job | MODEL B:learn from each other p=0.96 shift=3.5
+[1] Aside from water and nourishment what does your dog need? | A:bone B:charm C:petted D:lots of attention E:walked || GOLD D:lots of attention | MODEL E:walked p=0.91 shift=2.6
+[2] What are you waiting alongside with when you're in a reception area? | A:motel B:chair C:hospital D:people E:hotels || GOLD D:people | MODEL B:chair p=0.82 shift=2.2
+[3] If you are prone to postpone work what will you have to do in order to finish on time? | A:eat B:hasten C:antedate D:bring forward E:advance || GOLD B:hasten | MODEL D:bring forward p=0.91 shift=2.4
+[4] Who is likely to be excited about a crab? | A:fish market B:pet shop C:fishmongers D:intertidal zone E:obesity || GOLD C:fishmongers | MODEL D:intertidal zone p=0.94 shift=2.4
+[5] If there is a place that is hot and arid, what could it be? | A:bland B:lifeless C:sandy D:neutral E:freezing || GOLD B:lifeless | MODEL C:sandy p=0.97 shift=5.7
+[6] Crabs live in what sort of environment? | A:maritime B:bodies of water C:saltwater D:galapagos E:fish market || GOLD C:saltwater | MODEL A:maritime p=0.43 shift=1.8
+[7] Where would you find a single shower curtain being used? | A:bathtub B:washing area C:hotel D:shower stall E:department store || GOLD A:bathtub | MODEL D:shower stall p=0.92 shift=2.6
+[8] Where does a wild bird usually live? | A:cage B:sky C:countryside D:desert E:windowsill || GOLD C:countryside | MODEL B:sky p=0.63 shift=3.7
+[9] What could committing murder prevent someone from doing? | A:go to jail B:cry C:find god D:guilty conscience E:problems || GOLD C:find god | MODEL A:go to jail p=0.53 shift=3.4
+[10] You'll find a landing at the top of what? | A:ocean B:apartment building C:stairwell D:airport E:room || GOLD C:stairwell | MODEL D:airport p=0.98 shift=4.1
+[11] What do you want someone to do when you illustrate point? | A:did not understand B:accepting C:make clear D:understood E:understanding || GOLD E:understanding | MODEL D:understood p=0.73 shift=1.2
+[12] What regions of a town would you have found a dime store? | A:commercial building B:old movie C:small neighborhood D:past E:mall || GOLD C:small neighborhood | MODEL A:commercial building p=0.55 shift=2.9
+[13] The kitten had nothing to dig it's claws into, so when it tried to stop it slid across what? | A:living room B:floor C:warm place D:carpet E:farmhouse || GOLD B:floor | MODEL D:carpet p=0.60 shift=1.6
+[14] Where would you find a basement that can be accessed with an elevator? | A:eat cake B:closet C:church D:office building E:own house || GOLD D:office building | MODEL E:own house p=0.86 shift=3.8
+[15] In order to learn to program from another person you can do what? | A:learn how to B:have a friend C:knowledge D:take class E:have computer || GOLD D:take class | MODEL B:have a friend p=0.73 shift=2.8
+[16] What could you get an unsmooth pit from? | A:backyard B:rock C:mine D:cherry E:peach || GOLD E:peach | MODEL D:cherry p=0.70 shift=1.1
+[17] A supermarket is uncommon in what type of collection of shops? | A:strip mall B:city or town C:shoppingcentre D:boutique E:vermont || GOLD A:strip mall | MODEL C:shoppingcentre p=0.45 shift=1.2
+[18] Where can children play with animals? | A:meadow B:play room C:surface of earth D:zoos E:fairgrounds || GOLD E:fairgrounds | MODEL D:zoos p=0.99 shift=3.1
+[19] Why do most people take a quick rest during the day? | A:need to B:hungry C:feel more energetic D:weak E:regenerate || GOLD C:feel more energetic | MODEL E:regenerate p=1.00 shift=4.7
+[20] The gimmicky low brow TV show was about animals when they what? | A:sick B:mammals C:males D:bite E:attack || GOLD E:attack | MODEL D:bite p=0.69 shift=0.8
+[21] Who might wear dark glasses indoors? | A:blind person B:glove box C:movie studio D:ray charles E:glove compartment || GOLD A:blind person | MODEL D:ray charles p=0.96 shift=3.7
+[22] A bald eagle is likely to be found on what kind of work? | A:rural area B:book C:canada D:painting E:aviary || GOLD D:painting | MODEL E:aviary p=0.67 shift=2.0
+[23] After standing up I had to sit right back down, why would I feel like this? | A:train B:effort C:balance D:feet E:muscles || GOLD C:balance | MODEL E:muscles p=0.93 shift=3.7
+[24] What is performing a type of? | A:singing B:act C:feat D:smile E:acting || GOLD B:act | MODEL C:feat p=0.72 shift=2.2
+[25] What might a very large table be? | A:dining room B:conference C:kitchen D:in a lake E:demonstration || GOLD B:conference | MODEL D:in a lake p=0.26 shift=1.4
+[26] A car was hailed to chauffeur someone to the opera house, where was it heading? | A:go downtown B:appear suddenly C:go fast D:bottom out E:east || GOLD A:go downtown | MODEL E:east p=0.58 shift=0.8
+[27] After high tide, where on the coast can you look to find a sea anemone? | A:nursery B:museum C:gulf of mexico D:tide pool E:intertidal zone || GOLD D:tide pool | MODEL E:intertidal zone p=0.77 shift=2.5
+[28] Minerals can be obtained in what way for a person who avoids leafy greens? | A:multivitamin B:farm C:michigan D:earth E:ore || GOLD A:multivitamin | MODEL E:ore p=0.98 shift=3.2
+[29] What could you be a few hours after you finish cashing in due to your cash? | A:happy B:receiving money C:getting paid D:spending money E:selling out || GOLD A:happy | MODEL D:spending money p=0.64 shift=0.3
+[30] Billy hated using other people's toilets. He was only comfortable on his own.  So whenever he needed to poop, he would go back to his what? | A:bathroom B:motel room C:nearest public restroom D:house E:apartment || GOLD D:house | MODEL A:bathroom p=0.85 shift=2.4
+[31] What will god never do according to religion? | A:anything B:judge people C:work miracles D:judge men E:everywhere || GOLD B:judge people | MODEL D:judge men p=0.44 shift=0.6
+[32] There was more than one bum asking for change or a ticket, it was the cheapest way to travel so it was no surprise sight at the what? | A:train station B:beach C:bus depot D:bridge E:stumblebum || GOLD C:bus depot | MODEL A:train station p=0.92 shift=2.8
+[33] What do you write letter in in America? | A:syllable B:post office C:envelope D:english alphabet E:word || GOLD D:english alphabet | MODEL C:envelope p=0.99 shift=3.9
+[34] People are very much like the animals, but one thing has secured or dominance over the planet.  We're better at doing what? | A:eat eggs B:make tools C:eat dosa D:talk to each other E:smoke pot || GOLD B:make tools | MODEL D:talk to each other p=0.75 shift=1.8
+[35] They passed a apple tree on their way to the racetrack, the were going to watch the biggest motorsport spectacle in the world where? | A:maryland B:indiana C:on tv D:park E:new jersey || GOLD B:indiana | MODEL C:on tv p=0.53 shift=3.2
+[36] Sarah dropped the marble because she wanted to do what? | A:game B:pouch C:home D:store E:jar || GOLD A:game | MODEL B:pouch p=0.70 shift=0.3
+[37] WHat leads to an early death? | A:poisonous gas B:homicide C:cinder D:nuclear weapons E:cyanide || GOLD B:homicide | MODEL E:cyanide p=0.40 shift=0.3
+[38] The cat carefully navigated the area, they do everything they can to avoid what? | A:get wet B:eat vegetables C:falling D:wool sweater E:sharp claws || GOLD A:get wet | MODEL C:falling p=0.85 shift=3.5
+[39] What geographic area is a lizard likely to be? | A:ball stopped B:west texas C:arid regions D:garden E:warm place || GOLD B:west texas | MODEL C:arid regions p=0.75 shift=2.5
+[40] Where can you store your dishes in your dwelling? | A:drawer B:shelf C:pantry D:apartment E:cabinet || GOLD B:shelf | MODEL E:cabinet p=0.96 shift=2.3
+[41] If a court case is dismissed after hearing testimony, what would be a likely cause? | A:change of heart B:anguish C:anger D:boredom E:anxiety || GOLD A:change of heart | MODEL D:boredom p=0.42 shift=0.6
+[42] Where do people want to have a lot of coffee? | A:table B:office C:desk D:kitchen E:ocean || GOLD B:office | MODEL D:kitchen p=0.96 shift=2.4
+[43] Where is a grape likely to be being fed to someone else? | A:field B:bathroom C:michigan D:minnesota E:painting || GOLD E:painting | MODEL C:michigan p=0.51 shift=1.6
+[44] The bell rang, and the congregation began to what in to the church? | A:run away B:wind instrument C:funnel D:blunderbuss E:associated with telephones || GOLD C:funnel | MODEL E:associated with telephones p=0.59 shift=1.4
+[45] Joe found spiders while checking something outside.  What might that be? | A:cupboard B:closet C:storage bag D:mail box E:garage || GOLD D:mail box | MODEL E:garage p=0.96 shift=3.6
+[46] What did the adult do before the job interview? | A:work B:dress himself C:marry D:dress herself E:drive train || GOLD B:dress himself | MODEL D:dress herself p=0.81 shift=1.1
+[47] Brawn opened the curtains so that the sun could do what? | A:dry clothes B:warm house C:warm room D:shine brightly E:get dark || GOLD C:warm room | MODEL D:shine brightly p=0.94 shift=3.6
+[48] Where might it be hard to get furniture to? | A:apartment B:loft C:store D:rug E:stairs || GOLD B:loft | MODEL E:stairs p=0.98 shift=3.7
+[49] What kind of service is my body a part of when I'm no longer here? | A:bodycam B:home C:coffin D:funeral E:graveyard || GOLD D:funeral | MODEL E:graveyard p=0.81 shift=2.4
+[50] Zane doesn't like answering questions.  He's not good at it because he suffers from what? | A:panic B:discussion C:attention D:confusion E:satisfaction || GOLD D:confusion | MODEL A:panic p=0.48 shift=1.5
+[51] The criminal insisted he must do the crime to the bank teller, but she tried to convince him there were other ways in life and this was what? | A:willing B:optional C:should not D:have to E:unnecessary || GOLD E:unnecessary | MODEL D:have to p=0.73 shift=0.6
+[52] If somebody is working at a reception desk, they are located at the front entrance of the what? | A:motel B:hostel C:building D:lobby E:office park || GOLD C:building | MODEL D:lobby p=0.56 shift=1.5
+[53] What would you put coins into to make it work? | A:stove B:water fountain C:desk D:purse E:jar || GOLD B:water fountain | MODEL E:jar p=1.00 shift=7.5
+[54] Where can you go to use a piano in your neighborhood if you don't have one? | A:music school B:music store C:neighbor's house D:lunch E:drawing room || GOLD C:neighbor's house | MODEL A:music school p=0.94 shift=4.7
+[55] Where do most people turn to get information on their phones? | A:internet B:book C:online D:google E:manual || GOLD D:google | MODEL A:internet p=0.97 shift=4.8
+[56] They had a theory of what they could do in t he big game, so over and over they would what? | A:park B:practice C:fact D:practical E:practise || GOLD B:practice | MODEL E:practise p=0.53 shift=1.9
+[57] Bill wanted to pick up a stranger, preferably a responsible one with kids.  Where might he look for one? | A:bus station B:paradise C:train station D:park E:sea || GOLD D:park | MODEL C:train station p=0.55 shift=1.7
+[58] By learning about the world, many poor college students gain what? | A:pleasure B:greater mobility C:desire to travel D:global warming E:increased security || GOLD C:desire to travel | MODEL B:greater mobility p=1.00 shift=3.3
+[59] how can i store cooked steak? | A:oven B:freezer C:plate D:tupperware E:grill || GOLD B:freezer | MODEL D:tupperware p=0.83 shift=1.6
+[60] Where would you go to get some pamphlets if you want to own them? | A:bookstore B:drawer C:health department D:mail box E:library || GOLD A:bookstore | MODEL B:drawer p=0.32 shift=1.0
+[61] Where are the most famous BBQ steakhouses in america? | A:texas B:building C:kansas city D:maine E:falling down || GOLD A:texas | MODEL C:kansas city p=0.54 shift=2.1
+[62] What would friends do if they need each others' help? | A:call each other B:group together C:understand each other D:meet for lunch E:part company || GOLD B:group together | MODEL A:call each other p=0.98 shift=5.0
+[63] Where could you go to between 1000 and 10000 restaurant? | A:big city B:town C:small town D:canada E:yellow pages || GOLD A:big city | MODEL E:yellow pages p=0.82 shift=3.3
+[64] Where is a statute found on a platform? | A:below B:arena C:concert hall D:museum E:building || GOLD D:museum | MODEL B:arena p=0.53 shift=1.3
+[65] At the picnic she was stuck eating hamburger, she was worried because she forgot her chewables to prevent what? | A:eat cake B:have fun C:food poisoning D:heartburn E:gain weight || GOLD D:heartburn | MODEL C:food poisoning p=0.53 shift=2.7
+[66] I want to use string to keep something from moving, how should I do it? | A:tie around B:wind around C:weave D:stringbed E:ball up || GOLD A:tie around | MODEL B:wind around p=0.79 shift=1.8
+[67] What might someone do after they finish creating art? | A:frustration B:relax C:eat D:enlightenment E:communication || GOLD B:relax | MODEL E:communication p=0.66 shift=1.2
+[68] Christine couldn't be having a baby at her age, she thought to herself. What was Christine? | A:old person B:begin to talk C:adult D:old man E:girl || GOLD A:old person | MODEL E:girl p=0.63 shift=0.7
+[69] If I'm playing ball, I'm mostly trying to do what? | A:losing B:competition C:having fun D:win E:injury || GOLD C:having fun | MODEL D:win p=0.99 shift=5.8
+[70] There's one obvious reason to eat vegetables, they're plain what you? | A:lose weight B:good for C:bland D:chewing E:fibre || GOLD B:good for | MODEL C:bland p=0.70 shift=3.2
+[71] What can you use to store a book while traveling? | A:library of congress B:pocket C:backpack D:suitcase E:synagogue || GOLD D:suitcase | MODEL C:backpack p=0.76 shift=2.8
+[72] Where would you find gazelle under a G? | A:open field B:ivory coast C:dictionary D:steppe E:encyclopedia || GOLD E:encyclopedia | MODEL C:dictionary p=0.83 shift=4.2
+[73] What blocks sunshine? | A:summer B:park C:desktop D:sea E:moon || GOLD E:moon | MODEL D:sea p=0.58 shift=0.8
+[74] Joan was a baby, so there were many things she couldn't do, which caused problems for her parents.  Name one thing that makes raising a baby difficult. | A:arrive early B:learn to walk C:boy or girl D:bring joy E:talk nonsense || GOLD E:talk nonsense | MODEL D:bring joy p=0.29 shift=-1.0
+[75] Sam wasn't lying, but he left out important details. He was being what? | A:dishonesty B:deceitful C:imagination D:deceptive E:poker face || GOLD B:deceitful | MODEL D:deceptive p=0.99 shift=2.5
+[76] what does someone have that causes them committing murder? | A:problems B:distress C:fear D:go to jail E:killer || GOLD A:problems | MODEL B:distress p=0.73 shift=0.7
+[77] Where can fisherman store their rods when on a fishing trip? | A:hardware store B:engine C:fishing camp D:lake E:sporting goods store || GOLD C:fishing camp | MODEL E:sporting goods store p=0.76 shift=1.5
+[78] Danny is having fun just dancing and singing with his friends. He wasn't concerned with things that weren't fun. For him having fun is the same as what? | A:injuries B:smiling C:being happy D:glee E:jump || GOLD C:being happy | MODEL D:glee p=0.60 shift=0.9
+[79] The man acted ridiculous at the funeral, what attitude should he have taken? | A:straightforward B:serious C:solemn D:somber E:funny || GOLD C:solemn | MODEL B:serious p=0.61 shift=4.0
+[80] If my husband never helps me doing housework, what might that lead to? | A:boredom B:arguments C:headache D:exhaustion E:park || GOLD B:arguments | MODEL D:exhaustion p=0.58 shift=2.0
+[81] After working on the car, what did it end up doing? | A:going too fast B:last several years C:honk the horn D:go fast E:start running || GOLD E:start running | MODEL D:go fast p=0.65 shift=2.1
+[82] What is the least likely immediate side effect of eating hamburger? | A:nausea B:death C:illness D:health problems E:gain weight || GOLD B:death | MODEL E:gain weight p=0.76 shift=0.8
+[83] What would I be doing while going to work and walking? | A:listen to radio B:solve problems C:driving D:walk E:being late || GOLD A:listen to radio | MODEL D:walk p=0.94 shift=2.8
+[84] Where are there likely to be a variety of flats to choose from? | A:london B:apartment building C:city D:falling down E:town || GOLD C:city | MODEL A:london p=0.56 shift=2.0
+[85] What does a person from Avalon live in? | A:pain B:meaningful work C:english house D:cotton candy E:headache || GOLD C:english house | MODEL B:meaningful work p=0.53 shift=2.4
+[86] While waiting for this appointment, people often read magazines. | A:doctor B:train station C:newsagent D:market E:table || GOLD A:doctor | MODEL C:newsagent p=0.61 shift=1.7
+[87] What are you playing if you're fiddling on a violin? | A:bluegrass music B:make music C:drop D:string instrument E:troubles || GOLD A:bluegrass music | MODEL B:make music p=0.78 shift=2.7
+[88] The dogs were protecting their own when they decided to what the bad man? | A:bad breath B:defend C:run fast D:ocean E:attack || GOLD E:attack | MODEL B:defend p=0.93 shift=4.5
+[89] Where would there be an auditorium with only a single person speaking? | A:lights B:crowd C:university campus D:theater E:park || GOLD C:university campus | MODEL D:theater p=0.47 shift=1.4
+[90] The music was festive but why are the horses dancing in circles | A:carnival B:night club C:theatre D:opera E:ringmaster || GOLD A:carnival | MODEL E:ringmaster p=0.82 shift=3.5
+[91] In the building where James worked there was a small mezzanine in the auditorium to make more space for seats.  Where might James work? | A:theater B:floors C:concert hall D:education E:school || GOLD A:theater | MODEL E:school p=0.37 shift=0.8
+[92] The program kept getting errors, the amateur end user began to what? | A:get mad B:compile C:debug D:write code E:get frustrated || GOLD E:get frustrated | MODEL A:get mad p=0.46 shift=1.3
+[93] The homeowner frowned at the price of gas, what did he have to do later? | A:own home B:mail property tax payments C:board windows D:cut grass E:receive mail || GOLD D:cut grass | MODEL C:board windows p=0.62 shift=1.7
+[94] Sean was leaving work and took the roadway that led to his what? | A:neighborhood B:city C:fate D:countryside E:maps || GOLD A:neighborhood | MODEL D:countryside p=0.81 shift=2.5
+[95] What can you use to get a jellyfish? | A:adriatic sea B:mediterranean sea C:hand D:see E:atlantic ocean || GOLD C:hand | MODEL E:atlantic ocean p=0.59 shift=1.3
+[96] The boat passenger was explaining his fear of blowfish, but the captain figured he meant piranhas since they were on a river in the what? | A:cuba B:styx C:atlantic ocean D:france E:jungle || GOLD E:jungle | MODEL D:france p=0.41 shift=-0.1
+[97] Why is religion so hard to understand? | A:both positive and negative B:unknowable C:important to people D:ocean E:confusing || GOLD E:confusing | MODEL A:both positive and negative p=0.55 shift=4.6
+[98] The field general began to write out a letter to the king, he was told to send what when the enemy was near? | A:syllable B:english alphabet C:word D:email E:invitation || GOLD C:word | MODEL B:english alphabet p=0.37 shift=1.3
+[99] What do you need to wear when hiking? | A:cast iron stomach B:physical exertion C:shin splints D:adventure E:fatigue || GOLD C:shin splints | MODEL E:fatigue p=0.27 shift=0.2
+[100] There's some new buying products designed to get you money if you have none. The first step is that it will show you how to declare what? | A:tax return B:bankruptcy C:pleasure D:debt E:spending money || GOLD B:bankruptcy | MODEL D:debt p=0.73 shift=1.3
+[101] The rats were hiding in the house, where were they? | A:sewers B:laboratory C:basement D:clinic E:cellar || GOLD E:cellar | MODEL C:basement p=0.65 shift=1.8
+[102] What might happen if someone is not losing weight? | A:loose skin B:beauty C:miss universe D:death E:healthier || GOLD D:death | MODEL E:healthier p=0.89 shift=2.3
+[103] Billy lived in the capital of his country, then he moved.  Where might he move to? | A:small town B:jail C:lower case D:contain governmental activities E:lowercase || GOLD A:small town | MODEL D:contain governmental activities p=0.82 shift=2.5
+[104] Making a schedule was easy to pick, the major called for knowledge that required a certain what? | A:color B:class C:meeting D:university E:encyclopedia || GOLD B:class | MODEL D:university p=0.59 shift=0.9
+[105] What could prevent a driving car from continuing to drive? | A:automobile accidents B:backache C:pollution D:smoke E:low fuel tank || GOLD A:automobile accidents | MODEL E:low fuel tank p=1.00 shift=5.2
+[106] Where does a maid empty a trash can? | A:bus stop B:corner C:hockey game D:motel E:alley || GOLD D:motel | MODEL E:alley p=1.00 shift=7.7
+[107] Where are traveling clothes often kept? | A:suitcase B:bedroom C:closet D:draws E:dresser || GOLD A:suitcase | MODEL C:closet p=0.64 shift=1.5
+[108] What can happen when you contemplate alone for a long time? | A:daydream B:headache C:get ideas D:sleep E:become distracted || GOLD A:daydream | MODEL C:get ideas p=0.97 shift=4.1
+[109] When not in use where on your property would you store you bucket? | A:utility closet B:outside C:well D:garden shed E:garage || GOLD D:garden shed | MODEL B:outside p=0.43 shift=1.3
+[110] What does someone do to relax at night? | A:find time B:check mail C:listen to music D:go to bed E:stop worrying || GOLD D:go to bed | MODEL C:listen to music p=0.81 shift=2.5
+[111] Joe found spiders in the place where he keeps his tools.  Where might that be? | A:cupboard B:toolbox C:closet D:garage E:mail box || GOLD D:garage | MODEL B:toolbox p=0.92 shift=4.4
+[112] Where would you get a pen if you do not have one? | A:briefcase B:desk drawer C:friend's house D:pocket E:sidewalk || GOLD C:friend's house | MODEL D:pocket p=0.45 shift=1.0
+[113] What probably has a lot of dust in the back? | A:closet B:door C:corner D:shelf E:library || GOLD A:closet | MODEL D:shelf p=0.50 shift=1.4
+[114] What could people do that involves talking? | A:confession B:state park C:sing D:carnival E:opera || GOLD A:confession | MODEL C:sing p=0.58 shift=1.6
+[115] John wanted scatter his wife's remains in a lake in the wilderness.  He had to delay before of where he lived.  Where did he live? | A:mountains B:dead body C:pay debts D:state park E:new york || GOLD E:new york | MODEL D:state park p=0.53 shift=1.0
+[116] Where would you be concerned about finding a cavity? | A:solid object B:molar C:dentist D:unbrushed tooth E:teeth || GOLD E:teeth | MODEL D:unbrushed tooth p=0.97 shift=3.2
+[117] If I want to behave with proper aplomb, what manners should I avoid? | A:inappropriate B:incomplete C:impolite D:none E:incorrect || GOLD A:inappropriate | MODEL E:incorrect p=0.50 shift=0.3
+[118] Before lifting weights he liked to warm up on the squash court, he really enjoyed the facilities of the what? | A:swimming pool B:rich person's house C:country club D:fitness center E:park || GOLD D:fitness center | MODEL C:country club p=0.87 shift=2.5
+[119] What will happen to animals after eating food? | A:bite B:digestion C:feel pleasure D:pass water E:listen to each other || GOLD C:feel pleasure | MODEL B:digestion p=0.99 shift=5.9
+[120] What does a person often feel about someone judging them guilty? | A:controversy B:responsibility C:resentment D:judge feelings E:hurt feelings || GOLD C:resentment | MODEL E:hurt feelings p=0.97 shift=3.7
+[121] Where would a corpse be covered by a blanket? | A:bath store B:bedroom C:hospital D:flower garden E:michigan || GOLD C:hospital | MODEL B:bedroom p=0.97 shift=3.5
+[122] The vet found malignant tumors on the animals, what is their likely fate? | A:euthanasia B:pass water C:die of cancer D:feel pain E:feel pleasure || GOLD C:die of cancer | MODEL A:euthanasia p=0.99 shift=3.9
+[123] What is the thing that is agitated in your head when kissing? | A:sexual stimulation B:herpes C:headache D:catch cold E:happiness || GOLD E:happiness | MODEL A:sexual stimulation p=0.31 shift=2.0
+[124] Working on the elaborate task was taxing, it require extreme what? | A:holding B:concentration C:energy D:job E:energh || GOLD B:concentration | MODEL C:energy p=0.88 shift=3.7
+[125] If I was watching TV on the couch and the air was stuffy, I might turn the fan on to make the what more comfortable? | A:hockey game B:living room C:bathroom D:football stadium E:hot room || GOLD B:living room | MODEL E:hot room p=0.75 shift=0.9
+[126] After the weight cut he was worried about his energy levels, but this was part of participating in a what? | A:work B:wrestle C:play sports D:matter E:sleep || GOLD B:wrestle | MODEL C:play sports p=0.88 shift=3.0
+[127] Nature creates more beautiful structures than those that are what? | A:artificial B:indoors C:city D:man made E:eat cake || GOLD D:man made | MODEL A:artificial p=0.57 shift=2.6
+[128] Where would using a boat not require navigation skills? | A:water B:ocean C:garage D:harbor E:river || GOLD E:river | MODEL C:garage p=0.85 shift=2.0
+[129] If a small flying animal picks up a string, where are they taking it? | A:bird's nest B:park C:guitar D:kite E:quark || GOLD A:bird's nest | MODEL D:kite p=0.85 shift=2.4
+[130] What is unlikely to get bugs on its windshield due to bugs' inability to reach it when it is moving? | A:airplane B:scooter C:motorboat D:car E:motor vehicle || GOLD A:airplane | MODEL D:car p=0.38 shift=1.0
+[131] What does impeachment mean for the president? | A:vote B:election C:trouble D:board room E:corporation || GOLD C:trouble | MODEL A:vote p=0.73 shift=2.6
+[132] Spraining an ankle while playing baseball will cause what? | A:strikes B:eating C:injury D:sore muscles E:pain || GOLD E:pain | MODEL C:injury p=0.66 shift=2.4
+[133] What is main benefit to exercising? | A:losing weight B:healthy C:get in shape D:weight loss E:sweat || GOLD C:get in shape | MODEL B:healthy p=0.93 shift=3.1
+[134] What animal is known for being a follower? | A:goat B:expensive C:lion D:wolf E:meadow || GOLD A:goat | MODEL D:wolf p=0.39 shift=0.1
+[135] James was someone who was caught in his own delusions.  To him, the truth didn't do what what? | A:work to advantage B:matter to C:help D:free mind E:further knowledge || GOLD B:matter to | MODEL D:free mind p=0.49 shift=0.7
+[136] Sally thought that competing wasn't worth the risk. If she pushed more what might happen? | A:pressure B:trying harder C:put harder D:enemies E:death || GOLD E:death | MODEL B:trying harder p=0.97 shift=2.9
+[137] What is likely to have a better school cafeteria? | A:high school B:canteen C:polytechnic D:large room E:all kinds of schools || GOLD C:polytechnic | MODEL A:high school p=0.57 shift=3.2
+[138] Where would you find people standing in a line outside? | A:bus depot B:end of line C:opera D:neighbor's house E:meeting || GOLD A:bus depot | MODEL B:end of line p=0.32 shift=2.0
+[139] The child felt like it was all pretend, he didn't understand what? | A:people believe B:daydreams C:transcendentalism D:laughter E:religion || GOLD E:religion | MODEL A:people believe p=0.45 shift=2.3
+[140] What can machines do that humans cannot? | A:fail to work B:perform work C:answering questions D:see work E:fly || GOLD E:fly | MODEL B:perform work p=0.86 shift=2.7
+[141] Where is a bird likely to make it's home? | A:forest B:nest C:roof D:leaves E:sky || GOLD A:forest | MODEL B:nest p=0.98 shift=6.0
+[142] What do you do when you're going to market? | A:buy food B:see other people C:buying vegetables D:buy a fat pig E:traveling || GOLD A:buy food | MODEL C:buying vegetables p=0.31 shift=0.8
+[143] What is the feeling of one having fun? | A:smiling B:pleasure C:hurt D:injuries E:laughter || GOLD B:pleasure | MODEL E:laughter p=0.85 shift=4.6
+[144] Traveling from new place to new place is likely to be what? | A:going somewhere B:exhilarating C:diarrhea D:relocation E:exhausting || GOLD B:exhilarating | MODEL E:exhausting p=0.53 shift=2.7
+[145] Turkey only has a small northern part of their country located in part of the what? | A:middle east B:oven C:balkan peninsula D:provide meat E:asia minor || GOLD C:balkan peninsula | MODEL E:asia minor p=0.95 shift=3.3
+[146] Where is the closest place from where you could borrow salt? | A:ocean water B:table C:shaker D:neighbor's house E:lake || GOLD D:neighbor's house | MODEL C:shaker p=0.35 shift=1.4
+[147] What do you do in order to fly in airplane? | A:buy tickets B:passenger C:read D:add gas E:run through checklists || GOLD A:buy tickets | MODEL E:run through checklists p=0.97 shift=4.6
+[148] What is another name for the color of the fur of a dog with light colored fur? | A:fair B:basket C:dog hair D:game E:sun || GOLD A:fair | MODEL E:sun p=0.88 shift=1.6
+[149] David watched some nesting birds using his binoculars while on vacation.  Where might David be?. | A:sky B:vaccation C:forest D:countryside E:roof || GOLD C:forest | MODEL D:countryside p=0.83 shift=1.2
+[150] What does a person with a what likely do? | A:feel important B:trust himself C:own house D:electrical circuit E:know what time || GOLD E:know what time | MODEL B:trust himself p=0.41 shift=0.9

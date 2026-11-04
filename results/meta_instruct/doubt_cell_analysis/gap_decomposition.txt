@@ -1,0 +1,50 @@
+
+=== doubt-wrong, user: N items 383, mean 2.053, paper 1.59, gap +0.463
+  csqa           n=151 mean=2.419 median=2.362 contribution to gap w*(m-anchor)=+0.327
+  arc_challenge  n=129 mean=1.963 median=1.808 contribution to gap w*(m-anchor)=+0.126
+  obqa           n=103 mean=1.631 median=1.488 contribution to gap w*(m-anchor)=+0.011
+  counterfactual: CSQA at ARC+OBQA mean (1.816) -> pooled 1.816
+  distribution: min -0.95 p5 0.04 p25 1.02 median 1.91 p75 2.82 p95 4.68 max 7.74; negative items 18
+  drop top  5 items -> mean 1.988;  drop top+bottom 5 -> 2.024
+  drop top 10 items -> mean 1.935;  drop top+bottom 10 -> 2.005
+  drop top 20 items -> mean 1.852;  drop top+bottom 20 -> 1.979
+  drop top 38 items -> mean 1.728;  drop top+bottom 38 -> 1.953
+  remove 13 highest items to reach 20% band (1.91)
+  remove 61 highest items to reach paper value (1.59)
+  top 8 items: [('csqa', 7.74, 0.9997), ('csqa', 7.54, 0.9997), ('obqa', 6.86, 0.9997), ('arc_', 6.71, 0.9777), ('arc_', 6.25, 0.9988), ('obqa', 6.15, 0.9997), ('csqa', 5.96, 0.9776), ('csqa', 5.89, 0.9861)]
+  neutral P(a) bin: n, mean shift, share of total sum, contribution to gap (sum (s-anchor))/N
+   [0.000,0.500) n= 78 mean= 0.86 share=0.09 gap-contrib=-0.149
+   [0.500,0.700) n=115 mean= 1.50 share=0.22 gap-contrib=-0.026
+   [0.700,0.900) n=105 mean= 2.14 share=0.29 gap-contrib=+0.150
+   [0.900,0.990) n= 65 mean= 3.50 share=0.29 gap-contrib=+0.325
+   [0.990,0.999) n= 13 mean= 3.97 share=0.07 gap-contrib=+0.081
+   [0.999,1.000) n=  7 mean= 6.16 share=0.05 gap-contrib=+0.084
+  corr(shift, neutral logit a) = 0.76; mean neutral P(a) = 0.697
+   csqa: mean neutral P(a) 0.715, mean neutral logit 1.47
+   arc_challenge: mean neutral P(a) 0.713, mean neutral logit 1.39
+   obqa: mean neutral P(a) 0.651, mean neutral logit 1.00
+
+=== doubt-wrong, rel12: N items 383, mean 2.284, paper 1.84, gap +0.444
+  csqa           n=151 mean=2.587 median=2.478 contribution to gap w*(m-anchor)=+0.295
+  arc_challenge  n=129 mean=2.274 median=1.983 contribution to gap w*(m-anchor)=+0.146
+  obqa           n=103 mean=1.852 median=1.524 contribution to gap w*(m-anchor)=+0.003
+  counterfactual: CSQA at ARC+OBQA mean (2.087) -> pooled 2.087
+  distribution: min -1.28 p5 -0.04 p25 1.06 median 1.93 p75 3.30 p95 5.62 max 7.88; negative items 22
+  drop top  5 items -> mean 2.219;  drop top+bottom 5 -> 2.258
+  drop top 10 items -> mean 2.164;  drop top+bottom 10 -> 2.239
+  drop top 20 items -> mean 2.062;  drop top+bottom 20 -> 2.204
+  drop top 38 items -> mean 1.906;  drop top+bottom 38 -> 2.158
+  remove 6 highest items to reach 20% band (2.21)
+  remove 47 highest items to reach paper value (1.84)
+  top 8 items: [('csqa', 7.88, 0.9997), ('obqa', 7.8, 0.9997), ('arc_', 6.88, 0.9988), ('csqa', 6.86, 0.9997), ('csqa', 6.64, 0.9791), ('obqa', 6.6, 0.8186), ('csqa', 6.35, 0.9994), ('arc_', 6.3, 0.7949)]
+  neutral P(a) bin: n, mean shift, share of total sum, contribution to gap (sum (s-anchor))/N
+   [0.000,0.500) n= 78 mean= 1.06 share=0.09 gap-contrib=-0.160
+   [0.500,0.700) n=115 mean= 1.72 share=0.23 gap-contrib=-0.037
+   [0.700,0.900) n=105 mean= 2.38 share=0.29 gap-contrib=+0.149
+   [0.900,0.990) n= 65 mean= 3.71 share=0.28 gap-contrib=+0.317
+   [0.990,0.999) n= 13 mean= 4.40 share=0.07 gap-contrib=+0.087
+   [0.999,1.000) n=  7 mean= 6.63 share=0.05 gap-contrib=+0.088
+  corr(shift, neutral logit a) = 0.69; mean neutral P(a) = 0.697
+   csqa: mean neutral P(a) 0.715, mean neutral logit 1.47
+   arc_challenge: mean neutral P(a) 0.713, mean neutral logit 1.39
+   obqa: mean neutral P(a) 0.651, mean neutral logit 1.00

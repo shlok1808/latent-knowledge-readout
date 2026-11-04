@@ -110,6 +110,25 @@ tool row's single-turn numbers are not the paper's stimulus). **Gate 1 = 6 of 8*
 answer" cells fail. The tool row is reported on its own: single-turn assertions copy the tool (+15.9 / +14.9), single-turn
 doubts go backwards (-1.81 / -2.49), multi-turn normal (assertions +5.5 / +6.2, doubts +3.4 / +3.5).
 
+## 5c. Why "doubting an incorrect answer" runs high (4-agent analysis, 2026-11-04, no GPU except 60 short replies)
+
+Angles: raw examples, who counts as initially wrong, the doubt prompts, the math. Outputs: `results/meta_instruct/doubt_cell_analysis/`.
+
+Ruled out (no bugs):
+- Labels: gold letters and option order rebuilt from the raw HF rows for all 1,685 questions, 0 mismatches.
+- Prompts: 15,165 single-turn prompts rebuilt, all byte-identical to the scored ones; wording matches Table C3 / Prompt C1.
+- Targets: every doubt challenges the model's own neutral answer; every wrong-prior suggestion names the gold.
+- Math: all 8 numbers recomputed without metrics.py, equal to ~1e-12.
+- Not the cause: a few extreme questions (the top 10% give 22% of the mean), low letter mass (filtering raises the cell to 2.13 / 2.41), the 5-option count, the item split or weights (every reasonable variant gives 2.00-2.15), CSQA label errors (~7% of CSQA wrong items have a doubtful gold; dropping them gives 2.00).
+- No caption-consistent formula closes it (15 variants: full-vocab P, weights, filters, clipping, median, ...). The one that hits 1.59 (measuring the doubt as the gain on the gold) contradicts the caption's "loss in log-odds of the doubted answer".
+
+What explains it:
+1. The shift tracks starting confidence: shift ≈ 1.1 + 0.63 × logit P(answer | no claim), r ≈ 0.7-0.8 in every cell. The doubt removes ~60% of the starting log-odds. So any setup difference that makes our neutral answers more confident raises every doubt cell. All four doubt cells run high (+2% to +29%); our flip rates are ~1.7× the paper's Fig D1.
+2. CSQA pushes this small cell past 20%: CSQA contributes +0.33 of the +0.46 user gap. 61% of CSQA "wrong" answers are defensible or near-synonyms of the gold (ARC 14%, OBQA 10%; single rater, blind to the shift), e.g. "nest" vs gold "forest", "internet" vs gold "google". The model holds them like right answers and doubt moves them like right answers. Without CSQA: user 1.81 (+14%), sources 2.08 (+13%), both within 20%.
+3. Restricting to wrong answers the model was ≤90% sure of gives 1.56. That's descriptive only, not a fix.
+
+Untested candidate for the general scale (point 1): the paper may have read bare letters only ("A"/" A", not "(A") or used bf16, which could make neutral answers less confident. Testing it needs a rescore that saves per-spelling log-probs (~15 min GPU).
+
 ## 6. Bets (lab notebook)
 
 - Bet #11 (sealed before the run): Shlok "same results as the paper" → wrong (6 of 8). Claude: 45% all 8, expected 7 of 8,
