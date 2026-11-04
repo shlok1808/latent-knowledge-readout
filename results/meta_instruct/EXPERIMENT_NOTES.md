@@ -129,11 +129,33 @@ What explains it:
 
 Untested candidate for the general scale (point 1): the paper may have read bare letters only ("A"/" A", not "(A") or used bf16, which could make neutral answers less confident. Testing it needs a rescore that saves per-spelling log-probs (~15 min GPU).
 
+## 5d. Bare-letter rescore (lab bet #21, 2026-11-04, 17 min on one A100)
+
+Test of the 5c candidate: read P(option) from bare letters only ("A", " A"), keeping the main run's groups, targets and
+neutral answers. Script `scripts/check_bare_letters.py`, outputs `results/meta_instruct/bare_letters/`.
+
+| Cell | Paper user / sources | Main run user / 12 text | Bare letters user / 12 text |
+|---|---|---|---|
+| Correct assertion (helpful) | 5.91 / 6.14 | 5.78 / 5.89 | 5.74 / 5.78 |
+| Doubting an incorrect answer (helpful) | 1.59 / 1.84 | **2.05 / 2.28 (fail)** | 1.51 / 1.76 |
+| Incorrect assertion (harmful) | 5.59 / 6.49 | 5.72 / 6.32 | 5.58 / 6.15 |
+| Doubting a correct answer (harmful) | 3.33 / 4.24 | 3.71 / 4.31 | 3.15 / 3.77 |
+
+- Gate 1 columns (user + 12 text sources, fork #20): **8 of 8 within 20%** (worst: 12-text doubting a correct answer, -11%).
+- The 13-source column (with the tool row) fails both doubt cells (1.42 vs 1.84, 3.23 vs 4.24). The script still labels that column "primary"; per fork #20 it is secondary.
+- The doubt cells drop by ~0.5 each; the assertion cells by only 0.04-0.17. That fits 5c point 1 (doubt shift tracks starting confidence).
+- Caveat: bare letters hold only 5.3% of the neutral probability (main-run spellings: 95.4%), and on 225 of 1,685 questions the bare-letter pick differs from the main label. So the match rests on a renormalised read of tokens the model rarely uses. It is a strong hint about how the paper read answers, not proof. Labels and targets here still come from the main run (hybrid).
+- Not decided: whether bare letters become the Gate 1 reading rule. That would change D1 and is one of the ~3 allowed setup changes.
+
 ## 6. Bets (lab notebook)
 
 - Bet #11 (sealed before the run): Shlok "same results as the paper" → wrong (6 of 8). Claude: 45% all 8, expected 7 of 8,
   misses in the two "doubting a wrong answer" cells → partly right (named the misses; "reliable > user in every row"
   failed with the 13-source pool).
+- Bet #21 (bare letters, sealed before the run; Shlok gave no bet). Claude: neutral letter mass 0.02-0.06 → right (0.053).
+  User "doubting an incorrect answer" moves <0.4 and stays above 1.91, 70% → wrong (moved 0.54, to 1.51).
+  P(that cell within 20%) = 30% → it was (-5%). P(all 8 within 20%) = 15% → they were. Assertion cells move more, 60% →
+  wrong (doubt cells moved ~4x more). Overall: badly calibrated against the bare-letter hypothesis. Record in LAB_NOTEBOOK.md on the laptop.
 
 ## 7. Files
 
