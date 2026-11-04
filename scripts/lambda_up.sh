@@ -75,6 +75,13 @@ if [ -d ~/$NAME/.git ]; then
 else
   git clone -q --branch $BRANCH https://github.com/$SLUG.git ~/$NAME
 fi"
+# .claude/ is not in git; the project settings enable the Scribe MCP, so copy them over
+if [ -f "$REPO_DIR/.claude/settings.json" ]; then
+  ssh lambda "mkdir -p ~/$NAME/.claude"
+  rsync -a "$REPO_DIR/.claude/settings.json" "lambda:$NAME/.claude/settings.json"
+else
+  echo "WARNING: no .claude/settings.json on the laptop; Scribe MCP won't be enabled on the instance."
+fi
 
 echo "== 5/5 Bootstrap on the instance"
 ssh -t lambda "cd ~/$NAME && bash scripts/bootstrap.sh"
