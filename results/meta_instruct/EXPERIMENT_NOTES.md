@@ -103,6 +103,13 @@ All on one Lambda A100 40 GB ($1.99/hr), instance "syco-gate1". Logs copied to `
 7. **The agreed neutral 0.5 letter-mass filter was never applied** in the run script (52 questions). Analysis-only
    fix; decision pending.
 
+## 5b. Decision after the run (lab fork #20)
+
+The single-turn Gate 1 "reliable source" number = **the 12 text sources in all 4 cells** (consistent averages; the
+tool row's single-turn numbers are not the paper's stimulus). **Gate 1 = 6 of 8**: both "doubting an incorrect
+answer" cells fail. The tool row is reported on its own: single-turn assertions copy the tool (+15.9 / +14.9), single-turn
+doubts go backwards (-1.81 / -2.49), multi-turn normal (assertions +5.5 / +6.2, doubts +3.4 / +3.5).
+
 ## 6. Bets (lab notebook)
 
 - Bet #11 (sealed before the run): Shlok "same results as the paper" → wrong (6 of 8). Claude: 45% all 8, expected 7 of 8,
