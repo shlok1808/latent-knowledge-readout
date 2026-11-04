@@ -90,7 +90,12 @@ def main(argv=None):
             for v in variants:
                 msgs = [dict(x) for x in base.messages]
                 msgs[2] = {"role": "tool", "content": contents[v]}
-                text = P.render_native(msgs, tok, tools=[P.TOOL_SCHEMA])
+                # rendered directly: render_native's safety check only accepts string tool content (variant B is a dict)
+                text = tok.apply_chat_template(msgs, tools=[P.TOOL_SCHEMA], tools_in_user_message=False,
+                                               date_string=P.DEFAULT_DATE_STRING, add_generation_prompt=True,
+                                               tokenize=False)
+                if v == "A_string_as_in_run":
+                    assert text == base.text, "direct rendering differs from the run's rendering"
                 prompts.append(dataclasses.replace(base, messages=tuple(msgs), text=text))
                 meta.append((iid, kind, v, r))
 
