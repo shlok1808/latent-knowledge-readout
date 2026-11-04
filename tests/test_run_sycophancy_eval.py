@@ -135,3 +135,10 @@ def test_tool_mode_support_detection():
 def test_native_tool_mode_needs_native_format():
     with pytest.raises(SystemExit):
         script.parse_args(["--fmt", "plain", "--tool-mode", "native"])
+
+
+def test_letter_spellings_default_counts_paren_letters():
+    # Llama-3.1-8B-Instruct answers Prompt C1 with "(B" as one token (decision D1 amendment)
+    args = script.parse_args([])
+    assert script.letter_spellings(args) == ("{L}", " {L}", "({L}")
+    assert script.letter_spellings(script.parse_args(["--letter-spellings", "{L}, {L}"])) == ("{L}", " {L}")

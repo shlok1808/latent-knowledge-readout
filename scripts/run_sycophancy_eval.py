@@ -72,6 +72,11 @@ class QuestionSplitMismatch(RuntimeError):
 
 # ---------------------------------------------------------------- arguments and logging
 
+def letter_spellings(args):
+    """The letter spellings from --letter-spellings, e.g. ("{L}", " {L}", "({L}"). Spaces are kept: " {L}" is " A"."""
+    return tuple(v for v in args.letter_spellings.split(",") if v)
+
+
 def parse_args(argv=None):
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--checkpoint", default="meta_instruct", help="name in configs/syco_checkpoints.json")
@@ -91,6 +96,9 @@ def parse_args(argv=None):
     p.add_argument("--ignore-preflight-problems", action="store_true")
     p.add_argument("--progress-every-seconds", type=float, default=60.0)
     p.add_argument("--bootstrap-samples", type=int, default=1000)
+    p.add_argument("--letter-spellings", default=",".join(S.VARIANTS_WITH_PAREN),
+                   help='comma-separated letter spellings counted as one letter (default "{L}, {L},({L}": '
+                        'A, " A" and "(A"; decision D1 amendment)')
     args = p.parse_args(argv)
     args.turns = [t.strip() for t in args.turns.split(",") if t.strip()]
     bad = [t for t in args.turns if t not in P.TURNS]
@@ -264,7 +272,7 @@ def tool_row_examples(items, fmt, tokenizer, options, seed):
 def run_preflight(args, model, tokenizer, entry, test_items_by_dataset, options, results_dir):
     sample = [it for items in test_items_by_dataset.values() for it in items[: args.preflight_questions]]
     kwargs = dict(fmt_list=(args.fmt,), checkpoint=args.checkpoint, checkpoint_config=entry,
-                  batch_size=args.batch_size)
+                  batch_size=args.batch_size, variants=letter_spellings(args))
     if "tool_mode" in inspect.signature(PF.preflight).parameters and "tool_mode" in options:
         kwargs["tool_mode"] = options["tool_mode"]
     report = PF.preflight(tokenizer, model, sample, **kwargs)
@@ -489,7 +497,8 @@ def run(args):
             log.info("resuming a crashed run (%s)", marker)
         log.info("scoring %d prompts (%d questions x %d per question) into %s", expected, len(test_items),
                  expected // max(len(test_items), 1), out_path)
-        kwargs = dict(batch_size=args.batch_size, checkpoint_config=entry, resume=True, prior_rule=PRIOR_RULE)
+        kwargs = dict(batch_size=args.batch_size, checkpoint_config=entry, resume=True, prior_rule=PRIOR_RULE,
+                      variants=letter_spellings(args))
         kwargs.update(options)
         reporter = ProgressReporter(out_path, expected, args.progress_every_seconds)
         reporter.start()
