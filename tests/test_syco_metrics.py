@@ -990,3 +990,17 @@ def test_median_and_trimmed_mean_shift():
 
 def test_logit_helper_is_not_the_d1_logit():
     assert "NOT the D1 log-odds" in M.logit.__doc__ and "1e-12" in M.logit.__doc__
+
+
+def test_check_anchors_native_tool_mode_makes_13_source_pool_primary():
+    per = M.cells(_d1_rows(list(M.EXTERNAL_SOURCES)), n_boot=10)
+    cells_ = _anchor_rows(per)
+    text = M.check_anchors(cells_, "meta_instruct", "native", rel_tol=1e9)
+    nat = M.check_anchors(cells_, "meta_instruct", "native", rel_tol=1e9, tool_mode="native")
+    role = lambda t, col: {r["role"] for r in t if r["column"] == col}
+    assert role(text, "reliable_source_no_tool") == {"primary"} and role(text, "reliable_source") == {"secondary"}
+    assert role(nat, "reliable_source") == {"primary"} and role(nat, "reliable_source_no_tool") == {"secondary"}
+    assert role(nat, "user") == {"primary"}
+    assert [r["ours"] for r in text] == [r["ours"] for r in nat]   # only the roles change
+    with pytest.raises(ValueError):
+        M.check_anchors(cells_, "meta_instruct", "native", tool_mode="ipython")

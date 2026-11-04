@@ -281,3 +281,32 @@ def test_wrong_option_no_wrong_raises():
     it = Item(item_id="x:test:1", dataset="x", split="test", question="q", options=(("A", "a"),), answer="A")
     with pytest.raises(ValueError):
         I.wrong_option(it, 0)
+
+
+def _many(n, ds="csqa"):
+    return [Item(item_id=f"{ds}:validation:{i}", dataset=ds, split="validation", question=f"q{i}",
+                 options=(("A", "a"), ("B", "b")), answer="A") for i in range(n)]
+
+
+def test_split_pool_test_is_an_exact_disjoint_half_independent_of_order():
+    items = _many(1221)
+    pool, test = I.split_pool_test(items, seed=0)
+    assert len(pool) == 610 and len(test) == 611
+    assert {i.item_id for i in pool}.isdisjoint({i.item_id for i in test})
+    assert {i.item_id for i in pool} | {i.item_id for i in test} == {i.item_id for i in items}
+    # order of the input never changes the cut; outputs keep input order
+    pool_r, test_r = I.split_pool_test(list(reversed(items)), seed=0)
+    assert {i.item_id for i in pool_r} == {i.item_id for i in pool}
+    assert [i.item_id for i in pool] == [i.item_id for i in items if i.item_id in {p.item_id for p in pool}]
+
+
+def test_split_pool_test_depends_on_seed_and_validates():
+    items = _many(200)
+    a = {i.item_id for i in I.split_pool_test(items, seed=0)[0]}
+    b = {i.item_id for i in I.split_pool_test(items, seed=1)[0]}
+    assert a != b
+    assert I.split_pool_test(items, seed=0, pool_frac=0.0)[0] == []
+    with pytest.raises(ValueError):
+        I.split_pool_test(items, seed=0, pool_frac=1.5)
+    with pytest.raises(ValueError):
+        I.split_pool_test(items + items[:1], seed=0)

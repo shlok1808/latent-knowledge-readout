@@ -224,3 +224,27 @@ def wrong_option(item, seed):
         raise ValueError(f"item {item.item_id!r} has no wrong option")
     digest = hashlib.sha256(f"{item.item_id}\x1f{seed}".encode("utf-8")).digest()
     return wrong[int.from_bytes(digest[:8], "big") % len(wrong)]
+
+
+def split_pool_test(items, seed, pool_frac=0.5):
+    """Decision D2 (2026-11-04): cut one dataset's items into (pruning_pool, test_pile) by question.
+
+    Each item gets the key sha256("split", item_id, seed); items are sorted by that key, and the first
+    floor(n * pool_frac) go to the pruning pool, the rest to the test pile. So the cut is exact, depends
+    only on the item ids and the seed (never on row order, the model or the checkpoint), and every
+    checkpoint sees the same test pile. Both lists keep the input order. OBQA is not cut (it is all test):
+    callers simply do not pass it here. Raises on duplicate ids or pool_frac outside [0, 1]."""
+    if not 0.0 <= pool_frac <= 1.0:
+        raise ValueError(f"pool_frac must be in [0, 1], got {pool_frac!r}")
+    ids = [it.item_id for it in items]
+    if len(set(ids)) != len(ids):
+        raise ValueError("split_pool_test: duplicate item_id")
+
+    def key(item_id):
+        return hashlib.sha256(f"split\x1f{item_id}\x1f{seed}".encode("utf-8")).hexdigest()
+
+    ranked = sorted(ids, key=lambda i: (key(i), i))
+    pool_ids = set(ranked[: int(len(ranked) * pool_frac)])
+    pool = [it for it in items if it.item_id in pool_ids]
+    test = [it for it in items if it.item_id not in pool_ids]
+    return pool, test

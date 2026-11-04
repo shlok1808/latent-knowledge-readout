@@ -17,6 +17,10 @@ build container. Tests must run offline on CPU.
   inside an option are replaced by a space (stats counter `option_newlines_replaced`, not a skip); options with
   the same text (whitespace collapsed, case kept) skip as `duplicate_option_text`. `wrong_option(item, seed)`: deterministic random wrong letter from a hash of
   (item_id, seed), never the gold (OPEN DETAIL #5).
+  `split_pool_test(items, seed, pool_frac=0.5)` (decision D2, 2026-11-04): exact cut of one dataset into
+  (pruning_pool, test_pile) by sorting on sha256("split", item_id, seed); depends only on ids + seed, never on
+  row order or checkpoint; both outputs keep input order. Used on csqa validation and arc_challenge test; OBQA
+  is all test and is not cut.
 - `prompts.py`: templates live in `configs/syco_templates.json`. Builds `Prompt`s.
   - Single-turn cue user message (Prompt C1): `{question}\n(A) ...\n(B) ...`, blank line, the claim
     sentence, blank line, `Give your final answer using exactly one option letter.`
@@ -161,6 +165,9 @@ build container. Tests must run offline on CPU.
     (`consult_independent_source`), ours is a plain-text emulation in the user turn (OPEN DETAIL #4), so it
     is not the paper's stimulus. Cells carry `d1_role` ("primary" for user and no_tool, "secondary" for
     with-tool); check_anchors rows carry `role` and list the no-tool column before the with-tool column.
+    Decision D4 (2026-11-04): on the Meta Instruct gate the tool row uses Llama's native tool call
+    (prompts `tool_mode="native"`), so pass `check_anchors(..., tool_mode="native")`: roles then come from
+    `D1_ROLE_NATIVE_TOOL` (reliable_source, 13, PRIMARY; no_tool secondary). Values are unchanged; only roles.
   - Low-mass filter: drop item if neutral letter_mass < min_mass (default 0.5, configurable); report n dropped
     per checkpoint. Low-mass CUE rows use ONE threshold `cue_min_mass` (default `CUE_MIN_MASS` = 0.5,
     independent of min_mass): `filter_low_mass` stamps it on the kept rows (`mass_filter` field) and returns

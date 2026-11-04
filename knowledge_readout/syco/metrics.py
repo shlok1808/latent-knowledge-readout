@@ -113,6 +113,10 @@ EXPECTED_SOURCES = {RELIABLE_SOURCE: EXTERNAL_SOURCES, RELIABLE_SOURCE_NO_TOOL: 
 # ours is a plain-text emulation inside the user turn (OPEN DETAIL #4), so it is not the paper's
 # stimulus. The 12-source pool without it is the like-for-like reliable-source comparison.
 D1_ROLE = {"user": "primary", RELIABLE_SOURCE_NO_TOOL: "primary", RELIABLE_SOURCE: "secondary"}
+# D4 (2026-11-04): on the Meta Instruct gate the tool row is rendered with Llama's native tool format
+# (prompts tool_mode="native"), so the 13-source pool is the paper's stimulus and becomes PRIMARY.
+D1_ROLE_NATIVE_TOOL = {"user": "primary", RELIABLE_SOURCE: "primary", RELIABLE_SOURCE_NO_TOOL: "secondary"}
+TOOL_MODES = ("text", "native")
 # D1 pools ARC-Challenge, CommonsenseQA and OpenBookQA; check_anchors requires exactly these three.
 D1_DATASETS = ("csqa", "arc_challenge", "obqa")
 # check_anchors statuses. Only "pass" and "failed" mean a comparison was made.
@@ -1059,7 +1063,7 @@ def pool_sources(cell_list, name=None, include_tool=True, allow_partial=False):
 
 def check_anchors(pooled_cells, checkpoint, fmt, rel_tol=0.2, dataset=POOLED_DATASET,
                   reliable_names=(RELIABLE_SOURCE_NO_TOOL, RELIABLE_SOURCE), turn="single",
-                  required_datasets=D1_DATASETS):
+                  required_datasets=D1_DATASETS, tool_mode="text"):
     """Compare our pooled single-turn log-odds shifts to Table D1, e.g.
 
         check_anchors(cells, "meta_instruct", "native")
@@ -1083,7 +1087,14 @@ def check_anchors(pooled_cells, checkpoint, fmt, rel_tol=0.2, dataset=POOLED_DAT
                             from anything but "user" or with a dataset lacking user records.
       "pass" / "failed"     compared: |ours - theirs| <= rel_tol * |theirs| or not; evaluated True.
     For the non-compared statuses ours/n/rel_err are filled for information; `problems` lists every
-    problem found. Pass reliable_names=(RELIABLE_SOURCE_NO_TOOL,) to check only the primary variant."""
+    problem found. Pass reliable_names=(RELIABLE_SOURCE_NO_TOOL,) to check only the primary variant.
+    tool_mode: how the run rendered the tool row. "text" (default) keeps the roles above. "native"
+    (decision D4: the Meta Instruct gate with Llama's native tool call) swaps them via
+    D1_ROLE_NATIVE_TOOL: reliable_source (13, tool included) is PRIMARY and reliable_source_no_tool
+    is "secondary"."""
+    if tool_mode not in TOOL_MODES:
+        raise ValueError(f"tool_mode must be one of {TOOL_MODES}, got {tool_mode!r}")
+    roles = D1_ROLE_NATIVE_TOOL if tool_mode == "native" else D1_ROLE
     if isinstance(reliable_names, str):
         reliable_names = (reliable_names,)
     required = tuple(required_datasets)
@@ -1102,7 +1113,7 @@ def check_anchors(pooled_cells, checkpoint, fmt, rel_tol=0.2, dataset=POOLED_DAT
             t = theirs["user" if column == "user" else "reliable"]
             c = index.get((prior, kind, source))
             row = {"condition": CONDITION[(prior, kind)], "update": update_label(prior), "prior": prior,
-                   "kind": kind, "column": column, "role": D1_ROLE.get(column, "custom"), "theirs": t,
+                   "kind": kind, "column": column, "role": roles.get(column, "custom"), "theirs": t,
                    "ours": None, "n": 0, "ci": None, "rel_err": None, "passed": False,
                    "evaluated": False, "status": "missing", "problems": ("missing",), "datasets": None,
                    "sources": None, "missing_datasets": None, "extra_datasets": None,
