@@ -6,10 +6,22 @@ Pure row converters turn one Hugging Face row into an `Item` (or None when the r
 
 Lettering rule (all three datasets): options are put in label order (letters alphabetically, ARC's
 numeric labels "1".."5" numerically) and relettered contiguously from "A"; the gold is relettered the same way.
+Labels must be ASCII: one ASCII letter, or ASCII decimal digits; anything else (e.g. "²", "٣", "É")
+is skipped as "mixed_labels", never a crash.
+
+Text hygiene (prompts render one option per line in a plain "User:/Assistant:" dialogue):
+- a question or option text holding a newline followed by a plain role marker ("User:",
+  "Assistant:", "System:") is skipped as "role_marker_in_text" (it would forge a dialogue turn);
+- newlines inside an option text are replaced by a space (counted in stats as
+  "option_newlines_replaced", not a skip);
+- two options with the same text (after that, whitespace runs collapsed; case kept, since ARC has
+  options like "Co" vs "CO") are skipped as "duplicate_option_text".
 """
 import hashlib
 import logging
+import re
 
+from failure_probes.syco.prompts import has_role_marker
 from failure_probes.syco.types import LETTERS, Item
 
 log = logging.getLogger(__name__)
@@ -24,7 +36,12 @@ DATASETS = {
 SKIP_REASONS = (
     "bad_row", "missing_id", "missing_question", "missing_answer", "bad_choices", "empty_option_text",
     "duplicate_labels", "mixed_labels", "too_few_options", "too_many_options", "answer_not_in_labels",
+    "role_marker_in_text", "duplicate_option_text",
 )
+# non-skip counters that may also appear in `stats`
+COUNTERS = ("option_newlines_replaced",)
+# has_role_marker comes from prompts (the plain format's role names)
+_NEWLINES = re.compile(r"\s*[\r\n]+\s*")
 
 
 class _Malformed(Exception):
@@ -39,15 +56,20 @@ def _clean(value):
 
 
 def _label_key(label):
-    """Sort key for one normalized label: ("num", int) or ("let", str)."""
-    if label.isdigit():
+    """Sort key for one normalized label: ("num", int), ("let", str), or ("bad", str) for anything
+    that is not ASCII decimal digits or one ASCII letter (unicode digits such as "²" or "٣" are bad:
+    str.isdigit() accepts "²" but int() cannot parse it)."""
+    if not label.isascii():
+        return ("bad", label)
+    if label.isdecimal():
         return ("num", int(label))
     if len(label) == 1 and label.isalpha():
         return ("let", label)
     return ("bad", label)
 
 
-def _letter_options(choices, answer_key):
+
+def _letter_options(choices, answer_key, counters=None):
     """Return (options, gold) or raise _Malformed. `choices` is HF's {"label": [...], "text": [...]}."""
     if not isinstance(choices, dict):
         raise _Malformed("bad_choices")
@@ -63,6 +85,12 @@ def _letter_options(choices, answer_key):
         raise _Malformed("bad_choices")
     if any(not t for t in texts):
         raise _Malformed("empty_option_text")
+    if any(has_role_marker(t) for t in texts):
+        raise _Malformed("role_marker_in_text")
+    n_newline = sum(1 for t in texts if _NEWLINES.search(t))
+    texts = [_NEWLINES.sub(" ", t) for t in texts]
+    if len({" ".join(t.split()) for t in texts}) != len(texts):  # exact text, whitespace runs collapsed
+        raise _Malformed("duplicate_option_text")
     if len(set(labels)) != len(labels):
         raise _Malformed("duplicate_labels")
     keys = [_label_key(lab) for lab in labels]
@@ -85,10 +113,12 @@ def _letter_options(choices, answer_key):
         options.append((letter, texts[old_idx]))
         if labels[old_idx] == gold_label:
             gold = letter
+    if counters is not None and n_newline:
+        counters["option_newlines_replaced"] = counters.get("option_newlines_replaced", 0) + n_newline
     return tuple(options), gold
 
 
-def _convert(row, split, dataset, question_field):
+def _convert(row, split, dataset, question_field, counters=None):
     if not isinstance(row, dict):
         raise _Malformed("bad_row")
     native_id = _clean(row.get("id"))
@@ -97,14 +127,20 @@ def _convert(row, split, dataset, question_field):
     question = _clean(row.get(question_field))
     if not question:
         raise _Malformed("missing_question")
-    options, gold = _letter_options(row.get("choices"), row.get("answerKey"))
+    if has_role_marker(question):
+        raise _Malformed("role_marker_in_text")
+    counted = {}
+    options, gold = _letter_options(row.get("choices"), row.get("answerKey"), counted)
+    if counters is not None:  # only rows that are kept count
+        for key, n in counted.items():
+            counters[key] = counters.get(key, 0) + n
     return Item(item_id=f"{dataset}:{split}:{native_id}", dataset=dataset, split=split,
                 question=question, options=options, answer=gold)
 
 
 def _safe(row, split, dataset, question_field, stats=None):
     try:
-        return _convert(row, split, dataset, question_field)
+        return _convert(row, split, dataset, question_field, stats)
     except _Malformed as exc:
         if stats is not None:
             stats[exc.reason] = stats.get(exc.reason, 0) + 1
@@ -138,7 +174,8 @@ def load_items(dataset, split=None, limit=None, stats=None):
     """Load one dataset as a list of Items, in the dataset's native row order (deterministic).
 
     split: defaults to DATASETS[dataset][2]. limit: keep the first `limit` valid items (skipped rows
-    don't count). stats: optional dict, filled with {"rows", "kept", "skipped", <reason>: n}.
+    don't count). stats: optional dict, filled with {"rows", "kept", "skipped", <reason>: n} plus
+    the non-skip counter "option_newlines_replaced" when it is non-zero.
     Raises ValueError on an unknown dataset or a duplicate item_id.
     """
     if dataset not in DATASETS:
@@ -169,7 +206,7 @@ def load_items(dataset, split=None, limit=None, stats=None):
             raise ValueError(f"duplicate item_id {item.item_id!r} in {path} {split}")
         seen.add(item.item_id)
         items.append(item)
-    skipped = sum(reasons.values())
+    skipped = sum(n for reason, n in reasons.items() if reason in SKIP_REASONS)
     if skipped:
         log.warning("%s/%s: skipped %d of %d rows as malformed: %s", dataset, split, skipped, n_rows, reasons)
     if stats is not None:
