@@ -1,0 +1,13 @@
+{
+ "single_turn_rows_rescored": 48865,
+ "test_questions": 1685,
+ "minutes": 16.9,
+ "letter_spellings": [
+  "{L}",
+  " {L}"
+ ],
+ "neutral_letter_mass_mean_bare": 0.052936750989876255,
+ "neutral_letter_mass_mean_main_run": 0.9542363366834548,
+ "questions_whose_bare_letter_pick_differs_from_the_main_label": 225,
+ "note": "groups, targets and neutral answers are the main run's; only P(option) is read from bare letters"
+}
