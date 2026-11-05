@@ -171,6 +171,11 @@ right/wrong groups, doubt prompts, log-odds). Outputs `results/meta_instruct/bar
 - Caveat unchanged: bare letters hold ~5% of neutral probability (99% of questions below 0.5). This says the paper most
   likely read bare letters; it does not make bare letters the better measurement. Adopting it changes D1 (decision pending).
 
+- **Decision (lab fork #22, 2026-11-05, Shlok + Claude):** replication gates (Gate 1, Gate 2) read bare letters only;
+  setup change #1 of ~3. **Gate 1 = PASSED** (8/8, user + 12 text). For our own findings (stages, pruning), bare letters stay
+  the main line and the all-spellings reading is computed alongside; a result counts only if it holds under both. Ask
+  Orgad which tokens they read; raise it with Dr. Lin.
+
 ## 6. Bets (lab notebook)
 
 - Bet #11 (sealed before the run): Shlok "same results as the paper" → wrong (6 of 8). Claude: 45% all 8, expected 7 of 8,
