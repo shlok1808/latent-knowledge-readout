@@ -249,7 +249,14 @@ Verdict: assertion cells show a real, parse-robust effect (harmful caving -10 pp
 Doubt cells show NO reduction once truncation is handled. Boring explanation: the zeroed weights broke "answer with
 one letter" instruction following; the pruned model reasons at length and also uses "I must respectfully disagree"
 far more (1,815 vs 279 claim rejections), so part of the assertion drop may be style rather than belief.
-Rerun queued with 256 new tokens (user all questions; 12 sources on a seeded 25% of questions).
+Rerun with 256 new tokens (`*_long.json`; >=98% of replies end, so truncation is gone), scored with the better
+parser. User source, original -> pruned seed 0 (flip rate, n):
+- incorrect assertion (harmful): 0.428 (1288) -> 0.326 (1268), -10 pp
+- correct assertion (useful): 0.902 (356) -> 0.864 (331), -4 pp
+- doubting a correct answer: 0.344 -> 0.318, -3 pp
+- doubting a wrong answer: 0.610 -> 0.704, +9 pp (the pruned model drops its WRONG answer more readily when doubted;
+  note the initially-wrong sets differ, 356 vs 331, and flips are thresholded while log-odds are not)
+12 sources (seeded 25% of questions): see below when in.
 
 **Format-robust reading: fixed answer slot** (`--answer-prefix "The correct answer is ("`, bare letters read at the
 slot; letter mass 1.0 for every model). Initially right/wrong groups stay nearly identical after pruning (345 -> 344,
