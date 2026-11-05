@@ -256,7 +256,16 @@ parser. User source, original -> pruned seed 0 (flip rate, n):
 - doubting a correct answer: 0.344 -> 0.318, -3 pp
 - doubting a wrong answer: 0.610 -> 0.704, +9 pp (the pruned model drops its WRONG answer more readily when doubted;
   note the initially-wrong sets differ, 356 vs 331, and flips are thresholded while log-odds are not)
-12 sources (seeded 25% of questions): see below when in.
+12 sources (seeded 25% of questions; batch 128; better parser; parsed-only; 95% cluster bootstrap over questions):
+- correct assertion (useful): 0.880 [.826,.929] (n 1161) -> 0.856 [.805,.908] (n 954): -2 pp, CIs overlap, NO clear drop
+- incorrect assertion (harmful): 0.490 [.443,.538] (3908) -> 0.427 [.385,.470] (3911): -6 pp
+- doubting a correct answer: 0.475 [.431,.521] (3814) -> 0.604 [.561,.646] (3218, U 730): +13 pp, MORE caving
+- doubting a wrong answer: 0.672 [.596,.747] -> 0.761 [.695,.829]: +9 pp
+In written replies the pruned model caves LESS to asserted wrong options (user -10 pp, sources -6 pp) but MORE to
+doubts, and useful updating barely moves (user -4 pp, sources -2 pp n.s.). This DISAGREES with the fixed-slot log-odds
+reading (all 8 cells -20-27%). Likely reason (unverified): the pruned model now reasons before answering, and in that
+reasoning it often accepts "X is incorrect" and eliminates X; a forced answer slot skips the reasoning. So "pruning
+reduces updating" holds for first-answer-token belief movement, not clearly for what the model ends up writing.
 
 **Format-robust reading: fixed answer slot** (`--answer-prefix "The correct answer is ("`, bare letters read at the
 slot; letter mass 1.0 for every model). Initially right/wrong groups stay nearly identical after pruning (345 -> 344,
@@ -296,6 +305,9 @@ weights. Caveats: one seed for this reading; the prefix itself is a forced commi
    unchanged; recorded in run_config). Prefix chosen so the next token is a canonical letter token (" (" then "C");
    a bare "(" would not be ("(C" is one token in Llama's own replies). This is a diagnostic, not a new gate rule.
 10. Ran all-spellings evals for seeds 1 and 2 (spread across selections).
+11. Reran written flips with 256 new tokens (user: all questions; 12 sources: seeded 25% of questions to bound GPU
+    time), scored with the adjudicator's parser. Raised the generation batch to 128 for the 12-source rerun (192 ran
+    out of memory). Asked Shlok whether to finish it; he said yes. GPU terminated after all files were copied.
 
 Critic (research:critic agent) verdict on the draft claim "reproduces D1 Pruned": does NOT hold as worded. Supported
 wording today: in seed 0, first-token log-odds fall in all 8 cells; assertion-cell ratios match the paper, doubt cells

@@ -61,6 +61,7 @@ def main(argv=None):
     ap.add_argument("--max-new-tokens", type=int, default=48)
     ap.add_argument("--question-frac", type=float, default=1.0,
                     help="seeded fraction of test questions (sha256 of item_id), to bound GPU time for long replies")
+    ap.add_argument("--batch-size", type=int, default=64)
     ap.add_argument("--out-suffix", default="", help="appended to the output file name, e.g. _long")
     ap.add_argument("--sources", default="user", choices=("user", "reliable12"),
                     help="user, or the 12 Table C3 external text sources (no tool), pooled like D1's reliable column")
@@ -97,7 +98,7 @@ def main(argv=None):
         for cue in P.build_cues(it, prior, a, sources, ["single"], seed=0):
             jobs.append((it, cue, a))
             texts.append(P.build_prompt(it, cue, "native", tokenizer=tok, neutral_answer=a).text)
-    gens = D.generate_replies(model, tok, texts, args.max_new_tokens, 64)
+    gens = D.generate_replies(model, tok, texts, args.max_new_tokens, args.batch_size)
     cells = defaultdict(Counter)
     rows = []
     for (it, cue, a), g in zip(jobs, gens):
