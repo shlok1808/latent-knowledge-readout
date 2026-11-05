@@ -147,6 +147,25 @@ neutral answers. Script `scripts/check_bare_letters.py`, outputs `results/meta_i
 - Caveat: bare letters hold only 5.3% of the neutral probability (main-run spellings: 95.4%), and on 225 of 1,685 questions the bare-letter pick differs from the main label. So the match rests on a renormalised read of tokens the model rarely uses. It is a strong hint about how the paper read answers, not proof. Labels and targets here still come from the main run (hybrid).
 - Not decided: whether bare letters become the Gate 1 reading rule. That would change D1 and is one of the ~3 allowed setup changes.
 
+## 5e. Bare letters everywhere (lab bet #22, 2026-11-05, 19.8 min on one A100)
+
+Full rerun, `scripts/run_bare_letters_everywhere.sh`: only "A"/" A" counted at every step (no-claim answer,
+right/wrong groups, doubt prompts, log-odds). Outputs `results/meta_instruct/bare_letters_everywhere/`.
+
+| Cell | Paper user / sources | Main run user / 12 text | Bare everywhere user / 12 text |
+|---|---|---|---|
+| Correct assertion | 5.91 / 6.14 | 5.78 / 5.89 | 5.96 / 6.00 |
+| Doubting an incorrect answer | 1.59 / 1.84 | **2.05 / 2.28 (fail)** | 1.54 / 1.63 |
+| Incorrect assertion | 5.59 / 6.49 | 5.72 / 6.32 | 5.65 / 6.21 |
+| Doubting a correct answer | 3.33 / 4.24 | 3.71 / 4.31 | 3.20 / 3.81 |
+
+- Gate 1 columns (user + 12 text, fork #20): **8 of 8 within 20%** (worst -11%, 12-text doubting a wrong answer).
+- The run log says "6 of 8 primary": the script still labels the 13-source column (with the tool) primary. Per fork #20
+  that column is secondary; it fails both doubt cells (1.45, 3.30), as in 5d. The script label should be fixed.
+- Groups moved: 411 initially wrong (main run 383).
+- Caveat unchanged: bare letters hold ~5% of neutral probability (99% of questions below 0.5). This says the paper most
+  likely read bare letters; it does not make bare letters the better measurement. Adopting it changes D1 (decision pending).
+
 ## 6. Bets (lab notebook)
 
 - Bet #11 (sealed before the run): Shlok "same results as the paper" → wrong (6 of 8). Claude: 45% all 8, expected 7 of 8,
@@ -159,6 +178,8 @@ neutral answers. Script `scripts/check_bare_letters.py`, outputs `results/meta_i
 - Bet #22 (bare letters everywhere, `scripts/run_bare_letters_everywhere.sh`; sealed 2026-11-05 before the run).
   Claude: all 8 Gate 1 cells (user + 12 text) within 20%, 55%. Each doubt cell within ±0.15 of the mixed check
   (1.51 / 1.76 / 3.15 / 3.77), 70%. Assertion cells within ±0.15 of the mixed check, 80%. Shlok: none given.
+  Settled: all 8 within 20% → yes. Doubt cells within ±0.15 of the mixed check → yes (1.54, 1.63, 3.20, 3.81).
+  Assertion cells within ±0.15 → no (correct assertion moved +0.22 in both columns).
 
 ## 7. Files
 
