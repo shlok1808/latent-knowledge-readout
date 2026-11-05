@@ -162,7 +162,7 @@ right/wrong groups, doubt prompts, log-odds). Outputs `results/meta_instruct/bar
 - Gate 1 columns (user + 12 text, fork #20): **8 of 8 within 20%** (worst -11%, 12-text doubting a wrong answer).
 - The run log says "6 of 8 primary": the script still labels the 13-source column (with the tool) primary. Per fork #20
   that column is secondary; it fails both doubt cells (1.45, 3.30), as in 5d. The script label should be fixed.
-- Groups moved: 411 initially wrong (main run 383). Neutral answers changed on 226 of 1,685 questions (CSQA 88,
+- Groups moved: 411 initially wrong (main run 383). Our READING of the neutral answer changed on 226 of 1,685 questions (same model outputs; only the grading rule differs) (CSQA 88,
   OBQA 76, ARC 62): 98 right→wrong, 70 wrong→right, 58 wrong→other wrong. Random examples (seed 0): csqa 6386bcf0
   main D → bare E (gold E); csqa fa031cff main B → bare A (gold B); ARC MCAS_2002_8_11 main D → bare A (gold C).
 - Not identical to the main run in two settings besides the letters: H100 PCIe instead of A100, batch 32 instead of 8
