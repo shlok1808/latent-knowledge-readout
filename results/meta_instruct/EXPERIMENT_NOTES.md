@@ -176,6 +176,133 @@ right/wrong groups, doubt prompts, log-odds). Outputs `results/meta_instruct/bar
   the main line and the all-spellings reading is computed alongside; a result counts only if it holds under both. Ask
   Orgad which tokens they read; raise it with Dr. Lin.
 
+## 5f. Gate 2: B-TAP pruning (2026-11-05, 2x H100 SXM, ~1.5 h GPU)
+
+Plan and design: `knowledge_readout/syco/PRUNING_PLAN.md` (run notes there); decisions P1-P4 in `papers/2610.28325.md`.
+Code: `knowledge_readout/syco/pruning_data.py`, `pruning.py`; scripts `build_pruning_sets.py`, `run_btap.py`,
+`run_gate2.sh`, `check_written_accuracy.py`, `check_written_flips.py`. Reviewed by 3 Fable agents before the run
+(blockers fixed: crash after GPU work, OOM, eval reusing Gate 1 folders). Shlok skipped the Gate 2 bet (exam).
+
+**Steps.** A: sets built (792 both-correct questions, 512 + 512 per seed, 3 seeds, all boxes full). B: Fable agent
+read all 160 sampled caving rows, 160/160 correct. C: B-TAP scored in 1.8 min per GPU; 1,000 weights selected.
+D: pruned + random evals. E: seeds 1-2 selected. Results: `results/meta_instruct/btap/`.
+
+**Main finding: pruning changed the answer FORMAT.** The pruned model often ignores "Give your final answer using
+exactly one option letter." and writes "The correct answer is (C) ...". Neutral test questions (1,685):
+
+| model | written acc, strict | written acc, lenient | bare-letter acc | strict-unparsed | neutral letter mass bare / all spellings |
+|---|---|---|---|---|---|
+| original | 0.718 | 0.755 | 0.756 | 145 | 0.05 / ~0.95 |
+| pruned seed 0 | 0.471 | 0.754 | 0.687 | 709 | 0.02 / ~0.65 |
+| random seed 0 | 0.718 | 0.755 | 0.757 | 147 | 0.05 / - |
+| first-token selection | 0.462 | 0.729 | 0.718 | 749 | - |
+
+Knowledge is intact (lenient accuracy 0.755 -> 0.754; same answer on 1,494 of 1,584 questions); the format is not.
+The first-token-target selection does the same, so the full-reply target (fork #24) is not the cause. The random
+control changes nothing. The paper says its pruned model's question sets stay "nearly identical", so this format change
+is probably a DEVIATION from the paper (cause unknown; see open questions below).
+
+**D1 cells, pruned seed 0 (user / 12 text sources).** Ratios = pruned / our unpruned under the same reading.
+
+| cell | paper orig -> pruned (ratio) | bare letters: pruned (ratio) | all spellings: pruned (ratio) |
+|---|---|---|---|
+| correct assertion | 5.91/6.14 -> 2.95/2.86 (0.50/0.47) | 3.20/2.90 (0.54/0.48) | 2.78/2.88 (0.48/0.49) |
+| doubting a wrong answer | 1.59/1.84 -> 1.32/1.57 (0.83/0.85) | 0.21/0.20 (0.14/0.12) | 1.20/1.33 (0.58/0.58) |
+| incorrect assertion | 5.59/6.49 -> 3.63/3.88 (0.65/0.60) | 3.59/3.42 (0.63/0.55) | 3.79/3.82 (0.66/0.60) |
+| doubting a correct answer | 3.33/4.24 -> 2.97/3.68 (0.89/0.87) | 1.94/2.37 (0.61/0.62) | 2.63/2.80 (0.71/0.65) |
+
+- Agreed rule (bare letters, within 20%): **4 of 8** (assertion cells pass, doubt cells fail far low). Under bare
+  letters the format change leaves only leftover letter mass at the first token, so the doubt cells are not
+  trustworthy. All spellings: **7 of 8** (only 12-text "doubting a correct answer" fails, -24%).
+- Assertion cells match the paper's ratios closely under both readings. Doubt cells drop MORE than the paper's.
+- Random control (bare letters): every cell ratio 1.00. Skills proxy (mean CE on 200 held-out Alpaca replies):
+  original 2.306, pruned 2.311, random 2.306 (a proxy, not the paper's Table D5 suite).
+- Selection: first-token vs full-reply overlap 0.591. Seeds: 0.650 / 0.694 / 0.698 pairwise (mean 0.68; paper
+  0.70-0.85). Allocation is fixed by matrix size (see PRUNING_PLAN run notes).
+
+**Written-reply flip rates** (single turn, test questions, lenient parse; initial answer = the model's own written
+neutral answer). "all" = unparsed cue replies count as no flip; "parsed" = among parsed replies only.
+
+| cell | user orig (all) | user pruned (all / parsed) | 12 sources orig (all) | 12 sources pruned (all / parsed) |
+|---|---|---|---|---|
+| correct assertion | 0.893 | 0.798 / 0.874 | 0.881 | 0.788 / 0.882 |
+| doubting a wrong answer | 0.553 | 0.589 / 0.689 | 0.605 | 0.449 / 0.711 |
+| incorrect assertion | 0.426 | 0.320 / 0.350 | 0.500 | 0.362 / 0.475 |
+| doubting a correct answer | 0.319 | 0.267 / 0.307 | 0.437 | 0.272 / 0.479 |
+
+Random control (user): identical to original. The written evidence depends on how the many unparsed pruned
+replies are read (12-source doubting-a-correct: 6,573 of 15,216 unparsed vs 891 before); a Fable agent is adjudicating
+them (results below when in).
+
+**Adjudication of unparsed written replies** (Fable agent; 428 hand-labelled replies; better parser 90% agreement
+with the hand labels, zero flip/no-flip swaps; scripts + results in `btap/adjudication/`). Most pruned "unparsed"
+replies are TRUNCATED at the 48-token cap mid-reasoning ("eliminate A, consider the rest ..."), not refusals; in doubt
+cells most truncated replies already reject the doubted option (lean: flip). The old lenient parser also read a
+single rejected "(X)" as the answer (510 rows). Corrected flip rates, original -> pruned, [95% cluster CI]:
+- 12 sources, incorrect assertion (harmful): 0.502 -> 0.379 [.357,.400] (U as no-flip); parsed-only 0.504 -> 0.403.
+- 12 sources, correct assertion (useful): 0.885 -> 0.817 [.785,.846]; parsed-only 0.888 -> 0.846 [.815,.875].
+- 12 sources, doubting a correct answer: 0.442 -> 0.306 (U as no-flip) but parsed-only 0.467 -> 0.514 (U = 6,147).
+- 12 sources, doubting a wrong answer: 0.618 -> 0.514 (U as no-flip); parsed-only 0.652 -> 0.733.
+- User: incorrect assertion 0.428 -> 0.326 / 0.331; correct assertion 0.902 -> 0.852 / 0.870; doubting correct
+  0.336 -> 0.287 / 0.322; doubting wrong 0.587 -> 0.628 / 0.698. Random control = original (+-0.01) everywhere.
+Verdict: assertion cells show a real, parse-robust effect (harmful caving -10 pp; useful updating -4 to -7 pp).
+Doubt cells show NO reduction once truncation is handled. Boring explanation: the zeroed weights broke "answer with
+one letter" instruction following; the pruned model reasons at length and also uses "I must respectfully disagree"
+far more (1,815 vs 279 claim rejections), so part of the assertion drop may be style rather than belief.
+Rerun queued with 256 new tokens (user all questions; 12 sources on a seeded 25% of questions).
+
+**Format-robust reading: fixed answer slot** (`--answer-prefix "The correct answer is ("`, bare letters read at the
+slot; letter mass 1.0 for every model). Initially right/wrong groups stay nearly identical after pruning (345 -> 344,
+1,340 -> 1,341), as the paper reports. Absolute shifts are on a different scale from D1 (the prefix forces a commitment),
+so only the ratios are compared. Results: `btap/prefix_{original,pruned_seed0,random_seed0}/`.
+
+| cell (user / 12 text) | original | pruned seed 0 [95% CI] | ratio | random ratio | paper ratio |
+|---|---|---|---|---|---|
+| correct assertion | 6.64 / 7.77 | 4.82 [4.62,5.02] / 6.01 [5.80,6.22] | 0.73 / 0.77 | 1.00 / 1.00 | 0.50 / 0.47 |
+| doubting a wrong answer | 3.54 / 4.35 | 2.57 [2.39,2.75] / 3.24 [3.04,3.45] | 0.73 / 0.74 | 1.00 / 1.00 | 0.83 / 0.85 |
+| incorrect assertion | 6.62 / 8.65 | 5.18 [5.05,5.29] / 6.92 [6.79,7.03] | 0.78 / 0.80 | 1.00 / 1.00 | 0.65 / 0.60 |
+| doubting a correct answer | 5.21 / 7.35 | 4.00 [3.88,4.12] / 5.79 [5.64,5.94] | 0.77 / 0.79 | 1.00 / 1.00 | 0.89 / 0.87 |
+
+Reading: under a reading that the format change cannot touch, B-TAP pruning lowers claim-driven belief movement by
+~20-27% in ALL 8 cells (harmful and useful, user and reliable sources), and the magnitude-matched random control
+does nothing. This supports the paper's qualitative claim (useful updating drops too). But the drop is UNIFORM, while
+the paper's is larger in the assertion cells and smaller in the doubt cells. A uniform damping also fits the "generically
+less movable" alternative flagged in the B-TAP sweep (papers/2610.28325.md), so it does not by itself show shared
+weights. Caveats: one seed for this reading; the prefix itself is a forced commitment, not the paper's reading.
+
+**All-spellings Gate 2 across seeds:** seed 0: 7/8, seed 1: 8/8, seed 2: 7/8 within 20% of D1 Pruned. Random
+(all spellings): 1/8 (it stays at the unpruned values, as expected).
+
+### Decisions I took without Shlok today (for discussion tomorrow)
+1. Gate 2 eval kept the agreed bare-letter reading and ALSO ran all spellings (fork #22 says own findings need both).
+2. Added written-reply diagnostics (accuracy, flips) after seeing the letter mass halve. Lenient parser = mine.
+3. Max 48 new tokens for every generation (sets and diagnostics); cut-off replies never count as caving (review fix).
+4. Prune batch 4, no gradient checkpointing (memory); fp32 + TF32 like the eval; balanced layer split 0-7,24-31 / 8-23.
+5. Skills check = held-out Alpaca CE proxy instead of the paper's suite (it was "decide later").
+6. Killed the random all-spellings eval once to free a GPU for the first-token format test; it was re-queued.
+7. Ran the random control through the full D1 eval (it came free with the eval); P4 had put "random on D1" after
+   Gate 2.
+8. Did NOT change the pass rule (Shlok: "just do what the authors are doing": report original vs pruned side by side).
+9. Added a format-robust diagnostic reading (critic's top suggestion): `answer_prefix="The correct answer is ("`
+   appended after the assistant header, letter read at that fixed slot (bare letters), for original, pruned and
+   random. New optional arg in `prompts.build_prompt` + `--answer-prefix` in the eval (default off, existing runs
+   unchanged; recorded in run_config). Prefix chosen so the next token is a canonical letter token (" (" then "C");
+   a bare "(" would not be ("(C" is one token in Llama's own replies). This is a diagnostic, not a new gate rule.
+10. Ran all-spellings evals for seeds 1 and 2 (spread across selections).
+
+Critic (research:critic agent) verdict on the draft claim "reproduces D1 Pruned": does NOT hold as worded. Supported
+wording today: in seed 0, first-token log-odds fall in all 8 cells; assertion-cell ratios match the paper, doubt cells
+drop far more; Gate 2 FAILS under the pre-agreed bare-letter rule (4/8; 7/8 all spellings); pruning changes the answer
+format; written replies show harmful caving down modestly and useful updating barely moving; random control is a true
+null; general ability not tested beyond the Alpaca CE proxy (which the preservation set nearly guarantees). Also: the
+user-cell eval wordings equal pruning wording #1 (likely true in the paper too); only the 12-text cells test new wordings.
+
+### Open questions for tomorrow
+- Which reading counts for Gate 2, given the format change? (bare 4/8, all spellings 7/8, written flips mixed)
+- Why does our pruning break the answer format when the paper's apparently did not? Candidates: doubt wordings
+  (3 of 4 ours), mean vs sum loss (Eq 1 says sum), the paper's unstated target y, its unstated answer reading.
+- Ask Orgad: target y for caving examples, how answers were read for D1, whether the pruned model kept the format.
+
 ## 6. Bets (lab notebook)
 
 - Bet #11 (sealed before the run): Shlok "same results as the paper" → wrong (6 of 8). Claude: 45% all 8, expected 7 of 8,
@@ -190,6 +317,12 @@ right/wrong groups, doubt prompts, log-odds). Outputs `results/meta_instruct/bar
   (1.51 / 1.76 / 3.15 / 3.77), 70%. Assertion cells within ±0.15 of the mixed check, 80%. Shlok: none given.
   Settled: all 8 within 20% → yes. Doubt cells within ±0.15 of the mixed check → yes (1.54, 1.63, 3.20, 3.81).
   Assertion cells within ±0.15 → no (correct assertion moved +0.22 in both columns).
+- Bet #26 (Gate 2, sealed 2026-11-05 before the pruned evals; Shlok skipped: exam). Claude: (1) all 4 assertion cells
+  drop >=25% (bare letters), 75% -> RIGHT; (2) all 8 within 20%, 40% -> NO (4/8; I expected assertion cells to miss
+  high, instead doubt cells missed far low); (3) all 8 drop, 70% -> right (partly an artifact); (4) random moves every
+  assertion cell <10%, 85% -> right (1.00); (5) first-token overlap >=0.5, 70% -> right (0.591); (6) seed overlap
+  0.6-0.9, 60% -> right (0.68). Missed entirely: the format change. Overall: partly right. LEFT OPEN in the lab tool
+  (it needs a grade for Shlok's side; settle together tomorrow).
 
 ## 7. Files
 

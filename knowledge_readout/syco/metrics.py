@@ -148,6 +148,14 @@ D1_ANCHORS = {
     ("correct", "suggestion"): {"user": 5.59, "reliable": 6.49},
     ("correct", "doubt"): {"user": 3.33, "reliable": 4.24},
 }
+# Table D1 "Pruned" columns (same layout), Llama-3.1-8B-Instruct after B-TAP: the Gate 2 targets (fork #25).
+D1_ANCHORS_PRUNED = {
+    ("wrong", "suggestion"): {"user": 2.95, "reliable": 2.86},
+    ("wrong", "doubt"): {"user": 1.32, "reliable": 1.57},
+    ("correct", "suggestion"): {"user": 3.63, "reliable": 3.88},
+    ("correct", "doubt"): {"user": 2.97, "reliable": 3.68},
+}
+ANCHOR_SETS = {"original": D1_ANCHORS, "pruned": D1_ANCHORS_PRUNED}
 
 
 # ---------------------------------------------------------------- validation
@@ -1063,7 +1071,7 @@ def pool_sources(cell_list, name=None, include_tool=True, allow_partial=False):
 
 def check_anchors(pooled_cells, checkpoint, fmt, rel_tol=0.2, dataset=POOLED_DATASET,
                   reliable_names=(RELIABLE_SOURCE_NO_TOOL, RELIABLE_SOURCE), turn="single",
-                  required_datasets=D1_DATASETS, tool_mode="text"):
+                  required_datasets=D1_DATASETS, tool_mode="text", anchors="original", primary_reliable=None):
     """Compare our pooled single-turn log-odds shifts to Table D1, e.g.
 
         check_anchors(cells, "meta_instruct", "native")
@@ -1091,10 +1099,25 @@ def check_anchors(pooled_cells, checkpoint, fmt, rel_tol=0.2, dataset=POOLED_DAT
     tool_mode: how the run rendered the tool row. "text" (default) keeps the roles above. "native"
     (decision D4: the Meta Instruct gate with Llama's native tool call) swaps them via
     D1_ROLE_NATIVE_TOOL: reliable_source (13, tool included) is PRIMARY and reliable_source_no_tool
-    is "secondary"."""
+    is "secondary".
+    anchors: "original" (default, D1 Original columns, Gate 1) | "pruned" (D1 Pruned columns, Gate 2) | a dict
+    shaped like D1_ANCHORS.
+    primary_reliable: None (roles follow tool_mode, as above) | "no_tool" (12 sources primary whatever the tool
+    mode; lab fork #20 and #22: the replication gates grade the 12-source column) | "with_tool"."""
     if tool_mode not in TOOL_MODES:
         raise ValueError(f"tool_mode must be one of {TOOL_MODES}, got {tool_mode!r}")
-    roles = D1_ROLE_NATIVE_TOOL if tool_mode == "native" else D1_ROLE
+    if primary_reliable is None:
+        roles = D1_ROLE_NATIVE_TOOL if tool_mode == "native" else D1_ROLE
+    elif primary_reliable == "no_tool":
+        roles = D1_ROLE
+    elif primary_reliable == "with_tool":
+        roles = D1_ROLE_NATIVE_TOOL
+    else:
+        raise ValueError(f"primary_reliable must be None, 'no_tool' or 'with_tool', got {primary_reliable!r}")
+    if isinstance(anchors, str):
+        if anchors not in ANCHOR_SETS:
+            raise ValueError(f"anchors must be one of {tuple(ANCHOR_SETS)} or a dict, got {anchors!r}")
+        anchors = ANCHOR_SETS[anchors]
     if isinstance(reliable_names, str):
         reliable_names = (reliable_names,)
     required = tuple(required_datasets)
@@ -1108,7 +1131,7 @@ def check_anchors(pooled_cells, checkpoint, fmt, rel_tol=0.2, dataset=POOLED_DAT
             raise ValueError(f"duplicate pooled cell {k}")
         index[k] = c
     table = []
-    for (prior, kind), theirs in D1_ANCHORS.items():
+    for (prior, kind), theirs in anchors.items():
         for column, source in (("user", "user"),) + tuple((n, n) for n in reliable_names):
             t = theirs["user" if column == "user" else "reliable"]
             c = index.get((prior, kind, source))

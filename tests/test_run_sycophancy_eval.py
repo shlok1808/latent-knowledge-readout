@@ -77,7 +77,10 @@ def test_end_to_end_on_tiny_model(tiny, tmp_path):
     assert len(table) == 4 * 3   # 4 Table D1 conditions x (user, 12-source pool, 13-source pool)
     assert {r["column"] for r in table} == {"user", "reliable_source", "reliable_source_no_tool"}
     assert result["tool_mode_used"] == "native"
-    assert {r["role"] for r in table if r["column"] == "reliable_source"} == {"primary"}
+    # fork #20/#22: the 12 text sources are graded as primary even in native tool mode (--primary-reliable no_tool)
+    assert {r["role"] for r in table if r["column"] == "reliable_source_no_tool"} == {"primary"}
+    assert {r["role"] for r in table if r["column"] == "reliable_source"} == {"secondary"}
+    assert result["anchors"] == "original" and result["prune_indices"] is None
     assert set(result["summary"]) >= {"all_primary_rows_pass", "rows_compared", "status_counts"}
     assert set(result["answer_reading_by_dataset"]) == {"csqa", "arc_challenge", "obqa"}
     assert result["scoring_counts"]["items"] == 8
@@ -142,3 +145,20 @@ def test_letter_spellings_default_counts_paren_letters():
     args = script.parse_args([])
     assert script.letter_spellings(args) == ("{L}", " {L}", "({L}")
     assert script.letter_spellings(script.parse_args(["--letter-spellings", "{L}, {L}"])) == ("{L}", " {L}")
+
+
+def test_pruning_marker_refuses_mixed_out_dirs(tmp_path):
+    out = tmp_path / "runs"
+    out.mkdir()
+    idx = tmp_path / "sel.json"
+    idx.write_text('{"meta": {}, "indices": []}')
+    script.check_pruning_marker(out, idx)            # fresh dir: writes the marker
+    script.check_pruning_marker(out, idx)            # same indices: fine
+    with pytest.raises(RuntimeError):
+        script.check_pruning_marker(out, None)       # unpruned run into a pruned dir
+    old = tmp_path / "old"
+    old.mkdir()
+    (old / "scores.jsonl").write_text("{}\n")        # pre-marker dir with rows = unpruned
+    script.check_pruning_marker(old, None)
+    with pytest.raises(RuntimeError):
+        script.check_pruning_marker(old, idx)

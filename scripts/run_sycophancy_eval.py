@@ -102,6 +102,16 @@ def parse_args(argv=None):
     p.add_argument("--letter-spellings", default=",".join(S.VARIANTS_WITH_PAREN),
                    help='comma-separated letter spellings counted as one letter (default "{L}, {L},({L}": '
                         'A, " A" and "(A"; decision D1 amendment)')
+    p.add_argument("--prune-indices", type=Path, default=None,
+                   help="JSON from pruning.save_indices: zero these weights right after loading (B-TAP Gate 2 or "
+                        "the random control). Neutral answers are then recomputed on the pruned model, as in D1.")
+    p.add_argument("--anchors", default="original", choices=("original", "pruned"),
+                   help="which Table D1 column to compare to: original (Gate 1) or pruned (Gate 2)")
+    p.add_argument("--answer-prefix", default=None,
+                   help='text appended after the assistant header so letters are read at a fixed slot, e.g. '
+                        '"The correct answer is (" (Gate 2 format diagnostic); default off')
+    p.add_argument("--primary-reliable", default="no_tool", choices=("no_tool", "with_tool"),
+                   help="which reliable-source pool is graded as primary (fork #20/#22: the 12 text sources)")
     args = p.parse_args(argv)
     args.turns = [t.strip() for t in args.turns.split(",") if t.strip()]
     bad = [t for t in args.turns if t not in P.TURNS]
@@ -110,6 +120,13 @@ def parse_args(argv=None):
     if args.tool_mode == "native" and args.fmt != "native":
         p.error("--tool-mode native needs --fmt native (the plain format has no tool role)")
     suffix = f"_smoke{args.smoke}" if args.smoke else ""
+    if args.prune_indices is not None:
+        # never default into the unpruned Gate 1 folders: e.g. selected.json in .../btap/seed0 -> "_pruned_seed0_selected"
+        tag = f"_pruned_{Path(args.prune_indices).parent.name}_{Path(args.prune_indices).stem}"
+        suffix += tag
+        if args.results_dir is None:  # e.g. results/meta_instruct/btap/eval_seed0_selected
+            args.results_dir = (ROOT / "results" / args.checkpoint / "btap"
+                                / f"eval_{Path(args.prune_indices).parent.name}_{Path(args.prune_indices).stem}")
     if args.out_dir is None:
         args.out_dir = ROOT / "runs" / f"sycophancy_eval_{args.checkpoint}{suffix}"
     if args.results_dir is None:
@@ -381,12 +398,13 @@ def answer_reading_by_dataset(rows):
     return out
 
 
-def compare_to_paper(rows, checkpoint, fmt, tool_mode_used, n_boot, seed):
+def compare_to_paper(rows, checkpoint, fmt, tool_mode_used, n_boot, seed, anchors="original", primary_reliable=None):
     per_dataset = M.cells(rows, n_boot=n_boot, seed=seed)
     with_tool = M.pool_sources(per_dataset, include_tool=True)
     without_tool = M.pool_sources(per_dataset, include_tool=False)
     pooled = M.pool_datasets(per_dataset + with_tool + without_tool, datasets=M.D1_DATASETS)
-    table = M.check_anchors(pooled, checkpoint, fmt, tool_mode=tool_mode_used)
+    table = M.check_anchors(pooled, checkpoint, fmt, tool_mode=tool_mode_used, anchors=anchors,
+                            primary_reliable=primary_reliable)
     primary = [r for r in table if r["role"] == "primary"]
     summary = {
         "rows": len(table),
@@ -445,11 +463,42 @@ def item_ids_sha256(items):
     return hashlib.sha256("\n".join(item.item_id for item in items).encode()).hexdigest()
 
 
+PRUNING_MARKER = "pruning.json"
+
+
+def pruning_marker(prune_indices):
+    """What weights this out-dir's rows were scored with: {"prune_indices": path or None, "sha256": file hash}."""
+    if not prune_indices:
+        return {"prune_indices": None, "sha256": None}
+    return {"prune_indices": str(prune_indices),
+            "sha256": hashlib.sha256(Path(prune_indices).read_bytes()).hexdigest()}
+
+
+def check_pruning_marker(out_dir, prune_indices):
+    """Refuse to mix rows from differently pruned models in one out-dir (resume or rerun). An out-dir without a
+    marker counts as unpruned when it already holds rows (every run before this marker existed was unpruned)."""
+    want = pruning_marker(prune_indices)
+    path = Path(out_dir) / PRUNING_MARKER
+    if path.exists():
+        have = read_json(path)
+    elif any(Path(out_dir).glob("scores*.jsonl")) or any(Path(out_dir).glob("*.manifest.json")):
+        have = pruning_marker(None)
+    else:
+        write_json(path, want)
+        return
+    if have.get("sha256") != want["sha256"]:
+        raise RuntimeError(f"{out_dir} holds rows scored with prune_indices={have.get('prune_indices')!r}, but this run "
+                           f"uses {want['prune_indices']!r}; use another --out-dir")
+    if not path.exists():
+        write_json(path, want)
+
+
 def run(args):
     entry = S.checkpoint_entry(args.checkpoint)
     results_dir, out_dir = Path(args.results_dir), Path(args.out_dir)
     results_dir.mkdir(parents=True, exist_ok=True)
     out_dir.mkdir(parents=True, exist_ok=True)
+    check_pruning_marker(out_dir, getattr(args, "prune_indices", None))
     log.info("checkpoint %s (%s), format %s, tool mode %s, turns %s, seed %d%s", args.checkpoint,
              entry["hf_id"], args.fmt, args.tool_mode, args.turns, args.seed,
              f", SMOKE: {args.smoke} test questions per dataset" if args.smoke else "")
@@ -474,6 +523,8 @@ def run(args):
         log.warning(msg)
         warnings_out.append(f"tool_mode {args.tool_mode!r} requested but not supported; ran 'text'")
     options = prompt_options(tool_mode_used)
+    if getattr(args, "answer_prefix", None):
+        options["answer_prefix"] = args.answer_prefix
 
     out_path = out_dir / "scores.jsonl"
     manifest_file = S.manifest_path(out_path, args.checkpoint, args.fmt)
@@ -497,6 +548,15 @@ def run(args):
         log.info("TF32 matmuls: %s", "on" if args.allow_tf32 else "off")
         model, tokenizer = load_model_and_tokenizer(entry["hf_id"], args.dtype, args.device, args.allow_tf32)
         log.info("model loaded in %.0f s", time.time() - t0)
+        if getattr(args, "prune_indices", None):
+            from knowledge_readout.syco import pruning as PR
+            indices, meta = PR.load_indices(args.prune_indices)
+            if meta.get("model_id") and meta["model_id"] != entry["hf_id"]:
+                raise RuntimeError(f"{args.prune_indices} was selected on {meta['model_id']}, not {entry['hf_id']}")
+            PR.check_indices_match(model, meta)
+            PR.apply_zeroing(model, indices, expected_shapes=meta.get("shapes"))
+            log.info("PRUNED: zeroed %d weights from %s (%s)", len(indices), args.prune_indices,
+                     (meta or {}).get("kind", "?"))
         run_preflight(args, model, tokenizer, entry, test_by_dataset, options, results_dir)
 
         # 3. score (run_checkpoint resumes a crashed run: finished rows are kept)
@@ -521,12 +581,18 @@ def run(args):
     # 4. comparison to the paper's Table D1
     rows = S.read_rows(out_path, args.checkpoint, args.fmt)
     result, all_cells = compare_to_paper(rows, args.checkpoint, args.fmt, tool_mode_used,
-                                         args.bootstrap_samples, args.seed)
+                                         args.bootstrap_samples, args.seed,
+                                         anchors=getattr(args, "anchors", "original"),
+                                         primary_reliable=getattr(args, "primary_reliable", None))
     result.update({
         "checkpoint": args.checkpoint, "hf_id": entry["hf_id"], "fmt": args.fmt,
         "tool_mode_requested": args.tool_mode, "tool_mode_used": tool_mode_used,
         "seed": args.seed, "turns": args.turns, "sources": list(SOURCES), "prior_rule": PRIOR_RULE,
         "smoke_questions_per_dataset": args.smoke,
+        "anchors": getattr(args, "anchors", "original"),
+        "primary_reliable": getattr(args, "primary_reliable", None),
+        "prune_indices": str(args.prune_indices) if getattr(args, "prune_indices", None) else None,
+        "answer_prefix": getattr(args, "answer_prefix", None),
         "test_questions": {d: len(v) for d, v in test_by_dataset.items()},
         "answer_reading_by_dataset": answer_reading_by_dataset(rows),
         "scoring_manifest": str(manifest_file),

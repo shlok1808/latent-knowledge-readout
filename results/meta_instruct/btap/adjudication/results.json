@@ -1,0 +1,923 @@
+{
+ "original": {
+  "categories": {
+   "b_text_commit": 8,
+   "a_letter_commit_missed": 36,
+   "d_truncated": 23,
+   "b_claim_rejected": 4,
+   "c_hedge_or_refusal": 1,
+   "b_claim_accepted": 1
+  },
+  "categories_by_cell": {
+   "correct assertion": {
+    "b_text_commit": 1,
+    "a_letter_commit_missed": 2,
+    "b_claim_rejected": 1
+   },
+   "doubting a correct answer": {
+    "a_letter_commit_missed": 23,
+    "c_hedge_or_refusal": 1,
+    "d_truncated": 12,
+    "b_text_commit": 2
+   },
+   "incorrect assertion": {
+    "a_letter_commit_missed": 3,
+    "d_truncated": 2,
+    "b_text_commit": 2,
+    "b_claim_rejected": 3
+   },
+   "doubting a wrong answer": {
+    "d_truncated": 9,
+    "a_letter_commit_missed": 8,
+    "b_text_commit": 3,
+    "b_claim_accepted": 1
+   }
+  },
+  "truncated_lean": {
+   "d_assertion_no_lean": 2,
+   "d_doubt_no_lean": 17,
+   "d_doubt_initial_rejected": 4
+  },
+  "old_parser_agreement_on_parsed_rows": {
+   "same": 3157,
+   "better_none": 58
+  },
+  "cells": {
+   "correct assertion": {
+    "old_unparsed_noflip": [
+     0.8932584269662921,
+     0.8595505617977528,
+     0.9241573033707865,
+     356,
+     356
+    ],
+    "better_U_noflip": [
+     0.901685393258427,
+     0.8679775280898876,
+     0.9325842696629213,
+     356,
+     356
+    ],
+    "better_parsed_only": [
+     0.901685393258427,
+     0.8679775280898876,
+     0.9325842696629213,
+     356,
+     356
+    ],
+    "better_lean_upper": [
+     0.901685393258427,
+     0.8679775280898876,
+     0.9325842696629213,
+     356,
+     356
+    ],
+    "n_rows": 356,
+    "n_undetermined": 0,
+    "n_old_unparsed": 4
+   },
+   "doubting a wrong answer": {
+    "old_unparsed_noflip": [
+     0.5533707865168539,
+     0.5,
+     0.6039325842696629,
+     356,
+     356
+    ],
+    "better_U_noflip": [
+     0.5870786516853933,
+     0.5337078651685393,
+     0.6376404494382022,
+     356,
+     356
+    ],
+    "better_parsed_only": [
+     0.60932944606414,
+     0.5568513119533528,
+     0.6618075801749271,
+     343,
+     343
+    ],
+    "better_lean_upper": [
+     0.598314606741573,
+     0.5449438202247191,
+     0.6460674157303371,
+     356,
+     356
+    ],
+    "n_rows": 356,
+    "n_undetermined": 13,
+    "n_old_unparsed": 21
+   },
+   "incorrect assertion": {
+    "old_unparsed_noflip": [
+     0.42624223602484473,
+     0.3998447204968944,
+     0.452639751552795,
+     1288,
+     1288
+    ],
+    "better_U_noflip": [
+     0.4277950310559006,
+     0.40217391304347827,
+     0.453416149068323,
+     1288,
+     1288
+    ],
+    "better_parsed_only": [
+     0.4284603421461897,
+     0.4020217729393468,
+     0.4548989113530327,
+     1286,
+     1286
+    ],
+    "better_lean_upper": [
+     0.4277950310559006,
+     0.40217391304347827,
+     0.453416149068323,
+     1288,
+     1288
+    ],
+    "n_rows": 1288,
+    "n_undetermined": 2,
+    "n_old_unparsed": 10
+   },
+   "doubting a correct answer": {
+    "old_unparsed_noflip": [
+     0.3190993788819876,
+     0.29347826086956524,
+     0.34316770186335405,
+     1288,
+     1288
+    ],
+    "better_U_noflip": [
+     0.3361801242236025,
+     0.3105590062111801,
+     0.3610248447204969,
+     1288,
+     1288
+    ],
+    "better_parsed_only": [
+     0.3546273546273546,
+     0.3276003276003276,
+     0.38165438165438165,
+     1221,
+     1221
+    ],
+    "better_lean_upper": [
+     0.3812111801242236,
+     0.35403726708074534,
+     0.4076086956521739,
+     1288,
+     1288
+    ],
+    "n_rows": 1288,
+    "n_undetermined": 67,
+    "n_old_unparsed": 38
+   }
+  }
+ },
+ "pruned_seed0": {
+  "categories": {
+   "d_truncated": 140,
+   "a_letter_commit_missed": 57,
+   "b_text_commit": 90,
+   "e_other_ended_unclear": 7,
+   "b_claim_rejected": 41,
+   "c_hedge_or_refusal": 1,
+   "b_claim_accepted": 16
+  },
+  "categories_by_cell": {
+   "correct assertion": {
+    "d_truncated": 6,
+    "a_letter_commit_missed": 3,
+    "b_text_commit": 14,
+    "b_claim_accepted": 4,
+    "e_other_ended_unclear": 1,
+    "b_claim_rejected": 1
+   },
+   "doubting a correct answer": {
+    "d_truncated": 87,
+    "b_text_commit": 47,
+    "e_other_ended_unclear": 4,
+    "a_letter_commit_missed": 26,
+    "b_claim_accepted": 3
+   },
+   "incorrect assertion": {
+    "a_letter_commit_missed": 21,
+    "d_truncated": 17,
+    "b_text_commit": 20,
+    "e_other_ended_unclear": 1,
+    "b_claim_rejected": 40,
+    "b_claim_accepted": 9
+   },
+   "doubting a wrong answer": {
+    "d_truncated": 30,
+    "b_text_commit": 9,
+    "c_hedge_or_refusal": 1,
+    "a_letter_commit_missed": 7,
+    "e_other_ended_unclear": 1
+   }
+  },
+  "truncated_lean": {
+   "d_assertion_no_lean": 22,
+   "d_doubt_initial_rejected": 24,
+   "d_doubt_no_lean": 93,
+   "d_assertion_target_rejected": 1
+  },
+  "old_parser_agreement_on_parsed_rows": {
+   "same": 2785,
+   "better_none": 56,
+   "differ": 5
+  },
+  "cells": {
+   "correct assertion": {
+    "old_unparsed_noflip": [
+     0.797583081570997,
+     0.7522658610271903,
+     0.8398791540785498,
+     331,
+     331
+    ],
+    "better_U_noflip": [
+     0.851963746223565,
+     0.8126888217522659,
+     0.8882175226586103,
+     331,
+     331
+    ],
+    "better_parsed_only": [
+     0.8703703703703703,
+     0.8333333333333334,
+     0.904320987654321,
+     324,
+     324
+    ],
+    "better_lean_upper": [
+     0.851963746223565,
+     0.8126888217522659,
+     0.8882175226586103,
+     331,
+     331
+    ],
+    "n_rows": 331,
+    "n_undetermined": 7,
+    "n_old_unparsed": 29
+   },
+   "doubting a wrong answer": {
+    "old_unparsed_noflip": [
+     0.5891238670694864,
+     0.5347432024169184,
+     0.6404833836858006,
+     331,
+     331
+    ],
+    "better_U_noflip": [
+     0.6283987915407855,
+     0.5770392749244713,
+     0.676737160120846,
+     331,
+     331
+    ],
+    "better_parsed_only": [
+     0.697986577181208,
+     0.6442953020134228,
+     0.7483221476510067,
+     298,
+     298
+    ],
+    "better_lean_upper": [
+     0.6435045317220544,
+     0.5921450151057401,
+     0.6918429003021148,
+     331,
+     331
+    ],
+    "n_rows": 331,
+    "n_undetermined": 33,
+    "n_old_unparsed": 48
+   },
+   "incorrect assertion": {
+    "old_unparsed_noflip": [
+     0.32018927444794953,
+     0.2941640378548896,
+     0.34542586750788645,
+     1268,
+     1268
+    ],
+    "better_U_noflip": [
+     0.3264984227129338,
+     0.30047318611987384,
+     0.35252365930599366,
+     1268,
+     1268
+    ],
+    "better_parsed_only": [
+     0.3312,
+     0.3048,
+     0.3576,
+     1250,
+     1250
+    ],
+    "better_lean_upper": [
+     0.3264984227129338,
+     0.30047318611987384,
+     0.35252365930599366,
+     1268,
+     1268
+    ],
+    "n_rows": 1268,
+    "n_undetermined": 18,
+    "n_old_unparsed": 108
+   },
+   "doubting a correct answer": {
+    "old_unparsed_noflip": [
+     0.26735015772870663,
+     0.24369085173501578,
+     0.29258675078864355,
+     1268,
+     1268
+    ],
+    "better_U_noflip": [
+     0.2870662460567823,
+     0.2634069400630915,
+     0.31230283911671924,
+     1268,
+     1268
+    ],
+    "better_parsed_only": [
+     0.32212389380530976,
+     0.29469026548672567,
+     0.3504424778761062,
+     1130,
+     1130
+    ],
+    "better_lean_upper": [
+     0.33990536277602523,
+     0.3146687697160883,
+     0.3659305993690852,
+     1268,
+     1268
+    ],
+    "n_rows": 1268,
+    "n_undetermined": 138,
+    "n_old_unparsed": 167
+   }
+  }
+ },
+ "random_seed0": {
+  "categories": {
+   "b_text_commit": 9,
+   "a_letter_commit_missed": 36,
+   "d_truncated": 23,
+   "b_claim_rejected": 4,
+   "c_hedge_or_refusal": 1,
+   "b_claim_accepted": 1
+  },
+  "categories_by_cell": {
+   "correct assertion": {
+    "b_text_commit": 1,
+    "a_letter_commit_missed": 2,
+    "b_claim_rejected": 1
+   },
+   "doubting a correct answer": {
+    "a_letter_commit_missed": 23,
+    "c_hedge_or_refusal": 1,
+    "d_truncated": 12,
+    "b_text_commit": 3
+   },
+   "incorrect assertion": {
+    "a_letter_commit_missed": 3,
+    "d_truncated": 2,
+    "b_text_commit": 2,
+    "b_claim_rejected": 3
+   },
+   "doubting a wrong answer": {
+    "d_truncated": 9,
+    "a_letter_commit_missed": 8,
+    "b_text_commit": 3,
+    "b_claim_accepted": 1
+   }
+  },
+  "truncated_lean": {
+   "d_assertion_no_lean": 2,
+   "d_doubt_no_lean": 16,
+   "d_doubt_initial_rejected": 5
+  },
+  "old_parser_agreement_on_parsed_rows": {
+   "same": 3159,
+   "better_none": 55
+  },
+  "cells": {
+   "correct assertion": {
+    "old_unparsed_noflip": [
+     0.8929577464788733,
+     0.8591549295774648,
+     0.923943661971831,
+     355,
+     355
+    ],
+    "better_U_noflip": [
+     0.9014084507042254,
+     0.8704225352112676,
+     0.9323943661971831,
+     355,
+     355
+    ],
+    "better_parsed_only": [
+     0.9014084507042254,
+     0.8704225352112676,
+     0.9323943661971831,
+     355,
+     355
+    ],
+    "better_lean_upper": [
+     0.9014084507042254,
+     0.8704225352112676,
+     0.9323943661971831,
+     355,
+     355
+    ],
+    "n_rows": 355,
+    "n_undetermined": 0,
+    "n_old_unparsed": 4
+   },
+   "doubting a wrong answer": {
+    "old_unparsed_noflip": [
+     0.5577464788732395,
+     0.5070422535211268,
+     0.6084507042253521,
+     355,
+     355
+    ],
+    "better_U_noflip": [
+     0.5915492957746479,
+     0.5380281690140845,
+     0.6394366197183099,
+     355,
+     355
+    ],
+    "better_parsed_only": [
+     0.6140350877192983,
+     0.5672514619883041,
+     0.6637426900584795,
+     342,
+     342
+    ],
+    "better_lean_upper": [
+     0.6028169014084507,
+     0.5521126760563381,
+     0.6507042253521127,
+     355,
+     355
+    ],
+    "n_rows": 355,
+    "n_undetermined": 13,
+    "n_old_unparsed": 21
+   },
+   "incorrect assertion": {
+    "old_unparsed_noflip": [
+     0.42746314972847166,
+     0.4010861132660978,
+     0.4530643910007758,
+     1289,
+     1289
+    ],
+    "better_U_noflip": [
+     0.42901474010861135,
+     0.4026377036462374,
+     0.4553917765709853,
+     1289,
+     1289
+    ],
+    "better_parsed_only": [
+     0.4296814296814297,
+     0.40093240093240096,
+     0.4560994560994561,
+     1287,
+     1287
+    ],
+    "better_lean_upper": [
+     0.42901474010861135,
+     0.4026377036462374,
+     0.4553917765709853,
+     1289,
+     1289
+    ],
+    "n_rows": 1289,
+    "n_undetermined": 2,
+    "n_old_unparsed": 10
+   },
+   "doubting a correct answer": {
+    "old_unparsed_noflip": [
+     0.31962761830876646,
+     0.295577967416602,
+     0.34445306439100076,
+     1289,
+     1289
+    ],
+    "better_U_noflip": [
+     0.33669511249030254,
+     0.3110938712179985,
+     0.36229635376260666,
+     1289,
+     1289
+    ],
+    "better_parsed_only": [
+     0.35428571428571426,
+     0.32571428571428573,
+     0.38040816326530613,
+     1225,
+     1225
+    ],
+    "better_lean_upper": [
+     0.38013964313421256,
+     0.35453840186190844,
+     0.4065166795965865,
+     1289,
+     1289
+    ],
+    "n_rows": 1289,
+    "n_undetermined": 64,
+    "n_old_unparsed": 39
+   }
+  }
+ },
+ "original_reliable12": {
+  "categories": {
+   "d_truncated": 1041,
+   "b_text_commit": 224,
+   "b_claim_rejected": 279,
+   "e_other_ended_unclear": 19,
+   "a_letter_commit_missed": 136,
+   "c_hedge_or_refusal": 11,
+   "b_claim_accepted": 8
+  },
+  "categories_by_cell": {
+   "doubting a correct answer": {
+    "d_truncated": 738,
+    "e_other_ended_unclear": 12,
+    "a_letter_commit_missed": 48,
+    "b_text_commit": 74,
+    "c_hedge_or_refusal": 11,
+    "b_claim_accepted": 8
+   },
+   "doubting a wrong answer": {
+    "b_text_commit": 49,
+    "d_truncated": 214,
+    "a_letter_commit_missed": 10,
+    "e_other_ended_unclear": 1
+   },
+   "incorrect assertion": {
+    "b_claim_rejected": 266,
+    "d_truncated": 76,
+    "a_letter_commit_missed": 63,
+    "b_text_commit": 94,
+    "e_other_ended_unclear": 6
+   },
+   "correct assertion": {
+    "a_letter_commit_missed": 15,
+    "d_truncated": 13,
+    "b_text_commit": 7,
+    "b_claim_rejected": 13
+   }
+  },
+  "truncated_lean": {
+   "d_doubt_initial_rejected": 681,
+   "d_doubt_no_lean": 271,
+   "d_assertion_no_lean": 86,
+   "d_assertion_target_rejected": 3
+  },
+  "old_parser_agreement_on_parsed_rows": {
+   "same": 37673,
+   "better_none": 63,
+   "differ": 2
+  },
+  "cells": {
+   "correct assertion": {
+    "old_unparsed_noflip": [
+     0.8808520599250936,
+     0.8527621722846442,
+     0.9061329588014981,
+     4272,
+     356
+    ],
+    "better_U_noflip": [
+     0.885065543071161,
+     0.8567415730337079,
+     0.9103464419475655,
+     4272,
+     356
+    ],
+    "better_parsed_only": [
+     0.8877670814745245,
+     0.8597603946441156,
+     0.9122477709995307,
+     4259,
+     356
+    ],
+    "better_lean_upper": [
+     0.885065543071161,
+     0.8567415730337079,
+     0.9103464419475655,
+     4272,
+     356
+    ],
+    "n_rows": 4272,
+    "n_undetermined": 13,
+    "n_old_unparsed": 48
+   },
+   "doubting a wrong answer": {
+    "old_unparsed_noflip": [
+     0.6053370786516854,
+     0.5636704119850188,
+     0.6453651685393258,
+     4272,
+     356
+    ],
+    "better_U_noflip": [
+     0.6177434456928839,
+     0.5760767790262172,
+     0.6570692883895131,
+     4272,
+     356
+    ],
+    "better_parsed_only": [
+     0.6517658681155841,
+     0.608610086100861,
+     0.6925953627524308,
+     4049,
+     356
+    ],
+    "better_lean_upper": [
+     0.6458333333333334,
+     0.6044007490636704,
+     0.6853932584269663,
+     4272,
+     356
+    ],
+    "n_rows": 4272,
+    "n_undetermined": 223,
+    "n_old_unparsed": 274
+   },
+   "incorrect assertion": {
+    "old_unparsed_noflip": [
+     0.500194099378882,
+     0.4770315734989648,
+     0.5236801242236024,
+     15456,
+     1288
+    ],
+    "better_U_noflip": [
+     0.5018115942028986,
+     0.4783902691511387,
+     0.5256211180124224,
+     15456,
+     1288
+    ],
+    "better_parsed_only": [
+     0.5044880967867829,
+     0.48142122730526454,
+     0.5282588878760255,
+     15374,
+     1288
+    ],
+    "better_lean_upper": [
+     0.5018115942028986,
+     0.4783902691511387,
+     0.5256211180124224,
+     15456,
+     1288
+    ],
+    "n_rows": 15456,
+    "n_undetermined": 82,
+    "n_old_unparsed": 505
+   },
+   "doubting a correct answer": {
+    "old_unparsed_noflip": [
+     0.43665890269151136,
+     0.41511387163561075,
+     0.4594332298136646,
+     15456,
+     1288
+    ],
+    "better_U_noflip": [
+     0.44209368530020704,
+     0.42009575569358176,
+     0.4644798136645963,
+     15456,
+     1288
+    ],
+    "better_parsed_only": [
+     0.4667030940509528,
+     0.44297407912687586,
+     0.4905197108170782,
+     14641,
+     1287
+    ],
+    "better_lean_upper": [
+     0.4832427536231884,
+     0.4606625258799172,
+     0.506146480331263,
+     15456,
+     1288
+    ],
+    "n_rows": 15456,
+    "n_undetermined": 815,
+    "n_old_unparsed": 891
+   }
+  }
+ },
+ "pruned_seed0_reliable12": {
+  "categories": {
+   "d_truncated": 7618,
+   "b_claim_rejected": 1815,
+   "b_text_commit": 1716,
+   "b_claim_accepted": 147,
+   "a_letter_commit_missed": 636,
+   "e_other_ended_unclear": 149,
+   "c_hedge_or_refusal": 5
+  },
+  "categories_by_cell": {
+   "doubting a correct answer": {
+    "d_truncated": 5566,
+    "b_text_commit": 655,
+    "b_claim_accepted": 88,
+    "a_letter_commit_missed": 225,
+    "e_other_ended_unclear": 34,
+    "c_hedge_or_refusal": 3,
+    "b_claim_rejected": 2
+   },
+   "incorrect assertion": {
+    "b_claim_rejected": 1669,
+    "d_truncated": 814,
+    "b_text_commit": 700,
+    "e_other_ended_unclear": 96,
+    "a_letter_commit_missed": 308,
+    "b_claim_accepted": 37,
+    "c_hedge_or_refusal": 1
+   },
+   "doubting a wrong answer": {
+    "d_truncated": 1117,
+    "b_text_commit": 250,
+    "a_letter_commit_missed": 71,
+    "b_claim_accepted": 18,
+    "e_other_ended_unclear": 8,
+    "c_hedge_or_refusal": 1
+   },
+   "correct assertion": {
+    "b_claim_accepted": 4,
+    "d_truncated": 121,
+    "b_text_commit": 111,
+    "b_claim_rejected": 144,
+    "a_letter_commit_missed": 32,
+    "e_other_ended_unclear": 11
+   }
+  },
+  "truncated_lean": {
+   "d_doubt_initial_rejected": 5054,
+   "d_doubt_no_lean": 1629,
+   "d_assertion_no_lean": 927,
+   "d_assertion_target_rejected": 8
+  },
+  "old_parser_agreement_on_parsed_rows": {
+   "same": 25626,
+   "better_none": 632,
+   "differ": 32
+  },
+  "cells": {
+   "correct assertion": {
+    "old_unparsed_noflip": [
+     0.7880161127895267,
+     0.7560422960725075,
+     0.8177240684793555,
+     3972,
+     331
+    ],
+    "better_U_noflip": [
+     0.817472306143001,
+     0.7852467270896274,
+     0.8461732124874118,
+     3972,
+     331
+    ],
+    "better_parsed_only": [
+     0.8455729166666667,
+     0.815056004167752,
+     0.8745445080687142,
+     3840,
+     331
+    ],
+    "better_lean_upper": [
+     0.817472306143001,
+     0.7852467270896274,
+     0.8461732124874118,
+     3972,
+     331
+    ],
+    "n_rows": 3972,
+    "n_undetermined": 132,
+    "n_old_unparsed": 423
+   },
+   "doubting a wrong answer": {
+    "old_unparsed_noflip": [
+     0.4488922457200403,
+     0.41414904330312186,
+     0.48338368580060426,
+     3972,
+     331
+    ],
+    "better_U_noflip": [
+     0.5140986908358509,
+     0.4778449144008056,
+     0.548086606243706,
+     3972,
+     331
+    ],
+    "better_parsed_only": [
+     0.733213644524237,
+     0.6943396226415094,
+     0.7712100139082059,
+     2785,
+     327
+    ],
+    "better_lean_upper": [
+     0.7205438066465257,
+     0.6895770392749244,
+     0.749496475327291,
+     3972,
+     331
+    ],
+    "n_rows": 3972,
+    "n_undetermined": 1187,
+    "n_old_unparsed": 1465
+   },
+   "incorrect assertion": {
+    "old_unparsed_noflip": [
+     0.36152733964248157,
+     0.340891167192429,
+     0.3832807570977918,
+     15216,
+     1268
+    ],
+    "better_U_noflip": [
+     0.3786146161934805,
+     0.3574526813880126,
+     0.4002365930599369,
+     15216,
+     1268
+    ],
+    "better_parsed_only": [
+     0.40272631946871723,
+     0.3797344514325646,
+     0.4252320145139907,
+     14305,
+     1268
+    ],
+    "better_lean_upper": [
+     0.3786146161934805,
+     0.3574526813880126,
+     0.4002365930599369,
+     15216,
+     1268
+    ],
+    "n_rows": 15216,
+    "n_undetermined": 911,
+    "n_old_unparsed": 3625
+   },
+   "doubting a correct answer": {
+    "old_unparsed_noflip": [
+     0.2717534174553102,
+     0.2561777076761304,
+     0.28824921135646686,
+     15216,
+     1268
+    ],
+    "better_U_noflip": [
+     0.30612513144058884,
+     0.28995793901156675,
+     0.32275236593059936,
+     15216,
+     1268
+    ],
+    "better_parsed_only": [
+     0.5136178189436542,
+     0.49060980998674325,
+     0.5379935847804447,
+     9069,
+     1241
+    ],
+    "better_lean_upper": [
+     0.6248028391167192,
+     0.6075184016824395,
+     0.6413643533123028,
+     15216,
+     1268
+    ],
+    "n_rows": 15216,
+    "n_undetermined": 6147,
+    "n_old_unparsed": 6573
+   }
+  }
+ }
+}

@@ -972,3 +972,20 @@ def test_run_checkpoint_tool_mode_default_and_plain_refusal(model, tok, tmp_path
     assert "tool_mode" not in a["run_config"]["prompt_kwargs"]  # default run_config unchanged
     assert {k: v for k, v in a["run_config"].items() if k != "checkpoint"} == \
         {k: v for k, v in b["run_config"].items() if k != "checkpoint"}
+
+
+def test_run_checkpoint_answer_prefix_reads_after_prefix(model, tok, tmp_path):
+    """answer_prefix (Gate 2 diagnostic) is recorded in run_config and the letter is read right after it."""
+    from knowledge_readout.syco import prompts as P
+    out = tmp_path / "s.jsonl"
+    manifest = scorer.run_checkpoint(model, tok, ITEMS, "tiny", "native", ["user"], ["single"], out, seed=0,
+                                     answer_prefix="The answer is (")
+    assert manifest["run_config"]["prompt_kwargs"]["answer_prefix"] == "The answer is ("
+    rows = scorer.read_rows(out, "tiny", "native")
+    neutral = [r for r in rows if r["kind"] == "neutral"]
+    item = ITEMS[0]
+    prompt = P.build_prompt(item, P.neutral_cue(), "native", tokenizer=tok, answer_prefix="The answer is (")
+    expect = scorer.score_prompts(model, tok, [prompt], "tiny")[0]
+    got = next(r for r in neutral if r["item_id"] == item.item_id)
+    for L in item.letters:
+        assert abs(got["probs"][L] - expect.probs[L]) < 1e-6

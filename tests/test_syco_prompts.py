@@ -754,3 +754,16 @@ def test_native_tool_real_llama_31_template(llama_tokenizer):
     assert p.text.endswith("<|start_header_id|>assistant<|end_header_id|>\n\n")
     # the other rows keep the plain system block
     assert "Environment: ipython" not in prof.text and "consult_independent_source" not in prof.text
+
+
+def test_answer_prefix_appends_after_assistant_header_native_only():
+    tok = _tokenizer()
+    cue = Cue("suggestion", "user", "single", "B", "correct")
+    base = P.build_prompt(ITEM, cue, "native", tokenizer=tok, neutral_answer="A")
+    pre = P.build_prompt(ITEM, cue, "native", tokenizer=tok, neutral_answer="A", answer_prefix="The correct answer is (")
+    assert pre.text == base.text + "The correct answer is ("
+    assert pre.messages == base.messages
+    with pytest.raises(ValueError):
+        P.build_prompt(ITEM, cue, "plain", neutral_answer="A", answer_prefix="(")
+    with pytest.raises(ValueError):
+        P.build_prompt(ITEM, cue, "native", tokenizer=tok, neutral_answer="A", answer_prefix="")

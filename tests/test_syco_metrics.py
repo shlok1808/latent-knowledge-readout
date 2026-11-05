@@ -1004,3 +1004,18 @@ def test_check_anchors_native_tool_mode_makes_13_source_pool_primary():
     assert [r["ours"] for r in text] == [r["ours"] for r in nat]   # only the roles change
     with pytest.raises(ValueError):
         M.check_anchors(cells_, "meta_instruct", "native", tool_mode="ipython")
+
+
+def test_check_anchors_pruned_column_and_primary_override():
+    assert M.ANCHOR_SETS["pruned"][("wrong", "suggestion")] == {"user": 2.95, "reliable": 2.86}
+    assert M.ANCHOR_SETS["pruned"][("correct", "doubt")] == {"user": 2.97, "reliable": 3.68}
+    t = M.check_anchors([], "ck", "native", tool_mode="native", anchors="pruned", primary_reliable="no_tool")
+    assert {r["theirs"] for r in t if r["column"] == "user"} == {2.95, 1.32, 3.63, 2.97}
+    roles = {r["column"]: r["role"] for r in t}
+    assert roles["reliable_source_no_tool"] == "primary" and roles["reliable_source"] == "secondary"
+    t2 = M.check_anchors([], "ck", "native", tool_mode="native")
+    assert {r["column"]: r["role"] for r in t2}["reliable_source"] == "primary"
+    with pytest.raises(ValueError):
+        M.check_anchors([], "ck", "native", anchors="bogus")
+    with pytest.raises(ValueError):
+        M.check_anchors([], "ck", "native", primary_reliable="bogus")

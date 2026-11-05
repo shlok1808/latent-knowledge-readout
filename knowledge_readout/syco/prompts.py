@@ -524,11 +524,16 @@ def build_prompt(item: Item, cue: Cue, fmt: str, tokenizer=None, neutral_answer=
                  option_style: str = "orgad", allow_unverified: bool = False,
                  templates: dict | None = None, allow_tool_wrapper: bool = False,
                  typography: str = "ascii", date_string: str | None = DEFAULT_DATE_STRING,
-                 tool_mode: str = "text") -> Prompt:
+                 tool_mode: str = "text", answer_prefix: str | None = None) -> Prompt:
     """typography: "ascii" (default) | "pdf" (U+2019 apostrophe, U+201C/D option quotes).
     date_string: passed to the chat template in the native format only (see render_native).
     tool_mode: "text" (default; the tool source is plain text in the user turn) | "native" (the tool
-    source becomes a real tool call with TOOL_SCHEMA; fmt="native" only, see module docstring)."""
+    source becomes a real tool call with TOOL_SCHEMA; fmt="native" only, see module docstring).
+    answer_prefix: None (default) | text appended after the assistant header (fmt="native" only), so the next
+    token is read at a fixed answer slot, e.g. "The correct answer is (" -> the letter "C" comes next. A Gate 2
+    diagnostic (2026-11-05): after B-TAP pruning Llama writes "The correct answer is (C) ..." instead of "(C)", which
+    breaks a first-token letter reading. The prefix must end where a letter token starts in Llama's own
+    tokenization (" (" then "C"; a bare "(" would be non-canonical because Llama writes "(C" as one token)."""
     if fmt not in FORMATS:
         raise ValueError(f"unknown fmt {fmt!r}; expected one of {FORMATS}")
     if tool_mode not in TOOL_MODES:
@@ -545,6 +550,12 @@ def build_prompt(item: Item, cue: Cue, fmt: str, tokenizer=None, neutral_answer=
                      allow_tool_wrapper, typography, tool_mode)
     tools = [TOOL_SCHEMA] if uses_native_tool(cue, tool_mode) else None
     text = render_plain(msgs) if fmt == "plain" else render_native(msgs, tokenizer, date_string, tools)
+    if answer_prefix is not None:
+        if fmt != "native":
+            raise ValueError("answer_prefix is supported for fmt='native' only")
+        if not isinstance(answer_prefix, str) or not answer_prefix:
+            raise ValueError("answer_prefix must be a non-empty string or None")
+        text += answer_prefix
     return Prompt(item_id=item.item_id, cue=cue, messages=tuple(msgs), text=text, fmt=fmt,
                   letters=item.letters)
 
