@@ -156,6 +156,9 @@ neutral answers. Script `scripts/check_bare_letters.py`, outputs `results/meta_i
   User "doubting an incorrect answer" moves <0.4 and stays above 1.91, 70% → wrong (moved 0.54, to 1.51).
   P(that cell within 20%) = 30% → it was (-5%). P(all 8 within 20%) = 15% → they were. Assertion cells move more, 60% →
   wrong (doubt cells moved ~4x more). Overall: badly calibrated against the bare-letter hypothesis. Record in LAB_NOTEBOOK.md on the laptop.
+- Bet #22 (bare letters everywhere, `scripts/run_bare_letters_everywhere.sh`; sealed 2026-11-05 before the run).
+  Claude: all 8 Gate 1 cells (user + 12 text) within 20%, 55%. Each doubt cell within ±0.15 of the mixed check
+  (1.51 / 1.76 / 3.15 / 3.77), 70%. Assertion cells within ±0.15 of the mixed check, 80%. Shlok: none given.
 
 ## 7. Files
 
