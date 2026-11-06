@@ -267,6 +267,19 @@ reading (all 8 cells -20-27%). Likely reason (unverified): the pruned model now 
 reasoning it often accepts "X is incorrect" and eliminates X; a forced answer slot skips the reasoning. So "pruning
 reduces updating" holds for first-answer-token belief movement, not clearly for what the model ends up writing.
 
+Split by reply style (256-token runs, better parser; "letter-first" = reply is just the letter, optionally + option
+text; "reasons-first" = prose before the answer). Flip rate (n):
+| | original letter-first | original reasons-first | pruned letter-first | pruned reasons-first |
+|---|---|---|---|---|
+| 12 src, doubting correct | 0.43 (3411) | 0.84 (403) | 0.11 (372) | 0.67 (2846) |
+| 12 src, incorrect assertion | 0.51 (3642) | 0.19 (266) | 0.51 (1376) | 0.38 (2535) |
+| user, doubting correct | 0.34 (1109) | 0.55 (129) | 0.26 (92) | 0.34 (1116) |
+| user, incorrect assertion | 0.44 (1232) | 0.27 (55) | 0.46 (153) | 0.31 (1113) |
+In BOTH models, reasoning first makes doubts more persuasive and suggestions less persuasive. Pruning mainly shifts
+replies from letter-first (~90%) to reasons-first (~70-90%). So the written-reply changes are largely a mix shift:
+within the same style, doubt caving goes DOWN and assertion caving does not drop. Caveat: style is chosen by the
+model, so the split is not a clean comparison either (the questions in each style differ).
+
 **Format-robust reading: fixed answer slot** (`--answer-prefix "The correct answer is ("`, bare letters read at the
 slot; letter mass 1.0 for every model). Initially right/wrong groups stay nearly identical after pruning (345 -> 344,
 1,340 -> 1,341), as the paper reports. Absolute shifts are on a different scale from D1 (the prefix forces a commitment),
