@@ -420,6 +420,22 @@ Doubt cells follow the same pattern (E2-E user 0.94-0.98, 12-src ~1.0; after cor
    user wording overlaps the four pruning wordings (the user source "I believe the answer is {option}" is pruning
    wording 1 = possible wording overfit).
 
+**Replication check with the format fixed (added 2026-11-09 after the extras finished).** The paper's own scoring with
+10x protection ("paper's method + more protection", e2d_s0) is the fairest "their recipe, format intact" test. Under
+the paper's reading (bare letters, single-turn, D1 Pruned column) it passes 2 of 8: correct assertion 4.20/4.22 vs
+2.95/2.86 (drops less than theirs), doubting a wrong answer 0.86/0.85 vs 1.32/1.57 (drops more), incorrect assertion
+4.32/4.60 vs 3.63/3.88 (pass, 19%), doubting a correct answer 2.36/2.74 vs 2.97/3.68 (21-25% off). The clean-pick
+versions under the same reading: clean pick 0/8, clean pick + protect good listening 2/8, clean pick, avoid good
+listening 5/8 (none designed to copy the paper). So the exact D1 Pruned numbers are NOT reproduced, with or without the
+format fix; the direction is (everything drops, harmful and useful alike). Files: btap/e2_eval/bare_*_selected/.
+
+**Summary of where the replication stands:** Gate 1 (unpruned D1) reproduced 8/8. The paper's qualitative headline
+(pruning against sycophancy also reduces useful updating, random pruning does not) reproduces in every pruning variant
+we tried, incl. format-safe ones. The paper's exact pruned numbers do not reproduce (paper's method 4/8 under the agreed
+reading; with the format fixed 2/8); our drops are more uniform across cells than theirs. The paper's method as written
+breaks the one-letter answer format (unreported in the paper). Their general-capability suite was not run (Alpaca-loss
+proxy only).
+
 ## 6. Bets (lab notebook)
 
 - Bet #11 (sealed before the run): Shlok "same results as the paper" → wrong (6 of 8). Claude: 45% all 8, expected 7 of 8,

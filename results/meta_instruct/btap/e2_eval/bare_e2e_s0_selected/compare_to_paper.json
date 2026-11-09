@@ -1,0 +1,1526 @@
+{
+  "table": [
+    {
+      "condition": "correct assertion",
+      "update": "helpful",
+      "prior": "wrong",
+      "kind": "suggestion",
+      "column": "user",
+      "role": "primary",
+      "theirs": 2.95,
+      "ours": 4.219124575606988,
+      "n": 459,
+      "ci": [
+        4.055311266176522,
+        4.375782448882999
+      ],
+      "rel_err": 0.4302117205447415,
+      "passed": false,
+      "evaluated": true,
+      "status": "failed",
+      "problems": [],
+      "datasets": [
+        "arc_challenge",
+        "csqa",
+        "obqa"
+      ],
+      "sources": null,
+      "missing_datasets": [],
+      "extra_datasets": [],
+      "missing_sources": [],
+      "expected_sources": [
+        "user"
+      ],
+      "missing_sources_by_dataset": {}
+    },
+    {
+      "condition": "correct assertion",
+      "update": "helpful",
+      "prior": "wrong",
+      "kind": "suggestion",
+      "column": "reliable_source_no_tool",
+      "role": "primary",
+      "theirs": 2.86,
+      "ours": 5.330434067312111,
+      "n": 5508,
+      "ci": [
+        5.163531061200814,
+        5.5036715512741
+      ],
+      "rel_err": 0.863788135423815,
+      "passed": false,
+      "evaluated": true,
+      "status": "failed",
+      "problems": [],
+      "datasets": [
+        "arc_challenge",
+        "csqa",
+        "obqa"
+      ],
+      "sources": [
+        "authoritative_textbook",
+        "comparable_questions",
+        "documented_accuracy",
+        "domain_expert",
+        "experienced_researcher",
+        "fact_checked_encyclopedia",
+        "long_run_frequency",
+        "peer_reviewed_reference",
+        "professor",
+        "several_reliable_sources",
+        "two_subject_experts",
+        "university_reference_guide"
+      ],
+      "missing_datasets": [],
+      "extra_datasets": [],
+      "missing_sources": [],
+      "expected_sources": [
+        "long_run_frequency",
+        "documented_accuracy",
+        "comparable_questions",
+        "professor",
+        "domain_expert",
+        "experienced_researcher",
+        "peer_reviewed_reference",
+        "university_reference_guide",
+        "authoritative_textbook",
+        "fact_checked_encyclopedia",
+        "two_subject_experts",
+        "several_reliable_sources"
+      ],
+      "missing_sources_by_dataset": {}
+    },
+    {
+      "condition": "correct assertion",
+      "update": "helpful",
+      "prior": "wrong",
+      "kind": "suggestion",
+      "column": "reliable_source",
+      "role": "secondary",
+      "theirs": 2.86,
+      "ours": 5.951615386365728,
+      "n": 5967,
+      "ci": [
+        5.795096153321126,
+        6.116409081485899
+      ],
+      "rel_err": 1.0809844008271778,
+      "passed": false,
+      "evaluated": true,
+      "status": "failed",
+      "problems": [],
+      "datasets": [
+        "arc_challenge",
+        "csqa",
+        "obqa"
+      ],
+      "sources": [
+        "authoritative_textbook",
+        "comparable_questions",
+        "documented_accuracy",
+        "domain_expert",
+        "experienced_researcher",
+        "fact_checked_encyclopedia",
+        "long_run_frequency",
+        "peer_reviewed_reference",
+        "professor",
+        "several_reliable_sources",
+        "tool",
+        "two_subject_experts",
+        "university_reference_guide"
+      ],
+      "missing_datasets": [],
+      "extra_datasets": [],
+      "missing_sources": [],
+      "expected_sources": [
+        "long_run_frequency",
+        "documented_accuracy",
+        "comparable_questions",
+        "professor",
+        "domain_expert",
+        "experienced_researcher",
+        "peer_reviewed_reference",
+        "university_reference_guide",
+        "authoritative_textbook",
+        "fact_checked_encyclopedia",
+        "two_subject_experts",
+        "several_reliable_sources",
+        "tool"
+      ],
+      "missing_sources_by_dataset": {}
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "update": "helpful",
+      "prior": "wrong",
+      "kind": "doubt",
+      "column": "user",
+      "role": "primary",
+      "theirs": 1.32,
+      "ours": 1.447092840432764,
+      "n": 459,
+      "ci": [
+        1.3420300074183606,
+        1.5605128521485165
+      ],
+      "rel_err": 0.09628245487330608,
+      "passed": true,
+      "evaluated": true,
+      "status": "pass",
+      "problems": [],
+      "datasets": [
+        "arc_challenge",
+        "csqa",
+        "obqa"
+      ],
+      "sources": null,
+      "missing_datasets": [],
+      "extra_datasets": [],
+      "missing_sources": [],
+      "expected_sources": [
+        "user"
+      ],
+      "missing_sources_by_dataset": {}
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "update": "helpful",
+      "prior": "wrong",
+      "kind": "doubt",
+      "column": "reliable_source_no_tool",
+      "role": "primary",
+      "theirs": 1.57,
+      "ours": 1.5580439998306075,
+      "n": 5508,
+      "ci": [
+        1.4404329217987017,
+        1.6855526236587077
+      ],
+      "rel_err": 0.007615286732097183,
+      "passed": true,
+      "evaluated": true,
+      "status": "pass",
+      "problems": [],
+      "datasets": [
+        "arc_challenge",
+        "csqa",
+        "obqa"
+      ],
+      "sources": [
+        "authoritative_textbook",
+        "comparable_questions",
+        "documented_accuracy",
+        "domain_expert",
+        "experienced_researcher",
+        "fact_checked_encyclopedia",
+        "long_run_frequency",
+        "peer_reviewed_reference",
+        "professor",
+        "several_reliable_sources",
+        "two_subject_experts",
+        "university_reference_guide"
+      ],
+      "missing_datasets": [],
+      "extra_datasets": [],
+      "missing_sources": [],
+      "expected_sources": [
+        "long_run_frequency",
+        "documented_accuracy",
+        "comparable_questions",
+        "professor",
+        "domain_expert",
+        "experienced_researcher",
+        "peer_reviewed_reference",
+        "university_reference_guide",
+        "authoritative_textbook",
+        "fact_checked_encyclopedia",
+        "two_subject_experts",
+        "several_reliable_sources"
+      ],
+      "missing_sources_by_dataset": {}
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "update": "helpful",
+      "prior": "wrong",
+      "kind": "doubt",
+      "column": "reliable_source",
+      "role": "secondary",
+      "theirs": 1.57,
+      "ours": 1.4670806936221181,
+      "n": 5967,
+      "ci": [
+        1.3629457097952296,
+        1.578264230047217
+      ],
+      "rel_err": 0.0655536983298611,
+      "passed": true,
+      "evaluated": true,
+      "status": "pass",
+      "problems": [],
+      "datasets": [
+        "arc_challenge",
+        "csqa",
+        "obqa"
+      ],
+      "sources": [
+        "authoritative_textbook",
+        "comparable_questions",
+        "documented_accuracy",
+        "domain_expert",
+        "experienced_researcher",
+        "fact_checked_encyclopedia",
+        "long_run_frequency",
+        "peer_reviewed_reference",
+        "professor",
+        "several_reliable_sources",
+        "tool",
+        "two_subject_experts",
+        "university_reference_guide"
+      ],
+      "missing_datasets": [],
+      "extra_datasets": [],
+      "missing_sources": [],
+      "expected_sources": [
+        "long_run_frequency",
+        "documented_accuracy",
+        "comparable_questions",
+        "professor",
+        "domain_expert",
+        "experienced_researcher",
+        "peer_reviewed_reference",
+        "university_reference_guide",
+        "authoritative_textbook",
+        "fact_checked_encyclopedia",
+        "two_subject_experts",
+        "several_reliable_sources",
+        "tool"
+      ],
+      "missing_sources_by_dataset": {}
+    },
+    {
+      "condition": "incorrect assertion",
+      "update": "harmful",
+      "prior": "correct",
+      "kind": "suggestion",
+      "column": "user",
+      "role": "primary",
+      "theirs": 3.63,
+      "ours": 3.901372128160674,
+      "n": 1226,
+      "ci": [
+        3.7952351624768297,
+        4.001553719528787
+      ],
+      "rel_err": 0.07475816202773389,
+      "passed": true,
+      "evaluated": true,
+      "status": "pass",
+      "problems": [],
+      "datasets": [
+        "arc_challenge",
+        "csqa",
+        "obqa"
+      ],
+      "sources": null,
+      "missing_datasets": [],
+      "extra_datasets": [],
+      "missing_sources": [],
+      "expected_sources": [
+        "user"
+      ],
+      "missing_sources_by_dataset": {}
+    },
+    {
+      "condition": "incorrect assertion",
+      "update": "harmful",
+      "prior": "correct",
+      "kind": "suggestion",
+      "column": "reliable_source_no_tool",
+      "role": "primary",
+      "theirs": 3.88,
+      "ours": 5.044729525732329,
+      "n": 14712,
+      "ci": [
+        4.929868454963866,
+        5.157129048530976
+      ],
+      "rel_err": 0.3001880220959611,
+      "passed": false,
+      "evaluated": true,
+      "status": "failed",
+      "problems": [],
+      "datasets": [
+        "arc_challenge",
+        "csqa",
+        "obqa"
+      ],
+      "sources": [
+        "authoritative_textbook",
+        "comparable_questions",
+        "documented_accuracy",
+        "domain_expert",
+        "experienced_researcher",
+        "fact_checked_encyclopedia",
+        "long_run_frequency",
+        "peer_reviewed_reference",
+        "professor",
+        "several_reliable_sources",
+        "two_subject_experts",
+        "university_reference_guide"
+      ],
+      "missing_datasets": [],
+      "extra_datasets": [],
+      "missing_sources": [],
+      "expected_sources": [
+        "long_run_frequency",
+        "documented_accuracy",
+        "comparable_questions",
+        "professor",
+        "domain_expert",
+        "experienced_researcher",
+        "peer_reviewed_reference",
+        "university_reference_guide",
+        "authoritative_textbook",
+        "fact_checked_encyclopedia",
+        "two_subject_experts",
+        "several_reliable_sources"
+      ],
+      "missing_sources_by_dataset": {}
+    },
+    {
+      "condition": "incorrect assertion",
+      "update": "harmful",
+      "prior": "correct",
+      "kind": "suggestion",
+      "column": "reliable_source",
+      "role": "secondary",
+      "theirs": 3.88,
+      "ours": 5.537945516663621,
+      "n": 15938,
+      "ci": [
+        5.422557072576005,
+        5.6473684730813
+      ],
+      "rel_err": 0.4273055455318611,
+      "passed": false,
+      "evaluated": true,
+      "status": "failed",
+      "problems": [],
+      "datasets": [
+        "arc_challenge",
+        "csqa",
+        "obqa"
+      ],
+      "sources": [
+        "authoritative_textbook",
+        "comparable_questions",
+        "documented_accuracy",
+        "domain_expert",
+        "experienced_researcher",
+        "fact_checked_encyclopedia",
+        "long_run_frequency",
+        "peer_reviewed_reference",
+        "professor",
+        "several_reliable_sources",
+        "tool",
+        "two_subject_experts",
+        "university_reference_guide"
+      ],
+      "missing_datasets": [],
+      "extra_datasets": [],
+      "missing_sources": [],
+      "expected_sources": [
+        "long_run_frequency",
+        "documented_accuracy",
+        "comparable_questions",
+        "professor",
+        "domain_expert",
+        "experienced_researcher",
+        "peer_reviewed_reference",
+        "university_reference_guide",
+        "authoritative_textbook",
+        "fact_checked_encyclopedia",
+        "two_subject_experts",
+        "several_reliable_sources",
+        "tool"
+      ],
+      "missing_sources_by_dataset": {}
+    },
+    {
+      "condition": "doubting a correct answer",
+      "update": "harmful",
+      "prior": "correct",
+      "kind": "doubt",
+      "column": "user",
+      "role": "primary",
+      "theirs": 2.97,
+      "ours": 2.8380390908365,
+      "n": 1226,
+      "ci": [
+        2.748225857071298,
+        2.9258884040711157
+      ],
+      "rel_err": 0.04443128254663311,
+      "passed": true,
+      "evaluated": true,
+      "status": "pass",
+      "problems": [],
+      "datasets": [
+        "arc_challenge",
+        "csqa",
+        "obqa"
+      ],
+      "sources": null,
+      "missing_datasets": [],
+      "extra_datasets": [],
+      "missing_sources": [],
+      "expected_sources": [
+        "user"
+      ],
+      "missing_sources_by_dataset": {}
+    },
+    {
+      "condition": "doubting a correct answer",
+      "update": "harmful",
+      "prior": "correct",
+      "kind": "doubt",
+      "column": "reliable_source_no_tool",
+      "role": "primary",
+      "theirs": 3.68,
+      "ours": 3.4199292760770117,
+      "n": 14712,
+      "ci": [
+        3.308745536682407,
+        3.524885810563274
+      ],
+      "rel_err": 0.0706713923703773,
+      "passed": true,
+      "evaluated": true,
+      "status": "pass",
+      "problems": [],
+      "datasets": [
+        "arc_challenge",
+        "csqa",
+        "obqa"
+      ],
+      "sources": [
+        "authoritative_textbook",
+        "comparable_questions",
+        "documented_accuracy",
+        "domain_expert",
+        "experienced_researcher",
+        "fact_checked_encyclopedia",
+        "long_run_frequency",
+        "peer_reviewed_reference",
+        "professor",
+        "several_reliable_sources",
+        "two_subject_experts",
+        "university_reference_guide"
+      ],
+      "missing_datasets": [],
+      "extra_datasets": [],
+      "missing_sources": [],
+      "expected_sources": [
+        "long_run_frequency",
+        "documented_accuracy",
+        "comparable_questions",
+        "professor",
+        "domain_expert",
+        "experienced_researcher",
+        "peer_reviewed_reference",
+        "university_reference_guide",
+        "authoritative_textbook",
+        "fact_checked_encyclopedia",
+        "two_subject_experts",
+        "several_reliable_sources"
+      ],
+      "missing_sources_by_dataset": {}
+    },
+    {
+      "condition": "doubting a correct answer",
+      "update": "harmful",
+      "prior": "correct",
+      "kind": "doubt",
+      "column": "reliable_source",
+      "role": "secondary",
+      "theirs": 3.68,
+      "ours": 3.003747677008632,
+      "n": 15938,
+      "ci": [
+        2.9007044132535427,
+        3.100339346155262
+      ],
+      "rel_err": 0.18376421820417613,
+      "passed": true,
+      "evaluated": true,
+      "status": "pass",
+      "problems": [],
+      "datasets": [
+        "arc_challenge",
+        "csqa",
+        "obqa"
+      ],
+      "sources": [
+        "authoritative_textbook",
+        "comparable_questions",
+        "documented_accuracy",
+        "domain_expert",
+        "experienced_researcher",
+        "fact_checked_encyclopedia",
+        "long_run_frequency",
+        "peer_reviewed_reference",
+        "professor",
+        "several_reliable_sources",
+        "tool",
+        "two_subject_experts",
+        "university_reference_guide"
+      ],
+      "missing_datasets": [],
+      "extra_datasets": [],
+      "missing_sources": [],
+      "expected_sources": [
+        "long_run_frequency",
+        "documented_accuracy",
+        "comparable_questions",
+        "professor",
+        "domain_expert",
+        "experienced_researcher",
+        "peer_reviewed_reference",
+        "university_reference_guide",
+        "authoritative_textbook",
+        "fact_checked_encyclopedia",
+        "two_subject_experts",
+        "several_reliable_sources",
+        "tool"
+      ],
+      "missing_sources_by_dataset": {}
+    }
+  ],
+  "summary": {
+    "rows": 12,
+    "rows_compared": 12,
+    "rows_passed": 7,
+    "primary_rows_passed": 5,
+    "primary_rows": 8,
+    "all_primary_rows_pass": false,
+    "all_rows_pass": false,
+    "status_counts": {
+      "failed": 5,
+      "pass": 7
+    },
+    "relative_tolerance": 0.2
+  },
+  "tool_row_effect": [
+    {
+      "condition": "correct assertion",
+      "with_tool_row": 5.951615386365728,
+      "without_tool_row": 5.330434067312111,
+      "relative_difference": 0.11653484710802361,
+      "flagged": true
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "with_tool_row": 1.4670806936221181,
+      "without_tool_row": 1.5580439998306075,
+      "relative_difference": 0.058383014997252326,
+      "flagged": false
+    },
+    {
+      "condition": "incorrect assertion",
+      "with_tool_row": 5.537945516663621,
+      "without_tool_row": 5.044729525732329,
+      "relative_difference": 0.09776856983421586,
+      "flagged": false
+    },
+    {
+      "condition": "doubting a correct answer",
+      "with_tool_row": 3.003747677008632,
+      "without_tool_row": 3.4199292760770117,
+      "relative_difference": 0.12169304259583405,
+      "flagged": true
+    }
+  ],
+  "each_source_single_turn": [
+    {
+      "condition": "doubting a correct answer",
+      "source": "authoritative_textbook",
+      "n": 1226,
+      "mean_shift": 3.4276690652066444,
+      "shift_ci": [
+        3.315377388228145,
+        3.535031861570123
+      ],
+      "flip_rate": 0.5946166394779772
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "authoritative_textbook",
+      "n": 459,
+      "mean_shift": 1.4641626505360295,
+      "shift_ci": [
+        1.346409085996949,
+        1.5979866102526736
+      ],
+      "flip_rate": 0.27450980392156865
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "comparable_questions",
+      "n": 1226,
+      "mean_shift": 2.366252378928958,
+      "shift_ci": [
+        2.2594486745381737,
+        2.4682578632441565
+      ],
+      "flip_rate": 0.3458401305057096
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "comparable_questions",
+      "n": 459,
+      "mean_shift": 1.1885873837324488,
+      "shift_ci": [
+        1.0760909861636136,
+        1.3037046708498943
+      ],
+      "flip_rate": 0.3311546840958606
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "documented_accuracy",
+      "n": 1226,
+      "mean_shift": 3.2694938402643827,
+      "shift_ci": [
+        3.1572966797594915,
+        3.371406447891446
+      ],
+      "flip_rate": 0.5562805872756933
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "documented_accuracy",
+      "n": 459,
+      "mean_shift": 1.5026181433664796,
+      "shift_ci": [
+        1.3785166300572822,
+        1.6289617603472644
+      ],
+      "flip_rate": 0.2962962962962963
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "domain_expert",
+      "n": 1226,
+      "mean_shift": 3.5100217490568397,
+      "shift_ci": [
+        3.392997112359681,
+        3.6129269455519815
+      ],
+      "flip_rate": 0.6011419249592169
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "domain_expert",
+      "n": 459,
+      "mean_shift": 1.5550134268328828,
+      "shift_ci": [
+        1.4296347121331134,
+        1.6882743733804249
+      ],
+      "flip_rate": 0.3202614379084967
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "experienced_researcher",
+      "n": 1226,
+      "mean_shift": 3.572808204117815,
+      "shift_ci": [
+        3.4475523327542295,
+        3.6815194134946303
+      ],
+      "flip_rate": 0.6223491027732463
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "experienced_researcher",
+      "n": 459,
+      "mean_shift": 1.5583502274051686,
+      "shift_ci": [
+        1.4322409674466132,
+        1.691579282507761
+      ],
+      "flip_rate": 0.3137254901960784
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "fact_checked_encyclopedia",
+      "n": 1226,
+      "mean_shift": 3.752792885516292,
+      "shift_ci": [
+        3.6367671419251493,
+        3.8732885989977737
+      ],
+      "flip_rate": 0.6721044045676998
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "fact_checked_encyclopedia",
+      "n": 459,
+      "mean_shift": 1.7393075430338878,
+      "shift_ci": [
+        1.614449749198643,
+        1.8765436433995335
+      ],
+      "flip_rate": 0.35947712418300654
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "long_run_frequency",
+      "n": 1226,
+      "mean_shift": 3.3446082847079834,
+      "shift_ci": [
+        3.227534864529787,
+        3.4491733066670105
+      ],
+      "flip_rate": 0.5701468189233279
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "long_run_frequency",
+      "n": 459,
+      "mean_shift": 1.540889816252655,
+      "shift_ci": [
+        1.407472359717746,
+        1.674115538328885
+      ],
+      "flip_rate": 0.3464052287581699
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "peer_reviewed_reference",
+      "n": 1226,
+      "mean_shift": 3.929761385709742,
+      "shift_ci": [
+        3.7941768309596244,
+        4.057330087681989
+      ],
+      "flip_rate": 0.6835236541598695
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "peer_reviewed_reference",
+      "n": 459,
+      "mean_shift": 1.667798078689058,
+      "shift_ci": [
+        1.5134495532996763,
+        1.841895331656852
+      ],
+      "flip_rate": 0.22875816993464052
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "professor",
+      "n": 1226,
+      "mean_shift": 3.7045373163059914,
+      "shift_ci": [
+        3.5773614110931717,
+        3.8194611767038325
+      ],
+      "flip_rate": 0.6582381729200653
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "professor",
+      "n": 459,
+      "mean_shift": 1.598750507395254,
+      "shift_ci": [
+        1.4624161650697256,
+        1.745811736934091
+      ],
+      "flip_rate": 0.27233115468409586
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "reliable_source",
+      "n": 15938,
+      "mean_shift": 3.003747677008632,
+      "shift_ci": [
+        2.9007044132535427,
+        3.100339346155262
+      ],
+      "flip_rate": 0.5544610365165014
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "reliable_source",
+      "n": 5967,
+      "mean_shift": 1.4670806936221181,
+      "shift_ci": [
+        1.3629457097952296,
+        1.578264230047217
+      ],
+      "flip_rate": 0.3212669683257918
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "reliable_source_no_tool",
+      "n": 14712,
+      "mean_shift": 3.4199292760770117,
+      "shift_ci": [
+        3.308745536682407,
+        3.524885810563274
+      ],
+      "flip_rate": 0.591557911908646
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "reliable_source_no_tool",
+      "n": 5508,
+      "mean_shift": 1.5580439998306075,
+      "shift_ci": [
+        1.4404329217987017,
+        1.6855526236587077
+      ],
+      "flip_rate": 0.32171387073347857
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "several_reliable_sources",
+      "n": 1226,
+      "mean_shift": 3.474614431056813,
+      "shift_ci": [
+        3.3765221054904244,
+        3.573813606773957
+      ],
+      "flip_rate": 0.6280587275693311
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "several_reliable_sources",
+      "n": 459,
+      "mean_shift": 1.7633022264841793,
+      "shift_ci": [
+        1.6451495376075218,
+        1.89263657516832
+      ],
+      "flip_rate": 0.42919389978213507
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "tool",
+      "n": 1226,
+      "mean_shift": -1.9904315118118892,
+      "shift_ci": [
+        -2.185800161578562,
+        -1.8081610822758964
+      ],
+      "flip_rate": 0.10929853181076672
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "tool",
+      "n": 459,
+      "mean_shift": 0.37552101912025637,
+      "shift_ci": [
+        0.02745050607357297,
+        0.7188951025638369
+      ],
+      "flip_rate": 0.3159041394335512
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "two_subject_experts",
+      "n": 1226,
+      "mean_shift": 3.144224801720788,
+      "shift_ci": [
+        3.043147484923109,
+        3.239559152477748
+      ],
+      "flip_rate": 0.5497553017944535
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "two_subject_experts",
+      "n": 459,
+      "mean_shift": 1.5609104138946477,
+      "shift_ci": [
+        1.4382239261972867,
+        1.6899372425633021
+      ],
+      "flip_rate": 0.39869281045751637
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "university_reference_guide",
+      "n": 1226,
+      "mean_shift": 3.542366970331869,
+      "shift_ci": [
+        3.421750056327464,
+        3.6561298732026835
+      ],
+      "flip_rate": 0.6166394779771615
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "university_reference_guide",
+      "n": 459,
+      "mean_shift": 1.556837580344598,
+      "shift_ci": [
+        1.4330969928710564,
+        1.6916686008493713
+      ],
+      "flip_rate": 0.289760348583878
+    },
+    {
+      "condition": "doubting a correct answer",
+      "source": "user",
+      "n": 1226,
+      "mean_shift": 2.8380390908365,
+      "shift_ci": [
+        2.748225857071298,
+        2.9258884040711157
+      ],
+      "flip_rate": 0.4078303425774878
+    },
+    {
+      "condition": "doubting a wrong answer",
+      "source": "user",
+      "n": 459,
+      "mean_shift": 1.447092840432764,
+      "shift_ci": [
+        1.3420300074183606,
+        1.5605128521485165
+      ],
+      "flip_rate": 0.3572984749455338
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "authoritative_textbook",
+      "n": 1226,
+      "mean_shift": 4.290809750762722,
+      "shift_ci": [
+        4.176270494361849,
+        4.398846801229877
+      ],
+      "flip_rate": 0.4804241435562806
+    },
+    {
+      "condition": "correct assertion",
+      "source": "authoritative_textbook",
+      "n": 459,
+      "mean_shift": 4.173637987108844,
+      "shift_ci": [
+        4.005755691200766,
+        4.348930190096296
+      ],
+      "flip_rate": 0.869281045751634
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "comparable_questions",
+      "n": 1226,
+      "mean_shift": 4.644406332929023,
+      "shift_ci": [
+        4.5285855059946005,
+        4.757929571637259
+      ],
+      "flip_rate": 0.5391517128874388
+    },
+    {
+      "condition": "correct assertion",
+      "source": "comparable_questions",
+      "n": 459,
+      "mean_shift": 4.955358932615092,
+      "shift_ci": [
+        4.77723676666785,
+        5.139088747110197
+      ],
+      "flip_rate": 0.8954248366013072
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "documented_accuracy",
+      "n": 1226,
+      "mean_shift": 5.290010854744321,
+      "shift_ci": [
+        5.1704444127930085,
+        5.4154140369971735
+      ],
+      "flip_rate": 0.6500815660685155
+    },
+    {
+      "condition": "correct assertion",
+      "source": "documented_accuracy",
+      "n": 459,
+      "mean_shift": 5.180915635321187,
+      "shift_ci": [
+        5.009356401894795,
+        5.371322418133976
+      ],
+      "flip_rate": 0.906318082788671
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "domain_expert",
+      "n": 1226,
+      "mean_shift": 4.766529186521575,
+      "shift_ci": [
+        4.64451180908679,
+        4.881738706903932
+      ],
+      "flip_rate": 0.5350734094616639
+    },
+    {
+      "condition": "correct assertion",
+      "source": "domain_expert",
+      "n": 459,
+      "mean_shift": 5.170610081333942,
+      "shift_ci": [
+        4.980379736010669,
+        5.361053879634404
+      ],
+      "flip_rate": 0.9324618736383442
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "experienced_researcher",
+      "n": 1226,
+      "mean_shift": 4.573713765109538,
+      "shift_ci": [
+        4.459267860840156,
+        4.688252583720785
+      ],
+      "flip_rate": 0.5097879282218597
+    },
+    {
+      "condition": "correct assertion",
+      "source": "experienced_researcher",
+      "n": 459,
+      "mean_shift": 4.565418748175747,
+      "shift_ci": [
+        4.386341470198819,
+        4.7597733632086445
+      ],
+      "flip_rate": 0.8779956427015251
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "fact_checked_encyclopedia",
+      "n": 1226,
+      "mean_shift": 4.996148522900024,
+      "shift_ci": [
+        4.869383638711688,
+        5.120346281373006
+      ],
+      "flip_rate": 0.5709624796084829
+    },
+    {
+      "condition": "correct assertion",
+      "source": "fact_checked_encyclopedia",
+      "n": 459,
+      "mean_shift": 5.227001421120126,
+      "shift_ci": [
+        5.040322727353071,
+        5.428985752435553
+      ],
+      "flip_rate": 0.9215686274509803
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "long_run_frequency",
+      "n": 1226,
+      "mean_shift": 4.053396177966431,
+      "shift_ci": [
+        3.9422456330084845,
+        4.159787038231643
+      ],
+      "flip_rate": 0.42414355628058725
+    },
+    {
+      "condition": "correct assertion",
+      "source": "long_run_frequency",
+      "n": 459,
+      "mean_shift": 4.048373457931533,
+      "shift_ci": [
+        3.8665555028863663,
+        4.232983612913773
+      ],
+      "flip_rate": 0.8082788671023965
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "peer_reviewed_reference",
+      "n": 1226,
+      "mean_shift": 5.605402707483625,
+      "shift_ci": [
+        5.47473741864453,
+        5.728494569151581
+      ],
+      "flip_rate": 0.666394779771615
+    },
+    {
+      "condition": "correct assertion",
+      "source": "peer_reviewed_reference",
+      "n": 459,
+      "mean_shift": 6.105580308085542,
+      "shift_ci": [
+        5.923010665796924,
+        6.29234665556136
+      ],
+      "flip_rate": 0.9694989106753813
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "professor",
+      "n": 1226,
+      "mean_shift": 4.88467029838014,
+      "shift_ci": [
+        4.76481969381571,
+        4.998868013151577
+      ],
+      "flip_rate": 0.5505709624796085
+    },
+    {
+      "condition": "correct assertion",
+      "source": "professor",
+      "n": 459,
+      "mean_shift": 5.016040558557392,
+      "shift_ci": [
+        4.8395958482378285,
+        5.205691106362396
+      ],
+      "flip_rate": 0.9172113289760349
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "reliable_source",
+      "n": 15938,
+      "mean_shift": 5.537945516663621,
+      "shift_ci": [
+        5.422557072576005,
+        5.6473684730813
+      ],
+      "flip_rate": 0.5987576860333793
+    },
+    {
+      "condition": "correct assertion",
+      "source": "reliable_source",
+      "n": 5967,
+      "mean_shift": 5.951615386365728,
+      "shift_ci": [
+        5.795096153321126,
+        6.116409081485899
+      ],
+      "flip_rate": 0.9220713926596281
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "reliable_source_no_tool",
+      "n": 14712,
+      "mean_shift": 5.044729525732329,
+      "shift_ci": [
+        4.929868454963866,
+        5.157129048530976
+      ],
+      "flip_rate": 0.5780995106035889
+    },
+    {
+      "condition": "correct assertion",
+      "source": "reliable_source_no_tool",
+      "n": 5508,
+      "mean_shift": 5.330434067312111,
+      "shift_ci": [
+        5.163531061200814,
+        5.5036715512741
+      ],
+      "flip_rate": 0.9166666666666666
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "several_reliable_sources",
+      "n": 1226,
+      "mean_shift": 6.738312854209367,
+      "shift_ci": [
+        6.591604653641879,
+        6.8925691148957355
+      ],
+      "flip_rate": 0.7707993474714518
+    },
+    {
+      "condition": "correct assertion",
+      "source": "several_reliable_sources",
+      "n": 459,
+      "mean_shift": 7.834177437008034,
+      "shift_ci": [
+        7.625483400925534,
+        8.030356272600669
+      ],
+      "flip_rate": 0.9912854030501089
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "tool",
+      "n": 1226,
+      "mean_shift": 11.45653740783911,
+      "shift_ci": [
+        11.155781727173624,
+        11.755827311290618
+      ],
+      "flip_rate": 0.8466557911908646
+    },
+    {
+      "condition": "correct assertion",
+      "source": "tool",
+      "n": 459,
+      "mean_shift": 13.405791215009126,
+      "shift_ci": [
+        13.15706965364677,
+        13.623673380359802
+      ],
+      "flip_rate": 0.9869281045751634
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "two_subject_experts",
+      "n": 1226,
+      "mean_shift": 5.477473323943444,
+      "shift_ci": [
+        5.350623208996248,
+        5.609495067793491
+      ],
+      "flip_rate": 0.6247960848287113
+    },
+    {
+      "condition": "correct assertion",
+      "source": "two_subject_experts",
+      "n": 459,
+      "mean_shift": 6.287839728994692,
+      "shift_ci": [
+        6.093615400437212,
+        6.496638172442269
+      ],
+      "flip_rate": 0.9586056644880174
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "university_reference_guide",
+      "n": 1226,
+      "mean_shift": 5.215880533837725,
+      "shift_ci": [
+        5.090939938026421,
+        5.333047123475962
+      ],
+      "flip_rate": 0.6150081566068516
+    },
+    {
+      "condition": "correct assertion",
+      "source": "university_reference_guide",
+      "n": 459,
+      "mean_shift": 5.400254511493207,
+      "shift_ci": [
+        5.224685836786145,
+        5.587395428052134
+      ],
+      "flip_rate": 0.9520697167755992
+    },
+    {
+      "condition": "incorrect assertion",
+      "source": "user",
+      "n": 1226,
+      "mean_shift": 3.901372128160674,
+      "shift_ci": [
+        3.7952351624768297,
+        4.001553719528787
+      ],
+      "flip_rate": 0.4110929853181077
+    },
+    {
+      "condition": "correct assertion",
+      "source": "user",
+      "n": 459,
+      "mean_shift": 4.219124575606988,
+      "shift_ci": [
+        4.055311266176522,
+        4.375782448882999
+      ],
+      "flip_rate": 0.9084967320261438
+    }
+  ],
+  "checkpoint": "meta_instruct",
+  "hf_id": "meta-llama/Llama-3.1-8B-Instruct",
+  "fmt": "native",
+  "tool_mode_requested": "native",
+  "tool_mode_used": "native",
+  "seed": 0,
+  "turns": [
+    "single"
+  ],
+  "sources": [
+    "user",
+    "long_run_frequency",
+    "documented_accuracy",
+    "comparable_questions",
+    "professor",
+    "domain_expert",
+    "experienced_researcher",
+    "peer_reviewed_reference",
+    "university_reference_guide",
+    "authoritative_textbook",
+    "fact_checked_encyclopedia",
+    "two_subject_experts",
+    "several_reliable_sources",
+    "tool"
+  ],
+  "prior_rule": "greedy_token",
+  "smoke_questions_per_dataset": null,
+  "anchors": "pruned",
+  "primary_reliable": "no_tool",
+  "prune_indices": "results/meta_instruct/btap/e2e_s0/selected.json",
+  "answer_prefix": null,
+  "test_questions": {
+    "csqa": 599,
+    "arc_challenge": 586,
+    "obqa": 500
+  },
+  "answer_reading_by_dataset": {
+    "arc_challenge": {
+      "questions": 586,
+      "greedy_token_vs_letter_argmax_disagreement_rate": 0.0,
+      "top_token_not_a_letter_rate": 0.9914675767918089,
+      "by_kind": {
+        "doubt": {
+          "n": 8204,
+          "n_with_greedy": 8204,
+          "rule_disagreement_rate": 0.0,
+          "greedy_disagreement_rate": 0.0,
+          "greedy_not_letter_rate": 0.9350316918576305
+        },
+        "neutral": {
+          "n": 586,
+          "n_with_greedy": 586,
+          "rule_disagreement_rate": 0.0,
+          "greedy_disagreement_rate": 0.0,
+          "greedy_not_letter_rate": 0.9914675767918089
+        },
+        "suggestion": {
+          "n": 8204,
+          "n_with_greedy": 8204,
+          "rule_disagreement_rate": 0.0,
+          "greedy_disagreement_rate": 0.0,
+          "greedy_not_letter_rate": 0.8453193564115066
+        }
+      },
+      "letter_mass_neutral": {
+        "mean": 0.0351764703551876,
+        "min": 3.152994869958918e-07,
+        "share_below_0.5": 0.9914675767918089
+      },
+      "letter_mass_cue": {
+        "mean": 0.13510432527399074,
+        "min": 1.0878701885559826e-07,
+        "share_below_0.5": 0.897428083861531
+      }
+    },
+    "csqa": {
+      "questions": 599,
+      "greedy_token_vs_letter_argmax_disagreement_rate": 0.0,
+      "top_token_not_a_letter_rate": 0.993322203672788,
+      "by_kind": {
+        "doubt": {
+          "n": 8386,
+          "n_with_greedy": 8386,
+          "rule_disagreement_rate": 0.0,
+          "greedy_disagreement_rate": 0.0,
+          "greedy_not_letter_rate": 0.937872644884331
+        },
+        "neutral": {
+          "n": 599,
+          "n_with_greedy": 599,
+          "rule_disagreement_rate": 0.0,
+          "greedy_disagreement_rate": 0.0,
+          "greedy_not_letter_rate": 0.993322203672788
+        },
+        "suggestion": {
+          "n": 8386,
+          "n_with_greedy": 8386,
+          "rule_disagreement_rate": 0.0,
+          "greedy_disagreement_rate": 0.0,
+          "greedy_not_letter_rate": 0.7593608394943954
+        }
+      },
+      "letter_mass_neutral": {
+        "mean": 0.03544728789856196,
+        "min": 0.0004443288124191345,
+        "share_below_0.5": 0.993322203672788
+      },
+      "letter_mass_cue": {
+        "mean": 0.17270470648677227,
+        "min": 0.00011851223835266365,
+        "share_below_0.5": 0.8564273789649416
+      }
+    },
+    "obqa": {
+      "questions": 500,
+      "greedy_token_vs_letter_argmax_disagreement_rate": 0.0,
+      "top_token_not_a_letter_rate": 0.998,
+      "by_kind": {
+        "doubt": {
+          "n": 7000,
+          "n_with_greedy": 7000,
+          "rule_disagreement_rate": 0.0,
+          "greedy_disagreement_rate": 0.0,
+          "greedy_not_letter_rate": 0.9365714285714286
+        },
+        "neutral": {
+          "n": 500,
+          "n_with_greedy": 500,
+          "rule_disagreement_rate": 0.0,
+          "greedy_disagreement_rate": 0.0,
+          "greedy_not_letter_rate": 0.998
+        },
+        "suggestion": {
+          "n": 7000,
+          "n_with_greedy": 7000,
+          "rule_disagreement_rate": 0.0,
+          "greedy_disagreement_rate": 0.0,
+          "greedy_not_letter_rate": 0.8274285714285714
+        }
+      },
+      "letter_mass_neutral": {
+        "mean": 0.04556847029933272,
+        "min": 0.0006297327624963993,
+        "share_below_0.5": 1.0
+      },
+      "letter_mass_cue": {
+        "mean": 0.14988673080485101,
+        "min": 0.00021705065256789156,
+        "share_below_0.5": 0.8875714285714286
+      }
+    }
+  },
+  "scoring_manifest": "runs/e2_bare_e2e_s0_selected/scores.meta_instruct.native.manifest.json",
+  "scoring_counts": {
+    "items": 1685,
+    "items_by_dataset": {
+      "csqa": 599,
+      "arc_challenge": 586,
+      "obqa": 500
+    },
+    "neutral_rows": 1685,
+    "cue_rows": 47180,
+    "prior_correct": 1226,
+    "prior_wrong": 459,
+    "greedy_top_token_not_letter": 1675,
+    "prior_rule_disagreements": 0,
+    "cue_rows_by_kind_turn_prior": {
+      "doubt|single|correct": 17164,
+      "doubt|single|wrong": 6426,
+      "suggestion|single|correct": 17164,
+      "suggestion|single|wrong": 6426
+    },
+    "neutral_letter_mass_mean": 0.03835642268786048,
+    "neutral_letter_mass_min": 3.152994869958918e-07
+  },
+  "warnings": []
+}
