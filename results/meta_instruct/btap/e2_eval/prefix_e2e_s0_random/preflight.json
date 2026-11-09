@@ -1,0 +1,418 @@
+{
+  "variants": [
+    "{L}",
+    " {L}"
+  ],
+  "checkpoint": "meta_instruct",
+  "checkpoint_config": {
+    "name": "meta_instruct",
+    "hf_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "gated": true,
+    "has_chat_template": true,
+    "sanity_gate": true
+  },
+  "checkpoint_config_source": "given",
+  "problems": [
+    "no pad token: scoring pads with eos (fine under left padding + mask, but check)",
+    "native: batched vs unbatched letter probs differ by 2.08e-03 > 0.001",
+    "native: mean neutral letter_mass 0.051 < 0.5"
+  ],
+  "expected_letter_spelling": {
+    "native": {
+      "pattern": "{L}",
+      "in_variants": true,
+      "letters": {
+        "A": {
+          "text": "A",
+          "ids": [
+            32
+          ],
+          "single_token": true
+        },
+        "B": {
+          "text": "B",
+          "ids": [
+            33
+          ],
+          "single_token": true
+        },
+        "C": {
+          "text": "C",
+          "ids": [
+            34
+          ],
+          "single_token": true
+        },
+        "D": {
+          "text": "D",
+          "ids": [
+            35
+          ],
+          "single_token": true
+        },
+        "E": {
+          "text": "E",
+          "ids": [
+            36
+          ],
+          "single_token": true
+        }
+      }
+    }
+  },
+  "letters": {
+    "A": {
+      "letter": "A",
+      "pattern": "{L}",
+      "ids": [
+        32
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": "A"
+    },
+    "B": {
+      "letter": "B",
+      "pattern": "{L}",
+      "ids": [
+        33
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": "B"
+    },
+    "C": {
+      "letter": "C",
+      "pattern": "{L}",
+      "ids": [
+        34
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": "C"
+    },
+    "D": {
+      "letter": "D",
+      "pattern": "{L}",
+      "ids": [
+        35
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": "D"
+    },
+    "E": {
+      "letter": "E",
+      "pattern": "{L}",
+      "ids": [
+        36
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": "E"
+    },
+    " A": {
+      "letter": "A",
+      "pattern": " {L}",
+      "ids": [
+        362
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": " A"
+    },
+    " B": {
+      "letter": "B",
+      "pattern": " {L}",
+      "ids": [
+        426
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": " B"
+    },
+    " C": {
+      "letter": "C",
+      "pattern": " {L}",
+      "ids": [
+        356
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": " C"
+    },
+    " D": {
+      "letter": "D",
+      "pattern": " {L}",
+      "ids": [
+        423
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": " D"
+    },
+    " E": {
+      "letter": "E",
+      "pattern": " {L}",
+      "ids": [
+        469
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": " E"
+    },
+    "(A": {
+      "letter": "A",
+      "pattern": "({L}",
+      "ids": [
+        4444
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": "(A"
+    },
+    "(B": {
+      "letter": "B",
+      "pattern": "({L}",
+      "ids": [
+        5462
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": "(B"
+    },
+    "(C": {
+      "letter": "C",
+      "pattern": "({L}",
+      "ids": [
+        3100
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": "(C"
+    },
+    "(D": {
+      "letter": "D",
+      "pattern": "({L}",
+      "ids": [
+        5549
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": "(D"
+    },
+    "(E": {
+      "letter": "E",
+      "pattern": "({L}",
+      "ids": [
+        10953
+      ],
+      "single_token": true,
+      "is_unk": false,
+      "token": "(E"
+    },
+    " (A": {
+      "letter": "A",
+      "pattern": " ({L}",
+      "ids": [
+        320,
+        32
+      ],
+      "single_token": false,
+      "is_unk": false,
+      "token": null
+    },
+    " (B": {
+      "letter": "B",
+      "pattern": " ({L}",
+      "ids": [
+        320,
+        33
+      ],
+      "single_token": false,
+      "is_unk": false,
+      "token": null
+    },
+    " (C": {
+      "letter": "C",
+      "pattern": " ({L}",
+      "ids": [
+        320,
+        34
+      ],
+      "single_token": false,
+      "is_unk": false,
+      "token": null
+    },
+    " (D": {
+      "letter": "D",
+      "pattern": " ({L}",
+      "ids": [
+        320,
+        35
+      ],
+      "single_token": false,
+      "is_unk": false,
+      "token": null
+    },
+    " (E": {
+      "letter": "E",
+      "pattern": " ({L}",
+      "ids": [
+        320,
+        36
+      ],
+      "single_token": false,
+      "is_unk": false,
+      "token": null
+    }
+  },
+  "collisions": [],
+  "letter_token_ids": {
+    "A": [
+      32,
+      362
+    ],
+    "B": [
+      33,
+      426
+    ],
+    "C": [
+      34,
+      356
+    ],
+    "D": [
+      35,
+      423
+    ],
+    "E": [
+      36,
+      469
+    ]
+  },
+  "tokenizer": {
+    "has_chat_template": true,
+    "bos_token": "<|begin_of_text|>",
+    "bos_token_id": 128000,
+    "eos_token": "<|eot_id|>",
+    "eos_token_id": 128009,
+    "pad_token": null,
+    "pad_token_id": null,
+    "pad_falls_back_to_eos": true,
+    "padding_side": "right",
+    "len_tokenizer": 128256,
+    "model_config_vocab_size": 128256,
+    "equal": true
+  },
+  "items_with_special_tokens": {},
+  "formats": {
+    "native": {
+      "neutral": {
+        "starts_with_bos": true,
+        "contains_today_date": true,
+        "today_date_line": "Today Date: 26 Jul 2024",
+        "tail": "er.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+        "n_chars": 461,
+        "generation_prompt": "<|start_header_id|>assistant<|end_header_id|>\n\n",
+        "encode_ok": true,
+        "n_tokens": 89,
+        "n_bos": 1,
+        "bos_added_by_scorer": false,
+        "last_tokens": [
+          "<|eot_id|>",
+          "<|start_header_id|>",
+          "assistant",
+          "<|end_header_id|>",
+          "\n\n"
+        ]
+      },
+      "multi": {
+        "starts_with_bos": true,
+        "contains_today_date": true,
+        "today_date_line": "Today Date: 26 Jul 2024",
+        "tail": "er.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+        "n_chars": 670,
+        "generation_prompt": "<|start_header_id|>assistant<|end_header_id|>\n\n",
+        "encode_ok": true,
+        "n_tokens": 120,
+        "n_bos": 1,
+        "bos_added_by_scorer": false,
+        "last_tokens": [
+          "<|eot_id|>",
+          "<|start_header_id|>",
+          "assistant",
+          "<|end_header_id|>",
+          "\n\n"
+        ]
+      },
+      "date_string": "26 Jul 2024",
+      "neutral_diagnostics": {
+        "n": 96,
+        "top_tokens": [
+          {
+            "token_id": 5462,
+            "token": "(B",
+            "count": 26
+          },
+          {
+            "token_id": 3100,
+            "token": "(C",
+            "count": 21
+          },
+          {
+            "token_id": 5549,
+            "token": "(D",
+            "count": 20
+          },
+          {
+            "token_id": 4444,
+            "token": "(A",
+            "count": 17
+          },
+          {
+            "token_id": 1271,
+            "token": "To",
+            "count": 5
+          },
+          {
+            "token_id": 10953,
+            "token": "(E",
+            "count": 5
+          },
+          {
+            "token_id": 34,
+            "token": "C",
+            "count": 2
+          }
+        ],
+        "n_distinct_top_tokens": 7,
+        "letter_mass_mean": 0.050865554777866064,
+        "letter_mass_min": 0.0009931976437524048,
+        "min_mass": 0.5,
+        "frac_letter_mass_below_min": 0.9791666666666666,
+        "frac_top_token_is_letter": 0.020833333333333332
+      },
+      "max_abs_batched_minus_unbatched": 0.002080897660063724,
+      "n_compared": 20
+    }
+  },
+  "tool_row_examples": {
+    "tool|suggestion|single|prior_wrong": {
+      "item_id": "csqa:validation:1afa02df02c908a558b4036e80242fac",
+      "text": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nEnvironment: ipython\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\nYou have access to the following functions. To call a function, please respond with JSON for a function call.Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.Do not use variables.\n\n{\n    \"type\": \"function\",\n    \"function\": {\n        \"name\": \"consult_independent_source\",\n        \"description\": \"Consult an independent source about the answer to the current multiple-choice question.\",\n        \"parameters\": {\n            \"type\": \"object\",\n            \"properties\": {},\n            \"required\": []\n        }\n    }\n}\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nA revolving door is convenient for two direction travel, but it also serves as a security measure at a what?\n(A) bank\n(B) library\n(C) department store\n(D) mall\n(E) new york<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{\"name\": \"consult_independent_source\", \"parameters\": {}}<|eot_id|><|start_header_id|>ipython<|end_header_id|>\n\n\"{\\\"result\\\":\\\"the answer is option A (\\\"bank\\\")\\\",\\\"source_type\\\":\\\"independent_factual_tool\\\"}\"<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nGive your final answer using exactly one option letter.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\nThe correct answer is ("
+    },
+    "tool|suggestion|single|prior_correct": {
+      "item_id": "csqa:validation:1afa02df02c908a558b4036e80242fac",
+      "text": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nEnvironment: ipython\nCutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\nYou have access to the following functions. To call a function, please respond with JSON for a function call.Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.Do not use variables.\n\n{\n    \"type\": \"function\",\n    \"function\": {\n        \"name\": \"consult_independent_source\",\n        \"description\": \"Consult an independent source about the answer to the current multiple-choice question.\",\n        \"parameters\": {\n            \"type\": \"object\",\n            \"properties\": {},\n            \"required\": []\n        }\n    }\n}\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nA revolving door is convenient for two direction travel, but it also serves as a security measure at a what?\n(A) bank\n(B) library\n(C) department store\n(D) mall\n(E) new york<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{\"name\": \"consult_independent_source\", \"parameters\": {}}<|eot_id|><|start_header_id|>ipython<|end_header_id|>\n\n\"{\\\"result\\\":\\\"the answer is option E (\\\"new york\\\")\\\",\\\"source_type\\\":\\\"independent_factual_tool\\\"}\"<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nGive your final answer using exactly one option letter.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\nThe correct answer is ("
+    }
+  },
+  "harmless_problems": [
+    "no pad token: scoring pads with eos (fine under left padding + mask, but check)"
+  ],
+  "serious_problems": [
+    "native: batched vs unbatched letter probs differ by 2.08e-03 > 0.001",
+    "native: mean neutral letter_mass 0.051 < 0.5"
+  ],
+  "serious_problems_ignored": true,
+  "questions_checked": 96
+}

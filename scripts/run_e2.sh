@@ -12,26 +12,26 @@ DEV=cuda:0
 mkdir -p logs
 step () { echo "STEP $* $(date +%T)"; }
 
-until [ -s results/meta_instruct/btap/e2/useful_margin.jsonl ] && ! pgrep -f "build_e2_sets.py useful" > /dev/null; do sleep 15; done
+[ -s results/meta_instruct/btap/e2/useful_margin.jsonl ] || { echo "useful_margin.jsonl missing: run build_e2_sets.py useful first"; exit 1; }
 $PY scripts/check_e2_useful.py > logs/e2_useful_check.log 2>&1; step "useful check: $(cat logs/e2_useful_check.log | tr '\n' ' ')"
 for S in 0 1; do
   $PY scripts/build_e2_sets.py caving --seed $S --device $DEV > logs/e2_caving_s$S.log 2>&1
   step "caving set seed $S: $(tail -1 logs/e2_caving_s$S.log)"
 done
 
-score_arm () {  # $1 arm name, then extra score args
-  local arm=$1; shift
-  $PY scripts/run_btap.py score --arm "$arm" --layers 0-31 --device $DEV "$@" > "logs/e2_score_${arm}.log" 2>&1
-  $PY scripts/run_btap.py select --arm "$arm" --device $DEV > "logs/e2_select_${arm}.log" 2>&1
+score_arm () {  # $1 arm name, $2 seed, then extra score args
+  local arm=$1 seed=$2; shift 2
+  $PY scripts/run_btap.py score --arm "$arm" --seed "$seed" --layers 0-31 --device $DEV "$@" > "logs/e2_score_${arm}.log" 2>&1
+  $PY scripts/run_btap.py select --arm "$arm" --seed "$seed" --device $DEV > "logs/e2_select_${arm}.log" 2>&1
   step "selected $arm"
 }
 for S in 0 1; do
   P=results/meta_instruct/btap/sets/seed$S/preserve.jsonl
-  score_arm e2b_s$S --prune-file $E/caving_margin_seed$S.jsonl --pres-file $P
-  score_arm e2c_s$S --prune-file $E/caving_margin_seed$S.jsonl --pres-file $P $E/useful_margin.jsonl --pres-split
-  score_arm e2e_s$S --prune-file $E/caving_margin_seed$S.jsonl --neg-prune-file $E/useful_margin.jsonl --pres-file $P
+  score_arm e2b_s$S $S --prune-file $E/caving_margin_seed$S.jsonl --pres-file $P
+  score_arm e2c_s$S $S --prune-file $E/caving_margin_seed$S.jsonl --pres-file $P $E/useful_margin.jsonl --pres-split
+  score_arm e2e_s$S $S --prune-file $E/caving_margin_seed$S.jsonl --neg-prune-file $E/useful_margin.jsonl --pres-file $P
 done
-score_arm e2d_s0 --prune-file results/meta_instruct/btap/sets/seed0/prune.jsonl \
+score_arm e2d_s0 0 --prune-file results/meta_instruct/btap/sets/seed0/prune.jsonl \
   --pres-file results/meta_instruct/btap/sets/seed0/preserve.jsonl --protect-frac 5e-4 --first-token 0
 
 EV=(--checkpoint meta_instruct --allow-tf32 --batch-size 32 --ignore-preflight-problems --anchors pruned

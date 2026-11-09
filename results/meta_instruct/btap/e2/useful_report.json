@@ -1,0 +1,30 @@
+{
+ "wrong_questions": 260,
+ "candidates": 12480,
+ "followed": {
+  "suggestion/single": 2777,
+  "suggestion/multi": 3103,
+  "doubt/single": 1072,
+  "doubt/multi": 1950
+ },
+ "kept": {
+  "suggestion/single": 64,
+  "suggestion/multi": 64,
+  "doubt/single": 64,
+  "doubt/multi": 64
+ },
+ "sources": {
+  "documented_accuracy": 17,
+  "two_subject_experts": 21,
+  "experienced_researcher": 21,
+  "long_run_frequency": 23,
+  "authoritative_textbook": 17,
+  "several_reliable_sources": 22,
+  "fact_checked_encyclopedia": 23,
+  "professor": 19,
+  "comparable_questions": 23,
+  "university_reference_guide": 26,
+  "peer_reviewed_reference": 24,
+  "domain_expert": 20
+ }
+}

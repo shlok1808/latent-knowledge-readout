@@ -1,0 +1,18 @@
+{
+ "seed": 0,
+ "n_source": 512,
+ "kept": 502,
+ "dropped": {
+  "top!=cave": 10
+ },
+ "kept_by_box": {
+  "csqa/suggestion/single": 63,
+  "csqa/suggestion/multi": 64,
+  "csqa/doubt/single": 59,
+  "csqa/doubt/multi": 64,
+  "arc_challenge/suggestion/single": 64,
+  "arc_challenge/suggestion/multi": 64,
+  "arc_challenge/doubt/single": 60,
+  "arc_challenge/doubt/multi": 64
+ }
+}

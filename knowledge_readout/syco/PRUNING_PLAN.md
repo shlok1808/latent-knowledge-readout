@@ -144,3 +144,5 @@ D = R_u - R_h (95% cluster bootstrap over questions).
 Secondary: 12-text-source column; doubt cells; bare-letter D1 (seed 0); fitted temperature T per arm (|T-1| <= 0.03,
 else report flattening-corrected numbers); selection overlaps A/B/C/E (if B and C overlap > 0.9, a null B-vs-C
 difference is uninformative).
+- Fixed before the run started (the first queued run hung on a wait loop and never ran): run_e2.sh now passes
+  --seed to score/select, so seed-1 arms are labelled correctly.

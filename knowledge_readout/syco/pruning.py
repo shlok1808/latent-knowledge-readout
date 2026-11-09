@@ -214,13 +214,13 @@ def batch_margin_loss(model, examples, pad_id=0):
     pos_ids/neg_ids are the token ids of every spelling of the two letters ("(C", "C", " C"), so a change that
     moves all letters together (the answer format, total letter mass) cancels exactly: the softmax normaliser drops
     out of a log-probability difference. The base (neutral) prompt removes what holds without the push."""
+    for ex in examples:
+        _check_example(ex)
     prompts, owner = [], []
     for k, ex in enumerate(examples):
         prompts.append(ex["prompt_ids"]); owner.append((k, 1.0))
         if ex.get("base_prompt_ids"):
             prompts.append(ex["base_prompt_ids"]); owner.append((k, -1.0))
-    for ex in examples:
-        _check_example(ex)
     lp = next_token_logprobs(model, prompts, pad_id=pad_id)
     device = lp.device
     m = torch.zeros(len(examples), dtype=lp.dtype, device=device)

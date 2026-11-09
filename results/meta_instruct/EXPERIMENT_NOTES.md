@@ -373,6 +373,53 @@ and flattened letter choices. What looks like "less caving" survives only at a s
 user claims, not a caving-specific change. Not tested yet: whether a format-free selection (e.g. a letter-renormalised
 loss, explorer idea I1) or stronger protection (E2) keeps the format and still cuts caving.
 
+## 5h. E2: format-safe B-TAP and the separation test (2026-11-09, 1x H100, ~2 h GPU)
+
+Design, hypothesis H-sep (Shlok) and PRE-REGISTERED rules: `knowledge_readout/syco/PRUNING_PLAN.md` (last two sections).
+Code: `pruning.batch_margin_loss` (cave-vs-gold letter margin minus the same on the neutral / answer-again prompt; format
+and letter mass cancel exactly), `scripts/build_e2_sets.py`, `scripts/run_e2.sh`, `run_e2_evals.sh`, `analyze_e2.py`.
+Reviewed by a Fable code reviewer (twice) and a Fable design critic before the run. No bet was sealed (deadline).
+Arms: E2-B margin loss; E2-C + useful-updating examples (12 text sources) protected, per-subset union; E2-E caving
+MINUS useful updating (contrastive); E2-D paper loss with 10x protection; seeds 0 and 1 for B/C/E; random controls.
+Sets: caving margin 502 (s0) / 494 (s1) of 512 kept by the letter-mass filter; 256 useful-updating examples, 64 per
+kind x turn (model followed a correct reliable-source claim 89%/99% for suggestions, 34%/63% for doubts).
+
+**Gate 0 (format, pre-registered):** the format is KEPT in every arm (replies opening with "(" 93-95% vs original 96%
+and paper-style 74%), but strict written accuracy drops 3.3-4.6 pp (0.672-0.685 vs 0.718; random 0.718-0.719), just
+over the pre-set 3 pp line, so every arm formally FAILS Gate 0. Accuracy at the answer slot is unchanged
+(0.793-0.798 vs 0.795): the loss is in free generation. For scale, the paper's own pruned model lost 3.2 pp on OBQA.
+Selection overlap with the paper-style set: E2-B 0.23, E2-E 0.09, E2-C 0.02. Margin examples weigh ~12x more per
+example than CE examples in the preservation score, so the per-subset union protection was needed.
+
+**Primary (fixed slot, single-turn, test questions; ratio = pruned / original claim-driven log-odds shift).**
+Verified by an independent Fable verifier (own code, both grouping choices agree):
+
+| arm | user harmful R_h | user useful R_u | D user | 12-src harmful / useful | T | flattening-corrected user R_h / R_u ; 12-src |
+|---|---|---|---|---|---|---|
+| A paper-style s0 | 0.78 | 0.73 | -0.05 | 0.80 / 0.77 | 1.09 | 0.86 / 0.80 ; 0.88 / 0.85 |
+| E2-B s0 (s1) | 0.59 (0.60) | 0.54 (0.55) | -0.05 | 0.60 / 0.56 | 1.43 | 0.87 / 0.80 ; 0.88 / 0.82 |
+| E2-C s0 (s1) | 0.82 (0.82) | 0.80 (0.80) | -0.02 | 0.84 / 0.84 | 1.11 | not computed |
+| E2-E s0 (s1) | 0.80 (0.80) | 0.79 (0.79) | -0.01 | 0.93 / 0.94 | 1.07 | 0.86 / 0.85 ; 1.00 / 1.01 |
+| E2-D s0 | 0.84 | 0.83 | -0.01 | 0.87 / 0.88 | 1.03 | not computed |
+| random (B/C/E s0) | 1.00 | 1.00 | 0.00 | 1.00 / 1.00 | 1.00 | |
+
+Doubt cells follow the same pattern (E2-E user 0.94-0.98, 12-src ~1.0; after correction 12-src doubt 1.06-1.12).
+
+**Reading (verified):**
+1. A format-safe selection fixes the format break (Gate 0 format part passes) but still costs ~3.5 pp of written
+   accuracy, so by the pre-registered rule D1 should not be read as a clean test of H-sep.
+2. In NO arm do harmful and useful updating come apart for the same speaker (D between -0.06 and -0.01, before and
+   after flattening correction). By the pre-registered rule every arm reads "Paper supported", "H-sep unsupported".
+3. E2-B's large drop is mostly general confidence flattening (T 1.43); corrected, it equals the paper-style arm.
+4. E2-E cuts belief movement from USER claims by ~14-20% (right and wrong alike) and leaves reliable-source movement
+   untouched beyond flattening (corrected 1.00). CORRECTION by the verifier: this speaker split is built into the
+   objective (caving set = user wordings; the subtracted useful-updating set = 12 text sources), so B-TAP found the
+   contrast it was given. It is not evidence about correctness-based separability.
+5. So the decisive test is still MISSING: no arm asked B-TAP to spare USER useful updating. A within-speaker
+   contrastive arm (user caving minus user correct assertion) is the next experiment. Also check whether the eval's
+   user wording overlaps the four pruning wordings (the user source "I believe the answer is {option}" is pruning
+   wording 1 = possible wording overfit).
+
 ## 6. Bets (lab notebook)
 
 - Bet #11 (sealed before the run): Shlok "same results as the paper" → wrong (6 of 8). Claude: 45% all 8, expected 7 of 8,
