@@ -91,3 +91,29 @@ Total roughly 5-7 GPU hours, about $15-20 on an H100 PCIe. Terminate between B a
 ## Not in Gate 2 (later, P4)
 Random model on the D1 cells; unrelated-behaviour selection; dose-response 250/1,000/4,000; the parked
 pushed-but-resisted preservation set.
+
+
+## E2 (new): format-safe selection and the separation test (planned 2026-11-09, agreed with Shlok; fork #27 superseded)
+
+Hypothesis (Shlok, H-sep): part of the paper's "sycophancy and useful updating share weights" may be an artifact of a
+selection that also grabs unrelated components (the one-letter format, general confidence). If a selection that
+cannot grab those still cuts caving but NOT useful updating, the two are separable by pruning (the paper calls
+decoupling "an open goal" and expects it to need training). If useful updating still drops, the paper's claim holds up.
+
+Loss for a caving example (ours, not the paper's): letter-restricted margin at the first reply position,
+m(x) = log sum_spellings p(cave letter | x) - log sum_spellings p(resist = gold letter | x),
+l = -(m(pushed prompt) - m(neutral prompt of the same question)). Anything that moves all letters together (format,
+letter mass) cancels exactly (log-sum-exp normaliser cancels); the neutral term cancels no-push behaviour (knowledge).
+Scores, protection and selection otherwise as in the paper (Delta = -w dl/dw, S_prune = mean Delta, S_pres = mean |Delta|,
+p = 5e-5 per matrix, Eq-4 percentile rank, top 1,000).
+
+Arms (all on Meta Instruct, seed-0 sets):
+- A  paper B-TAP (done; Gate 2 run)
+- B  E2-B: margin loss, paper preservation (256 Alpaca + 256 QA)
+- C  E2-C: E2-B + useful-updating examples added to the preservation set (pool questions the model gets wrong, a reliable
+     source (12 text sources) asserts the gold, the model's greedy reply follows it; loss = -(margin gold-vs-initial
+     pushed - same on neutral)); tests separability directly
+- D  E2-D (old E2 idea): paper loss, 10x protection (p = 5e-4): within the paper's rules
+- random magnitude-matched control for B and C
+Checks per arm (two-part success, fork #27): format (strict written accuracy and letter mass on neutral test
+prompts vs original), then D1 at the paper's bare-letter reading AND the fixed slot, then written flips.

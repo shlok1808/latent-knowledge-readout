@@ -88,7 +88,20 @@ def _model_device(model):
 
 # -------------------------------------------------------------------------------------------------- loss
 
+def is_margin(ex):
+    return ex.get("loss", "ce") == "margin"
+
+
 def _check_example(ex):
+    if is_margin(ex):
+        for key in ("prompt_ids", "pos_ids", "neg_ids"):
+            if not ex.get(key):
+                raise ValueError(f"margin example is missing or has empty {key!r}")
+        if set(ex["pos_ids"]) & set(ex["neg_ids"]):
+            raise ValueError("margin example: pos_ids and neg_ids overlap")
+        if "base_prompt_ids" in ex and not ex["base_prompt_ids"]:
+            raise ValueError("margin example: empty base_prompt_ids")
+        return
     for key in ("prompt_ids", "target_ids"):
         if key not in ex:
             raise ValueError(f"example is missing {key!r}")
@@ -170,6 +183,45 @@ def _check_loss(values, what, labels):
     if bool(bad.any()):
         which = [labels[i] for i in torch.nonzero(bad, as_tuple=True)[0].tolist()]
         raise ValueError(f"non-finite loss in {what}: examples {which}")
+
+
+def next_token_logprobs(model, prompts, pad_id=0):
+    """log-softmax of the next-token logits after each prompt (list of id lists), [len(prompts), vocab], fp32+.
+    One right-padded forward; lm_head only on each prompt's last real position."""
+    n, width = len(prompts), max(len(x) for x in prompts)
+    device = _model_device(model)
+    ids = torch.full((n, width), int(pad_id), dtype=torch.long)
+    attn = torch.zeros((n, width), dtype=torch.long)
+    for r, x in enumerate(prompts):
+        ids[r, :len(x)] = torch.tensor(list(x), dtype=torch.long)
+        attn[r, :len(x)] = 1
+    hidden = _decoder(model)(input_ids=ids.to(device), attention_mask=attn.to(device), use_cache=False)[0]
+    last = torch.tensor([len(x) - 1 for x in prompts], device=device)
+    rows = hidden[torch.arange(n, device=device), last]
+    return F.log_softmax(_upcast(_target_logits(model, rows)), dim=-1)
+
+
+def batch_margin_loss(model, examples, pad_id=0):
+    """Margin loss per example, shape [B] (E2-B/C, ours, not the paper's). For example x:
+        m(prompt) = logsumexp(log p(pos_ids | prompt)) - logsumexp(log p(neg_ids | prompt))   (next token)
+        loss = -(m(prompt_ids) - m(base_prompt_ids))   (base term omitted when the example has no base prompt).
+    pos_ids/neg_ids are the token ids of every spelling of the two letters ("(C", "C", " C"), so a change that
+    moves all letters together (the answer format, total letter mass) cancels exactly: the softmax normaliser drops
+    out of a log-probability difference. The base (neutral) prompt removes what holds without the push."""
+    prompts, owner = [], []
+    for k, ex in enumerate(examples):
+        prompts.append(ex["prompt_ids"]); owner.append((k, 1.0))
+        if ex.get("base_prompt_ids"):
+            prompts.append(ex["base_prompt_ids"]); owner.append((k, -1.0))
+    lp = next_token_logprobs(model, prompts, pad_id=pad_id)
+    device = lp.device
+    m = torch.zeros(len(examples), dtype=lp.dtype, device=device)
+    for r, (k, sign) in enumerate(owner):
+        ex = examples[k]
+        pos = torch.logsumexp(lp[r, torch.tensor(ex["pos_ids"], device=device)], dim=0)
+        neg = torch.logsumexp(lp[r, torch.tensor(ex["neg_ids"], device=device)], dim=0)
+        m = m.index_add(0, torch.tensor([k], device=device), (sign * (pos - neg)).reshape(1))
+    return -m
 
 
 # ------------------------------------------------------------------------------------------------ scoring
@@ -258,8 +310,15 @@ def _group_scores(model, named, prune_examples, pres_examples, first_token_varia
     batched longest first (stable), so the first batch is the memory peak; the means do not depend on the order.
     A non-finite loss raises at once, naming the example (index into the caller's list)."""
     params = [p for _, p in named]
-    by_len = sorted(range(len(prune_examples)),
-                    key=lambda i: -(len(prune_examples[i]["prompt_ids"]) + len(prune_examples[i]["target_ids"])))
+    margin = [is_margin(ex) for ex in prune_examples]
+    if any(margin) and not all(margin):
+        raise ValueError("the pruning set must be all CE examples or all margin examples")
+    margin = bool(margin and margin[0])
+    if margin and first_token_variant:
+        raise ValueError("first_token_variant applies to CE pruning examples only")
+    seq_len = (lambda ex: len(ex["prompt_ids"]) + len(ex.get("base_prompt_ids") or [])) if margin else \
+        (lambda ex: len(ex["prompt_ids"]) + len(ex["target_ids"]))
+    by_len = sorted(range(len(prune_examples)), key=lambda i: -seq_len(prune_examples[i]))
     acc_dtype = {n: _acc_dtype(p) for n, p in named}
     acc_prune = {n: torch.zeros_like(p, dtype=acc_dtype[n]) for n, p in named}
     acc_pres = {n: torch.zeros_like(p, dtype=acc_dtype[n]) for n, p in named}
@@ -268,7 +327,10 @@ def _group_scores(model, named, prune_examples, pres_examples, first_token_varia
     bs = max(1, int(prune_batch_size))
     for start in range(0, len(by_len), bs):
         idx = by_len[start:start + bs]
-        mean_ce, first_ce = batch_ce(model, [prune_examples[i] for i in idx], pad_id=pad_id)
+        if margin:
+            mean_ce, first_ce = batch_margin_loss(model, [prune_examples[i] for i in idx], pad_id=pad_id), None
+        else:
+            mean_ce, first_ce = batch_ce(model, [prune_examples[i] for i in idx], pad_id=pad_id)
         _check_loss(mean_ce, "pruning set", [f"prune[{i}]" for i in idx])
         if first_token_variant:
             _check_loss(first_ce, "pruning set (first token)", [f"prune[{i}]" for i in idx])
@@ -285,12 +347,12 @@ def _group_scores(model, named, prune_examples, pres_examples, first_token_varia
         if progress:
             progress("prune", min(start + bs, len(prune_examples)), len(prune_examples))
     for i, ex in enumerate(pres_examples):
-        ce = token_ce(model, ex)
-        _check_loss(ce.mean().reshape(1), "preservation set", [f"pres[{i}]"])
-        grads = torch.autograd.grad(ce.mean(), params)
+        loss = batch_margin_loss(model, [ex], pad_id=pad_id)[0] if is_margin(ex) else token_ce(model, ex).mean()
+        _check_loss(loss.reshape(1), "preservation set", [f"pres[{i}]"])
+        grads = torch.autograd.grad(loss, params)
         for (n, p), g in zip(named, grads):
             acc_pres[n].add_((p.detach().to(acc_dtype[n]) * g.to(acc_dtype[n])).abs())   # += |-w * dl/dw|
-        del ce, grads
+        del loss, grads
         if progress:
             progress("pres", i + 1, len(pres_examples))
 

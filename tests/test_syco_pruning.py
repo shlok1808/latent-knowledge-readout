@@ -421,3 +421,94 @@ def test_batches_longest_first_same_result(tok, sets):
     b = PR._group_scores(m, named, list(reversed(prune)), pres, prune_batch_size=2)[0]
     for n, _ in named:
         assert torch.allclose(a[n], b[n], rtol=1e-10, atol=1e-13)
+
+
+# ------------------------------------------------------------------ margin loss (E2-B / E2-C, ours)
+
+def _margin_examples(tok):
+    q = lambda s: [tok.bos_token_id] + tok.encode(s, add_special_tokens=False)
+    ids = lambda L: [tok.convert_tokens_to_ids(L), tok.convert_tokens_to_ids(" " + L)]
+    return [
+        {"loss": "margin", "prompt_ids": q("I believe the answer is B. What"), "base_prompt_ids": q("What"),
+         "pos_ids": ids("B"), "neg_ids": ids("A")},
+        {"loss": "margin", "prompt_ids": q("Which one? I think C"), "base_prompt_ids": q("Which one?"),
+         "pos_ids": ids("C"), "neg_ids": ids("A")},
+        {"loss": "margin", "prompt_ids": q("Please answer the question"), "pos_ids": ids("D"), "neg_ids": ids("E")},
+    ]
+
+
+def test_margin_loss_matches_full_model_logits():
+    tok = tiny_tokenizer()
+    model = tiny_model(tok)
+    exs = _margin_examples(tok)
+    got = PR.batch_margin_loss(model, exs, pad_id=0)
+    for k, ex in enumerate(exs):
+        def m(prompt):
+            with torch.no_grad():
+                lp = torch.log_softmax(model(torch.tensor([prompt])).logits[0, -1].float(), -1)
+            return torch.logsumexp(lp[ex["pos_ids"]], 0) - torch.logsumexp(lp[ex["neg_ids"]], 0)
+        want = -(m(ex["prompt_ids"]) - (m(ex["base_prompt_ids"]) if ex.get("base_prompt_ids") else 0.0))
+        assert float(got[k].detach()) == pytest.approx(float(want), abs=1e-4)
+    # batch invariance
+    one = torch.stack([PR.batch_margin_loss(model, [e])[0] for e in exs])
+    assert torch.allclose(got, one, atol=1e-4)
+
+
+def test_margin_loss_ignores_a_shift_shared_by_all_letters():
+    """A change that raises every letter logit equally (a pure 'answer with a letter' change) leaves the loss unchanged.
+    Implemented by adding the same vector to every letter row of lm_head and a final hidden direction that is
+    constant: we add c * mean(hidden) contribution via a bias-like shift, i.e. scale every letter row by the same
+    additive vector v and check the margin difference is unchanged up to the term v . h, which is identical for all
+    letters in one prompt and therefore cancels."""
+    tok = tiny_tokenizer()
+    model = tiny_model(tok)
+    ex = _margin_examples(tok)[0]
+    before = float(PR.batch_margin_loss(model, [ex])[0].detach())
+    letters = sorted(set(ex["pos_ids"] + ex["neg_ids"] + [tok.convert_tokens_to_ids(x) for x in ("C", "D", "E")]))
+    v = torch.randn(model.lm_head.weight.shape[1]) * 0.5
+    with torch.no_grad():
+        model.lm_head.weight[letters] += v          # every letter logit moves by the same v . h
+    after = float(PR.batch_margin_loss(model, [ex])[0].detach())
+    assert after == pytest.approx(before, abs=1e-4)
+    with torch.no_grad():
+        model.lm_head.weight[ex["pos_ids"]] += v    # only the pushed letter moves -> the loss changes
+    assert abs(float(PR.batch_margin_loss(model, [ex])[0].detach()) - before) > 1e-3
+
+
+def test_score_with_margin_prune_set_and_mixed_preservation():
+    tok = tiny_tokenizer()
+    model = tiny_model(tok)
+    prune = _margin_examples(tok)[:2]
+    pres = [{"prompt_ids": [tok.bos_token_id] + tok.encode("Hello", add_special_tokens=False),
+             "target_ids": tok.encode(" A", add_special_tokens=False)}, _margin_examples(tok)[2]]
+    res = PR.score(model, prune, pres, group_size=2, keep_top=50, prune_batch_size=2)
+    sel = PR.select(res, n=20)
+    assert len(sel) == 20 and all(s["s_prune"] > 0 or s["s_prune"] <= 0 for s in sel)
+    with pytest.raises(ValueError):
+        PR.score(model, prune + [pres[0]], pres, keep_top=50)
+    with pytest.raises(ValueError):
+        PR.score(model, prune, pres, keep_top=50, first_token_variant=True)
+
+
+def test_margin_scores_match_finite_difference():
+    """-w * d(loss)/dw from score() equals the loss change from scaling w (central difference), float64."""
+    tok = tiny_tokenizer()
+    model = _true_float64(tiny_model(tok).double())
+    exs = _margin_examples(tok)[:2]
+    named = PR.eligible_matrices(model)
+    for p in model.parameters():
+        p.requires_grad_(False)
+    params = [p for _, p in named]
+    for p in params:
+        p.requires_grad_(True)
+    s_prune, _, _ = PR._group_scores(model, named, exs, exs, prune_batch_size=2)
+    name, w = named[3]
+    for flat in (0, 7, 31):
+        eps = 1e-4
+        with torch.no_grad():
+            orig = w.view(-1)[flat].item()
+            w.view(-1)[flat] = orig * (1 + eps); up = PR.batch_margin_loss(model, exs).mean().item()
+            w.view(-1)[flat] = orig * (1 - eps); dn = PR.batch_margin_loss(model, exs).mean().item()
+            w.view(-1)[flat] = orig
+        fd = -(up - dn) / (2 * eps)   # -w * dl/dw ~ -(l(w(1+e)) - l(w(1-e))) / (2e)
+        assert s_prune[name].view(-1)[flat].item() == pytest.approx(fd, rel=1e-4, abs=1e-9)

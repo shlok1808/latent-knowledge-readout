@@ -59,12 +59,27 @@ def parse_layers(spec):
     return PR.parse_layer_spec(spec)
 
 
+EX_KEYS = ("loss", "prompt_ids", "target_ids", "base_prompt_ids", "pos_ids", "neg_ids")
+
+
+def load_examples(paths):
+    out = []
+    for p in paths:
+        out += [{k: r[k] for k in EX_KEYS if k in r} for r in read_jsonl(p)]
+    return out
+
+
+def arm_name(args):
+    """Output folder name: seed{S} for the paper runs, or an E2 arm name (e.g. e2b) if --arm is given."""
+    return args.arm or f"seed{args.seed}"
+
+
 def cmd_score(args):
     import torch
 
     d = SETS / f"seed{args.seed}"
-    prune = [{"prompt_ids": r["prompt_ids"], "target_ids": r["target_ids"]} for r in read_jsonl(d / "prune.jsonl")]
-    pres = [{"prompt_ids": r["prompt_ids"], "target_ids": r["target_ids"]} for r in read_jsonl(d / "preserve.jsonl")]
+    prune = load_examples(args.prune_file or [d / "prune.jsonl"])
+    pres = load_examples(args.pres_file or [d / "preserve.jsonl"])
     log(f"seed {args.seed}: {len(prune)} pruning, {len(pres)} preservation examples; layers {args.layers}")
     if len(prune) != 512 or len(pres) != 512:
         log(f"WARNING: expected 512 + 512 examples, got {len(prune)} + {len(pres)}")
@@ -81,10 +96,14 @@ def cmd_score(args):
             log(f"  {phase} {i}/{n} ({now - t0:.0f}s)")
 
     first = args.first_token if args.first_token is not None else (args.seed == 0)
+    if any(PR.is_margin(ex) for ex in prune):
+        first = False
     result = PR.score(model, prune, pres, layers=parse_layers(args.layers), group_size=args.group_size,
                       first_token_variant=first, prune_batch_size=args.prune_batch_size, pad_id=pad_id,
-                      progress=progress)
-    out = OUT_RUNS / f"seed{args.seed}" / f"score_L{args.layers.replace(',', '+')}.pt"
+                      progress=progress, protect_frac=args.protect_frac)
+    result.settings.update({"arm": arm_name(args), "prune_files": [str(x) for x in (args.prune_file or [])],
+                            "pres_files": [str(x) for x in (args.pres_file or [])]})
+    out = OUT_RUNS / arm_name(args) / f"score_L{args.layers.replace(',', '+')}.pt"
     out.parent.mkdir(parents=True, exist_ok=True)
     torch.save(result, out)
     log(f"saved {out} in {(time.time() - t0) / 60:.1f} min; peak GPU memory "
@@ -94,9 +113,9 @@ def cmd_score(args):
 def cmd_select(args):
     import torch
 
-    parts = sorted((OUT_RUNS / f"seed{args.seed}").glob("score_L*.pt"))
+    parts = sorted((OUT_RUNS / arm_name(args)).glob("score_L*.pt"))
     if not parts:
-        raise SystemExit(f"no score parts for seed {args.seed}")
+        raise SystemExit(f"no score parts for {arm_name(args)}")
     results = [torch.load(p, weights_only=False) for p in parts]
     merged = PR.merge_results(*results)
     log(f"merged {len(parts)} parts: {len(merged.matrices)} matrices")
@@ -106,7 +125,7 @@ def cmd_select(args):
         raise SystemExit(f"score parts cover {len(merged.matrices)} matrices, model has "
                          f"{len(PR.eligible_matrices(model))}; score the missing layers first")
     rand = PR.random_matched(model, selected, seed=args.seed)
-    d = OUT_RES / f"seed{args.seed}"
+    d = OUT_RES / arm_name(args)
     meta = {"seed": args.seed, "n": args.n, "model": LLAMA, "settings": merged.settings,
             "n_prune": merged.n_prune, "n_pres": merged.n_pres}
     PR.save_indices(d / "selected.json", selected, {**meta, "kind": "btap"}, shapes=merged.shapes, model_id=LLAMA)
@@ -124,7 +143,7 @@ def cmd_select(args):
         report["overlap_first_token_vs_main"] = PR.overlap(first, selected)
     report["overlap_with_other_seeds"] = {}
     for other in sorted(OUT_RES.glob("seed*/selected.json")):
-        if other.parent.name != f"seed{args.seed}":
+        if other.parent.name != arm_name(args):
             report["overlap_with_other_seeds"][other.parent.name] = PR.overlap(PR.load_indices(other)[0], selected)
     (d / "report.json").write_text(json.dumps(report, indent=1, default=str))
     log(json.dumps({k: v for k, v in report.items() if k != "select_info"}, default=str))
@@ -183,6 +202,10 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("score")
     s.add_argument("--seed", type=int, default=0)
+    s.add_argument("--arm", default=None, help="output folder name for an E2 arm (default seed{S})")
+    s.add_argument("--prune-file", type=Path, nargs="+", default=None)
+    s.add_argument("--pres-file", type=Path, nargs="+", default=None)
+    s.add_argument("--protect-frac", type=float, default=PR.PROTECT_FRAC)
     s.add_argument("--layers", default="0-31")
     s.add_argument("--device", default="cuda:0")
     s.add_argument("--group-size", type=int, default=8)
@@ -191,6 +214,7 @@ def main(argv=None):
     s.add_argument("--first-token", type=int, choices=(0, 1), default=None, help="default: on for seed 0 only")
     t = sub.add_parser("select")
     t.add_argument("--seed", type=int, default=0)
+    t.add_argument("--arm", default=None)
     t.add_argument("--n", type=int, default=PR.N_PRUNE)
     t.add_argument("--device", default="cuda:0")
     k = sub.add_parser("skills")
