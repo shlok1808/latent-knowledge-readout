@@ -1,0 +1,56 @@
+rows (one per prompt): 1868
+
+=== First-position spelling SHARES within letter mass (exp of mean log-share), original vs pruned vs random
+single-turn canonical spelling is '(X' (paren); multi-turn canonical is bare 'X'.
+heldout  doubt      multi  n= 200 | original: bare 0.589 space 0.000 paren 0.411 | pruned_s: bare 0.229 space 0.000 paren 0.771 | random_s: bare 0.590 space 0.000 paren 0.410 | 
+heldout  doubt      single n= 200 | original: bare 0.107 space 0.000 paren 0.893 | pruned_s: bare 0.211 space 0.000 paren 0.789 | random_s: bare 0.108 space 0.000 paren 0.892 | 
+heldout  suggestion multi  n= 200 | original: bare 0.959 space 0.000 paren 0.041 | pruned_s: bare 0.587 space 0.000 paren 0.413 | random_s: bare 0.959 space 0.000 paren 0.041 | 
+heldout  suggestion single n= 200 | original: bare 0.298 space 0.000 paren 0.702 | pruned_s: bare 0.267 space 0.000 paren 0.733 | random_s: bare 0.299 space 0.000 paren 0.701 | 
+neutral  neutral    single n= 300 | original: bare 0.057 space 0.000 paren 0.943 | pruned_s: bare 0.042 space 0.000 paren 0.958 | random_s: bare 0.057 space 0.000 paren 0.943 | 
+pres     neutral    single n= 256 | original: bare 0.056 space 0.000 paren 0.944 | pruned_s: bare 0.038 space 0.000 paren 0.962 | random_s: bare 0.056 space 0.000 paren 0.944 | 
+prune    doubt      multi  n= 128 | original: bare 0.584 space 0.000 paren 0.416 | pruned_s: bare 0.230 space 0.000 paren 0.770 | random_s: bare 0.585 space 0.000 paren 0.415 | 
+prune    doubt      single n= 128 | original: bare 0.055 space 0.000 paren 0.945 | pruned_s: bare 0.147 space 0.000 paren 0.853 | random_s: bare 0.055 space 0.000 paren 0.945 | 
+prune    suggestion multi  n= 128 | original: bare 0.946 space 0.000 paren 0.054 | pruned_s: bare 0.572 space 0.000 paren 0.428 | random_s: bare 0.946 space 0.000 paren 0.054 | 
+prune    suggestion single n= 128 | original: bare 0.237 space 0.000 paren 0.763 | pruned_s: bare 0.189 space 0.000 paren 0.811 | random_s: bare 0.238 space 0.000 paren 0.762 | 
+
+=== First-position TOTAL letter mass (mean prob, all spellings of the item's letters)
+heldout  doubt      multi  n= 200 | original: 0.966 (median 0.990) | pruned_s: 0.564 (median 0.600) | random_s: 0.966 (median 0.990) | 
+heldout  doubt      single n= 200 | original: 0.891 (median 0.936) | pruned_s: 0.280 (median 0.254) | random_s: 0.890 (median 0.936) | 
+heldout  suggestion multi  n= 200 | original: 0.985 (median 0.994) | pruned_s: 0.370 (median 0.348) | random_s: 0.985 (median 0.994) | 
+heldout  suggestion single n= 200 | original: 0.881 (median 0.930) | pruned_s: 0.270 (median 0.239) | random_s: 0.881 (median 0.930) | 
+neutral  neutral    single n= 300 | original: 0.970 (median 0.996) | pruned_s: 0.674 (median 0.753) | random_s: 0.970 (median 0.996) | 
+pres     neutral    single n= 256 | original: 0.984 (median 0.998) | pruned_s: 0.715 (median 0.781) | random_s: 0.984 (median 0.998) | 
+prune    doubt      multi  n= 128 | original: 0.974 (median 0.989) | pruned_s: 0.527 (median 0.533) | random_s: 0.974 (median 0.989) | 
+prune    doubt      single n= 128 | original: 0.903 (median 0.949) | pruned_s: 0.298 (median 0.262) | random_s: 0.903 (median 0.948) | 
+prune    suggestion multi  n= 128 | original: 0.962 (median 0.992) | pruned_s: 0.411 (median 0.398) | random_s: 0.962 (median 0.992) | 
+prune    suggestion single n= 128 | original: 0.931 (median 0.951) | pruned_s: 0.346 (median 0.308) | random_s: 0.930 (median 0.951) | 
+
+=== Log-ratio of first-position letter mass (pruned/original), cluster bootstrap over questions
+heldout  doubt      multi  -0.627 [-0.688,-0.564] n_q=200
+heldout  doubt      single -1.396 [-1.495,-1.301] n_q=200
+heldout  suggestion multi  -1.074 [-1.136,-1.013] n_q=200
+heldout  suggestion single -1.395 [-1.476,-1.310] n_q=200
+neutral  neutral    single -0.509 [-0.577,-0.441] n_q=300
+pres     neutral    single -0.410 [-0.472,-0.355] n_q=256
+prune    doubt      multi  -0.717 [-0.801,-0.625] n_q=128
+prune    doubt      single -1.360 [-1.475,-1.248] n_q=128
+prune    suggestion multi  -1.021 [-1.121,-0.918] n_q=128
+prune    suggestion single -1.155 [-1.251,-1.062] n_q=128
+
+=== Same, by dataset (single-turn pushed prompts, heldout+prune)
+arc_challenge  -1.202 [-1.294,-1.111] n_q=173  orig mass 0.905 -> pruned 0.328
+csqa           -1.409 [-1.490,-1.329] n_q=186  orig mass 0.888 -> pruned 0.263
+obqa           -1.314 [-1.434,-1.190] n_q=56  orig mass 0.907 -> pruned 0.291
+
+=== Spelling at the ANSWER SLOT of the answer_sentence form (after 'The correct answer is ('; canonical = bare)
+heldout  multi  n= 800 | original: bare 1.0000 space 0.0000 paren 0.0000 mass 0.994 | pruned_s: bare 1.0000 space 0.0000 paren 0.0000 mass 0.994 | random_s: bare 1.0000 space 0.0000 paren 0.0000 mass 0.995 | 
+heldout  single n= 800 | original: bare 1.0000 space 0.0000 paren 0.0000 mass 1.000 | pruned_s: bare 1.0000 space 0.0000 paren 0.0000 mass 0.999 | random_s: bare 1.0000 space 0.0000 paren 0.0000 mass 1.000 | 
+neutral  single n= 300 | original: bare 1.0000 space 0.0000 paren 0.0000 mass 1.000 | pruned_s: bare 1.0000 space 0.0000 paren 0.0000 mass 1.000 | random_s: bare 1.0000 space 0.0000 paren 0.0000 mass 1.000 | 
+prune    multi  n= 512 | original: bare 1.0000 space 0.0000 paren 0.0000 mass 0.997 | pruned_s: bare 1.0000 space 0.0000 paren 0.0000 mass 0.997 | random_s: bare 1.0000 space 0.0000 paren 0.0000 mass 0.997 | 
+prune    single n= 512 | original: bare 1.0000 space 0.0000 paren 0.0000 mass 1.000 | pruned_s: bare 1.0000 space 0.0000 paren 0.0000 mass 0.999 | random_s: bare 1.0000 space 0.0000 paren 0.0000 mass 1.000 | 
+
+=== Within-spelling vs across-spelling: for single-turn letter form, where did the lost paren mass go?
+mean prob of '(X' tokens (all item letters), of bare, of space, and of NON-letter (1 - letter mass)
+original      paren 0.734  bare 0.164  space 0.000  non-letter 0.102
+pruned_seed0  paren 0.238  bare 0.056  space 0.000  non-letter 0.706
+random_seed0  paren 0.733  bare 0.164  space 0.000  non-letter 0.102

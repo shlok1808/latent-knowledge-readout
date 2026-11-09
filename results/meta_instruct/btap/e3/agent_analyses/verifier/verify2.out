@@ -1,0 +1,32 @@
+==== A. Neutral: change in restricted log p(gold) (pruned - original), letter and sentence slots
+   letter           d lr(gold) +0.032 [-0.013,+0.080] n_q=300 | restricted argmax==gold: orig 0.773 pruned 0.760
+   answer_sentence  d lr(gold) +0.033 [+0.015,+0.052] n_q=300 | restricted argmax==gold: orig 0.793 pruned 0.790
+
+==== B. Within-cell fit lo_pruned = a + b lo_orig (cave - resist), heldout single, and neutral-adjusted DiD
+   heldout single suggestion letter           within-cell a=-0.28 b=0.48 | raw DiD -0.345 | neutral-fit-adjusted DiD -0.220 [-0.353,-0.088] n_q=200
+   heldout single doubt      letter           within-cell a=-0.27 b=0.54 | raw DiD +0.277 | neutral-fit-adjusted DiD +0.037 [-0.072,+0.154] n_q=200
+   heldout multi  suggestion letter           within-cell a=-2.40 b=0.46 | raw DiD -5.997 | neutral-fit-adjusted DiD -4.080 [-4.238,-3.924] n_q=200
+   heldout multi  doubt      letter           within-cell a=-1.83 b=0.49 | raw DiD -2.104 | neutral-fit-adjusted DiD -1.868 [-2.037,-1.700] n_q=200
+   heldout single suggestion answer_sentence  within-cell a=-1.01 b=0.82 | raw DiD -0.956 | neutral-fit-adjusted DiD -0.980 [-1.063,-0.899] n_q=200
+   heldout single doubt      answer_sentence  within-cell a=-0.79 b=0.86 | raw DiD -0.609 | neutral-fit-adjusted DiD -0.716 [-0.777,-0.656] n_q=200
+   heldout multi  suggestion answer_sentence  within-cell a=-3.80 b=1.08 | raw DiD -3.029 | neutral-fit-adjusted DiD -2.279 [-2.404,-2.152] n_q=200
+   heldout multi  doubt      answer_sentence  within-cell a=-1.37 b=0.88 | raw DiD -1.444 | neutral-fit-adjusted DiD -1.392 [-1.489,-1.298] n_q=200
+
+==== C. Real replies: at the answer slot, does the OTHER model's restricted argmax agree with the written letter?
+   written_by original      style letter_first   n=297  pruned_seed0 argmax==written 0.788 | author argmax==written 0.987
+   written_by original      style reasons_first  n=  3  pruned_seed0 argmax==written 1.000 | author argmax==written 1.000
+   written_by pruned_seed0  style letter_first   n=246  original argmax==written 0.874 | author argmax==written 0.996
+   written_by pruned_seed0  style reasons_first  n= 54  original argmax==written 0.963 | author argmax==written 1.000
+
+==== D. Real replies: slot DiD (cave minus resist) by author x written role; whole-reply delta per row by author
+   slot DiD original      all              +0.148 [+0.012,+0.284] n_q=287
+   slot DiD original      written=cave     -0.954 [-1.119,-0.784] n_q=97
+   slot DiD original      written=resist   +0.677 [+0.541,+0.816] n_q=197
+   slot DiD pooled        all              -0.236 [-0.334,-0.134] n_q=514
+   slot DiD pruned_seed0  all              -0.615 [-0.722,-0.512] n_q=282
+   slot DiD pruned_seed0  written=cave     -1.376 [-1.532,-1.232] n_q=92
+   slot DiD pruned_seed0  written=resist   -0.264 [-0.375,-0.156] n_q=195
+   whole-reply delta (pruned-orig) original      as_written  -2.143 [-2.264,-2.015] n_q=287
+   whole-reply delta (pruned-orig) original      twin        -1.478 [-1.649,-1.322] n_q=287
+   whole-reply delta (pruned-orig) pruned_seed0  as_written  +2.593 [+2.378,+2.798] n_q=282
+   whole-reply delta (pruned-orig) pruned_seed0  twin        +2.891 [+2.655,+3.128] n_q=282

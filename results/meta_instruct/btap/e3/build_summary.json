@@ -1,0 +1,36 @@
+{
+ "n": 10228,
+ "by_set": {
+  "prune": 3072,
+  "heldout": 4800,
+  "neutral": 900,
+  "pres": 256,
+  "real": 1200
+ },
+ "by_set_role_form": {
+  "prune|cave|letter": 512,
+  "prune|cave|answer_sentence": 512,
+  "prune|cave|letter_last": 512,
+  "prune|resist|letter": 512,
+  "prune|resist|answer_sentence": 512,
+  "prune|resist|letter_last": 512,
+  "heldout|cave|letter": 800,
+  "heldout|cave|answer_sentence": 800,
+  "heldout|cave|letter_last": 800,
+  "heldout|resist|letter": 800,
+  "heldout|resist|answer_sentence": 800,
+  "heldout|resist|letter_last": 800,
+  "neutral|correct|letter": 300,
+  "neutral|correct|answer_sentence": 300,
+  "neutral|correct|letter_last": 300,
+  "pres|correct|pres_qa": 256,
+  "real|resist|real_as_written": 409,
+  "real|cave|real_twin": 409,
+  "real|cave|real_as_written": 191,
+  "real|resist|real_twin": 191
+ },
+ "real_candidates": {
+  "original": 2174,
+  "pruned_seed0": 2157
+ }
+}

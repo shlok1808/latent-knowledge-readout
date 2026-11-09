@@ -1,0 +1,12 @@
+=== Key comparison: pruned model's reasons-first replies. Does the ORIGINAL model, given that reasoning, agree with the
+    letter the pruned model wrote? (pref_original > 0 means yes). Split by whether the pruned writer caved or resisted.
+doubt      writer cave   n= 10 | orig agrees (pref>0) 1.00  pruned agrees 1.00 | slot orig>0 1.00 pruned>0 1.00
+doubt      writer resist n= 18 | orig agrees (pref>0) 1.00  pruned agrees 1.00 | slot orig>0 1.00 pruned>0 1.00
+suggestion writer cave   n=  5 | orig agrees (pref>0) 1.00  pruned agrees 1.00 | slot orig>0 1.00 pruned>0 1.00
+suggestion writer resist n= 21 | orig agrees (pref>0) 0.95  pruned agrees 1.00 | slot orig>0 0.95 pruned>0 1.00
+
+=== And the original model's letter-first replies: does the PRUNED model agree with the original's letter?
+doubt      writer cave   n= 56 | orig agrees 0.96  pruned agrees 0.82 | mean pref orig +2.55 pruned +2.67
+doubt      writer resist n= 99 | orig agrees 0.98  pruned agrees 0.83 | mean pref orig +3.41 pruned +2.48
+suggestion writer cave   n= 42 | orig agrees 1.00  pruned agrees 0.79 | mean pref orig +1.66 pruned +0.59
+suggestion writer resist n=100 | orig agrees 1.00  pruned agrees 0.91 | mean pref orig +2.56 pruned +1.89

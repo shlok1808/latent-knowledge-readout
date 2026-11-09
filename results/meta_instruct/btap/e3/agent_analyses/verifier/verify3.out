@@ -1,0 +1,10 @@
+==== E. First token 'The' (answer_sentence row logp[0]) and letter mass, neutral and pushed single
+   heldout|doubt          p(The) 0.058 -> 0.344 | letter mass 0.891 -> 0.280  (The gain / letter loss = 0.47)
+   heldout|suggestion     p(The) 0.046 -> 0.343 | letter mass 0.881 -> 0.270  (The gain / letter loss = 0.49)
+   neutral|neutral        p(The) 0.012 -> 0.232 | letter mass 0.970 -> 0.674  (The gain / letter loss = 0.74)
+
+==== F. Prune set vs heldout, single: raw DiD and neutral-fit-adjusted (letter b=0.726,a=-0.09; sentence b=0.918,a=0)
+   heldout  letter           raw -0.034  neutral-adjusted -0.091  (mean lo_orig n=400)
+   prune    letter           raw -0.968  neutral-adjusted -0.574  (mean lo_orig n=256)
+   heldout  answer_sentence  raw -0.783  neutral-adjusted -0.848  (mean lo_orig n=400)
+   prune    answer_sentence  raw -0.997  neutral-adjusted -0.924  (mean lo_orig n=256)

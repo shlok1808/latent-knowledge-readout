@@ -335,6 +335,44 @@ user-cell eval wordings equal pruning wording #1 (likely true in the paper too);
   (3 of 4 ours), mean vs sum loss (Eq 1 says sum), the paper's unstated target y, its unstated answer reading.
 - Ask Orgad: target y for caving examples, how answers were read for D1, whether the pruned model kept the format.
 
+## 5g. Why the format broke: audits + E3 (2026-11-06 to 11-09)
+
+**Audits (2 investigators + Fable advisor, then design critic, 2 workers, free explorer).** No code bug (loss, sign,
+protection, indexing, zeroing verified). Ranked causes of the format break (advisor): inherent to B-TAP when all 512
+caving targets are bare letters ("(C)" 277, "C" 230, letter + text 5) and protection is weak (45%); our chat-template
+scoring with the assistant header, which the B-TAP paper itself warns against (25%); confident preservation targets
+giving tiny protection gradients (15%); Eq-4 per-matrix quota (10%). 16% of selected weights sit on 5 residual dims
+(random 1.5%). Zero-GPU temperature check on the fixed-slot reading: pruning makes the model a bit less confident even
+with no claim (fitted T = 1.09), which explains ~8-9% of the 20-27% drop; the rest is beyond general flattening.
+
+**E3** (lab fork #28, bet #29; teacher-forced fixed CAVE vs RESIST replies; 10,228 rows; 1x A100, ~10 min).
+Code: `knowledge_readout/syco/reply_probe.py`, `scripts/run_e3.py`, `scripts/analyze_e3.py`; data and every agent
+script: `results/meta_instruct/btap/e3/` (`agent_analyses/`). Verified by a Fable verifier with independent code:
+- Format: the break hits ALL prompt types, incl. the protected QA examples. First-position letter mass after pruning:
+  0.27 (pushed single), 0.67 (neutral), 0.72 (protected QA); lost mass goes mainly to "The" (neutral 0.012 -> 0.232).
+  Protected QA whole-reply -1.11 nats = letter mass -0.41 + end-of-turn -0.64 + letter choice -0.07: protection
+  kept the letter CHOICE, not the format.
+- Flattening: neutral gold-vs-2nd slope 0.73 at the first position, 0.92 after "The correct answer is (".
+- PRIMARY (pre-named: cave-vs-resist difference-in-differences, held-out, letter form, single-turn) = -0.034
+  [-0.18, +0.11]: NULL, ~-0.1 after flattening correction. At the first-position letter slot, pruning does not move
+  the model away from the cave letter specifically.
+- At the "The correct answer is (" slot: a robust 0.7-1.0 nat shift away from whatever the user asserted
+  (suggestion -0.96, doubt -0.61 raw; survives placebo letters, flattening correction, matched bins; same on the
+  pruning set and held-out; absent on neutral prompts and in the random control). Reads as "discount the user's
+  claim", which would also cut useful updating (E3 has no reliable-source cells). Slot chosen after the fact: moderate.
+- Multi-turn: 2-4 nats back to the model's earlier answer (p(prev letter) 0.13 -> 0.53), but uninterpretable: the
+  earlier answer = gold = resist in every row.
+- The letter_last DiD (-1.06) is a measurement artifact (cave/resist prefixes differ); at each reply's own slot ~0.
+- Real replies: author/style effects dominate (+-2 nats); slot DiD orig-written +0.15, pruned-written -0.61.
+- Random control: |DiD| <= 0.004 everywhere.
+Bet #29: Claude partly right (format yes; caving-at-letter-slot no; sentence gap larger, not smaller). Shlok ("both,
+mainly format") right.
+
+**What E3 means for the replication:** B-TAP on these targets mostly removed the one-letter answer habit (everywhere)
+and flattened letter choices. What looks like "less caving" survives only at a sentence slot, as a general discount of
+user claims, not a caving-specific change. Not tested yet: whether a format-free selection (e.g. a letter-renormalised
+loss, explorer idea I1) or stronger protection (E2) keeps the format and still cuts caving.
+
 ## 6. Bets (lab notebook)
 
 - Bet #11 (sealed before the run): Shlok "same results as the paper" → wrong (6 of 8). Claude: 45% all 8, expected 7 of 8,

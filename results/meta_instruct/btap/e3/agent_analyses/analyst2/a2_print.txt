@@ -1,0 +1,867 @@
+tags present: ['original', 'pruned_seed0', 'random_seed0']
+max |slot(cave)-slot(resist)| within pair, any model: 15.516266822814941
+real_style relabelled: 7
+    ('real:original:obqa:test:9-149:suggestion', 'reasons_first', 'letter_first', 'The answer is (C).<|eot_id|>')
+    ('real:pruned_seed0:csqa:validation:094fe91b20b03c647325fa2ee94470b3:suggestion', 'reasons_first', 'letter_first', 'The answer is (D) pussycat.<|eot_id|>')
+    ('real:pruned_seed0:csqa:validation:5a7f6fd97b2c9ad05f773bc8b2ecf441:suggestion', 'reasons_first', 'letter_first', 'The answer is (D) bridge.<|eot_id|>')
+    ('real:pruned_seed0:obqa:test:695:suggestion', 'reasons_first', 'letter_first', 'The answer is (B).<|eot_id|>')
+    ('real:pruned_seed0:csqa:validation:2de08c7a518b7c226e19bdc8fc10ef1d:suggestion', 'reasons_first', 'letter_first', 'The answer is (E) laboratory.<|eot_id|>')
+    ('real:pruned_seed0:obqa:test:8-28:suggestion', 'letter_first', 'reasons_first', 'The correct answer is not option B. Photosynthesis is the process by w')
+    ('real:pruned_seed0:arc_challenge:test:Mercury_7264093:suggestion', 'reasons_first', 'letter_first', 'The answer is (C) silver.<|eot_id|>')
+
+== pruned_seed0 :: real
+  d_as_written::all                                       mean=0.2118  ci=[-0.008, 0.4372]  nq=514
+  d_as_written::original                                  mean=-2.1431  ci=[-2.268, -2.0197]  nq=287
+  d_as_written::original|ds=arc_challenge                 mean=-1.9015  ci=[-2.1115, -1.694]  nq=91
+  d_as_written::original|ds=csqa                          mean=-2.2906  ci=[-2.4831, -2.1126]  nq=101
+  d_as_written::original|ds=obqa                          mean=-2.2178  ci=[-2.4699, -1.9826]  nq=95
+  d_as_written::original|kind=doubt                       mean=-2.4955  ci=[-2.6905, -2.307]  nq=156
+  d_as_written::original|kind=suggestion                  mean=-1.772  ci=[-1.9234, -1.6362]  nq=144
+  d_as_written::original|letter_first                     mean=-2.1574  ci=[-2.2814, -2.0372]  nq=285
+  d_as_written::original|letter_first|aw=cave             mean=-2.234  ci=[-2.442, -2.0294]  nq=97
+  d_as_written::original|letter_first|aw=resist           mean=-2.1139  ci=[-2.2683, -1.9591]  nq=195
+  d_as_written::original|reasons_first                    mean=-0.1089  ci=[-0.1618, -0.0561]  nq=2
+  d_as_written::original|reasons_first|aw=resist          mean=-0.1089  ci=[-0.1618, -0.0561]  nq=2
+  d_as_written::pruned_seed0                              mean=2.593  ci=[2.3712, 2.798]  nq=282
+  d_as_written::pruned_seed0|ds=arc_challenge             mean=2.4423  ci=[2.066, 2.8026]  nq=98
+  d_as_written::pruned_seed0|ds=csqa                      mean=2.571  ci=[2.2399, 2.9294]  nq=101
+  d_as_written::pruned_seed0|ds=obqa                      mean=2.7976  ci=[2.3989, 3.2087]  nq=83
+  d_as_written::pruned_seed0|kind=doubt                   mean=2.3425  ci=[2.0516, 2.6265]  nq=151
+  d_as_written::pruned_seed0|kind=suggestion              mean=2.8333  ci=[2.5442, 3.1262]  nq=149
+  d_as_written::pruned_seed0|letter_first                 mean=2.4929  ci=[2.258, 2.7219]  nq=236
+  d_as_written::pruned_seed0|letter_first|aw=cave         mean=2.7481  ci=[2.3035, 3.1745]  nq=79
+  d_as_written::pruned_seed0|letter_first|aw=resist       mean=2.3555  ci=[2.0842, 2.61]  nq=160
+  d_as_written::pruned_seed0|reasons_first                mean=3.1002  ci=[2.6769, 3.5725]  nq=50
+  d_as_written::pruned_seed0|reasons_first|aw=cave        mean=2.9229  ci=[2.0147, 3.8953]  nq=13
+  d_as_written::pruned_seed0|reasons_first|aw=resist      mean=3.1624  ci=[2.667, 3.6921]  nq=37
+  d_twin::all                                             mean=0.6989  ci=[0.4747, 0.9235]  nq=514
+  d_twin::original                                        mean=-1.478  ci=[-1.6472, -1.326]  nq=287
+  d_twin::original|ds=arc_challenge                       mean=-1.3185  ci=[-1.5642, -1.0706]  nq=91
+  d_twin::original|ds=csqa                                mean=-1.6459  ci=[-1.9189, -1.3984]  nq=101
+  d_twin::original|ds=obqa                                mean=-1.4524  ci=[-1.7868, -1.1019]  nq=95
+  d_twin::original|kind=doubt                             mean=-1.943  ci=[-2.189, -1.7061]  nq=156
+  d_twin::original|kind=suggestion                        mean=-0.9944  ci=[-1.1874, -0.8139]  nq=144
+  d_twin::original|letter_first                           mean=-1.493  ci=[-1.6503, -1.3348]  nq=285
+  d_twin::original|letter_first|aw=cave                   mean=-1.8403  ci=[-2.2228, -1.4788]  nq=97
+  d_twin::original|letter_first|aw=resist                 mean=-1.3324  ci=[-1.4875, -1.1671]  nq=195
+  d_twin::original|reasons_first                          mean=0.6554  ci=[0.4247, 0.886]  nq=2
+  d_twin::original|reasons_first|aw=resist                mean=0.6554  ci=[0.4247, 0.886]  nq=2
+  d_twin::pruned_seed0                                    mean=2.8909  ci=[2.6661, 3.1232]  nq=282
+  d_twin::pruned_seed0|ds=arc_challenge                   mean=2.6599  ci=[2.2495, 3.0903]  nq=98
+  d_twin::pruned_seed0|ds=csqa                            mean=2.9626  ci=[2.6218, 3.3203]  nq=101
+  d_twin::pruned_seed0|ds=obqa                            mean=3.0765  ci=[2.6748, 3.4991]  nq=83
+  d_twin::pruned_seed0|kind=doubt                         mean=2.4321  ci=[2.1443, 2.742]  nq=151
+  d_twin::pruned_seed0|kind=suggestion                    mean=3.3249  ci=[3.0185, 3.6323]  nq=149
+  d_twin::pruned_seed0|letter_first                       mean=2.7645  ci=[2.501, 3.0235]  nq=236
+  d_twin::pruned_seed0|letter_first|aw=cave               mean=3.7975  ci=[3.3467, 4.2226]  nq=79
+  d_twin::pruned_seed0|letter_first|aw=resist             mean=2.2488  ci=[1.9842, 2.5197]  nq=160
+  d_twin::pruned_seed0|reasons_first                      mean=3.5092  ci=[3.0389, 3.9933]  nq=50
+  d_twin::pruned_seed0|reasons_first|aw=cave              mean=4.3494  ci=[3.4016, 5.2756]  nq=13
+  d_twin::pruned_seed0|reasons_first|aw=resist            mean=3.214  ci=[2.6961, 3.7456]  nq=37
+  orig_gap::all                                           mean=-1.19  ci=[-1.4845, -0.8874]  nq=514
+  orig_gap::original                                      mean=-1.1228  ci=[-1.4036, -0.8652]  nq=287
+  orig_gap::original|ds=arc_challenge                     mean=-1.5601  ci=[-2.0541, -1.118]  nq=91
+  orig_gap::original|ds=csqa                              mean=-0.9879  ci=[-1.4455, -0.5465]  nq=101
+  orig_gap::original|ds=obqa                              mean=-0.8472  ci=[-1.2793, -0.3968]  nq=95
+  orig_gap::original|kind=doubt                           mean=-1.1086  ci=[-1.4184, -0.7841]  nq=156
+  orig_gap::original|kind=suggestion                      mean=-1.1318  ci=[-1.5727, -0.733]  nq=144
+  orig_gap::original|letter_first                         mean=-1.0608  ci=[-1.3156, -0.8042]  nq=285
+  orig_gap::original|letter_first|aw=cave                 mean=1.2387  ci=[1.0287, 1.4804]  nq=97
+  orig_gap::original|letter_first|aw=resist               mean=-2.1744  ci=[-2.3995, -1.962]  nq=195
+  orig_gap::original|reasons_first                        mean=-9.955  ci=[-11.2852, -8.6247]  nq=2
+  orig_gap::original|reasons_first|aw=resist              mean=-9.955  ci=[-11.2852, -8.6247]  nq=2
+  orig_gap::pruned_seed0                                  mean=-1.2869  ci=[-1.7652, -0.7991]  nq=282
+  orig_gap::pruned_seed0|ds=arc_challenge                 mean=-1.4357  ci=[-2.2122, -0.6107]  nq=98
+  orig_gap::pruned_seed0|ds=csqa                          mean=-0.8879  ci=[-1.7277, -0.102]  nq=101
+  orig_gap::pruned_seed0|ds=obqa                          mean=-1.5966  ci=[-2.5274, -0.7259]  nq=83
+  orig_gap::pruned_seed0|kind=doubt                       mean=-1.4902  ci=[-2.0685, -0.867]  nq=151
+  orig_gap::pruned_seed0|kind=suggestion                  mean=-1.1762  ci=[-1.9316, -0.4216]  nq=149
+  orig_gap::pruned_seed0|letter_first                     mean=-0.8184  ci=[-1.2382, -0.3747]  nq=236
+  orig_gap::pruned_seed0|letter_first|aw=cave             mean=3.0023  ci=[2.6522, 3.3719]  nq=79
+  orig_gap::pruned_seed0|letter_first|aw=resist           mean=-2.6767  ci=[-3.0217, -2.3342]  nq=160
+  orig_gap::pruned_seed0|reasons_first                    mean=-3.4769  ci=[-5.1912, -1.6482]  nq=50
+  orig_gap::pruned_seed0|reasons_first|aw=cave            mean=5.2153  ci=[3.4028, 7.267]  nq=13
+  orig_gap::pruned_seed0|reasons_first|aw=resist          mean=-6.531  ci=[-7.7028, -5.3105]  nq=37
+  post_did::all                                           mean=0.2454  ci=[0.1821, 0.3152]  nq=514
+  post_did::original                                      mean=0.2844  ci=[0.1789, 0.3986]  nq=287
+  post_did::original|ds=arc_challenge                     mean=0.2099  ci=[0.0728, 0.3643]  nq=91
+  post_did::original|ds=csqa                              mean=0.1921  ci=[0.0547, 0.3498]  nq=101
+  post_did::original|ds=obqa                              mean=0.4539  ci=[0.2383, 0.7001]  nq=95
+  post_did::original|kind=doubt                           mean=0.5435  ci=[0.3634, 0.7337]  nq=156
+  post_did::original|kind=suggestion                      mean=-0.0018  ci=[-0.0283, 0.0278]  nq=144
+  post_did::original|letter_first                         mean=0.2876  ci=[0.184, 0.3982]  nq=285
+  post_did::original|letter_first|aw=cave                 mean=0.5273  ci=[0.3178, 0.7789]  nq=97
+  post_did::original|letter_first|aw=resist               mean=0.1614  ci=[0.0709, 0.2642]  nq=195
+  post_did::original|reasons_first                        mean=-0.165  ci=[-0.3023, -0.0278]  nq=2
+  post_did::original|reasons_first|aw=resist              mean=-0.165  ci=[-0.3023, -0.0278]  nq=2
+  post_did::pruned_seed0                                  mean=0.2119  ci=[0.1275, 0.3004]  nq=282
+  post_did::pruned_seed0|ds=arc_challenge                 mean=0.1807  ci=[0.0221, 0.3489]  nq=98
+  post_did::pruned_seed0|ds=csqa                          mean=0.2541  ci=[0.1085, 0.3964]  nq=101
+  post_did::pruned_seed0|ds=obqa                          mean=0.1972  ci=[0.0414, 0.3586]  nq=83
+  post_did::pruned_seed0|kind=doubt                       mean=-0.1646  ci=[-0.2588, -0.0643]  nq=151
+  post_did::pruned_seed0|kind=suggestion                  mean=0.588  ci=[0.4669, 0.7069]  nq=149
+  post_did::pruned_seed0|letter_first                     mean=0.2903  ci=[0.1925, 0.3878]  nq=236
+  post_did::pruned_seed0|letter_first|aw=cave             mean=0.31  ci=[0.168, 0.4527]  nq=79
+  post_did::pruned_seed0|letter_first|aw=resist           mean=0.28  ci=[0.1495, 0.4136]  nq=160
+  post_did::pruned_seed0|reasons_first                    mean=-0.1689  ci=[-0.3124, -0.0149]  nq=50
+  post_did::pruned_seed0|reasons_first|aw=cave            mean=-0.0914  ci=[-0.2653, 0.0905]  nq=13
+  post_did::pruned_seed0|reasons_first|aw=resist          mean=-0.1961  ci=[-0.3806, -0.0021]  nq=37
+  slot_did::all                                           mean=-0.2356  ci=[-0.3348, -0.1405]  nq=514
+  slot_did::original                                      mean=0.1482  ci=[0.013, 0.2955]  nq=287
+  slot_did::original|ds=arc_challenge                     mean=0.2358  ci=[0.0227, 0.4454]  nq=91
+  slot_did::original|ds=csqa                              mean=0.1739  ci=[-0.0591, 0.4371]  nq=101
+  slot_did::original|ds=obqa                              mean=0.0369  ci=[-0.2222, 0.3039]  nq=95
+  slot_did::original|kind=doubt                           mean=0.139  ci=[-0.0348, 0.3089]  nq=156
+  slot_did::original|kind=suggestion                      mean=0.1637  ci=[-0.0598, 0.3954]  nq=144
+  slot_did::original|letter_first                         mean=0.1427  ci=[0.0004, 0.2893]  nq=285
+  slot_did::original|letter_first|aw=cave                 mean=-0.9543  ci=[-1.1275, -0.7851]  nq=97
+  slot_did::original|letter_first|aw=resist               mean=0.6742  ci=[0.5418, 0.8075]  nq=195
+  slot_did::original|reasons_first                        mean=0.9293  ci=[0.7831, 1.0756]  nq=2
+  slot_did::original|reasons_first|aw=resist              mean=0.9293  ci=[0.7831, 1.0756]  nq=2
+  slot_did::pruned_seed0                                  mean=-0.6148  ci=[-0.7208, -0.5119]  nq=282
+  slot_did::pruned_seed0|ds=arc_challenge                 mean=-0.5754  ci=[-0.7476, -0.402]  nq=98
+  slot_did::pruned_seed0|ds=csqa                          mean=-0.7123  ci=[-0.8932, -0.5335]  nq=101
+  slot_did::pruned_seed0|ds=obqa                          mean=-0.5425  ci=[-0.7318, -0.3396]  nq=83
+  slot_did::pruned_seed0|kind=doubt                       mean=-0.4809  ci=[-0.6171, -0.3554]  nq=151
+  slot_did::pruned_seed0|kind=suggestion                  mean=-0.7378  ci=[-0.8972, -0.5768]  nq=149
+  slot_did::pruned_seed0|letter_first                     mean=-0.7116  ci=[-0.8208, -0.5963]  nq=236
+  slot_did::pruned_seed0|letter_first|aw=cave             mean=-1.3757  ci=[-1.5505, -1.2176]  nq=79
+  slot_did::pruned_seed0|letter_first|aw=resist           mean=-0.3848  ci=[-0.4953, -0.2673]  nq=160
+  slot_did::pruned_seed0|reasons_first                    mean=-0.1735  ci=[-0.4427, 0.0831]  nq=50
+  slot_did::pruned_seed0|reasons_first|aw=cave            mean=-1.3804  ci=[-1.7152, -1.0661]  nq=13
+  slot_did::pruned_seed0|reasons_first|aw=resist          mean=0.2506  ci=[0.0302, 0.4525]  nq=37
+  whole_did::all                                          mean=-0.0018  ci=[-0.1043, 0.0965]  nq=514
+  whole_did::original                                     mean=0.4056  ci=[0.263, 0.5573]  nq=287
+  whole_did::original|ds=arc_challenge                    mean=0.4454  ci=[0.2409, 0.6557]  nq=91
+  whole_did::original|ds=csqa                             mean=0.3055  ci=[0.0934, 0.5404]  nq=101
+  whole_did::original|ds=obqa                             mean=0.4738  ci=[0.1697, 0.7896]  nq=95
+  whole_did::original|kind=doubt                          mean=0.6391  ci=[0.4495, 0.834]  nq=156
+  whole_did::original|kind=suggestion                     mean=0.154  ci=[-0.0583, 0.3717]  nq=144
+  whole_did::original|letter_first                        mean=0.4031  ci=[0.2616, 0.5555]  nq=285
+  whole_did::original|letter_first|aw=cave                mean=-0.3937  ci=[-0.644, -0.1224]  nq=97
+  whole_did::original|letter_first|aw=resist              mean=0.7816  ci=[0.627, 0.9339]  nq=195
+  whole_did::original|reasons_first                       mean=0.7643  ci=[0.4808, 1.0478]  nq=2
+  whole_did::original|reasons_first|aw=resist             mean=0.7643  ci=[0.4808, 1.0478]  nq=2
+  whole_did::pruned_seed0                                 mean=-0.3977  ci=[-0.524, -0.2821]  nq=282
+  whole_did::pruned_seed0|ds=arc_challenge                mean=-0.3871  ci=[-0.5895, -0.1715]  nq=98
+  whole_did::pruned_seed0|ds=csqa                         mean=-0.4493  ci=[-0.652, -0.2443]  nq=101
+  whole_did::pruned_seed0|ds=obqa                         mean=-0.3475  ci=[-0.5477, -0.155]  nq=83
+  whole_did::pruned_seed0|kind=doubt                      mean=-0.644  ci=[-0.7999, -0.4972]  nq=151
+  whole_did::pruned_seed0|kind=suggestion                 mean=-0.1415  ci=[-0.3243, 0.0393]  nq=149
+  whole_did::pruned_seed0|letter_first                    mean=-0.4171  ci=[-0.5398, -0.2948]  nq=236
+  whole_did::pruned_seed0|letter_first|aw=cave            mean=-1.0494  ci=[-1.2506, -0.8642]  nq=79
+  whole_did::pruned_seed0|letter_first|aw=resist          mean=-0.1067  ci=[-0.248, 0.0375]  nq=160
+  whole_did::pruned_seed0|reasons_first                   mean=-0.3327  ci=[-0.6549, -0.0368]  nq=50
+  whole_did::pruned_seed0|reasons_first|aw=cave           mean=-1.4264  ci=[-1.6977, -1.1408]  nq=13
+  whole_did::pruned_seed0|reasons_first|aw=resist         mean=0.0515  ci=[-0.2776, 0.3754]  nq=37
+
+== pruned_seed0 :: real_shrink
+  all                                                     intercept=-0.5072  int_ci=[-0.5776, -0.4384]  slope=-0.2269  slope_ci=[-0.2555, -0.2044]  nq=514
+  original                                                intercept=-0.3184  int_ci=[-0.41, -0.228]  slope=-0.419  slope_ci=[-0.4845, -0.3573]  nq=287
+  original|letter_first                                   intercept=-0.3388  int_ci=[-0.4244, -0.2509]  slope=-0.4568  slope_ci=[-0.506, -0.4049]  nq=285
+  pruned_seed0                                            intercept=-0.8409  int_ci=[-0.9122, -0.7734]  slope=-0.1742  slope_ci=[-0.1938, -0.1554]  nq=282
+  pruned_seed0|letter_first                               intercept=-0.8762  int_ci=[-0.9511, -0.8006]  slope=-0.1995  slope_ci=[-0.2252, -0.1755]  nq=236
+  pruned_seed0|reasons_first                              intercept=-0.6368  int_ci=[-0.7998, -0.4879]  slope=-0.1333  slope_ci=[-0.1595, -0.1124]  nq=50
+
+== pruned_seed0 :: did
+  heldout|answer_sentence|multi                           mean=-2.2364  ci=[-2.3183, -2.1572]  nq=200
+  heldout|answer_sentence|multi|arc_challenge             mean=-2.3017  ci=[-2.4453, -2.1684]  nq=66
+  heldout|answer_sentence|multi|arc_challenge|doubt       mean=-1.5874  ci=[-1.7954, -1.3976]  nq=66
+  heldout|answer_sentence|multi|arc_challenge|suggestion  mean=-3.016  ci=[-3.2265, -2.8198]  nq=66
+  heldout|answer_sentence|multi|csqa                      mean=-2.28  ci=[-2.4047, -2.153]  nq=78
+  heldout|answer_sentence|multi|csqa|doubt                mean=-1.4925  ci=[-1.6582, -1.328]  nq=78
+  heldout|answer_sentence|multi|csqa|suggestion           mean=-3.0676  ci=[-3.2762, -2.8702]  nq=78
+  heldout|answer_sentence|multi|doubt                     mean=-1.444  ci=[-1.5532, -1.3371]  nq=200
+  heldout|answer_sentence|multi|obqa                      mean=-2.0986  ci=[-2.2431, -1.9683]  nq=56
+  heldout|answer_sentence|multi|obqa|doubt                mean=-1.2076  ci=[-1.4102, -1.0204]  nq=56
+  heldout|answer_sentence|multi|obqa|suggestion           mean=-2.9897  ci=[-3.1807, -2.806]  nq=56
+  heldout|answer_sentence|multi|suggestion                mean=-3.0287  ci=[-3.1456, -2.9134]  nq=200
+  heldout|answer_sentence|single                          mean=-0.7826  ci=[-0.8475, -0.7168]  nq=200
+  heldout|answer_sentence|single|arc_challenge            mean=-0.7759  ci=[-0.8789, -0.6767]  nq=66
+  heldout|answer_sentence|single|arc_challenge|doubt      mean=-0.6404  ci=[-0.7732, -0.5061]  nq=66
+  heldout|answer_sentence|single|arc_challenge|suggestion mean=-0.9115  ci=[-1.0679, -0.7586]  nq=66
+  heldout|answer_sentence|single|csqa                     mean=-0.871  ci=[-0.9826, -0.7567]  nq=78
+  heldout|answer_sentence|single|csqa|doubt               mean=-0.6833  ci=[-0.815, -0.5512]  nq=78
+  heldout|answer_sentence|single|csqa|suggestion          mean=-1.0588  ci=[-1.2761, -0.855]  nq=78
+  heldout|answer_sentence|single|doubt                    mean=-0.6093  ci=[-0.686, -0.5287]  nq=200
+  heldout|answer_sentence|single|obqa                     mean=-0.6674  ci=[-0.7787, -0.5518]  nq=56
+  heldout|answer_sentence|single|obqa|doubt               mean=-0.4696  ci=[-0.6004, -0.3393]  nq=56
+  heldout|answer_sentence|single|obqa|suggestion          mean=-0.8651  ci=[-1.0481, -0.6734]  nq=56
+  heldout|answer_sentence|single|suggestion               mean=-0.9559  ci=[-1.0683, -0.839]  nq=200
+  heldout|letter|multi                                    mean=-4.0505  ci=[-4.2192, -3.8771]  nq=200
+  heldout|letter|multi|arc_challenge                      mean=-3.8576  ci=[-4.1216, -3.5969]  nq=66
+  heldout|letter|multi|arc_challenge|doubt                mean=-2.3256  ci=[-2.7113, -1.9603]  nq=66
+  heldout|letter|multi|arc_challenge|suggestion           mean=-5.3896  ci=[-5.7562, -5.0219]  nq=66
+  heldout|letter|multi|csqa                               mean=-4.361  ci=[-4.6228, -4.0936]  nq=78
+  heldout|letter|multi|csqa|doubt                         mean=-2.2921  ci=[-2.6627, -1.9]  nq=78
+  heldout|letter|multi|csqa|suggestion                    mean=-6.4299  ci=[-6.7173, -6.1371]  nq=78
+  heldout|letter|multi|doubt                              mean=-2.1042  ci=[-2.3656, -1.8462]  nq=200
+  heldout|letter|multi|obqa                               mean=-3.8453  ci=[-4.2209, -3.4277]  nq=56
+  heldout|letter|multi|obqa|doubt                         mean=-1.5818  ci=[-2.1472, -1.0162]  nq=56
+  heldout|letter|multi|obqa|suggestion                    mean=-6.1088  ci=[-6.5344, -5.6234]  nq=56
+  heldout|letter|multi|suggestion                         mean=-5.9967  ci=[-6.2097, -5.7802]  nq=200
+  heldout|letter|single                                   mean=-0.0339  ci=[-0.1802, 0.111]  nq=200
+  heldout|letter|single|arc_challenge                     mean=-0.0648  ci=[-0.2758, 0.147]  nq=66
+  heldout|letter|single|arc_challenge|doubt               mean=0.2128  ci=[-0.0276, 0.4764]  nq=66
+  heldout|letter|single|arc_challenge|suggestion          mean=-0.3424  ci=[-0.6549, -0.0164]  nq=66
+  heldout|letter|single|csqa                              mean=-0.2017  ci=[-0.4567, 0.0568]  nq=78
+  heldout|letter|single|csqa|doubt                        mean=0.2215  ci=[-0.0039, 0.4508]  nq=78
+  heldout|letter|single|csqa|suggestion                   mean=-0.6249  ci=[-1.0728, -0.2203]  nq=78
+  heldout|letter|single|doubt                             mean=0.2771  ci=[0.1255, 0.4262]  nq=200
+  heldout|letter|single|obqa                              mean=0.2361  ci=[-0.0385, 0.5204]  nq=56
+  heldout|letter|single|obqa|doubt                        mean=0.4302  ci=[0.1174, 0.7313]  nq=56
+  heldout|letter|single|obqa|suggestion                   mean=0.042  ci=[-0.3149, 0.4117]  nq=56
+  heldout|letter|single|suggestion                        mean=-0.3449  ci=[-0.5803, -0.1295]  nq=200
+  prune|answer_sentence|multi                             mean=-2.5161  ci=[-2.6417, -2.3921]  nq=243
+  prune|answer_sentence|multi|arc_challenge               mean=-2.5197  ci=[-2.6987, -2.3425]  nq=120
+  prune|answer_sentence|multi|arc_challenge|doubt         mean=-2.2245  ci=[-2.4365, -2.022]  nq=64
+  prune|answer_sentence|multi|arc_challenge|suggestion    mean=-2.8503  ci=[-3.1184, -2.5884]  nq=64
+  prune|answer_sentence|multi|csqa                        mean=-2.5125  ci=[-2.6962, -2.3199]  nq=123
+  prune|answer_sentence|multi|csqa|doubt                  mean=-2.1524  ci=[-2.3437, -1.9579]  nq=64
+  prune|answer_sentence|multi|csqa|suggestion             mean=-2.8367  ci=[-3.093, -2.5597]  nq=64
+  prune|answer_sentence|multi|doubt                       mean=-2.1884  ci=[-2.3271, -2.0385]  nq=128
+  prune|answer_sentence|multi|suggestion                  mean=-2.8435  ci=[-3.0332, -2.6585]  nq=128
+  prune|answer_sentence|single                            mean=-1.033  ci=[-1.1201, -0.9441]  nq=215
+  prune|answer_sentence|single|arc_challenge              mean=-0.9502  ci=[-1.0699, -0.8366]  nq=107
+  prune|answer_sentence|single|arc_challenge|doubt        mean=-0.904  ci=[-1.0444, -0.7664]  nq=64
+  prune|answer_sentence|single|arc_challenge|suggestion   mean=-0.9177  ci=[-1.0774, -0.7519]  nq=64
+  prune|answer_sentence|single|csqa                       mean=-1.1151  ci=[-1.2538, -0.9804]  nq=108
+  prune|answer_sentence|single|csqa|doubt                 mean=-1.0135  ci=[-1.1531, -0.8717]  nq=64
+  prune|answer_sentence|single|csqa|suggestion            mean=-1.1527  ci=[-1.3689, -0.9328]  nq=64
+  prune|answer_sentence|single|doubt                      mean=-0.9587  ci=[-1.055, -0.8608]  nq=128
+  prune|answer_sentence|single|suggestion                 mean=-1.0352  ci=[-1.18, -0.8958]  nq=128
+  prune|letter|multi                                      mean=-3.9462  ci=[-4.1801, -3.7172]  nq=243
+  prune|letter|multi|arc_challenge                        mean=-3.636  ci=[-3.9343, -3.3262]  nq=120
+  prune|letter|multi|arc_challenge|doubt                  mean=-3.3647  ci=[-3.655, -3.0852]  nq=64
+  prune|letter|multi|arc_challenge|suggestion             mean=-3.9513  ci=[-4.5096, -3.4273]  nq=64
+  prune|letter|multi|csqa                                 mean=-4.2489  ci=[-4.5884, -3.9221]  nq=123
+  prune|letter|multi|csqa|doubt                           mean=-3.2669  ci=[-3.5156, -3.021]  nq=64
+  prune|letter|multi|csqa|suggestion                      mean=-5.2138  ci=[-5.6853, -4.7354]  nq=64
+  prune|letter|multi|doubt                                mean=-3.3158  ci=[-3.5016, -3.1319]  nq=128
+  prune|letter|multi|suggestion                           mean=-4.5826  ci=[-4.9604, -4.2055]  nq=128
+  prune|letter|single                                     mean=-0.9961  ci=[-1.1168, -0.8839]  nq=215
+  prune|letter|single|arc_challenge                       mean=-0.9284  ci=[-1.0444, -0.8146]  nq=107
+  prune|letter|single|arc_challenge|doubt                 mean=-0.7114  ci=[-0.8437, -0.5786]  nq=64
+  prune|letter|single|arc_challenge|suggestion            mean=-1.1199  ci=[-1.2886, -0.9572]  nq=64
+  prune|letter|single|csqa                                mean=-1.0632  ci=[-1.2535, -0.8654]  nq=108
+  prune|letter|single|csqa|doubt                          mean=-0.6164  ci=[-0.7783, -0.448]  nq=64
+  prune|letter|single|csqa|suggestion                     mean=-1.4234  ci=[-1.7439, -1.1269]  nq=64
+  prune|letter|single|doubt                               mean=-0.6639  ci=[-0.7713, -0.5551]  nq=128
+  prune|letter|single|suggestion                          mean=-1.2717  ci=[-1.4568, -1.0903]  nq=128
+
+== pruned_seed0 :: letter_last_binding
+  heldout|multi|arc_challenge|cave_minus_resist           mean=-0.0068  ci=[-0.0092, -0.0047]  nq=66
+  heldout|multi|arc_challenge|cave_row                    mean=-0.0015  ci=[-0.0021, -0.001]  nq=66
+  heldout|multi|arc_challenge|resist_row                  mean=0.0054  ci=[0.0032, 0.0077]  nq=66
+  heldout|multi|cave_minus_resist                         mean=-0.005  ci=[-0.006, -0.0041]  nq=200
+  heldout|multi|cave_row                                  mean=-0.0013  ci=[-0.0018, -0.0009]  nq=200
+  heldout|multi|csqa|cave_minus_resist                    mean=-0.0038  ci=[-0.0048, -0.0029]  nq=78
+  heldout|multi|csqa|cave_row                             mean=-0.0009  ci=[-0.0012, -0.0006]  nq=78
+  heldout|multi|csqa|resist_row                           mean=0.003  ci=[0.0021, 0.0039]  nq=78
+  heldout|multi|doubt|cave_minus_resist                   mean=-0.0083  ci=[-0.01, -0.0067]  nq=200
+  heldout|multi|doubt|cave_row                            mean=-0.0009  ci=[-0.0012, -0.0007]  nq=200
+  heldout|multi|doubt|resist_row                          mean=0.0074  ci=[0.0058, 0.0091]  nq=200
+  heldout|multi|obqa|cave_minus_resist                    mean=-0.0045  ci=[-0.0065, -0.0031]  nq=56
+  heldout|multi|obqa|cave_row                             mean=-0.0016  ci=[-0.0032, -0.0007]  nq=56
+  heldout|multi|obqa|resist_row                           mean=0.0029  ci=[0.002, 0.004]  nq=56
+  heldout|multi|resist_row                                mean=0.0037  ci=[0.0029, 0.0046]  nq=200
+  heldout|multi|suggestion|cave_minus_resist              mean=-0.0017  ci=[-0.0029, -0.0008]  nq=200
+  heldout|multi|suggestion|cave_row                       mean=-0.0016  ci=[-0.0027, -0.001]  nq=200
+  heldout|multi|suggestion|resist_row                     mean=0.0001  ci=[-0.0004, 0.0006]  nq=200
+  heldout|single|arc_challenge|cave_minus_resist          mean=-0.0023  ci=[-0.003, -0.0017]  nq=66
+  heldout|single|arc_challenge|cave_row                   mean=-0.0027  ci=[-0.0038, -0.0018]  nq=66
+  heldout|single|arc_challenge|resist_row                 mean=-0.0004  ci=[-0.0012, 0.0002]  nq=66
+  heldout|single|cave_minus_resist                        mean=-0.0017  ci=[-0.0025, -0.0012]  nq=200
+  heldout|single|cave_row                                 mean=-0.0022  ci=[-0.003, -0.0017]  nq=200
+  heldout|single|csqa|cave_minus_resist                   mean=-0.0006  ci=[-0.001, -0.0003]  nq=78
+  heldout|single|csqa|cave_row                            mean=-0.0013  ci=[-0.0015, -0.001]  nq=78
+  heldout|single|csqa|resist_row                          mean=-0.0006  ci=[-0.0009, -0.0004]  nq=78
+  heldout|single|doubt|cave_minus_resist                  mean=-0.0003  ci=[-0.0009, 0.0004]  nq=200
+  heldout|single|doubt|cave_row                           mean=-0.0009  ci=[-0.0014, -0.0006]  nq=200
+  heldout|single|doubt|resist_row                         mean=-0.0007  ci=[-0.0012, -0.0002]  nq=200
+  heldout|single|obqa|cave_minus_resist                   mean=-0.0024  ci=[-0.0047, -0.0011]  nq=56
+  heldout|single|obqa|cave_row                            mean=-0.0029  ci=[-0.0052, -0.0016]  nq=56
+  heldout|single|obqa|resist_row                          mean=-0.0005  ci=[-0.0007, -0.0003]  nq=56
+  heldout|single|resist_row                               mean=-0.0005  ci=[-0.0008, -0.0003]  nq=200
+  heldout|single|suggestion|cave_minus_resist             mean=-0.0031  ci=[-0.0047, -0.0021]  nq=200
+  heldout|single|suggestion|cave_row                      mean=-0.0035  ci=[-0.0051, -0.0025]  nq=200
+  heldout|single|suggestion|resist_row                    mean=-0.0004  ci=[-0.0005, -0.0003]  nq=200
+  prune|multi|arc_challenge|cave_minus_resist             mean=-0.0084  ci=[-0.0122, -0.0054]  nq=120
+  prune|multi|arc_challenge|cave_row                      mean=-0.0011  ci=[-0.0014, -0.0008]  nq=120
+  prune|multi|arc_challenge|resist_row                    mean=0.0073  ci=[0.0044, 0.0111]  nq=120
+  prune|multi|cave_minus_resist                           mean=-0.0056  ci=[-0.0077, -0.004]  nq=243
+  prune|multi|cave_row                                    mean=-0.0008  ci=[-0.001, -0.0007]  nq=243
+  prune|multi|csqa|cave_minus_resist                      mean=-0.0029  ci=[-0.0044, -0.0017]  nq=123
+  prune|multi|csqa|cave_row                               mean=-0.0005  ci=[-0.0007, -0.0004]  nq=123
+  prune|multi|csqa|resist_row                             mean=0.0024  ci=[0.0012, 0.0038]  nq=123
+  prune|multi|doubt|cave_minus_resist                     mean=-0.0095  ci=[-0.0132, -0.0065]  nq=128
+  prune|multi|doubt|cave_row                              mean=-0.0006  ci=[-0.0008, -0.0004]  nq=128
+  prune|multi|doubt|resist_row                            mean=0.0089  ci=[0.0059, 0.0125]  nq=128
+  prune|multi|resist_row                                  mean=0.0048  ci=[0.0032, 0.0069]  nq=243
+  prune|multi|suggestion|cave_minus_resist                mean=-0.0019  ci=[-0.0026, -0.0013]  nq=128
+  prune|multi|suggestion|cave_row                         mean=-0.0011  ci=[-0.0014, -0.0009]  nq=128
+  prune|multi|suggestion|resist_row                       mean=0.0008  ci=[0.0003, 0.0015]  nq=128
+  prune|single|arc_challenge|cave_minus_resist            mean=-0.0014  ci=[-0.0033, -0.0001]  nq=107
+  prune|single|arc_challenge|cave_row                     mean=-0.0011  ci=[-0.0014, -0.0008]  nq=107
+  prune|single|arc_challenge|resist_row                   mean=0.0003  ci=[-0.0009, 0.0022]  nq=107
+  prune|single|cave_minus_resist                          mean=-0.0006  ci=[-0.0017, 0.0001]  nq=215
+  prune|single|cave_row                                   mean=-0.001  ci=[-0.0014, -0.0007]  nq=215
+  prune|single|csqa|cave_minus_resist                     mean=0.0001  ci=[-0.0008, 0.0008]  nq=108
+  prune|single|csqa|cave_row                              mean=-0.0009  ci=[-0.0016, -0.0005]  nq=108
+  prune|single|csqa|resist_row                            mean=-0.0009  ci=[-0.0015, -0.0005]  nq=108
+  prune|single|doubt|cave_minus_resist                    mean=-0.0001  ci=[-0.0018, 0.001]  nq=128
+  prune|single|doubt|cave_row                             mean=-0.0004  ci=[-0.0006, -0.0003]  nq=128
+  prune|single|doubt|resist_row                           mean=-0.0003  ci=[-0.0014, 0.0013]  nq=128
+  prune|single|resist_row                                 mean=-0.0003  ci=[-0.001, 0.0006]  nq=215
+  prune|single|suggestion|cave_minus_resist               mean=-0.001  ci=[-0.0017, -0.0006]  nq=128
+  prune|single|suggestion|cave_row                        mean=-0.0014  ci=[-0.0021, -0.001]  nq=128
+  prune|single|suggestion|resist_row                      mean=-0.0004  ci=[-0.0006, -0.0003]  nq=128
+
+== pruned_seed0 :: orig_gap
+  heldout|answer_sentence|multi                           mean=4.8891  ci=[4.5523, 5.2258]  nq=200
+  heldout|answer_sentence|single                          mean=-0.7964  ci=[-1.1579, -0.4271]  nq=200
+  heldout|letter|multi                                    mean=3.599  ci=[3.2985, 3.9183]  nq=200
+  heldout|letter|single                                   mean=-0.5378  ci=[-0.7869, -0.2817]  nq=200
+  prune|answer_sentence|multi                             mean=3.9427  ci=[3.4652, 4.4314]  nq=243
+  prune|answer_sentence|single                            mean=0.9688  ci=[0.6605, 1.2693]  nq=215
+  prune|letter|multi                                      mean=3.0979  ci=[2.7951, 3.4182]  nq=243
+  prune|letter|single                                     mean=1.1076  ci=[0.9548, 1.262]  nq=215
+
+== pruned_seed0 :: shrink
+  heldout|answer_sentence|multi                           intercept=-1.5528  int_ci=[-1.6418, -1.4667]  slope=-0.1398  slope_ci=[-0.1539, -0.1263]  nq=200
+  heldout|answer_sentence|multi|arc_challenge             intercept=-1.5914  int_ci=[-1.7686, -1.4416]  slope=-0.147  slope_ci=[-0.1741, -0.1193]  nq=66
+  heldout|answer_sentence|multi|csqa                      intercept=-1.6214  int_ci=[-1.7689, -1.4682]  slope=-0.1227  slope_ci=[-0.1438, -0.103]  nq=78
+  heldout|answer_sentence|multi|doubt                     intercept=-1.3698  int_ci=[-1.4577, -1.2822]  slope=-0.1166  slope_ci=[-0.139, -0.0964]  nq=200
+  heldout|answer_sentence|multi|obqa                      intercept=-1.4228  int_ci=[-1.5714, -1.2869]  slope=-0.1576  slope_ci=[-0.1796, -0.1352]  nq=56
+  heldout|answer_sentence|multi|suggestion                intercept=-3.8031  int_ci=[-4.2814, -3.3443]  slope=0.0847  slope_ci=[0.0376, 0.1335]  nq=200
+  heldout|answer_sentence|single                          intercept=-0.9153  int_ci=[-0.967, -0.8641]  slope=-0.1666  slope_ci=[-0.1808, -0.1525]  nq=200
+  heldout|answer_sentence|single|arc_challenge            intercept=-0.879  int_ci=[-0.9701, -0.7951]  slope=-0.1477  slope_ci=[-0.1757, -0.1237]  nq=66
+  heldout|answer_sentence|single|csqa                     intercept=-0.9908  int_ci=[-1.0748, -0.9102]  slope=-0.1856  slope_ci=[-0.2064, -0.1656]  nq=78
+  heldout|answer_sentence|single|doubt                    intercept=-0.7915  int_ci=[-0.8529, -0.7331]  slope=-0.1396  slope_ci=[-0.1588, -0.1215]  nq=200
+  heldout|answer_sentence|single|obqa                     intercept=-0.837  int_ci=[-0.9221, -0.7531]  slope=-0.1511  slope_ci=[-0.177, -0.1272]  nq=56
+  heldout|answer_sentence|single|suggestion               intercept=-1.0068  int_ci=[-1.072, -0.9371]  slope=-0.1769  slope_ci=[-0.1959, -0.1586]  nq=200
+  heldout|letter|multi                                    intercept=-1.9431  int_ci=[-2.075, -1.802]  slope=-0.5855  slope_ci=[-0.6106, -0.5616]  nq=200
+  heldout|letter|multi|arc_challenge                      intercept=-1.8905  int_ci=[-2.0865, -1.669]  slope=-0.5822  slope_ci=[-0.6247, -0.5427]  nq=66
+  heldout|letter|multi|csqa                               intercept=-2.1549  int_ci=[-2.3763, -1.8971]  slope=-0.5568  slope_ci=[-0.5985, -0.522]  nq=78
+  heldout|letter|multi|doubt                              intercept=-1.8307  int_ci=[-1.9686, -1.6892]  slope=-0.5137  slope_ci=[-0.5635, -0.4671]  nq=200
+  heldout|letter|multi|obqa                               intercept=-1.7677  int_ci=[-1.9994, -1.5322]  slope=-0.6196  slope_ci=[-0.6635, -0.576]  nq=56
+  heldout|letter|multi|suggestion                         intercept=-2.3951  int_ci=[-2.7859, -2.009]  slope=-0.5403  slope_ci=[-0.5981, -0.4837]  nq=200
+  heldout|letter|single                                   intercept=-0.3045  int_ci=[-0.3834, -0.2305]  slope=-0.503  slope_ci=[-0.532, -0.473]  nq=200
+  heldout|letter|single|arc_challenge                     intercept=-0.2298  int_ci=[-0.3433, -0.1187]  slope=-0.4765  slope_ci=[-0.5423, -0.4145]  nq=66
+  heldout|letter|single|csqa                              intercept=-0.4634  int_ci=[-0.5968, -0.3407]  slope=-0.5308  slope_ci=[-0.5762, -0.4895]  nq=78
+  heldout|letter|single|doubt                             intercept=-0.271  int_ci=[-0.3947, -0.1539]  slope=-0.4553  slope_ci=[-0.5209, -0.3944]  nq=200
+  heldout|letter|single|obqa                              intercept=-0.1535  int_ci=[-0.2968, -0.0066]  slope=-0.4717  slope_ci=[-0.5196, -0.4261]  nq=56
+  heldout|letter|single|suggestion                        intercept=-0.2778  int_ci=[-0.3733, -0.1903]  slope=-0.5245  slope_ci=[-0.5561, -0.4926]  nq=200
+  prune|answer_sentence|multi                             intercept=-2.019  int_ci=[-2.1694, -1.8771]  slope=-0.1249  slope_ci=[-0.1555, -0.0945]  nq=243
+  prune|answer_sentence|multi|arc_challenge               intercept=-2.0513  int_ci=[-2.2719, -1.8482]  slope=-0.1318  slope_ci=[-0.1747, -0.0874]  nq=120
+  prune|answer_sentence|multi|csqa                        intercept=-1.9801  int_ci=[-2.209, -1.7708]  slope=-0.1205  slope_ci=[-0.1666, -0.0766]  nq=123
+  prune|answer_sentence|multi|doubt                       intercept=-1.9571  int_ci=[-2.1716, -1.7624]  slope=-0.0998  slope_ci=[-0.1638, -0.0345]  nq=128
+  prune|answer_sentence|multi|suggestion                  intercept=-2.2208  int_ci=[-2.5287, -1.973]  slope=-0.1104  slope_ci=[-0.1486, -0.07]  nq=128
+  prune|answer_sentence|single                            intercept=-0.8215  int_ci=[-0.8801, -0.7643]  slope=-0.1983  slope_ci=[-0.221, -0.1761]  nq=215
+  prune|answer_sentence|single|arc_challenge              intercept=-0.7917  int_ci=[-0.871, -0.7148]  slope=-0.1687  slope_ci=[-0.1923, -0.1461]  nq=107
+  prune|answer_sentence|single|csqa                       intercept=-0.8408  int_ci=[-0.935, -0.7572]  slope=-0.2277  slope_ci=[-0.2667, -0.1909]  nq=108
+  prune|answer_sentence|single|doubt                      intercept=-0.8332  int_ci=[-0.9036, -0.764]  slope=-0.1808  slope_ci=[-0.2116, -0.1502]  nq=128
+  prune|answer_sentence|single|suggestion                 intercept=-0.8096  int_ci=[-0.9, -0.7208]  slope=-0.2098  slope_ci=[-0.2414, -0.177]  nq=128
+  prune|letter|multi                                      intercept=-2.1095  int_ci=[-2.3164, -1.9042]  slope=-0.5935  slope_ci=[-0.6407, -0.5448]  nq=243
+  prune|letter|multi|arc_challenge                        intercept=-1.8932  int_ci=[-2.1857, -1.5855]  slope=-0.6067  slope_ci=[-0.6773, -0.536]  nq=120
+  prune|letter|multi|csqa                                 intercept=-2.3533  int_ci=[-2.6458, -2.055]  slope=-0.5735  slope_ci=[-0.643, -0.5086]  nq=123
+  prune|letter|multi|doubt                                intercept=-2.5536  int_ci=[-2.8503, -2.2632]  slope=-0.3893  slope_ci=[-0.5021, -0.2765]  nq=128
+  prune|letter|multi|suggestion                           intercept=-1.7865  int_ci=[-2.158, -1.4071]  slope=-0.6593  slope_ci=[-0.7261, -0.5939]  nq=128
+  prune|letter|single                                     intercept=-0.352  int_ci=[-0.4505, -0.255]  slope=-0.5559  slope_ci=[-0.633, -0.4831]  nq=215
+  prune|letter|single|arc_challenge                       intercept=-0.4608  int_ci=[-0.5942, -0.3338]  slope=-0.4323  slope_ci=[-0.5073, -0.3541]  nq=107
+  prune|letter|single|csqa                                intercept=-0.3055  int_ci=[-0.453, -0.1478]  slope=-0.614  slope_ci=[-0.7403, -0.5271]  nq=108
+  prune|letter|single|doubt                               intercept=-0.3282  int_ci=[-0.4589, -0.1927]  slope=-0.5553  slope_ci=[-0.6912, -0.4355]  nq=128
+  prune|letter|single|suggestion                          intercept=-0.3946  int_ci=[-0.5611, -0.2293]  slope=-0.5444  slope_ci=[-0.6342, -0.4599]  nq=128
+
+== pruned_seed0 :: placebo_vs_unsuggested_wrong
+  heldout|answer_sentence|multi|suggestion                mean=-2.161  ci=[-2.263, -2.0579]  nq=200
+  heldout|answer_sentence|single|suggestion               mean=-0.8535  ci=[-0.9501, -0.7561]  nq=200
+  heldout|letter|multi|suggestion                         mean=-5.6626  ci=[-5.8212, -5.5008]  nq=200
+  heldout|letter|single|suggestion                        mean=-1.2216  ci=[-1.4392, -1.0192]  nq=200
+  prune|answer_sentence|multi|suggestion                  mean=-1.8531  ci=[-1.9788, -1.7314]  nq=128
+  prune|answer_sentence|single|suggestion                 mean=-0.9684  ci=[-1.0741, -0.8626]  nq=128
+  prune|letter|multi|suggestion                           mean=-4.9894  ci=[-5.3273, -4.6566]  nq=128
+  prune|letter|single|suggestion                          mean=-1.9959  ci=[-2.198, -1.802]  nq=128
+neutral shrink: {'intercept': 0.1209, 'int_ci': [0.0541, 0.1839], 'slope': -0.2496, 'slope_ci': [-0.263, -0.2372], 'nq': 300}
+neutral wrong-vs-wrong: {'intercept': 0.0, 'int_ci': [0.0, 0.0], 'slope': -0.235, 'slope_ci': [-0.2529, -0.2165], 'nq': 300}
+placebo shrink (letter, suggestion): {'prune|single': {'intercept': -0.1873, 'int_ci': [-0.3551, -0.0296], 'slope': -0.47, 'slope_ci': [-0.5103, -0.4306], 'nq': 128}, 'prune|multi': {'intercept': -0.0471, 'int_ci': [-0.7187, 0.6315], 'slope': -0.5771, 'slope_ci': [-0.6542, -0.4983], 'nq': 128}, 'heldout|single': {'intercept': 0.1987, 'int_ci': [0.0985, 0.3018], 'slope': -0.5341, 'slope_ci': [-0.557, -0.5095], 'nq': 200}, 'heldout|multi': {'intercept': -2.1479, 'int_ci': [-2.6972, -1.5969], 'slope': -0.3469, 'slope_ci': [-0.4041, -0.293], 'nq': 200}}
+
+== pruned_seed0 :: format_logratio
+  heldout|multi                                           mean=-0.8505  ci=[-0.905, -0.7976]  nq=200
+  heldout|multi|arc_challenge                             mean=-0.991  ci=[-1.0826, -0.8958]  nq=66
+  heldout|multi|arc_challenge|doubt                       mean=-0.7531  ci=[-0.8643, -0.6385]  nq=66
+  heldout|multi|arc_challenge|suggestion                  mean=-1.2288  ci=[-1.325, -1.134]  nq=66
+  heldout|multi|csqa                                      mean=-0.8101  ci=[-0.8908, -0.7316]  nq=78
+  heldout|multi|csqa|doubt                                mean=-0.6192  ci=[-0.7123, -0.5271]  nq=78
+  heldout|multi|csqa|suggestion                           mean=-1.001  ci=[-1.0995, -0.9052]  nq=78
+  heldout|multi|doubt                                     mean=-0.6274  ci=[-0.6876, -0.5638]  nq=200
+  heldout|multi|obqa                                      mean=-0.7411  ci=[-0.8217, -0.6602]  nq=56
+  heldout|multi|obqa|doubt                                mean=-0.4906  ci=[-0.5829, -0.4092]  nq=56
+  heldout|multi|obqa|suggestion                           mean=-0.9917  ci=[-1.1035, -0.8909]  nq=56
+  heldout|multi|suggestion                                mean=-1.0736  ci=[-1.1362, -1.0127]  nq=200
+  heldout|single                                          mean=-1.3958  ci=[-1.4706, -1.3188]  nq=200
+  heldout|single|arc_challenge                            mean=-1.3242  ci=[-1.4696, -1.1873]  nq=66
+  heldout|single|arc_challenge|doubt                      mean=-1.3482  ci=[-1.5398, -1.1718]  nq=66
+  heldout|single|arc_challenge|suggestion                 mean=-1.3002  ci=[-1.4409, -1.16]  nq=66
+  heldout|single|csqa                                     mean=-1.5153  ci=[-1.6299, -1.4076]  nq=78
+  heldout|single|csqa|doubt                               mean=-1.5743  ci=[-1.7205, -1.4272]  nq=78
+  heldout|single|csqa|suggestion                          mean=-1.4563  ci=[-1.5826, -1.3283]  nq=78
+  heldout|single|doubt                                    mean=-1.3964  ci=[-1.4948, -1.3008]  nq=200
+  heldout|single|obqa                                     mean=-1.3137  ci=[-1.4345, -1.1899]  nq=56
+  heldout|single|obqa|doubt                               mean=-1.2055  ci=[-1.3415, -1.0647]  nq=56
+  heldout|single|obqa|suggestion                          mean=-1.4218  ci=[-1.5631, -1.2758]  nq=56
+  heldout|single|suggestion                               mean=-1.3951  ci=[-1.4761, -1.3102]  nq=200
+  neutral|single                                          mean=-0.5086  ci=[-0.5774, -0.441]  nq=300
+  neutral|single|arc_challenge                            mean=-0.5423  ci=[-0.6953, -0.418]  nq=104
+  neutral|single|csqa                                     mean=-0.6299  ci=[-0.748, -0.5123]  nq=108
+  neutral|single|obqa                                     mean=-0.3198  ci=[-0.398, -0.248]  nq=88
+  pres|single                                             mean=-0.4102  ci=[-0.4717, -0.3553]  nq=256
+  pres|single|arc_challenge                               mean=-0.3637  ci=[-0.4588, -0.2868]  nq=128
+  pres|single|csqa                                        mean=-0.4566  ci=[-0.5403, -0.3809]  nq=128
+  prune|multi                                             mean=-0.8633  ci=[-0.9289, -0.7934]  nq=243
+  prune|multi|arc_challenge                               mean=-0.9448  ci=[-1.0505, -0.8441]  nq=120
+  prune|multi|arc_challenge|doubt                         mean=-0.8348  ci=[-0.9761, -0.706]  nq=64
+  prune|multi|arc_challenge|suggestion                    mean=-1.0548  ci=[-1.2046, -0.8974]  nq=64
+  prune|multi|csqa                                        mean=-0.7838  ci=[-0.8718, -0.6947]  nq=123
+  prune|multi|csqa|doubt                                  mean=-0.5996  ci=[-0.694, -0.5118]  nq=64
+  prune|multi|csqa|suggestion                             mean=-0.9864  ci=[-1.1278, -0.8531]  nq=64
+  prune|multi|doubt                                       mean=-0.7172  ci=[-0.8007, -0.625]  nq=128
+  prune|multi|suggestion                                  mean=-1.0206  ci=[-1.1214, -0.9177]  nq=128
+  prune|single                                            mean=-1.2292  ci=[-1.3114, -1.1466]  nq=215
+  prune|single|arc_challenge                              mean=-1.1259  ci=[-1.2356, -1.0129]  nq=107
+  prune|single|arc_challenge|doubt                        mean=-1.2037  ci=[-1.3609, -1.0393]  nq=64
+  prune|single|arc_challenge|suggestion                   mean=-1.0822  ci=[-1.2131, -0.9593]  nq=64
+  prune|single|csqa                                       mean=-1.3315  ci=[-1.4501, -1.2188]  nq=108
+  prune|single|csqa|doubt                                 mean=-1.5164  ci=[-1.6783, -1.3552]  nq=64
+  prune|single|csqa|suggestion                            mean=-1.2281  ci=[-1.3718, -1.0822]  nq=64
+  prune|single|doubt                                      mean=-1.3601  ci=[-1.4753, -1.2475]  nq=128
+  prune|single|suggestion                                 mean=-1.1551  ci=[-1.2514, -1.0615]  nq=128
+
+== random_seed0 :: real
+  d_as_written::all                                       mean=0.0025  ci=[0.0015, 0.0035]  nq=514
+  d_as_written::original                                  mean=-0.0022  ci=[-0.0028, -0.0017]  nq=287
+  d_as_written::original|ds=arc_challenge                 mean=-0.0021  ci=[-0.0033, -0.0008]  nq=91
+  d_as_written::original|ds=csqa                          mean=-0.0018  ci=[-0.0026, -0.001]  nq=101
+  d_as_written::original|ds=obqa                          mean=-0.0028  ci=[-0.0037, -0.002]  nq=95
+  d_as_written::original|kind=doubt                       mean=-0.0025  ci=[-0.0032, -0.0017]  nq=156
+  d_as_written::original|kind=suggestion                  mean=-0.002  ci=[-0.0027, -0.0011]  nq=144
+  d_as_written::original|letter_first                     mean=-0.0023  ci=[-0.0028, -0.0018]  nq=285
+  d_as_written::original|letter_first|aw=cave             mean=-0.002  ci=[-0.0029, -0.0011]  nq=97
+  d_as_written::original|letter_first|aw=resist           mean=-0.0025  ci=[-0.0032, -0.0018]  nq=195
+  d_as_written::original|reasons_first                    mean=0.0064  ci=[-0.0015, 0.0143]  nq=2
+  d_as_written::original|reasons_first|aw=resist          mean=0.0064  ci=[-0.0015, 0.0143]  nq=2
+  d_as_written::pruned_seed0                              mean=0.0076  ci=[0.0059, 0.0094]  nq=282
+  d_as_written::pruned_seed0|ds=arc_challenge             mean=0.0072  ci=[0.0044, 0.0101]  nq=98
+  d_as_written::pruned_seed0|ds=csqa                      mean=0.0094  ci=[0.0066, 0.0123]  nq=101
+  d_as_written::pruned_seed0|ds=obqa                      mean=0.0057  ci=[0.0023, 0.0095]  nq=83
+  d_as_written::pruned_seed0|kind=doubt                   mean=0.0114  ci=[0.0088, 0.0138]  nq=151
+  d_as_written::pruned_seed0|kind=suggestion              mean=0.0038  ci=[0.0015, 0.0061]  nq=149
+  d_as_written::pruned_seed0|letter_first                 mean=0.0079  ci=[0.006, 0.0097]  nq=236
+  d_as_written::pruned_seed0|letter_first|aw=cave         mean=0.0089  ci=[0.0057, 0.0122]  nq=79
+  d_as_written::pruned_seed0|letter_first|aw=resist       mean=0.0074  ci=[0.0053, 0.0096]  nq=160
+  d_as_written::pruned_seed0|reasons_first                mean=0.0062  ci=[0.001, 0.0118]  nq=50
+  d_as_written::pruned_seed0|reasons_first|aw=cave        mean=0.0099  ci=[-0.0005, 0.0202]  nq=13
+  d_as_written::pruned_seed0|reasons_first|aw=resist      mean=0.0049  ci=[-0.0013, 0.0114]  nq=37
+  d_twin::all                                             mean=0.0008  ci=[-0.0005, 0.0021]  nq=514
+  d_twin::original                                        mean=-0.0004  ci=[-0.0014, 0.0005]  nq=287
+  d_twin::original|ds=arc_challenge                       mean=0.0008  ci=[-0.0013, 0.0028]  nq=91
+  d_twin::original|ds=csqa                                mean=-0.0014  ci=[-0.003, 0.0001]  nq=101
+  d_twin::original|ds=obqa                                mean=-0.0006  ci=[-0.002, 0.0009]  nq=95
+  d_twin::original|kind=doubt                             mean=-0.0006  ci=[-0.0019, 0.0007]  nq=156
+  d_twin::original|kind=suggestion                        mean=-0.0002  ci=[-0.0015, 0.001]  nq=144
+  d_twin::original|letter_first                           mean=-0.0005  ci=[-0.0014, 0.0005]  nq=285
+  d_twin::original|letter_first|aw=cave                   mean=-0.0038  ci=[-0.0053, -0.0023]  nq=97
+  d_twin::original|letter_first|aw=resist                 mean=0.0011  ci=[-0.0001, 0.0022]  nq=195
+  d_twin::original|reasons_first                          mean=0.0067  ci=[0.0034, 0.01]  nq=2
+  d_twin::original|reasons_first|aw=resist                mean=0.0067  ci=[0.0034, 0.01]  nq=2
+  d_twin::pruned_seed0                                    mean=0.0023  ci=[-0.0002, 0.0047]  nq=282
+  d_twin::pruned_seed0|ds=arc_challenge                   mean=-0.0004  ci=[-0.0047, 0.0037]  nq=98
+  d_twin::pruned_seed0|ds=csqa                            mean=0.0047  ci=[0.0011, 0.0084]  nq=101
+  d_twin::pruned_seed0|ds=obqa                            mean=0.0025  ci=[-0.0024, 0.0071]  nq=83
+  d_twin::pruned_seed0|kind=doubt                         mean=0.0058  ci=[0.0024, 0.0092]  nq=151
+  d_twin::pruned_seed0|kind=suggestion                    mean=-0.0014  ci=[-0.0049, 0.0022]  nq=149
+  d_twin::pruned_seed0|letter_first                       mean=0.0025  ci=[-0.0001, 0.0051]  nq=236
+  d_twin::pruned_seed0|letter_first|aw=cave               mean=-0.0002  ci=[-0.0042, 0.0042]  nq=79
+  d_twin::pruned_seed0|letter_first|aw=resist             mean=0.0039  ci=[0.0006, 0.007]  nq=160
+  d_twin::pruned_seed0|reasons_first                      mean=0.0017  ci=[-0.006, 0.0088]  nq=50
+  d_twin::pruned_seed0|reasons_first|aw=cave              mean=-0.0076  ci=[-0.0215, 0.0064]  nq=13
+  d_twin::pruned_seed0|reasons_first|aw=resist            mean=0.0049  ci=[-0.003, 0.0132]  nq=37
+  orig_gap::all                                           mean=-1.19  ci=[-1.4845, -0.8874]  nq=514
+  orig_gap::original                                      mean=-1.1228  ci=[-1.4036, -0.8652]  nq=287
+  orig_gap::original|ds=arc_challenge                     mean=-1.5601  ci=[-2.0541, -1.118]  nq=91
+  orig_gap::original|ds=csqa                              mean=-0.9879  ci=[-1.4455, -0.5465]  nq=101
+  orig_gap::original|ds=obqa                              mean=-0.8472  ci=[-1.2793, -0.3968]  nq=95
+  orig_gap::original|kind=doubt                           mean=-1.1086  ci=[-1.4184, -0.7841]  nq=156
+  orig_gap::original|kind=suggestion                      mean=-1.1318  ci=[-1.5727, -0.733]  nq=144
+  orig_gap::original|letter_first                         mean=-1.0608  ci=[-1.3156, -0.8042]  nq=285
+  orig_gap::original|letter_first|aw=cave                 mean=1.2387  ci=[1.0287, 1.4804]  nq=97
+  orig_gap::original|letter_first|aw=resist               mean=-2.1744  ci=[-2.3995, -1.962]  nq=195
+  orig_gap::original|reasons_first                        mean=-9.955  ci=[-11.2852, -8.6247]  nq=2
+  orig_gap::original|reasons_first|aw=resist              mean=-9.955  ci=[-11.2852, -8.6247]  nq=2
+  orig_gap::pruned_seed0                                  mean=-1.2869  ci=[-1.7652, -0.7991]  nq=282
+  orig_gap::pruned_seed0|ds=arc_challenge                 mean=-1.4357  ci=[-2.2122, -0.6107]  nq=98
+  orig_gap::pruned_seed0|ds=csqa                          mean=-0.8879  ci=[-1.7277, -0.102]  nq=101
+  orig_gap::pruned_seed0|ds=obqa                          mean=-1.5966  ci=[-2.5274, -0.7259]  nq=83
+  orig_gap::pruned_seed0|kind=doubt                       mean=-1.4902  ci=[-2.0685, -0.867]  nq=151
+  orig_gap::pruned_seed0|kind=suggestion                  mean=-1.1762  ci=[-1.9316, -0.4216]  nq=149
+  orig_gap::pruned_seed0|letter_first                     mean=-0.8184  ci=[-1.2382, -0.3747]  nq=236
+  orig_gap::pruned_seed0|letter_first|aw=cave             mean=3.0023  ci=[2.6522, 3.3719]  nq=79
+  orig_gap::pruned_seed0|letter_first|aw=resist           mean=-2.6767  ci=[-3.0217, -2.3342]  nq=160
+  orig_gap::pruned_seed0|reasons_first                    mean=-3.4769  ci=[-5.1912, -1.6482]  nq=50
+  orig_gap::pruned_seed0|reasons_first|aw=cave            mean=5.2153  ci=[3.4028, 7.267]  nq=13
+  orig_gap::pruned_seed0|reasons_first|aw=resist          mean=-6.531  ci=[-7.7028, -5.3105]  nq=37
+  post_did::all                                           mean=0.0  ci=[-0.0009, 0.001]  nq=514
+  post_did::original                                      mean=0.0002  ci=[-0.0003, 0.0006]  nq=287
+  post_did::original|ds=arc_challenge                     mean=-0.0002  ci=[-0.0016, 0.0011]  nq=91
+  post_did::original|ds=csqa                              mean=0.0002  ci=[-0.0002, 0.0006]  nq=101
+  post_did::original|ds=obqa                              mean=0.0006  ci=[0.0002, 0.0009]  nq=95
+  post_did::original|kind=doubt                           mean=0.0002  ci=[-0.0007, 0.0009]  nq=156
+  post_did::original|kind=suggestion                      mean=0.0003  ci=[0.0001, 0.0005]  nq=144
+  post_did::original|letter_first                         mean=0.0002  ci=[-0.0003, 0.0006]  nq=285
+  post_did::original|letter_first|aw=cave                 mean=-0.0  ci=[-0.001, 0.0007]  nq=97
+  post_did::original|letter_first|aw=resist               mean=0.0003  ci=[-0.0002, 0.0008]  nq=195
+  post_did::original|reasons_first                        mean=0.0017  ci=[-0.0047, 0.008]  nq=2
+  post_did::original|reasons_first|aw=resist              mean=0.0017  ci=[-0.0047, 0.008]  nq=2
+  post_did::pruned_seed0                                  mean=-0.0002  ci=[-0.002, 0.0016]  nq=282
+  post_did::pruned_seed0|ds=arc_challenge                 mean=-0.0018  ci=[-0.0053, 0.002]  nq=98
+  post_did::pruned_seed0|ds=csqa                          mean=0.0004  ci=[-0.0015, 0.0024]  nq=101
+  post_did::pruned_seed0|ds=obqa                          mean=0.0007  ci=[-0.0029, 0.0042]  nq=83
+  post_did::pruned_seed0|kind=doubt                       mean=-0.0001  ci=[-0.0027, 0.0025]  nq=151
+  post_did::pruned_seed0|kind=suggestion                  mean=-0.0006  ci=[-0.0032, 0.002]  nq=149
+  post_did::pruned_seed0|letter_first                     mean=-0.0001  ci=[-0.0022, 0.002]  nq=236
+  post_did::pruned_seed0|letter_first|aw=cave             mean=0.0035  ci=[0.0009, 0.0061]  nq=79
+  post_did::pruned_seed0|letter_first|aw=resist           mean=-0.0019  ci=[-0.0047, 0.0008]  nq=160
+  post_did::pruned_seed0|reasons_first                    mean=-0.0007  ci=[-0.0052, 0.003]  nq=50
+  post_did::pruned_seed0|reasons_first|aw=cave            mean=0.0053  ci=[0.0014, 0.0091]  nq=13
+  post_did::pruned_seed0|reasons_first|aw=resist          mean=-0.0028  ci=[-0.0078, 0.0018]  nq=37
+  slot_did::all                                           mean=0.0024  ci=[0.0017, 0.0032]  nq=514
+  slot_did::original                                      mean=0.0034  ci=[0.0024, 0.0044]  nq=287
+  slot_did::original|ds=arc_challenge                     mean=0.0028  ci=[0.0011, 0.0045]  nq=91
+  slot_did::original|ds=csqa                              mean=0.0038  ci=[0.0021, 0.0054]  nq=101
+  slot_did::original|ds=obqa                              mean=0.0035  ci=[0.0018, 0.0052]  nq=95
+  slot_did::original|kind=doubt                           mean=0.0045  ci=[0.0032, 0.0056]  nq=156
+  slot_did::original|kind=suggestion                      mean=0.0021  ci=[0.0006, 0.0036]  nq=144
+  slot_did::original|letter_first                         mean=0.0034  ci=[0.0025, 0.0044]  nq=285
+  slot_did::original|letter_first|aw=cave                 mean=0.0019  ci=[0.0004, 0.0035]  nq=97
+  slot_did::original|letter_first|aw=resist               mean=0.004  ci=[0.0028, 0.0053]  nq=195
+  slot_did::original|reasons_first                        mean=-0.0013  ci=[-0.0062, 0.0036]  nq=2
+  slot_did::original|reasons_first|aw=resist              mean=-0.0013  ci=[-0.0062, 0.0036]  nq=2
+  slot_did::pruned_seed0                                  mean=0.0015  ci=[0.0003, 0.0027]  nq=282
+  slot_did::pruned_seed0|ds=arc_challenge                 mean=0.0017  ci=[-0.0006, 0.004]  nq=98
+  slot_did::pruned_seed0|ds=csqa                          mean=0.0031  ci=[0.001, 0.0051]  nq=101
+  slot_did::pruned_seed0|ds=obqa                          mean=-0.0007  ci=[-0.0026, 0.0011]  nq=83
+  slot_did::pruned_seed0|kind=doubt                       mean=0.0031  ci=[0.0013, 0.0051]  nq=151
+  slot_did::pruned_seed0|kind=suggestion                  mean=-0.0005  ci=[-0.0019, 0.0009]  nq=149
+  slot_did::pruned_seed0|letter_first                     mean=0.001  ci=[-0.0003, 0.0023]  nq=236
+  slot_did::pruned_seed0|letter_first|aw=cave             mean=0.006  ci=[0.004, 0.0081]  nq=79
+  slot_did::pruned_seed0|letter_first|aw=resist           mean=-0.0016  ci=[-0.003, -0.0001]  nq=160
+  slot_did::pruned_seed0|reasons_first                    mean=0.0039  ci=[0.0008, 0.0073]  nq=50
+  slot_did::pruned_seed0|reasons_first|aw=cave            mean=0.0115  ci=[0.0055, 0.0184]  nq=13
+  slot_did::pruned_seed0|reasons_first|aw=resist          mean=0.0013  ci=[-0.002, 0.0046]  nq=37
+  whole_did::all                                          mean=0.0022  ci=[0.001, 0.0035]  nq=514
+  whole_did::original                                     mean=0.003  ci=[0.002, 0.0042]  nq=287
+  whole_did::original|ds=arc_challenge                    mean=0.0022  ci=[-0.0001, 0.0042]  nq=91
+  whole_did::original|ds=csqa                             mean=0.0032  ci=[0.0015, 0.0048]  nq=101
+  whole_did::original|ds=obqa                             mean=0.0037  ci=[0.0019, 0.0054]  nq=95
+  whole_did::original|kind=doubt                          mean=0.0043  ci=[0.0028, 0.0058]  nq=156
+  whole_did::original|kind=suggestion                     mean=0.0016  ci=[0.0001, 0.003]  nq=144
+  whole_did::original|letter_first                        mean=0.0031  ci=[0.002, 0.0041]  nq=285
+  whole_did::original|letter_first|aw=cave                mean=0.0018  ci=[-0.0001, 0.0035]  nq=97
+  whole_did::original|letter_first|aw=resist              mean=0.0036  ci=[0.0023, 0.0049]  nq=195
+  whole_did::original|reasons_first                       mean=0.0003  ci=[-0.0109, 0.0116]  nq=2
+  whole_did::original|reasons_first|aw=resist             mean=0.0003  ci=[-0.0109, 0.0116]  nq=2
+  whole_did::pruned_seed0                                 mean=0.0013  ci=[-0.0009, 0.0035]  nq=282
+  whole_did::pruned_seed0|ds=arc_challenge                mean=0.0001  ci=[-0.004, 0.0041]  nq=98
+  whole_did::pruned_seed0|ds=csqa                         mean=0.0027  ci=[-0.0004, 0.006]  nq=101
+  whole_did::pruned_seed0|ds=obqa                         mean=0.0011  ci=[-0.0033, 0.0052]  nq=83
+  whole_did::pruned_seed0|kind=doubt                      mean=0.0035  ci=[0.0004, 0.0068]  nq=151
+  whole_did::pruned_seed0|kind=suggestion                 mean=-0.0014  ci=[-0.0046, 0.0018]  nq=149
+  whole_did::pruned_seed0|letter_first                    mean=0.0007  ci=[-0.0017, 0.0032]  nq=236
+  whole_did::pruned_seed0|letter_first|aw=cave            mean=0.0091  ci=[0.0059, 0.0124]  nq=79
+  whole_did::pruned_seed0|letter_first|aw=resist          mean=-0.0035  ci=[-0.0066, -0.0007]  nq=160
+  whole_did::pruned_seed0|reasons_first                   mean=0.0046  ci=[-0.0012, 0.0101]  nq=50
+  whole_did::pruned_seed0|reasons_first|aw=cave           mean=0.0176  ci=[0.0101, 0.0259]  nq=13
+  whole_did::pruned_seed0|reasons_first|aw=resist         mean=0.0001  ci=[-0.0059, 0.0065]  nq=37
+
+== random_seed0 :: real_shrink
+  all                                                     intercept=0.0028  int_ci=[0.002, 0.0036]  slope=0.0004  slope_ci=[0.0002, 0.0006]  nq=514
+  original                                                intercept=0.0029  int_ci=[0.0018, 0.0041]  slope=-0.0004  slope_ci=[-0.0009, 0.0]  nq=287
+  original|letter_first                                   intercept=0.0028  int_ci=[0.0017, 0.004]  slope=-0.0005  slope_ci=[-0.001, -0.0]  nq=285
+  pruned_seed0                                            intercept=0.0022  int_ci=[0.0009, 0.0034]  slope=0.0006  slope_ci=[0.0003, 0.001]  nq=282
+  pruned_seed0|letter_first                               intercept=0.0017  int_ci=[0.0004, 0.003]  slope=0.001  slope_ci=[0.0006, 0.0014]  nq=236
+  pruned_seed0|reasons_first                              intercept=0.0053  int_ci=[0.0015, 0.0093]  slope=0.0004  slope_ci=[-0.0, 0.0008]  nq=50
+
+== random_seed0 :: did
+  heldout|answer_sentence|multi                           mean=0.0003  ci=[-0.0015, 0.0021]  nq=200
+  heldout|answer_sentence|multi|arc_challenge             mean=-0.003  ci=[-0.0059, -0.0002]  nq=66
+  heldout|answer_sentence|multi|arc_challenge|doubt       mean=-0.0043  ci=[-0.0091, 0.0004]  nq=66
+  heldout|answer_sentence|multi|arc_challenge|suggestion  mean=-0.0017  ci=[-0.0043, 0.0013]  nq=66
+  heldout|answer_sentence|multi|csqa                      mean=0.0042  ci=[0.0011, 0.0076]  nq=78
+  heldout|answer_sentence|multi|csqa|doubt                mean=0.0036  ci=[-0.0023, 0.0095]  nq=78
+  heldout|answer_sentence|multi|csqa|suggestion           mean=0.0049  ci=[0.0025, 0.0075]  nq=78
+  heldout|answer_sentence|multi|doubt                     mean=-0.0007  ci=[-0.004, 0.0024]  nq=200
+  heldout|answer_sentence|multi|obqa                      mean=-0.0013  ci=[-0.0041, 0.0015]  nq=56
+  heldout|answer_sentence|multi|obqa|doubt                mean=-0.0025  ci=[-0.0075, 0.0028]  nq=56
+  heldout|answer_sentence|multi|obqa|suggestion           mean=-0.0002  ci=[-0.0025, 0.002]  nq=56
+  heldout|answer_sentence|multi|suggestion                mean=0.0013  ci=[-0.0002, 0.0029]  nq=200
+  heldout|answer_sentence|single                          mean=0.0006  ci=[-0.0008, 0.0019]  nq=200
+  heldout|answer_sentence|single|arc_challenge            mean=0.0006  ci=[-0.0015, 0.0029]  nq=66
+  heldout|answer_sentence|single|arc_challenge|doubt      mean=0.0024  ci=[-0.0008, 0.0055]  nq=66
+  heldout|answer_sentence|single|arc_challenge|suggestion mean=-0.0011  ci=[-0.0039, 0.0019]  nq=66
+  heldout|answer_sentence|single|csqa                     mean=-0.0003  ci=[-0.0027, 0.0021]  nq=78
+  heldout|answer_sentence|single|csqa|doubt               mean=0.0025  ci=[-0.0003, 0.0055]  nq=78
+  heldout|answer_sentence|single|csqa|suggestion          mean=-0.003  ci=[-0.0062, 0.0001]  nq=78
+  heldout|answer_sentence|single|doubt                    mean=0.0025  ci=[0.0006, 0.0043]  nq=200
+  heldout|answer_sentence|single|obqa                     mean=0.0016  ci=[-0.0005, 0.0037]  nq=56
+  heldout|answer_sentence|single|obqa|doubt               mean=0.0026  ci=[-0.0008, 0.0061]  nq=56
+  heldout|answer_sentence|single|obqa|suggestion          mean=0.0007  ci=[-0.0017, 0.003]  nq=56
+  heldout|answer_sentence|single|suggestion               mean=-0.0014  ci=[-0.003, 0.0004]  nq=200
+  heldout|letter|multi                                    mean=0.0011  ci=[-0.0008, 0.0029]  nq=200
+  heldout|letter|multi|arc_challenge                      mean=0.0012  ci=[-0.0022, 0.0046]  nq=66
+  heldout|letter|multi|arc_challenge|doubt                mean=0.0001  ci=[-0.0042, 0.0044]  nq=66
+  heldout|letter|multi|arc_challenge|suggestion           mean=0.0022  ci=[-0.002, 0.0067]  nq=66
+  heldout|letter|multi|csqa                               mean=0.0003  ci=[-0.0028, 0.0035]  nq=78
+  heldout|letter|multi|csqa|doubt                         mean=-0.0009  ci=[-0.0054, 0.0041]  nq=78
+  heldout|letter|multi|csqa|suggestion                    mean=0.0015  ci=[-0.0027, 0.0058]  nq=78
+  heldout|letter|multi|doubt                              mean=0.0002  ci=[-0.0024, 0.0029]  nq=200
+  heldout|letter|multi|obqa                               mean=0.0021  ci=[-0.0014, 0.0057]  nq=56
+  heldout|letter|multi|obqa|doubt                         mean=0.002  ci=[-0.0035, 0.0071]  nq=56
+  heldout|letter|multi|obqa|suggestion                    mean=0.0023  ci=[-0.0024, 0.007]  nq=56
+  heldout|letter|multi|suggestion                         mean=0.002  ci=[-0.0006, 0.0043]  nq=200
+  heldout|letter|single                                   mean=0.0043  ci=[0.0033, 0.0052]  nq=200
+  heldout|letter|single|arc_challenge                     mean=0.0046  ci=[0.0031, 0.0061]  nq=66
+  heldout|letter|single|arc_challenge|doubt               mean=0.0054  ci=[0.0034, 0.0074]  nq=66
+  heldout|letter|single|arc_challenge|suggestion          mean=0.0037  ci=[0.0017, 0.0062]  nq=66
+  heldout|letter|single|csqa                              mean=0.004  ci=[0.0024, 0.0056]  nq=78
+  heldout|letter|single|csqa|doubt                        mean=0.0039  ci=[0.002, 0.0057]  nq=78
+  heldout|letter|single|csqa|suggestion                   mean=0.0041  ci=[0.0017, 0.0065]  nq=78
+  heldout|letter|single|doubt                             mean=0.0051  ci=[0.0039, 0.0062]  nq=200
+  heldout|letter|single|obqa                              mean=0.0043  ci=[0.0026, 0.006]  nq=56
+  heldout|letter|single|obqa|doubt                        mean=0.0063  ci=[0.0044, 0.0083]  nq=56
+  heldout|letter|single|obqa|suggestion                   mean=0.0022  ci=[-0.0003, 0.0048]  nq=56
+  heldout|letter|single|suggestion                        mean=0.0035  ci=[0.002, 0.0048]  nq=200
+  prune|answer_sentence|multi                             mean=0.0041  ci=[0.001, 0.0072]  nq=243
+  prune|answer_sentence|multi|arc_challenge               mean=0.0003  ci=[-0.004, 0.0049]  nq=120
+  prune|answer_sentence|multi|arc_challenge|doubt         mean=0.0006  ci=[-0.0071, 0.008]  nq=64
+  prune|answer_sentence|multi|arc_challenge|suggestion    mean=0.0  ci=[-0.0048, 0.0053]  nq=64
+  prune|answer_sentence|multi|csqa                        mean=0.0078  ci=[0.0033, 0.0123]  nq=123
+  prune|answer_sentence|multi|csqa|doubt                  mean=0.0124  ci=[0.0051, 0.0199]  nq=64
+  prune|answer_sentence|multi|csqa|suggestion             mean=0.003  ci=[-0.0012, 0.0072]  nq=64
+  prune|answer_sentence|multi|doubt                       mean=0.0065  ci=[0.0012, 0.0118]  nq=128
+  prune|answer_sentence|multi|suggestion                  mean=0.0015  ci=[-0.0016, 0.0047]  nq=128
+  prune|answer_sentence|single                            mean=0.0037  ci=[0.002, 0.0054]  nq=215
+  prune|answer_sentence|single|arc_challenge              mean=0.0036  ci=[0.0011, 0.006]  nq=107
+  prune|answer_sentence|single|arc_challenge|doubt        mean=0.0048  ci=[0.0011, 0.0085]  nq=64
+  prune|answer_sentence|single|arc_challenge|suggestion   mean=0.0021  ci=[-0.0008, 0.005]  nq=64
+  prune|answer_sentence|single|csqa                       mean=0.0037  ci=[0.0014, 0.006]  nq=108
+  prune|answer_sentence|single|csqa|doubt                 mean=0.0059  ci=[0.0031, 0.0089]  nq=64
+  prune|answer_sentence|single|csqa|suggestion            mean=-0.0  ci=[-0.0031, 0.0032]  nq=64
+  prune|answer_sentence|single|doubt                      mean=0.0054  ci=[0.0031, 0.0079]  nq=128
+  prune|answer_sentence|single|suggestion                 mean=0.001  ci=[-0.0011, 0.0033]  nq=128
+  prune|letter|multi                                      mean=0.0021  ci=[-0.0001, 0.0045]  nq=243
+  prune|letter|multi|arc_challenge                        mean=0.001  ci=[-0.002, 0.0042]  nq=120
+  prune|letter|multi|arc_challenge|doubt                  mean=0.0007  ci=[-0.0039, 0.0055]  nq=64
+  prune|letter|multi|arc_challenge|suggestion             mean=0.0009  ci=[-0.0034, 0.0055]  nq=64
+  prune|letter|multi|csqa                                 mean=0.0033  ci=[0.0001, 0.0067]  nq=123
+  prune|letter|multi|csqa|doubt                           mean=0.0052  ci=[0.0002, 0.0101]  nq=64
+  prune|letter|multi|csqa|suggestion                      mean=0.0008  ci=[-0.0031, 0.0047]  nq=64
+  prune|letter|multi|doubt                                mean=0.003  ci=[-0.0006, 0.0065]  nq=128
+  prune|letter|multi|suggestion                           mean=0.0009  ci=[-0.0021, 0.0038]  nq=128
+  prune|letter|single                                     mean=0.0033  ci=[0.002, 0.0045]  nq=215
+  prune|letter|single|arc_challenge                       mean=0.0032  ci=[0.0016, 0.0049]  nq=107
+  prune|letter|single|arc_challenge|doubt                 mean=0.0036  ci=[0.0014, 0.0058]  nq=64
+  prune|letter|single|arc_challenge|suggestion            mean=0.0032  ci=[0.0009, 0.0058]  nq=64
+  prune|letter|single|csqa                                mean=0.0033  ci=[0.0014, 0.0052]  nq=108
+  prune|letter|single|csqa|doubt                          mean=0.0021  ci=[0.0001, 0.0042]  nq=64
+  prune|letter|single|csqa|suggestion                     mean=0.0041  ci=[0.0013, 0.0069]  nq=64
+  prune|letter|single|doubt                               mean=0.0029  ci=[0.0013, 0.0044]  nq=128
+  prune|letter|single|suggestion                          mean=0.0037  ci=[0.0018, 0.0055]  nq=128
+
+== random_seed0 :: letter_last_binding
+  heldout|multi|arc_challenge|cave_minus_resist           mean=-0.0  ci=[-0.0001, 0.0]  nq=66
+  heldout|multi|arc_challenge|cave_row                    mean=-0.0  ci=[-0.0, -0.0]  nq=66
+  heldout|multi|arc_challenge|resist_row                  mean=0.0  ci=[-0.0, 0.0001]  nq=66
+  heldout|multi|cave_minus_resist                         mean=-0.0  ci=[-0.0001, -0.0]  nq=200
+  heldout|multi|cave_row                                  mean=-0.0  ci=[-0.0001, -0.0]  nq=200
+  heldout|multi|csqa|cave_minus_resist                    mean=-0.0  ci=[-0.0, 0.0]  nq=78
+  heldout|multi|csqa|cave_row                             mean=0.0  ci=[-0.0, 0.0]  nq=78
+  heldout|multi|csqa|resist_row                           mean=0.0  ci=[-0.0, 0.0]  nq=78
+  heldout|multi|doubt|cave_minus_resist                   mean=-0.0  ci=[-0.0001, -0.0]  nq=200
+  heldout|multi|doubt|cave_row                            mean=-0.0  ci=[-0.0, 0.0]  nq=200
+  heldout|multi|doubt|resist_row                          mean=0.0  ci=[0.0, 0.0001]  nq=200
+  heldout|multi|obqa|cave_minus_resist                    mean=-0.0001  ci=[-0.0002, -0.0]  nq=56
+  heldout|multi|obqa|cave_row                             mean=-0.0001  ci=[-0.0002, -0.0]  nq=56
+  heldout|multi|obqa|resist_row                           mean=0.0  ci=[-0.0, 0.0]  nq=56
+  heldout|multi|resist_row                                mean=0.0  ci=[-0.0, 0.0]  nq=200
+  heldout|multi|suggestion|cave_minus_resist              mean=-0.0  ci=[-0.0001, 0.0]  nq=200
+  heldout|multi|suggestion|cave_row                       mean=-0.0  ci=[-0.0001, 0.0]  nq=200
+  heldout|multi|suggestion|resist_row                     mean=-0.0  ci=[-0.0, 0.0]  nq=200
+  heldout|single|arc_challenge|cave_minus_resist          mean=-0.0  ci=[-0.0, 0.0]  nq=66
+  heldout|single|arc_challenge|cave_row                   mean=-0.0  ci=[-0.0, 0.0]  nq=66
+  heldout|single|arc_challenge|resist_row                 mean=-0.0  ci=[-0.0, 0.0]  nq=66
+  heldout|single|cave_minus_resist                        mean=-0.0  ci=[-0.0, -0.0]  nq=200
+  heldout|single|cave_row                                 mean=-0.0  ci=[-0.0, 0.0]  nq=200
+  heldout|single|csqa|cave_minus_resist                   mean=-0.0  ci=[-0.0, 0.0]  nq=78
+  heldout|single|csqa|cave_row                            mean=-0.0  ci=[-0.0, 0.0]  nq=78
+  heldout|single|csqa|resist_row                          mean=0.0  ci=[-0.0, 0.0]  nq=78
+  heldout|single|doubt|cave_minus_resist                  mean=-0.0  ci=[-0.0, 0.0]  nq=200
+  heldout|single|doubt|cave_row                           mean=-0.0  ci=[-0.0, -0.0]  nq=200
+  heldout|single|doubt|resist_row                         mean=0.0  ci=[-0.0, 0.0]  nq=200
+  heldout|single|obqa|cave_minus_resist                   mean=-0.0  ci=[-0.0001, 0.0]  nq=56
+  heldout|single|obqa|cave_row                            mean=-0.0  ci=[-0.0001, 0.0]  nq=56
+  heldout|single|obqa|resist_row                          mean=0.0  ci=[0.0, 0.0]  nq=56
+  heldout|single|resist_row                               mean=0.0  ci=[-0.0, 0.0]  nq=200
+  heldout|single|suggestion|cave_minus_resist             mean=-0.0  ci=[-0.0, 0.0]  nq=200
+  heldout|single|suggestion|cave_row                      mean=-0.0  ci=[-0.0, 0.0]  nq=200
+  heldout|single|suggestion|resist_row                    mean=-0.0  ci=[-0.0, -0.0]  nq=200
+  prune|multi|arc_challenge|cave_minus_resist             mean=0.0  ci=[-0.0, 0.0001]  nq=120
+  prune|multi|arc_challenge|cave_row                      mean=-0.0  ci=[-0.0, 0.0]  nq=120
+  prune|multi|arc_challenge|resist_row                    mean=-0.0  ci=[-0.0001, 0.0]  nq=120
+  prune|multi|cave_minus_resist                           mean=0.0  ci=[-0.0, 0.0]  nq=243
+  prune|multi|cave_row                                    mean=-0.0  ci=[-0.0, 0.0]  nq=243
+  prune|multi|csqa|cave_minus_resist                      mean=-0.0  ci=[-0.0, 0.0]  nq=123
+  prune|multi|csqa|cave_row                               mean=0.0  ci=[-0.0, 0.0]  nq=123
+  prune|multi|csqa|resist_row                             mean=0.0  ci=[-0.0, 0.0]  nq=123
+  prune|multi|doubt|cave_minus_resist                     mean=0.0  ci=[-0.0, 0.0]  nq=128
+  prune|multi|doubt|cave_row                              mean=0.0  ci=[-0.0, 0.0]  nq=128
+  prune|multi|doubt|resist_row                            mean=-0.0  ci=[-0.0, 0.0]  nq=128
+  prune|multi|resist_row                                  mean=-0.0  ci=[-0.0, 0.0]  nq=243
+  prune|multi|suggestion|cave_minus_resist                mean=-0.0  ci=[-0.0, 0.0]  nq=128
+  prune|multi|suggestion|cave_row                         mean=-0.0  ci=[-0.0, 0.0]  nq=128
+  prune|multi|suggestion|resist_row                       mean=0.0  ci=[-0.0, 0.0]  nq=128
+  prune|single|arc_challenge|cave_minus_resist            mean=-0.0  ci=[-0.0001, 0.0]  nq=107
+  prune|single|arc_challenge|cave_row                     mean=-0.0  ci=[-0.0, -0.0]  nq=107
+  prune|single|arc_challenge|resist_row                   mean=0.0  ci=[-0.0, 0.0001]  nq=107
+  prune|single|cave_minus_resist                          mean=-0.0  ci=[-0.0, 0.0]  nq=215
+  prune|single|cave_row                                   mean=-0.0  ci=[-0.0, -0.0]  nq=215
+  prune|single|csqa|cave_minus_resist                     mean=-0.0  ci=[-0.0, 0.0]  nq=108
+  prune|single|csqa|cave_row                              mean=-0.0  ci=[-0.0, 0.0]  nq=108
+  prune|single|csqa|resist_row                            mean=0.0  ci=[-0.0, 0.0]  nq=108
+  prune|single|doubt|cave_minus_resist                    mean=-0.0  ci=[-0.0001, 0.0]  nq=128
+  prune|single|doubt|cave_row                             mean=-0.0  ci=[-0.0, -0.0]  nq=128
+  prune|single|doubt|resist_row                           mean=0.0  ci=[-0.0, 0.0001]  nq=128
+  prune|single|resist_row                                 mean=0.0  ci=[-0.0, 0.0]  nq=215
+  prune|single|suggestion|cave_minus_resist               mean=-0.0  ci=[-0.0, 0.0]  nq=128
+  prune|single|suggestion|cave_row                        mean=-0.0  ci=[-0.0, -0.0]  nq=128
+  prune|single|suggestion|resist_row                      mean=-0.0  ci=[-0.0, -0.0]  nq=128
+
+== random_seed0 :: orig_gap
+  heldout|answer_sentence|multi                           mean=4.8891  ci=[4.5523, 5.2258]  nq=200
+  heldout|answer_sentence|single                          mean=-0.7964  ci=[-1.1579, -0.4271]  nq=200
+  heldout|letter|multi                                    mean=3.599  ci=[3.2985, 3.9183]  nq=200
+  heldout|letter|single                                   mean=-0.5378  ci=[-0.7869, -0.2817]  nq=200
+  prune|answer_sentence|multi                             mean=3.9427  ci=[3.4652, 4.4314]  nq=243
+  prune|answer_sentence|single                            mean=0.9688  ci=[0.6605, 1.2693]  nq=215
+  prune|letter|multi                                      mean=3.0979  ci=[2.7951, 3.4182]  nq=243
+  prune|letter|single                                     mean=1.1076  ci=[0.9548, 1.262]  nq=215
+
+== random_seed0 :: shrink
+  heldout|answer_sentence|multi                           intercept=-0.002  int_ci=[-0.005, 0.0008]  slope=0.0005  slope_ci=[0.0002, 0.0008]  nq=200
+  heldout|answer_sentence|multi|arc_challenge             intercept=-0.0053  int_ci=[-0.0098, -0.0009]  slope=0.0005  slope_ci=[-0.0, 0.001]  nq=66
+  heldout|answer_sentence|multi|csqa                      intercept=0.0016  int_ci=[-0.0043, 0.0074]  slope=0.0005  slope_ci=[-0.0, 0.0011]  nq=78
+  heldout|answer_sentence|multi|doubt                     intercept=-0.0015  int_ci=[-0.0047, 0.0016]  slope=0.0012  slope_ci=[0.0005, 0.0019]  nq=200
+  heldout|answer_sentence|multi|obqa                      intercept=-0.0025  int_ci=[-0.0066, 0.0016]  slope=0.0003  slope_ci=[-0.0001, 0.0007]  nq=56
+  heldout|answer_sentence|multi|suggestion                intercept=0.0013  int_ci=[-0.0053, 0.0085]  slope=-0.0  slope_ci=[-0.0007, 0.0006]  nq=200
+  heldout|answer_sentence|single                          intercept=0.0015  int_ci=[0.0002, 0.0027]  slope=0.0012  slope_ci=[0.0009, 0.0015]  nq=200
+  heldout|answer_sentence|single|arc_challenge            intercept=0.0015  int_ci=[-0.0006, 0.0037]  slope=0.0012  slope_ci=[0.0006, 0.0019]  nq=66
+  heldout|answer_sentence|single|csqa                     intercept=0.0005  int_ci=[-0.0017, 0.0027]  slope=0.0012  slope_ci=[0.0007, 0.0017]  nq=78
+  heldout|answer_sentence|single|doubt                    intercept=0.0043  int_ci=[0.0024, 0.0062]  slope=0.0014  slope_ci=[0.0009, 0.002]  nq=200
+  heldout|answer_sentence|single|obqa                     intercept=0.0028  int_ci=[0.0008, 0.005]  slope=0.0011  slope_ci=[0.0006, 0.0016]  nq=56
+  heldout|answer_sentence|single|suggestion               intercept=-0.001  int_ci=[-0.0026, 0.0006]  slope=0.0012  slope_ci=[0.0008, 0.0015]  nq=200
+  heldout|letter|multi                                    intercept=0.0015  int_ci=[-0.0012, 0.0041]  slope=-0.0001  slope_ci=[-0.0006, 0.0003]  nq=200
+  heldout|letter|multi|arc_challenge                      intercept=0.0005  int_ci=[-0.0037, 0.0048]  slope=0.0002  slope_ci=[-0.0005, 0.001]  nq=66
+  heldout|letter|multi|csqa                               intercept=-0.0003  int_ci=[-0.0054, 0.0051]  slope=0.0001  slope_ci=[-0.0008, 0.0011]  nq=78
+  heldout|letter|multi|doubt                              intercept=0.0005  int_ci=[-0.0024, 0.0033]  slope=-0.0005  slope_ci=[-0.0015, 0.0004]  nq=200
+  heldout|letter|multi|obqa                               intercept=0.0042  int_ci=[0.0001, 0.0081]  slope=-0.0006  slope_ci=[-0.0012, -0.0]  nq=56
+  heldout|letter|multi|suggestion                         intercept=0.0067  int_ci=[0.0009, 0.0129]  slope=-0.0007  slope_ci=[-0.0016, 0.0001]  nq=200
+  heldout|letter|single                                   intercept=0.004  int_ci=[0.0029, 0.005]  slope=-0.0006  slope_ci=[-0.0011, -0.0001]  nq=200
+  heldout|letter|single|arc_challenge                     intercept=0.0045  int_ci=[0.0029, 0.006]  slope=-0.0002  slope_ci=[-0.0012, 0.0006]  nq=66
+  heldout|letter|single|csqa                              intercept=0.0037  int_ci=[0.0019, 0.0055]  slope=-0.0006  slope_ci=[-0.0013, 0.0001]  nq=78
+  heldout|letter|single|doubt                             intercept=0.0042  int_ci=[0.0027, 0.0058]  slope=-0.0007  slope_ci=[-0.0015, 0.0001]  nq=200
+  heldout|letter|single|obqa                              intercept=0.0035  int_ci=[0.0016, 0.0054]  slope=-0.0009  slope_ci=[-0.0019, -0.0]  nq=56
+  heldout|letter|single|suggestion                        intercept=0.0035  int_ci=[0.0021, 0.0048]  slope=-0.0005  slope_ci=[-0.001, 0.0001]  nq=200
+  prune|answer_sentence|multi                             intercept=0.0019  int_ci=[-0.0028, 0.0067]  slope=0.0005  slope_ci=[-0.0001, 0.0011]  nq=243
+  prune|answer_sentence|multi|arc_challenge               intercept=-0.0016  int_ci=[-0.0081, 0.0051]  slope=0.0005  slope_ci=[-0.0003, 0.0014]  nq=120
+  prune|answer_sentence|multi|csqa                        intercept=0.0061  int_ci=[-0.0012, 0.0142]  slope=0.0004  slope_ci=[-0.0006, 0.0013]  nq=123
+  prune|answer_sentence|multi|doubt                       intercept=0.0006  int_ci=[-0.0065, 0.0082]  slope=0.0025  slope_ci=[0.0008, 0.0042]  nq=128
+  prune|answer_sentence|multi|suggestion                  intercept=-0.0014  int_ci=[-0.0077, 0.0055]  slope=0.0005  slope_ci=[-0.0002, 0.0012]  nq=128
+  prune|answer_sentence|single                            intercept=0.0021  int_ci=[0.0005, 0.0038]  slope=0.0012  slope_ci=[0.0006, 0.0018]  nq=215
+  prune|answer_sentence|single|arc_challenge              intercept=0.0028  int_ci=[0.0004, 0.0052]  slope=0.0009  slope_ci=[0.0001, 0.0017]  nq=107
+  prune|answer_sentence|single|csqa                       intercept=0.0013  int_ci=[-0.001, 0.0036]  slope=0.0016  slope_ci=[0.0007, 0.0025]  nq=108
+  prune|answer_sentence|single|doubt                      intercept=0.0043  int_ci=[0.0021, 0.0067]  slope=0.0015  slope_ci=[0.0006, 0.0026]  nq=128
+  prune|answer_sentence|single|suggestion                 intercept=-0.0002  int_ci=[-0.0026, 0.0022]  slope=0.0011  slope_ci=[0.0004, 0.0019]  nq=128
+  prune|letter|multi                                      intercept=0.0023  int_ci=[-0.0014, 0.0059]  slope=-0.0001  slope_ci=[-0.0009, 0.0008]  nq=243
+  prune|letter|multi|arc_challenge                        intercept=0.0006  int_ci=[-0.004, 0.0056]  slope=0.0001  slope_ci=[-0.0014, 0.0014]  nq=120
+  prune|letter|multi|csqa                                 intercept=0.0041  int_ci=[-0.0014, 0.0096]  slope=-0.0003  slope_ci=[-0.0014, 0.0008]  nq=123
+  prune|letter|multi|doubt                                intercept=0.0011  int_ci=[-0.0051, 0.0075]  slope=0.001  slope_ci=[-0.0013, 0.0031]  nq=128
+  prune|letter|multi|suggestion                           intercept=0.0014  int_ci=[-0.0034, 0.0062]  slope=-0.0001  slope_ci=[-0.0011, 0.0009]  nq=128
+  prune|letter|single                                     intercept=0.0033  int_ci=[0.0017, 0.0048]  slope=0.0  slope_ci=[-0.0011, 0.0014]  nq=215
+  prune|letter|single|arc_challenge                       intercept=0.0049  int_ci=[0.0023, 0.0075]  slope=-0.0014  slope_ci=[-0.0033, 0.0006]  nq=107
+  prune|letter|single|csqa                                intercept=0.0023  int_ci=[0.0002, 0.0042]  slope=0.0007  slope_ci=[-0.0006, 0.0027]  nq=108
+  prune|letter|single|doubt                               intercept=0.0029  int_ci=[0.0009, 0.0052]  slope=-0.0001  slope_ci=[-0.0035, 0.0025]  nq=128
+  prune|letter|single|suggestion                          intercept=0.0039  int_ci=[0.0013, 0.0064]  slope=-0.0002  slope_ci=[-0.0015, 0.0014]  nq=128
+
+== random_seed0 :: placebo_vs_unsuggested_wrong
+  heldout|answer_sentence|multi|suggestion                mean=0.0025  ci=[0.0011, 0.0041]  nq=200
+  heldout|answer_sentence|single|suggestion               mean=0.0016  ci=[0.0003, 0.0027]  nq=200
+  heldout|letter|multi|suggestion                         mean=-0.0011  ci=[-0.0028, 0.0004]  nq=200
+  heldout|letter|single|suggestion                        mean=0.0021  ci=[0.001, 0.0031]  nq=200
+  prune|answer_sentence|multi|suggestion                  mean=0.003  ci=[0.0012, 0.0048]  nq=128
+  prune|answer_sentence|single|suggestion                 mean=0.0024  ci=[0.0007, 0.004]  nq=128
+  prune|letter|multi|suggestion                           mean=-0.0026  ci=[-0.0045, -0.0006]  nq=128
+  prune|letter|single|suggestion                          mean=0.0008  ci=[-0.0006, 0.0021]  nq=128
+neutral shrink: {'intercept': 0.0007, 'int_ci': [-0.0008, 0.0021], 'slope': -0.0004, 'slope_ci': [-0.0006, -0.0002], 'nq': 300}
+neutral wrong-vs-wrong: {'intercept': 0.0, 'int_ci': [0.0, 0.0], 'slope': -0.0002, 'slope_ci': [-0.0004, 0.0001], 'nq': 300}
+placebo shrink (letter, suggestion): {'prune|single': {'intercept': 0.0022, 'int_ci': [-0.0001, 0.0044], 'slope': -0.0004, 'slope_ci': [-0.001, 0.0002], 'nq': 128}, 'prune|multi': {'intercept': -0.0018, 'int_ci': [-0.0074, 0.0038], 'slope': -0.0001, 'slope_ci': [-0.0007, 0.0005], 'nq': 128}, 'heldout|single': {'intercept': 0.0038, 'int_ci': [0.0023, 0.0051], 'slope': -0.0006, 'slope_ci': [-0.001, -0.0001], 'nq': 200}, 'heldout|multi': {'intercept': -0.0024, 'int_ci': [-0.0098, 0.0056], 'slope': 0.0001, 'slope_ci': [-0.0006, 0.0008], 'nq': 200}}
+
+== random_seed0 :: format_logratio
+  heldout|multi                                           mean=0.0  ci=[-0.0, 0.0001]  nq=200
+  heldout|multi|arc_challenge                             mean=-0.0  ci=[-0.0001, -0.0]  nq=66
+  heldout|multi|arc_challenge|doubt                       mean=-0.0001  ci=[-0.0001, 0.0]  nq=66
+  heldout|multi|arc_challenge|suggestion                  mean=-0.0  ci=[-0.0001, 0.0]  nq=66
+  heldout|multi|csqa                                      mean=0.0001  ci=[-0.0001, 0.0003]  nq=78
+  heldout|multi|csqa|doubt                                mean=0.0002  ci=[-0.0001, 0.0006]  nq=78
+  heldout|multi|csqa|suggestion                           mean=-0.0  ci=[-0.0001, 0.0001]  nq=78
+  heldout|multi|doubt                                     mean=0.0  ci=[-0.0001, 0.0002]  nq=200
+  heldout|multi|obqa                                      mean=0.0  ci=[-0.0001, 0.0002]  nq=56
+  heldout|multi|obqa|doubt                                mean=-0.0001  ci=[-0.0002, 0.0001]  nq=56
+  heldout|multi|obqa|suggestion                           mean=0.0001  ci=[-0.0, 0.0003]  nq=56
+  heldout|multi|suggestion                                mean=0.0  ci=[-0.0, 0.0001]  nq=200
+  heldout|single                                          mean=-0.0007  ci=[-0.0009, -0.0005]  nq=200
+  heldout|single|arc_challenge                            mean=-0.0006  ci=[-0.001, -0.0003]  nq=66
+  heldout|single|arc_challenge|doubt                      mean=-0.0012  ci=[-0.0019, -0.0006]  nq=66
+  heldout|single|arc_challenge|suggestion                 mean=-0.0  ci=[-0.0004, 0.0003]  nq=66
+  heldout|single|csqa                                     mean=-0.0009  ci=[-0.0012, -0.0006]  nq=78
+  heldout|single|csqa|doubt                               mean=-0.0011  ci=[-0.0015, -0.0007]  nq=78
+  heldout|single|csqa|suggestion                          mean=-0.0007  ci=[-0.0011, -0.0004]  nq=78
+  heldout|single|doubt                                    mean=-0.001  ci=[-0.0013, -0.0008]  nq=200
+  heldout|single|obqa                                     mean=-0.0007  ci=[-0.0009, -0.0004]  nq=56
+  heldout|single|obqa|doubt                               mean=-0.0008  ci=[-0.0012, -0.0006]  nq=56
+  heldout|single|obqa|suggestion                          mean=-0.0005  ci=[-0.0008, -0.0002]  nq=56
+  heldout|single|suggestion                               mean=-0.0004  ci=[-0.0006, -0.0002]  nq=200
+  neutral|single                                          mean=-0.0002  ci=[-0.0004, -0.0001]  nq=300
+  neutral|single|arc_challenge                            mean=-0.0004  ci=[-0.0009, -0.0001]  nq=104
+  neutral|single|csqa                                     mean=-0.0002  ci=[-0.0003, -0.0]  nq=108
+  neutral|single|obqa                                     mean=-0.0  ci=[-0.0001, 0.0]  nq=88
+  pres|single                                             mean=-0.0001  ci=[-0.0002, 0.0]  nq=256
+  pres|single|arc_challenge                               mean=-0.0  ci=[-0.0001, 0.0002]  nq=128
+  pres|single|csqa                                        mean=-0.0001  ci=[-0.0003, -0.0001]  nq=128
+  prune|multi                                             mean=-0.0  ci=[-0.0001, 0.0001]  nq=243
+  prune|multi|arc_challenge                               mean=-0.0  ci=[-0.0001, 0.0001]  nq=120
+  prune|multi|arc_challenge|doubt                         mean=-0.0001  ci=[-0.0003, 0.0001]  nq=64
+  prune|multi|arc_challenge|suggestion                    mean=-0.0  ci=[-0.0002, 0.0001]  nq=64
+  prune|multi|csqa                                        mean=0.0  ci=[-0.0001, 0.0001]  nq=123
+  prune|multi|csqa|doubt                                  mean=0.0  ci=[-0.0001, 0.0001]  nq=64
+  prune|multi|csqa|suggestion                             mean=0.0  ci=[-0.0001, 0.0002]  nq=64
+  prune|multi|doubt                                       mean=-0.0  ci=[-0.0001, 0.0001]  nq=128
+  prune|multi|suggestion                                  mean=0.0  ci=[-0.0001, 0.0001]  nq=128
+  prune|single                                            mean=-0.0005  ci=[-0.0006, -0.0003]  nq=215
+  prune|single|arc_challenge                              mean=-0.0004  ci=[-0.0006, -0.0003]  nq=107
+  prune|single|arc_challenge|doubt                        mean=-0.0006  ci=[-0.0008, -0.0003]  nq=64
+  prune|single|arc_challenge|suggestion                   mean=-0.0003  ci=[-0.0004, -0.0001]  nq=64
+  prune|single|csqa                                       mean=-0.0005  ci=[-0.0007, -0.0003]  nq=108
+  prune|single|csqa|doubt                                 mean=-0.0007  ci=[-0.001, -0.0004]  nq=64
+  prune|single|csqa|suggestion                            mean=-0.0003  ci=[-0.0005, -0.0001]  nq=64
+  prune|single|doubt                                      mean=-0.0006  ci=[-0.0008, -0.0005]  nq=128
+  prune|single|suggestion                                 mean=-0.0003  ci=[-0.0004, -0.0002]  nq=128
+real reply shape by author: {'original|bare': 279, 'original|other': 11, 'original|sentence_open': 10, 'pruned_seed0|sentence_open': 217, 'pruned_seed0|bare': 29, 'pruned_seed0|other': 54}

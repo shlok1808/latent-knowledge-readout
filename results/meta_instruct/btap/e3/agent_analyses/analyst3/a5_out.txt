@@ -1,0 +1,42 @@
+=== Mean first-token probability: all letter spellings vs 'The' vs 'Looking' (one row per prompt)
+heldout  doubt      multi  n=200 | original: letters 0.966 The 0.010 Looking 0.0000 rest 0.024 | pruned_s: letters 0.564 The 0.166 Looking 0.0001 rest 0.270 | 
+heldout  doubt      single n=200 | original: letters 0.891 The 0.058 Looking 0.0000 rest 0.051 | pruned_s: letters 0.280 The 0.344 Looking 0.0001 rest 0.376 | 
+heldout  suggestion multi  n=200 | original: letters 0.985 The 0.003 Looking 0.0000 rest 0.012 | pruned_s: letters 0.370 The 0.233 Looking 0.0000 rest 0.396 | 
+heldout  suggestion single n=200 | original: letters 0.881 The 0.046 Looking 0.0000 rest 0.072 | pruned_s: letters 0.270 The 0.343 Looking 0.0000 rest 0.387 | 
+neutral  neutral    single n=300 | original: letters 0.970 The 0.012 Looking 0.0000 rest 0.017 | pruned_s: letters 0.674 The 0.232 Looking 0.0000 rest 0.094 | 
+prune    doubt      multi  n=128 | original: letters 0.974 The 0.007 Looking 0.0000 rest 0.019 | pruned_s: letters 0.527 The 0.144 Looking 0.0001 rest 0.329 | 
+prune    doubt      single n=128 | original: letters 0.903 The 0.046 Looking 0.0000 rest 0.051 | pruned_s: letters 0.298 The 0.309 Looking 0.0001 rest 0.393 | 
+prune    suggestion multi  n=128 | original: letters 0.962 The 0.003 Looking 0.0000 rest 0.034 | pruned_s: letters 0.411 The 0.118 Looking 0.0000 rest 0.471 | 
+prune    suggestion single n=128 | original: letters 0.931 The 0.028 Looking 0.0000 rest 0.042 | pruned_s: letters 0.346 The 0.276 Looking 0.0000 rest 0.377 | 
+
+=== Share of the LOST letter mass that 'The' picks up: mean over prompts of dThe / (-dLetters), pushed single-turn
+sum over prompts: letters lost 396.6, 'The' gained 182.0  -> ratio 0.459
+neutral: letters lost 89.0, 'The' gained 65.9 -> ratio 0.741
+multi: letters lost 331.1, 'The' gained 109.5 -> ratio 0.331
+
+=== Per-token-position delta (pruned - original, mean log-prob) for the answer_sentence form, by set/kind/turn/role
+    tokens: 0 'The' 1 ' correct' 2 ' answer' 3 ' is' 4 ' (' 5 LETTER 6 ')' 7.. option text ... '.' eot
+heldout  doubt      multi  cave   n=200 +3.82 +0.11 +0.02 -0.01 +0.37 -0.19 +0.04  | tail(option text+eot) -0.37  | whole +3.80
+heldout  doubt      multi  resist n=200 +3.82 +0.11 +0.02 -0.01 +0.37 +1.26 -0.01  | tail(option text+eot) +0.15  | whole +5.70
+heldout  doubt      single cave   n=200 +2.43 -0.02 -0.03 -0.01 +0.04 -0.17 +0.05  | tail(option text+eot) -0.71  | whole +1.58
+heldout  doubt      single resist n=200 +2.43 -0.02 -0.03 -0.01 +0.04 +0.44 +0.14  | tail(option text+eot) -0.69  | whole +2.30
+heldout  suggestion multi  cave   n=200 +4.69 +0.03 +0.01 +0.00 +0.08 -0.05 +0.44  | tail(option text+eot) +0.21  | whole +5.41
+heldout  suggestion multi  resist n=200 +4.69 +0.03 +0.01 +0.00 +0.08 +2.98 +0.01  | tail(option text+eot) +0.64  | whole +8.43
+heldout  suggestion single cave   n=200 +2.73 +0.01 +0.00 -0.00 -0.02 -0.35 +0.53  | tail(option text+eot) -0.34  | whole +2.56
+heldout  suggestion single resist n=200 +2.73 +0.01 +0.00 -0.00 -0.02 +0.60 +0.16  | tail(option text+eot) -0.90  | whole +2.59
+neutral  neutral    single correct n=300 +4.35 -0.01 +0.01 -0.00 +0.03 +0.03 +0.09  | tail(option text+eot) -1.00  | whole +3.51
+
+=== Same for letter_last form: first 4 tokens, then the letter slot and the rest
+heldout  doubt      multi  cave   first4 +3.41 +0.15 +0.04 +0.03  mid(option text) -1.38  LETTER -0.00
+heldout  doubt      multi  resist first4 +3.41 +0.15 +0.04 +0.03  mid(option text) +0.19  LETTER +0.04
+heldout  doubt      single cave   first4 +2.56 +0.02 +0.02 +0.04  mid(option text) -1.19  LETTER -0.00
+heldout  doubt      single resist first4 +2.56 +0.02 +0.02 +0.04  mid(option text) -0.57  LETTER -0.00
+heldout  suggestion multi  cave   first4 +3.58 +0.16 +0.12 +0.12  mid(option text) -0.73  LETTER -0.00
+heldout  suggestion multi  resist first4 +3.58 +0.16 +0.12 +0.12  mid(option text) -0.03  LETTER +0.01
+heldout  suggestion single cave   first4 +1.48 +0.03 +0.02 +0.08  mid(option text) -1.24  LETTER -0.01
+heldout  suggestion single resist first4 +1.48 +0.03 +0.02 +0.08  mid(option text) -0.90  LETTER -0.00
+neutral  neutral    single correct first4 +3.22 +0.01 +0.02 +0.02  mid(option text) -0.72  LETTER -0.00
+
+=== pres set (protection check): whole-reply delta and first-token delta
+whole -1.109 [-1.207,-1.021] n_q=256  first-token -0.484 [-0.557,-0.420] n_q=256  random whole -0.001 [-0.002,-0.001] n_q=256
+pres: mean p(first letter token) original 0.85 pruned 0.595

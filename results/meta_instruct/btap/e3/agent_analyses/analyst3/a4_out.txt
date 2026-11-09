@@ -1,0 +1,84 @@
+=== lo_pruned = a + b * lo_orig per cell (pushed prompts). b<1: shrinkage toward uniform; a: shift at lo_orig=0
+heldout  doubt      multi  answer_sentence a=-1.37 [-1.46,-1.28]  b=0.88 [0.86,0.90]  n_q=200 R2=0.96  mean lo_orig +0.64
+heldout  doubt      multi  letter          a=-1.83 [-1.97,-1.69]  b=0.49 [0.44,0.53]  n_q=200 R2=0.70  mean lo_orig +0.53
+heldout  doubt      multi  letter_last     a=-0.04 [-0.31,+0.24]  b=0.89 [0.86,0.92]  n_q=200 R2=0.94  mean lo_orig +8.95
+heldout  doubt      single answer_sentence a=-0.79 [-0.85,-0.73]  b=0.86 [0.84,0.88]  n_q=200 R2=0.98  mean lo_orig -1.31
+heldout  doubt      single letter          a=-0.27 [-0.39,-0.15]  b=0.54 [0.48,0.61]  n_q=200 R2=0.62  mean lo_orig -1.20
+heldout  doubt      single letter_last     a=-0.25 [-0.44,-0.07]  b=0.92 [0.90,0.94]  n_q=200 R2=0.97  mean lo_orig +9.52
+heldout  suggestion multi  answer_sentence a=-3.80 [-4.29,-3.37]  b=1.08 [1.04,1.13]  n_q=200 R2=0.91  mean lo_orig +9.14
+heldout  suggestion multi  letter          a=-2.40 [-2.79,-2.00]  b=0.46 [0.40,0.52]  n_q=200 R2=0.59  mean lo_orig +6.67
+heldout  suggestion multi  letter_last     a=-0.13 [-0.58,+0.34]  b=0.86 [0.81,0.92]  n_q=200 R2=0.86  mean lo_orig +9.02
+heldout  suggestion single answer_sentence a=-1.01 [-1.07,-0.94]  b=0.82 [0.81,0.84]  n_q=200 R2=0.98  mean lo_orig -0.29
+heldout  suggestion single letter          a=-0.28 [-0.36,-0.19]  b=0.48 [0.44,0.51]  n_q=200 R2=0.81  mean lo_orig +0.13
+heldout  suggestion single letter_last     a=+0.06 [-0.13,+0.24]  b=0.86 [0.83,0.89]  n_q=200 R2=0.96  mean lo_orig +7.94
+prune    doubt      multi  answer_sentence a=-1.96 [-2.15,-1.77]  b=0.90 [0.84,0.96]  n_q=128 R2=0.88  mean lo_orig +2.32
+prune    doubt      multi  letter          a=-2.55 [-2.83,-2.27]  b=0.61 [0.50,0.72]  n_q=128 R2=0.47  mean lo_orig +1.96
+prune    doubt      multi  letter_last     a=-0.42 [-0.78,-0.05]  b=0.92 [0.88,0.96]  n_q=128 R2=0.94  mean lo_orig +9.65
+prune    doubt      single answer_sentence a=-0.83 [-0.91,-0.76]  b=0.82 [0.79,0.85]  n_q=128 R2=0.95  mean lo_orig +0.69
+prune    doubt      single letter          a=-0.33 [-0.45,-0.19]  b=0.44 [0.31,0.56]  n_q=128 R2=0.19  mean lo_orig +0.60
+prune    doubt      single letter_last     a=+0.04 [-0.21,+0.29]  b=0.89 [0.87,0.91]  n_q=128 R2=0.97  mean lo_orig +10.33
+prune    suggestion multi  answer_sentence a=-2.22 [-2.52,-1.96]  b=0.89 [0.85,0.93]  n_q=128 R2=0.94  mean lo_orig +5.64
+prune    suggestion multi  letter          a=-1.79 [-2.18,-1.41]  b=0.34 [0.27,0.41]  n_q=128 R2=0.43  mean lo_orig +4.24
+prune    suggestion multi  letter_last     a=-0.17 [-0.63,+0.27]  b=0.86 [0.82,0.92]  n_q=128 R2=0.87  mean lo_orig +9.06
+prune    suggestion single answer_sentence a=-0.81 [-0.90,-0.72]  b=0.79 [0.75,0.82]  n_q=128 R2=0.94  mean lo_orig +1.08
+prune    suggestion single letter          a=-0.39 [-0.57,-0.22]  b=0.46 [0.36,0.54]  n_q=128 R2=0.50  mean lo_orig +1.61
+prune    suggestion single letter_last     a=-0.16 [-0.47,+0.15]  b=0.89 [0.85,0.92]  n_q=128 R2=0.94  mean lo_orig +9.10
+
+=== Random control, same fit (expect a=0, b=1)
+multi  answer_sentence a=-0.000 b=1.000
+multi  letter          a=+0.002 b=1.000
+multi  letter_last     a=+0.001 b=1.000
+single answer_sentence a=+0.002 b=1.001
+single letter          a=+0.004 b=0.999
+single letter_last     a=+0.003 b=0.999
+
+=== NEUTRAL reference: lo = gold vs the original's second choice; fit lo_pruned = a + b lo_orig
+neutral answer_sentence a=+0.00 [-0.03,+0.04]  b=0.92 [0.91,0.92]  n_q=300  mean lo_orig +3.92 -> pruned +3.60
+neutral letter          a=-0.09 [-0.14,-0.03]  b=0.73 [0.71,0.74]  n_q=300  mean lo_orig +2.82 -> pruned +1.97
+neutral letter_last     a=-0.32 [-0.52,-0.10]  b=0.93 [0.91,0.95]  n_q=300  mean lo_orig +9.76 -> pruned +8.79
+
+=== Neutral: gold vs EACH other letter (all pairs), same fit
+neutral answer_sentence a=-0.07 [-0.11,-0.03]  b=0.93 [0.93,0.94]  n_q=300
+neutral letter          a=-0.12 [-0.18,-0.06]  b=0.75 [0.74,0.76]  n_q=300
+neutral letter_last     a=-0.42 [-0.55,-0.31]  b=0.95 [0.94,0.96]  n_q=300
+
+=== Heldout-only DiD by kind (PRIMARY form 'letter', single) with CIs; does the null hide two opposite effects?
+heldout answer_sentence multi  doubt      DiD -1.444 [-1.553,-1.337] n_q=200  lo_orig +0.64 -> lo_pruned -0.81
+heldout answer_sentence multi  suggestion DiD -3.029 [-3.146,-2.913] n_q=200  lo_orig +9.14 -> lo_pruned +6.11
+heldout answer_sentence single doubt      DiD -0.609 [-0.686,-0.529] n_q=200  lo_orig -1.31 -> lo_pruned -1.91
+heldout answer_sentence single suggestion DiD -0.956 [-1.068,-0.839] n_q=200  lo_orig -0.29 -> lo_pruned -1.24
+heldout letter          multi  doubt      DiD -2.104 [-2.366,-1.846] n_q=200  lo_orig +0.53 -> lo_pruned -1.57
+heldout letter          multi  suggestion DiD -5.997 [-6.210,-5.780] n_q=200  lo_orig +6.67 -> lo_pruned +0.67
+heldout letter          single doubt      DiD +0.277 [+0.125,+0.426] n_q=200  lo_orig -1.20 -> lo_pruned -0.93
+heldout letter          single suggestion DiD -0.345 [-0.580,-0.130] n_q=200  lo_orig +0.13 -> lo_pruned -0.22
+heldout letter_last     multi  doubt      DiD -0.998 [-1.041,-0.951] n_q=200  lo_orig +8.95 -> lo_pruned +7.95
+heldout letter_last     multi  suggestion DiD -1.354 [-1.429,-1.278] n_q=200  lo_orig +9.02 -> lo_pruned +7.66
+heldout letter_last     single doubt      DiD -1.053 [-1.088,-1.017] n_q=200  lo_orig +9.52 -> lo_pruned +8.47
+heldout letter_last     single suggestion DiD -1.056 [-1.111,-1.001] n_q=200  lo_orig +7.94 -> lo_pruned +6.88
+
+=== Shrinkage-corrected DiD: residual = lo_pruned - (a_neutral + b_neutral * lo_orig), using the neutral fit of the same form
+neutral fits (a, b): {'answer_sentence': (np.float64(0.0), np.float64(0.92)), 'letter': (np.float64(-0.09), np.float64(0.73)), 'letter_last': (np.float64(-0.32), np.float64(0.93))}
+heldout  doubt      multi  answer_sentence raw DiD -1.44  shrinkage-corrected -1.40 [-1.49,-1.31] n_q=200
+heldout  doubt      multi  letter          raw DiD -2.10  shrinkage-corrected -1.87 [-2.03,-1.70] n_q=200
+heldout  doubt      multi  letter_last     raw DiD -1.00  shrinkage-corrected -0.08 [-0.12,-0.04] n_q=200
+heldout  doubt      single answer_sentence raw DiD -0.61  shrinkage-corrected -0.72 [-0.78,-0.66] n_q=200
+heldout  doubt      single letter          raw DiD +0.28  shrinkage-corrected +0.03 [-0.08,+0.14] n_q=200
+heldout  doubt      single letter_last     raw DiD -1.05  shrinkage-corrected -0.10 [-0.13,-0.07] n_q=200
+heldout  suggestion multi  answer_sentence raw DiD -3.03  shrinkage-corrected -2.29 [-2.41,-2.16] n_q=200
+heldout  suggestion multi  letter          raw DiD -6.00  shrinkage-corrected -4.09 [-4.24,-3.93] n_q=200
+heldout  suggestion multi  letter_last     raw DiD -1.35  shrinkage-corrected -0.43 [-0.50,-0.36] n_q=200
+heldout  suggestion single answer_sentence raw DiD -0.96  shrinkage-corrected -0.98 [-1.07,-0.90] n_q=200
+heldout  suggestion single letter          raw DiD -0.34  shrinkage-corrected -0.22 [-0.36,-0.10] n_q=200
+heldout  suggestion single letter_last     raw DiD -1.06  shrinkage-corrected -0.21 [-0.25,-0.16] n_q=200
+prune    doubt      multi  answer_sentence raw DiD -2.19  shrinkage-corrected -2.00 [-2.14,-1.86] n_q=128
+prune    doubt      multi  letter          raw DiD -3.32  shrinkage-corrected -2.69 [-2.86,-2.53] n_q=128
+prune    doubt      multi  letter_last     raw DiD -1.17  shrinkage-corrected -0.21 [-0.26,-0.16] n_q=128
+prune    doubt      single answer_sentence raw DiD -0.96  shrinkage-corrected -0.91 [-0.99,-0.83] n_q=128
+prune    doubt      single letter          raw DiD -0.66  shrinkage-corrected -0.41 [-0.50,-0.31] n_q=128
+prune    doubt      single letter_last     raw DiD -1.08  shrinkage-corrected -0.07 [-0.11,-0.04] n_q=128
+prune    suggestion multi  answer_sentence raw DiD -2.84  shrinkage-corrected -2.39 [-2.56,-2.22] n_q=128
+prune    suggestion multi  letter          raw DiD -4.58  shrinkage-corrected -3.34 [-3.60,-3.07] n_q=128
+prune    suggestion multi  letter_last     raw DiD -1.40  shrinkage-corrected -0.48 [-0.56,-0.39] n_q=128
+prune    suggestion single answer_sentence raw DiD -1.04  shrinkage-corrected -0.95 [-1.07,-0.84] n_q=128
+prune    suggestion single letter          raw DiD -1.27  shrinkage-corrected -0.74 [-0.88,-0.61] n_q=128
+prune    suggestion single letter_last     raw DiD -1.17  shrinkage-corrected -0.25 [-0.31,-0.19] n_q=128

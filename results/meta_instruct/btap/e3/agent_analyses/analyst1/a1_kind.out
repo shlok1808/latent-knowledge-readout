@@ -1,0 +1,34 @@
+-- pruned_seed0
+  heldout|answer_sentence|multi|doubt      DiD -1.444 [-1.554,-1.338] nq=200
+  heldout|answer_sentence|multi|suggestion DiD -3.029 [-3.147,-2.911] nq=200
+  heldout|answer_sentence|single|doubt     DiD -0.609 [-0.692,-0.538] nq=200
+  heldout|answer_sentence|single|suggestion DiD -0.956 [-1.065,-0.843] nq=200
+  heldout|letter|multi|doubt               DiD -2.104 [-2.361,-1.838] nq=200
+  heldout|letter|multi|suggestion          DiD -5.997 [-6.211,-5.777] nq=200
+  heldout|letter|single|doubt              DiD +0.277 [+0.128,+0.427] nq=200
+  heldout|letter|single|suggestion         DiD -0.345 [-0.570,-0.126] nq=200
+  prune|answer_sentence|multi|doubt        DiD -2.188 [-2.329,-2.048] nq=128
+  prune|answer_sentence|multi|suggestion   DiD -2.844 [-3.014,-2.662] nq=128
+  prune|answer_sentence|single|doubt       DiD -0.959 [-1.061,-0.858] nq=128
+  prune|answer_sentence|single|suggestion  DiD -1.035 [-1.171,-0.901] nq=128
+  prune|letter|multi|doubt                 DiD -3.316 [-3.504,-3.121] nq=128
+  prune|letter|multi|suggestion            DiD -4.583 [-4.963,-4.199] nq=128
+  prune|letter|single|doubt                DiD -0.664 [-0.774,-0.556] nq=128
+  prune|letter|single|suggestion           DiD -1.272 [-1.450,-1.091] nq=128
+-- random_seed0
+  heldout|answer_sentence|multi|doubt      DiD -0.001 [-0.004,+0.002] nq=200
+  heldout|answer_sentence|multi|suggestion DiD +0.001 [-0.000,+0.003] nq=200
+  heldout|answer_sentence|single|doubt     DiD +0.002 [+0.001,+0.004] nq=200
+  heldout|answer_sentence|single|suggestion DiD -0.001 [-0.003,+0.000] nq=200
+  heldout|letter|multi|doubt               DiD +0.000 [-0.003,+0.003] nq=200
+  heldout|letter|multi|suggestion          DiD +0.002 [-0.001,+0.004] nq=200
+  heldout|letter|single|doubt              DiD +0.005 [+0.004,+0.006] nq=200
+  heldout|letter|single|suggestion         DiD +0.003 [+0.002,+0.005] nq=200
+  prune|answer_sentence|multi|doubt        DiD +0.007 [+0.001,+0.012] nq=128
+  prune|answer_sentence|multi|suggestion   DiD +0.001 [-0.002,+0.005] nq=128
+  prune|answer_sentence|single|doubt       DiD +0.005 [+0.003,+0.008] nq=128
+  prune|answer_sentence|single|suggestion  DiD +0.001 [-0.001,+0.003] nq=128
+  prune|letter|multi|doubt                 DiD +0.003 [-0.000,+0.006] nq=128
+  prune|letter|multi|suggestion            DiD +0.001 [-0.002,+0.004] nq=128
+  prune|letter|single|doubt                DiD +0.003 [+0.001,+0.004] nq=128
+  prune|letter|single|suggestion           DiD +0.004 [+0.002,+0.005] nq=128

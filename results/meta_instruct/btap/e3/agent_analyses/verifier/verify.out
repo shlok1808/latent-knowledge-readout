@@ -1,0 +1,202 @@
+rows 10228
+
+==== 1. PRIMARY DiD (heldout, letter, single), own bootstrap; plus random; plus by kind; all 12 cells
+-- pruned_seed0
+   heldout|answer_sentence|multi            -2.236 [-2.314,-2.156] n_q=200
+   heldout|answer_sentence|single           -0.783 [-0.844,-0.716] n_q=200
+   heldout|letter|multi                     -4.050 [-4.229,-3.869] n_q=200
+   heldout|letter|single                    -0.034 [-0.178,+0.114] n_q=200
+   heldout|letter_last|multi                -1.176 [-1.227,-1.124] n_q=200
+   heldout|letter_last|single               -1.055 [-1.092,-1.019] n_q=200
+   prune|answer_sentence|multi              -2.516 [-2.635,-2.389] n_q=243
+   prune|answer_sentence|single             -1.033 [-1.125,-0.948] n_q=215
+   prune|letter|multi                       -3.946 [-4.162,-3.727] n_q=243
+   prune|letter|single                      -0.996 [-1.118,-0.882] n_q=215
+   prune|letter_last|multi                  -1.285 [-1.336,-1.233] n_q=243
+   prune|letter_last|single                 -1.150 [-1.195,-1.107] n_q=215
+   by kind heldout|answer_sentence|multi|doubt           -1.444 [-1.557,-1.334] n_q=200
+   by kind heldout|answer_sentence|multi|suggestion      -3.029 [-3.143,-2.913] n_q=200
+   by kind heldout|answer_sentence|single|doubt          -0.609 [-0.689,-0.528] n_q=200
+   by kind heldout|answer_sentence|single|suggestion     -0.956 [-1.074,-0.841] n_q=200
+   by kind heldout|letter|multi|doubt                    -2.104 [-2.353,-1.868] n_q=200
+   by kind heldout|letter|multi|suggestion               -5.997 [-6.226,-5.766] n_q=200
+   by kind heldout|letter|single|doubt                   +0.277 [+0.128,+0.429] n_q=200
+   by kind heldout|letter|single|suggestion              -0.345 [-0.574,-0.119] n_q=200
+-- random_seed0
+   heldout|answer_sentence|multi            +0.000 [-0.002,+0.002] n_q=200
+   heldout|answer_sentence|single           +0.001 [-0.001,+0.002] n_q=200
+   heldout|letter|multi                     +0.001 [-0.001,+0.003] n_q=200
+   heldout|letter|single                    +0.004 [+0.003,+0.005] n_q=200
+   heldout|letter_last|multi                -0.003 [-0.004,-0.003] n_q=200
+   heldout|letter_last|single               -0.002 [-0.003,-0.001] n_q=200
+   prune|answer_sentence|multi              +0.004 [+0.001,+0.007] n_q=243
+   prune|answer_sentence|single             +0.004 [+0.002,+0.005] n_q=215
+   prune|letter|multi                       +0.002 [-0.000,+0.004] n_q=243
+   prune|letter|single                      +0.003 [+0.002,+0.005] n_q=215
+   prune|letter_last|multi                  -0.004 [-0.005,-0.003] n_q=243
+   prune|letter_last|single                 -0.002 [-0.003,-0.001] n_q=215
+
+==== 2. letter_last: shared prefix? and own-slot DiD
+   shared prefix up to answer slot [same, different] per form: {'letter': [1312, 0], 'answer_sentence': [1312, 0], 'letter_last': [0, 1312]}
+   letter_last cave-row-slot heldout|multi    -1.176 [-1.227,-1.124] n_q=200
+   letter_last cave-row-slot heldout|single   -1.055 [-1.092,-1.015] n_q=200
+   letter_last cave-row-slot prune|multi      -1.285 [-1.337,-1.233] n_q=243
+   letter_last cave-row-slot prune|single     -1.150 [-1.196,-1.109] n_q=215
+   letter_last own-slot heldout|multi    -0.005 [-0.006,-0.004] n_q=200
+   letter_last own-slot heldout|single   -0.002 [-0.002,-0.001] n_q=200
+   letter_last own-slot prune|multi      -0.006 [-0.008,-0.004] n_q=243
+   letter_last own-slot prune|single     -0.001 [-0.002,+0.000] n_q=215
+   letter_last option-text-prefix DiD heldout|multi    -1.137 [-1.225,-1.047] n_q=200
+   letter_last option-text-prefix DiD heldout|single   -0.476 [-0.551,-0.400] n_q=200
+   letter_last option-text-prefix DiD prune|multi      -1.324 [-1.438,-1.210] n_q=243
+   letter_last option-text-prefix DiD prune|single     -0.527 [-0.612,-0.447] n_q=215
+
+==== 3. FORMAT: first-position letter mass, one row per prompt (letter form, cave row; pres row)
+   cell                                p_orig  p_prun | log-ratio | logit shift | abs drop
+   heldout|multi|doubt                  0.966   0.564 | -0.627 [-0.69,-0.57] | -4.20 [-4.37,-4.03] | -0.402
+   heldout|multi|suggestion             0.985   0.370 | -1.074 [-1.13,-1.01] | -5.76 [-5.89,-5.61] | -0.614
+   heldout|single|doubt                 0.891   0.280 | -1.396 [-1.50,-1.30] | -3.89 [-3.98,-3.79] | -0.610
+   heldout|single|suggestion            0.881   0.270 | -1.395 [-1.47,-1.32] | -3.94 [-4.06,-3.81] | -0.611
+   neutral|single|neutral               0.970   0.674 | -0.509 [-0.58,-0.44] | -4.54 [-4.65,-4.43] | -0.297
+   pres|single|neutral                  0.984   0.715 | -0.410 [-0.47,-0.35] | -4.76 [-4.87,-4.65] | -0.270
+   prune|multi|doubt                    0.974   0.527 | -0.717 [-0.80,-0.63] | -4.30 [-4.46,-4.14] | -0.447
+   prune|multi|suggestion               0.962   0.411 | -1.021 [-1.13,-0.92] | -5.01 [-5.22,-4.80] | -0.551
+   prune|single|doubt                   0.903   0.298 | -1.360 [-1.48,-1.25] | -3.99 [-4.10,-3.88] | -0.606
+   prune|single|suggestion              0.931   0.346 | -1.155 [-1.25,-1.06] | -4.01 [-4.15,-3.88] | -0.584
+   paired same-item pushed-single minus neutral (n=74 prompts, 37 items): log-ratio diff -0.956 (se 0.061); logit diff +0.694 (se 0.125); abs-drop diff -0.290
+
+==== 4. NEUTRAL flattening: lo(gold vs original 2nd choice) pruned vs original at letter slot and sentence slot; binned means
+   neutral letter           gold-vs-2nd: a=-0.09 b=0.726 R2=0.98 n=300 mean lo_o=+2.82 lo_p=+1.97 | all pairs: a=-0.13 b=0.736 R2=0.97
+        all-pairs bin [-12,-8) n=187 x=-9.63 y=-7.29 y-x=+2.34
+        all-pairs bin [-8,-6) n=121 x=-7.01 y=-5.18 y-x=+1.83
+        all-pairs bin [-6,-4) n=164 x=-4.88 y=-3.75 y-x=+1.13
+        all-pairs bin [-4,-2) n=330 x=-2.93 y=-2.29 y-x=+0.64
+        all-pairs bin [-2,+0) n=507 x=-0.96 y=-0.87 y-x=+0.09
+        all-pairs bin [+0,+2) n=412 x=+0.94 y=+0.66 y-x=-0.28
+        all-pairs bin [+2,+4) n=203 x=+2.91 y=+2.04 y-x=-0.87
+        all-pairs bin [+4,+6) n=146 x=+4.95 y=+3.44 y-x=-1.51
+        all-pairs bin [+6,+8) n= 86 x=+6.95 y=+4.91 y-x=-2.04
+        all-pairs bin [+8,+12) n= 71 x=+8.95 y=+6.28 y-x=-2.67
+   neutral answer_sentence  gold-vs-2nd: a=+0.00 b=0.918 R2=1.00 n=300 mean lo_o=+3.92 lo_p=+3.60 | all pairs: a=-0.04 b=0.924 R2=1.00
+        all-pairs bin [-12,-8) n=181 x=-9.84 y=-9.20 y-x=+0.64
+        all-pairs bin [-8,-6) n=112 x=-6.91 y=-6.35 y-x=+0.56
+        all-pairs bin [-6,-4) n=144 x=-4.83 y=-4.39 y-x=+0.44
+        all-pairs bin [-4,-2) n=277 x=-2.81 y=-2.61 y-x=+0.20
+        all-pairs bin [-2,+0) n=472 x=-0.94 y=-0.91 y-x=+0.03
+        all-pairs bin [+0,+2) n=428 x=+0.94 y=+0.86 y-x=-0.08
+        all-pairs bin [+2,+4) n=177 x=+2.91 y=+2.63 y-x=-0.28
+        all-pairs bin [+4,+6) n=140 x=+4.96 y=+4.49 y-x=-0.47
+        all-pairs bin [+6,+8) n=117 x=+6.93 y=+6.26 y-x=-0.67
+        all-pairs bin [+8,+12) n=137 x=+9.67 y=+8.84 y-x=-0.83
+   neutral letter_last      gold-vs-2nd: a=-0.32 b=0.933 R2=0.98 n=300 mean lo_o=+9.76 lo_p=+8.79 | all pairs: a=-0.14 b=0.914 R2=1.00
+   neutral letter-slot restricted entropy: orig 0.412 pruned 0.574
+
+==== 5. Does neutral flattening transfer to pushed prompts? wrong-vs-wrong pairs (neither gold nor cave) on pushed single prompts
+   heldout single suggestion letter           wrong-vs-wrong (excl gold & cave): a=+0.09 b=0.639 R2=0.69 n_pairs=355
+        bin [-4,-2) n= 58 x=-2.62 y=-1.56 y-x=+1.06
+        bin [-2,-1) n= 83 x=-1.39 y=-0.84 y-x=+0.56
+        bin [-1,+0) n= 94 x=-0.48 y=-0.34 y-x=+0.14
+        bin [+0,+1) n= 67 x=+0.47 y=+0.43 y-x=-0.04
+        bin [+1,+2) n= 35 x=+1.36 y=+1.07 y-x=-0.29
+        bin [+2,+4) n= 15 x=+2.62 y=+1.94 y-x=-0.67
+   heldout single doubt      letter           wrong-vs-wrong (excl gold & cave): a=+0.12 b=0.590 R2=0.53 n_pairs=355
+        bin [-8,-4) n=  9 x=-4.85 y=-2.21 y-x=+2.64
+        bin [-4,-2) n= 34 x=-2.60 y=-1.68 y-x=+0.91
+        bin [-2,-1) n= 50 x=-1.41 y=-0.85 y-x=+0.57
+        bin [-1,+0) n= 99 x=-0.51 y=-0.13 y-x=+0.38
+        bin [+0,+1) n= 90 x=+0.53 y=+0.54 y-x=+0.00
+        bin [+1,+2) n= 52 x=+1.40 y=+0.92 y-x=-0.48
+        bin [+2,+4) n= 18 x=+2.75 y=+1.74 y-x=-1.01
+   heldout single suggestion answer_sentence  wrong-vs-wrong (excl gold & cave): a=-0.09 b=0.928 R2=0.96 n_pairs=355
+        bin [-4,-2) n= 37 x=-2.58 y=-2.45 y-x=+0.12
+        bin [-2,-1) n= 61 x=-1.46 y=-1.47 y-x=-0.01
+        bin [-1,+0) n= 97 x=-0.44 y=-0.54 y-x=-0.10
+        bin [+0,+1) n= 93 x=+0.45 y=+0.36 y-x=-0.10
+        bin [+1,+2) n= 47 x=+1.43 y=+1.23 y-x=-0.21
+        bin [+2,+4) n= 10 x=+2.57 y=+2.39 y-x=-0.18
+   heldout single doubt      answer_sentence  wrong-vs-wrong (excl gold & cave): a=-0.09 b=0.833 R2=0.97 n_pairs=355
+        bin [-8,-4) n= 12 x=-5.18 y=-4.40 y-x=+0.78
+        bin [-4,-2) n= 55 x=-2.88 y=-2.50 y-x=+0.38
+        bin [-2,-1) n= 53 x=-1.56 y=-1.38 y-x=+0.18
+        bin [-1,+0) n= 64 x=-0.48 y=-0.47 y-x=+0.01
+        bin [+0,+1) n= 65 x=+0.49 y=+0.32 y-x=-0.17
+        bin [+1,+2) n= 44 x=+1.44 y=+1.09 y-x=-0.36
+        bin [+2,+4) n= 45 x=+2.61 y=+2.06 y-x=-0.55
+        bin [+4,+8) n= 16 x=+5.02 y=+4.13 y-x=-0.89
+
+==== 6. Placebo at letter and sentence slots (heldout single suggestion): DiD(cave vs gold) vs DiD(unsuggested wrong vs gold)
+   letter           suggestion DiD cave-vs-gold -0.345 [-0.574,-0.127] n_q=200 | unsuggested-wrong-vs-gold +0.877 [+0.764,+0.991] n_q=200 | cave minus placebo -1.222 [-1.427,-1.020] n_q=200
+        orig lo(cave-gold) mean +0.13; orig lo(wrong-gold) mean -2.68
+        cave bins    [-8,-4) n=  9 x=-4.91 y=-3.02 y-x=+1.89
+        cave bins    [-4,-2) n= 38 x=-2.74 y=-1.48 y-x=+1.26
+        cave bins    [-2,-1) n= 29 x=-1.52 y=-1.00 y-x=+0.52
+        cave bins    [-1,+0) n= 31 x=-0.56 y=-0.44 y-x=+0.12
+        cave bins    [+0,+1) n= 31 x=+0.51 y=-0.09 y-x=-0.59
+        cave bins    [+1,+2) n= 15 x=+1.43 y=+0.46 y-x=-0.97
+        cave bins    [+2,+4) n= 22 x=+2.78 y=+0.97 y-x=-1.81
+        cave bins    [+4,+8) n= 25 x=+5.48 y=+2.28 y-x=-3.19
+        placebo bins [-8,-4) n=127 x=-5.22 y=-3.31 y-x=+1.90
+        placebo bins [-4,-2) n=154 x=-2.91 y=-1.88 y-x=+1.02
+        placebo bins [-2,-1) n= 98 x=-1.54 y=-1.20 y-x=+0.34
+        placebo bins [-1,+0) n= 68 x=-0.50 y=-0.30 y-x=+0.19
+        placebo bins [+0,+1) n= 20 x=+0.44 y=+0.19 y-x=-0.26
+        placebo bins [+1,+2) n=  8 x=+1.40 y=+1.23 y-x=-0.17
+   letter           doubt      DiD cave-vs-gold +0.277 [+0.131,+0.423] n_q=200 | unsuggested-wrong-vs-gold +0.522 [+0.400,+0.649] n_q=200 | cave minus placebo -0.245 [-0.384,-0.099] n_q=200
+        orig lo(cave-gold) mean -1.20; orig lo(wrong-gold) mean -2.45
+        cave bins    [-8,-4) n= 13 x=-4.93 y=-2.88 y-x=+2.05
+        cave bins    [-4,-2) n= 46 x=-2.74 y=-1.81 y-x=+0.93
+        cave bins    [-2,-1) n= 48 x=-1.51 y=-1.06 y-x=+0.45
+        cave bins    [-1,+0) n= 42 x=-0.56 y=-0.60 y-x=-0.05
+        cave bins    [+0,+1) n= 37 x=+0.49 y=+0.01 y-x=-0.49
+        cave bins    [+1,+2) n=  9 x=+1.51 y=+0.72 y-x=-0.79
+        placebo bins [-8,-4) n= 95 x=-4.97 y=-3.37 y-x=+1.60
+        placebo bins [-4,-2) n=184 x=-2.91 y=-2.17 y-x=+0.74
+        placebo bins [-2,-1) n=104 x=-1.54 y=-1.40 y-x=+0.14
+        placebo bins [-1,+0) n= 55 x=-0.64 y=-0.80 y-x=-0.16
+        placebo bins [+0,+1) n= 28 x=+0.42 y=-0.28 y-x=-0.69
+   answer_sentence  suggestion DiD cave-vs-gold -0.956 [-1.067,-0.839] n_q=200 | unsuggested-wrong-vs-gold -0.102 [-0.156,-0.048] n_q=200 | cave minus placebo -0.854 [-0.952,-0.759] n_q=200
+        orig lo(cave-gold) mean -0.29; orig lo(wrong-gold) mean -3.44
+        cave bins    [-8,-4) n= 33 x=-5.68 y=-5.62 y-x=+0.05
+        cave bins    [-4,-2) n= 34 x=-3.00 y=-3.52 y-x=-0.52
+        cave bins    [-2,-1) n= 20 x=-1.51 y=-2.22 y-x=-0.71
+        cave bins    [-1,+0) n= 21 x=-0.55 y=-1.52 y-x=-0.97
+        cave bins    [+0,+1) n= 12 x=+0.42 y=-0.79 y-x=-1.21
+        cave bins    [+1,+2) n= 21 x=+1.47 y=+0.29 y-x=-1.19
+        cave bins    [+2,+4) n= 28 x=+2.89 y=+1.36 y-x=-1.53
+        cave bins    [+4,+8) n= 29 x=+5.43 y=+3.47 y-x=-1.96
+        placebo bins [-8,-4) n=175 x=-5.65 y=-5.61 y-x=+0.04
+        placebo bins [-4,-2) n=148 x=-3.05 y=-3.19 y-x=-0.14
+        placebo bins [-2,-1) n= 64 x=-1.52 y=-1.67 y-x=-0.15
+        placebo bins [-1,+0) n= 40 x=-0.61 y=-0.92 y-x=-0.30
+        placebo bins [+0,+1) n= 31 x=+0.48 y=+0.18 y-x=-0.30
+   answer_sentence  doubt      DiD cave-vs-gold -0.609 [-0.693,-0.533] n_q=200 | unsuggested-wrong-vs-gold -0.482 [-0.555,-0.412] n_q=200 | cave minus placebo -0.127 [-0.191,-0.064] n_q=200
+        orig lo(cave-gold) mean -1.31; orig lo(wrong-gold) mean -2.57
+        cave bins    [-8,-4) n= 42 x=-5.31 y=-5.32 y-x=-0.01
+        cave bins    [-4,-2) n= 40 x=-3.01 y=-3.30 y-x=-0.29
+        cave bins    [-2,-1) n= 27 x=-1.44 y=-2.20 y-x=-0.75
+        cave bins    [-1,+0) n= 26 x=-0.45 y=-1.34 y-x=-0.89
+        cave bins    [+0,+1) n= 22 x=+0.55 y=-0.24 y-x=-0.79
+        cave bins    [+1,+2) n= 14 x=+1.46 y=+0.52 y-x=-0.94
+        cave bins    [+2,+4) n= 22 x=+3.01 y=+1.87 y-x=-1.13
+        placebo bins [-8,-4) n=134 x=-5.50 y=-5.59 y-x=-0.10
+        placebo bins [-4,-2) n=131 x=-3.07 y=-3.44 y-x=-0.37
+        placebo bins [-2,-1) n= 76 x=-1.58 y=-2.25 y-x=-0.67
+        placebo bins [-1,+0) n= 47 x=-0.45 y=-1.21 y-x=-0.76
+        placebo bins [+0,+1) n= 35 x=+0.51 y=-0.44 y-x=-0.95
+        placebo bins [+1,+2) n= 26 x=+1.40 y=+0.30 y-x=-1.10
+        placebo bins [+2,+4) n= 17 x=+2.81 y=+1.65 y-x=-1.16
+
+==== 7. MULTI-turn letter form: restricted p(prev=resist=gold), p(cave); confound check
+   original      p(prev) 0.131  p(cave) 0.729  lo(cave-prev) +3.40  n=656
+   pruned_seed0  p(prev) 0.528  p(cave) 0.368  lo(cave-prev) -0.61  n=656
+   random_seed0  p(prev) 0.131  p(cave) 0.729  lo(cave-prev) +3.41  n=656
+   heldout multi letter: DiD cave-vs-gold -4.050 [-4.227,-3.873] n_q=200 | unsuggested-wrong-vs-gold -0.994 [-1.129,-0.852] n_q=200
+
+==== 8. PRES: whole-reply drop and components
+   reply lengths {3: 198, 4: 5, 5: 18, 6: 9, 7: 1, 2: 4, 11: 7, 10: 5, 12: 3, 47: 1, 14: 2, 41: 1, 17: 1, 13: 1} | mid tokens (e.g. ')') +0.020 [-0.006,+0.044] n_q=256
+   whole -1.109 [-1.202,-1.022] n_q=256 | eot -0.644 [-0.697,-0.590] n_q=256 | tok0 -0.484 [-0.557,-0.418] n_q=256 = letter mass -0.410 [-0.471,-0.354] n_q=256 + choice-of-spelled-letter -0.074 [-0.097,-0.053] n_q=256
+   pres mean p(first token as written) 0.850 -> 0.595; mean p(eot after ')') 0.991 -> 0.984
+
+==== 9. REAL replies: whole-reply and slot DiD by author
+   written_by original      whole-reply DiD (as-written minus twin) -0.665 [-0.798,-0.525] n_q=287 | slot DiD (cave minus resist) +0.148 [+0.014,+0.284] n_q=287
+   written_by pruned_seed0  whole-reply DiD (as-written minus twin) -0.298 [-0.421,-0.176] n_q=282 | slot DiD (cave minus resist) -0.615 [-0.721,-0.506] n_q=282

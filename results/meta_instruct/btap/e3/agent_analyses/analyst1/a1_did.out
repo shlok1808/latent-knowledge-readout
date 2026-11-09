@@ -1,0 +1,122 @@
+tags present: ['original', 'pruned_seed0', 'random_seed0']
+
+=== (1) DiD re-derived, cave-row slot (= analyze_e3 definition) and own-slot variant ===
+
+-- pruned_seed0
+  heldout|answer_sentence|multi    DiD -2.236 [-2.321,-2.159] nq=200   own-slot -2.236   orig margin m_o mean +4.89 median +5.85 frac(m_o>0) 0.77
+  heldout|answer_sentence|single   DiD -0.783 [-0.850,-0.721] nq=200   own-slot -0.783   orig margin m_o mean -0.80 median -0.96 frac(m_o>0) 0.39
+  heldout|letter|multi             DiD -4.050 [-4.224,-3.863] nq=200   own-slot -4.050   orig margin m_o mean +3.60 median +4.00 frac(m_o>0) 0.78
+  heldout|letter|single            DiD -0.034 [-0.181,+0.110] nq=200   own-slot -0.034   orig margin m_o mean -0.54 median -0.81 frac(m_o>0) 0.36
+  heldout|letter_last|multi        DiD -1.176 [-1.226,-1.126] nq=200   own-slot -0.005   orig margin m_o mean +8.98 median +9.01 frac(m_o>0) 1.00
+  heldout|letter_last|single       DiD -1.055 [-1.094,-1.018] nq=200   own-slot -0.002   orig margin m_o mean +8.73 median +8.85 frac(m_o>0) 1.00
+  prune|answer_sentence|multi      DiD -2.516 [-2.635,-2.391] nq=243   own-slot -2.516   orig margin m_o mean +3.98 median +3.11 frac(m_o>0) 0.89
+  prune|answer_sentence|single     DiD -1.033 [-1.124,-0.944] nq=215   own-slot -1.033   orig margin m_o mean +0.89 median +1.07 frac(m_o>0) 0.66
+  prune|letter|multi               DiD -3.946 [-4.175,-3.722] nq=243   own-slot -3.946   orig margin m_o mean +3.10 median +2.45 frac(m_o>0) 1.00
+  prune|letter|single              DiD -0.996 [-1.113,-0.884] nq=215   own-slot -0.996   orig margin m_o mean +1.11 median +0.74 frac(m_o>0) 0.96
+  prune|letter_last|multi          DiD -1.285 [-1.339,-1.231] nq=243   own-slot -0.006   orig margin m_o mean +9.36 median +9.46 frac(m_o>0) 1.00
+  prune|letter_last|single         DiD -1.150 [-1.194,-1.107] nq=215   own-slot -0.001   orig margin m_o mean +9.72 median +9.92 frac(m_o>0) 1.00
+
+-- random_seed0
+  heldout|answer_sentence|multi    DiD +0.000 [-0.002,+0.002] nq=200   own-slot +0.001   orig margin m_o mean +4.89 median +5.85 frac(m_o>0) 0.77
+  heldout|answer_sentence|single   DiD +0.001 [-0.001,+0.002] nq=200   own-slot +0.000   orig margin m_o mean -0.80 median -0.96 frac(m_o>0) 0.39
+  heldout|letter|multi             DiD +0.001 [-0.001,+0.003] nq=200   own-slot +0.001   orig margin m_o mean +3.60 median +4.00 frac(m_o>0) 0.78
+  heldout|letter|single            DiD +0.004 [+0.003,+0.005] nq=200   own-slot +0.004   orig margin m_o mean -0.54 median -0.81 frac(m_o>0) 0.36
+  heldout|letter_last|multi        DiD -0.003 [-0.004,-0.003] nq=200   own-slot -0.000   orig margin m_o mean +8.98 median +9.01 frac(m_o>0) 1.00
+  heldout|letter_last|single       DiD -0.002 [-0.003,-0.001] nq=200   own-slot -0.000   orig margin m_o mean +8.73 median +8.85 frac(m_o>0) 1.00
+  prune|answer_sentence|multi      DiD +0.004 [+0.001,+0.007] nq=243   own-slot +0.004   orig margin m_o mean +3.98 median +3.11 frac(m_o>0) 0.89
+  prune|answer_sentence|single     DiD +0.004 [+0.002,+0.005] nq=215   own-slot +0.003   orig margin m_o mean +0.89 median +1.07 frac(m_o>0) 0.66
+  prune|letter|multi               DiD +0.002 [-0.000,+0.004] nq=243   own-slot +0.002   orig margin m_o mean +3.10 median +2.45 frac(m_o>0) 1.00
+  prune|letter|single              DiD +0.003 [+0.002,+0.005] nq=215   own-slot +0.003   orig margin m_o mean +1.11 median +0.74 frac(m_o>0) 0.96
+  prune|letter_last|multi          DiD -0.004 [-0.005,-0.003] nq=243   own-slot +0.000   orig margin m_o mean +9.36 median +9.46 frac(m_o>0) 1.00
+  prune|letter_last|single         DiD -0.002 [-0.003,-0.001] nq=215   own-slot -0.000   orig margin m_o mean +9.72 median +9.92 frac(m_o>0) 1.00
+
+=== (2) flattening. m_p = a + b*m_o (OLS over prompts); DiD split by sign of m_o ===
+
+-- pruned_seed0
+  heldout|answer_sentence|multi    a=-1.553 b=0.860  | orig prefers CAVE (n=309): DiD -2.758 [-2.877,-2.642] nq=200 | orig prefers RESIST (n=91): DiD -0.944 [-1.052,-0.837] nq=91
+  heldout|answer_sentence|single   a=-0.915 b=0.833  | orig prefers CAVE (n=156): DiD -1.361 [-1.472,-1.265] nq=122 | orig prefers RESIST (n=244): DiD -0.406 [-0.483,-0.333] nq=166
+  heldout|letter|multi             a=-1.943 b=0.414  | orig prefers CAVE (n=312): DiD -5.181 [-5.378,-4.996] nq=200 | orig prefers RESIST (n=88): DiD -0.623 [-0.910,-0.308] nq=88
+  heldout|letter|single            a=-0.304 b=0.497  | orig prefers CAVE (n=144): DiD -1.277 [-1.467,-1.090] nq=111 | orig prefers RESIST (n=256): DiD +0.641 [+0.523,+0.756] nq=167
+  heldout|letter_last|multi        a=-0.045 b=0.874  | orig prefers CAVE (n=400): DiD -1.176 [-1.226,-1.126] nq=200 | orig prefers RESIST (n=0): DiD NA
+  heldout|letter_last|single       a=-0.238 b=0.906  | orig prefers CAVE (n=400): DiD -1.055 [-1.094,-1.018] nq=200 | orig prefers RESIST (n=0): DiD NA
+  prune|answer_sentence|multi      a=-2.019 b=0.875  | orig prefers CAVE (n=229): DiD -2.623 [-2.753,-2.491] nq=218 | orig prefers RESIST (n=27): DiD -1.666 [-1.918,-1.410] nq=27
+  prune|answer_sentence|single     a=-0.821 b=0.802  | orig prefers CAVE (n=169): DiD -1.298 [-1.388,-1.206] nq=159 | orig prefers RESIST (n=87): DiD -0.426 [-0.523,-0.333] nq=80
+  prune|letter|multi               a=-2.110 b=0.406  | orig prefers CAVE (n=256): DiD -3.946 [-4.175,-3.722] nq=243 | orig prefers RESIST (n=0): DiD NA
+  prune|letter|single              a=-0.352 b=0.444  | orig prefers CAVE (n=245): DiD -1.021 [-1.140,-0.905] nq=206 | orig prefers RESIST (n=11): DiD -0.407 [-0.775,-0.043] nq=11
+  prune|letter_last|multi          a=-0.494 b=0.915  | orig prefers CAVE (n=256): DiD -1.285 [-1.339,-1.231] nq=243 | orig prefers RESIST (n=0): DiD NA
+  prune|letter_last|single         a=-0.315 b=0.916  | orig prefers CAVE (n=256): DiD -1.150 [-1.194,-1.107] nq=215 | orig prefers RESIST (n=0): DiD NA
+
+-- random_seed0
+  heldout|answer_sentence|multi    a=-0.002 b=1.000  | orig prefers CAVE (n=309): DiD +0.002 [-0.000,+0.003] nq=200 | orig prefers RESIST (n=91): DiD -0.004 [-0.008,-0.000] nq=91
+  heldout|answer_sentence|single   a=+0.001 b=1.001  | orig prefers CAVE (n=156): DiD +0.005 [+0.004,+0.007] nq=122 | orig prefers RESIST (n=244): DiD -0.002 [-0.004,-0.001] nq=166
+  heldout|letter|multi             a=+0.001 b=1.000  | orig prefers CAVE (n=312): DiD +0.001 [-0.001,+0.004] nq=200 | orig prefers RESIST (n=88): DiD +0.003 [-0.001,+0.008] nq=88
+  heldout|letter|single            a=+0.004 b=0.999  | orig prefers CAVE (n=144): DiD +0.002 [-0.000,+0.004] nq=111 | orig prefers RESIST (n=256): DiD +0.005 [+0.004,+0.006] nq=167
+  heldout|letter_last|multi        a=-0.002 b=1.000  | orig prefers CAVE (n=400): DiD -0.003 [-0.004,-0.003] nq=200 | orig prefers RESIST (n=0): DiD NA
+  heldout|letter_last|single       a=+0.004 b=0.999  | orig prefers CAVE (n=400): DiD -0.002 [-0.003,-0.001] nq=200 | orig prefers RESIST (n=0): DiD NA
+  prune|answer_sentence|multi      a=+0.002 b=1.001  | orig prefers CAVE (n=229): DiD +0.006 [+0.002,+0.009] nq=218 | orig prefers RESIST (n=27): DiD -0.008 [-0.016,-0.002] nq=27
+  prune|answer_sentence|single     a=+0.002 b=1.001  | orig prefers CAVE (n=169): DiD +0.006 [+0.004,+0.008] nq=159 | orig prefers RESIST (n=87): DiD -0.002 [-0.005,+0.001] nq=80
+  prune|letter|multi               a=+0.002 b=1.000  | orig prefers CAVE (n=256): DiD +0.002 [-0.000,+0.004] nq=243 | orig prefers RESIST (n=0): DiD NA
+  prune|letter|single              a=+0.003 b=1.000  | orig prefers CAVE (n=245): DiD +0.003 [+0.002,+0.004] nq=206 | orig prefers RESIST (n=11): DiD +0.007 [+0.001,+0.013] nq=11
+  prune|letter_last|multi          a=+0.005 b=0.999  | orig prefers CAVE (n=256): DiD -0.004 [-0.005,-0.003] nq=243 | orig prefers RESIST (n=0): DiD NA
+  prune|letter_last|single         a=-0.001 b=1.000  | orig prefers CAVE (n=256): DiD -0.002 [-0.003,-0.001] nq=215 | orig prefers RESIST (n=0): DiD NA
+
+=== neutral calibration: for neutral letter-form prompts, every non-gold X: m = lr(X)-lr(gold) ===
+  pruned_seed0: neutral fit m_p = +0.121 + 0.750 m_o (n=1008);  orig gold-vs-X margin mean -4.74;  floor DiD (2nd vs gold) +0.859 [+0.729,+0.987] nq=300
+  random_seed0: neutral fit m_p = +0.001 + 1.000 m_o (n=1008);  orig gold-vs-X margin mean -4.74;  floor DiD (2nd vs gold) +0.002 [+0.001,+0.004] nq=300
+
+  heldout/prune residual after neutral-calibrated flattening: resid = m_p - (a_n + b_n m_o)
+  pruned_seed0 heldout|answer_sentence|multi    predicted DiD from flattening -1.099;  residual -1.137 [-1.253,-1.025] nq=200
+  pruned_seed0 heldout|answer_sentence|single   predicted DiD from flattening +0.320;  residual -1.102 [-1.165,-1.039] nq=200
+  pruned_seed0 heldout|letter|multi             predicted DiD from flattening -0.777;  residual -3.273 [-3.394,-3.151] nq=200
+  pruned_seed0 heldout|letter|single            predicted DiD from flattening +0.255;  residual -0.289 [-0.388,-0.195] nq=200
+  pruned_seed0 heldout|letter_last|multi        predicted DiD from flattening -2.121;  residual +0.945 [+0.895,+0.996] nq=200
+  pruned_seed0 heldout|letter_last|single       predicted DiD from flattening -2.058;  residual +1.004 [+0.963,+1.044] nq=200
+  pruned_seed0 prune|answer_sentence|multi      predicted DiD from flattening -0.872;  residual -1.653 [-1.775,-1.524] nq=243
+  pruned_seed0 prune|answer_sentence|single     predicted DiD from flattening -0.100;  residual -0.912 [-0.982,-0.846] nq=215
+  pruned_seed0 prune|letter|multi               predicted DiD from flattening -0.653;  residual -3.294 [-3.471,-3.120] nq=243
+  pruned_seed0 prune|letter|single              predicted DiD from flattening -0.156;  residual -0.840 [-0.933,-0.752] nq=215
+  pruned_seed0 prune|letter_last|multi          predicted DiD from flattening -2.215;  residual +0.932 [+0.874,+0.989] nq=243
+  pruned_seed0 prune|letter_last|single         predicted DiD from flattening -2.305;  residual +1.159 [+1.102,+1.213] nq=215
+  random_seed0 heldout|answer_sentence|multi    predicted DiD from flattening -0.001;  residual +0.001 [-0.000,+0.003] nq=200
+  random_seed0 heldout|answer_sentence|single   predicted DiD from flattening +0.001;  residual -0.000 [-0.002,+0.001] nq=200
+  random_seed0 heldout|letter|multi             predicted DiD from flattening -0.001;  residual +0.002 [-0.000,+0.004] nq=200
+  random_seed0 heldout|letter|single            predicted DiD from flattening +0.001;  residual +0.003 [+0.002,+0.004] nq=200
+  random_seed0 heldout|letter_last|multi        predicted DiD from flattening -0.003;  residual -0.001 [-0.001,+0.000] nq=200
+  random_seed0 heldout|letter_last|single       predicted DiD from flattening -0.003;  residual +0.001 [+0.000,+0.002] nq=200
+  random_seed0 prune|answer_sentence|multi      predicted DiD from flattening -0.001;  residual +0.005 [+0.002,+0.008] nq=243
+  random_seed0 prune|answer_sentence|single     predicted DiD from flattening +0.000;  residual +0.003 [+0.002,+0.005] nq=215
+  random_seed0 prune|letter|multi               predicted DiD from flattening -0.000;  residual +0.003 [+0.000,+0.005] nq=243
+  random_seed0 prune|letter|single              predicted DiD from flattening +0.000;  residual +0.003 [+0.002,+0.004] nq=215
+  random_seed0 prune|letter_last|multi          predicted DiD from flattening -0.003;  residual -0.001 [-0.002,-0.001] nq=243
+  random_seed0 prune|letter_last|single         predicted DiD from flattening -0.003;  residual +0.001 [-0.000,+0.002] nq=215
+
+=== placebo: DiD for named cave letter vs unnamed letters X (each vs resist), same prompt & slot ===
+    c = cave-specific shift: OLS d = a + b*m_o + c*is_cave over (prompt, letter); cluster bootstrap over questions
+
+-- pruned_seed0
+  heldout|answer_sentence|multi    raw DiD cave -2.236 (m_o +4.89) | placebo -1.117 (m_o -0.90) | b=-0.134 c(cave-specific)=-0.347 [-0.427,-0.256]
+  heldout|answer_sentence|single   raw DiD cave -0.783 (m_o -0.80) | placebo -0.288 (m_o -3.00) | b=-0.137 c(cave-specific)=-0.192 [-0.239,-0.148]
+  heldout|letter|multi             raw DiD cave -4.050 (m_o +3.60) | placebo -1.019 (m_o -2.19) | b=-0.536 c(cave-specific)=+0.072 [-0.098,+0.222]
+  heldout|letter|single            raw DiD cave -0.034 (m_o -0.54) | placebo +0.733 (m_o -2.57) | b=-0.444 c(cave-specific)=+0.133 [+0.041,+0.217]
+  heldout|letter_last|multi        raw DiD cave -1.176 (m_o +8.98) | placebo -0.502 (m_o -0.59) | b=-0.091 c(cave-specific)=+0.195 [-0.010,+0.391]
+  heldout|letter_last|single       raw DiD cave -1.055 (m_o +8.73) | placebo -0.026 (m_o -0.81) | b=-0.063 c(cave-specific)=-0.428 [-0.574,-0.300]
+  prune|answer_sentence|multi      raw DiD cave -2.516 (m_o +3.98) | placebo -1.166 (m_o -1.96) | b=-0.147 c(cave-specific)=-0.478 [-0.644,-0.311]
+  prune|answer_sentence|single     raw DiD cave -0.997 (m_o +0.89) | placebo -0.308 (m_o -2.60) | b=-0.171 c(cave-specific)=-0.093 [-0.174,-0.013]
+  prune|letter|multi               raw DiD cave -3.949 (m_o +3.10) | placebo -0.532 (m_o -3.06) | b=-0.543 c(cave-specific)=-0.076 [-0.288,+0.125]
+  prune|letter|single              raw DiD cave -0.968 (m_o +1.11) | placebo +0.612 (m_o -2.14) | b=-0.387 c(cave-specific)=-0.322 [-0.429,-0.219]
+  prune|letter_last|multi          raw DiD cave -1.285 (m_o +9.36) | placebo -0.548 (m_o -0.61) | b=-0.076 c(cave-specific)=+0.019 [-0.194,+0.252]
+  prune|letter_last|single         raw DiD cave -1.127 (m_o +9.72) | placebo -0.047 (m_o -0.56) | b=-0.048 c(cave-specific)=-0.590 [-0.746,-0.447]
+
+-- random_seed0
+  heldout|answer_sentence|multi    raw DiD cave +0.000 (m_o +4.89) | placebo -0.002 (m_o -0.90) | b=0.000 c(cave-specific)=-0.001 [-0.003,+0.001]
+  heldout|answer_sentence|single   raw DiD cave +0.001 (m_o -0.80) | placebo -0.001 (m_o -3.00) | b=0.001 c(cave-specific)=-0.001 [-0.002,-0.000]
+  heldout|letter|multi             raw DiD cave +0.001 (m_o +3.60) | placebo +0.002 (m_o -2.19) | b=-0.000 c(cave-specific)=+0.001 [-0.001,+0.004]
+  heldout|letter|single            raw DiD cave +0.004 (m_o -0.54) | placebo +0.004 (m_o -2.57) | b=-0.000 c(cave-specific)=+0.001 [+0.000,+0.002]
+  heldout|letter_last|multi        raw DiD cave -0.003 (m_o +8.98) | placebo -0.001 (m_o -0.59) | b=-0.000 c(cave-specific)=+0.002 [-0.001,+0.005]
+  heldout|letter_last|single       raw DiD cave -0.002 (m_o +8.73) | placebo +0.000 (m_o -0.81) | b=-0.001 c(cave-specific)=+0.005 [+0.002,+0.009]
+  prune|answer_sentence|multi      raw DiD cave +0.004 (m_o +3.98) | placebo -0.002 (m_o -1.96) | b=-0.000 c(cave-specific)=+0.007 [+0.003,+0.012]
+  prune|answer_sentence|single     raw DiD cave +0.003 (m_o +0.89) | placebo +0.001 (m_o -2.60) | b=0.001 c(cave-specific)=-0.000 [-0.002,+0.002]
+  prune|letter|multi               raw DiD cave +0.002 (m_o +3.10) | placebo +0.002 (m_o -3.06) | b=-0.001 c(cave-specific)=+0.005 [+0.001,+0.009]
+  prune|letter|single              raw DiD cave +0.003 (m_o +1.11) | placebo +0.004 (m_o -2.14) | b=-0.001 c(cave-specific)=+0.001 [-0.000,+0.003]
+  prune|letter_last|multi          raw DiD cave -0.004 (m_o +9.36) | placebo -0.001 (m_o -0.61) | b=-0.001 c(cave-specific)=+0.006 [+0.003,+0.010]
+  prune|letter_last|single         raw DiD cave -0.002 (m_o +9.72) | placebo +0.001 (m_o -0.56) | b=-0.000 c(cave-specific)=-0.001 [-0.005,+0.002]

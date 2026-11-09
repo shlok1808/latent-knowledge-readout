@@ -1,0 +1,99 @@
+=== Reproduce the pre-named DiD table (pruned) and the random control
+heldout  answer_sentence multi  pruned -2.236 [-2.318,-2.157] n_q=200   random +0.000 [-0.002,+0.002] n_q=200
+heldout  answer_sentence single pruned -0.783 [-0.847,-0.717] n_q=200   random +0.001 [-0.001,+0.002] n_q=200
+heldout  letter          multi  pruned -4.050 [-4.219,-3.877] n_q=200   random +0.001 [-0.001,+0.003] n_q=200
+heldout  letter          single pruned -0.034 [-0.180,+0.111] n_q=200   random +0.004 [+0.003,+0.005] n_q=200
+heldout  letter_last     multi  pruned -1.176 [-1.225,-1.124] n_q=200   random -0.003 [-0.004,-0.003] n_q=200
+heldout  letter_last     single pruned -1.055 [-1.094,-1.015] n_q=200   random -0.002 [-0.003,-0.001] n_q=200
+prune    answer_sentence multi  pruned -2.516 [-2.642,-2.392] n_q=243   random +0.004 [+0.001,+0.007] n_q=243
+prune    answer_sentence single pruned -1.033 [-1.120,-0.944] n_q=215   random +0.004 [+0.002,+0.005] n_q=215
+prune    letter          multi  pruned -3.946 [-4.180,-3.717] n_q=243   random +0.002 [-0.000,+0.004] n_q=243
+prune    letter          single pruned -0.996 [-1.117,-0.884] n_q=215   random +0.003 [+0.002,+0.005] n_q=215
+prune    letter_last     multi  pruned -1.285 [-1.337,-1.233] n_q=243   random -0.004 [-0.005,-0.003] n_q=243
+prune    letter_last     single pruned -1.150 [-1.193,-1.107] n_q=215   random -0.002 [-0.003,-0.001] n_q=215
+
+=== Dose-response: DiD vs original log-odds (cave - resist), heldout+prune, by form/turn
+    quartiles of lo_orig; mean DiD per quartile. Caveat: conditioning on the original's value.
+answer_sentence multi  corr(lo_orig, did)=-0.580  corr(avg lo, did)=-0.496  Q0: lo -1.66 did -1.31 (n 164)  Q1: lo +2.61 did -2.25 (n 164)  Q2: lo +6.42 did -2.90 (n 164)  Q3: lo +10.76 did -2.92 (n 164)
+answer_sentence single corr(lo_orig, did)=-0.759  corr(avg lo, did)=-0.704  Q0: lo -4.33 did -0.14 (n 164)  Q1: lo -1.09 did -0.71 (n 164)  Q2: lo +1.03 did -1.08 (n 164)  Q3: lo +3.83 did -1.54 (n 164)
+letter          multi  corr(lo_orig, did)=-0.901  corr(avg lo, did)=-0.799  Q0: lo -0.99 did -1.47 (n 164)  Q1: lo +2.05 did -3.22 (n 164)  Q2: lo +4.42 did -4.47 (n 164)  Q3: lo +8.13 did -6.89 (n 164)
+letter          single corr(lo_orig, did)=-0.863  corr(avg lo, did)=-0.745  Q0: lo -2.64 did +1.00 (n 164)  Q1: lo -0.34 did -0.13 (n 164)  Q2: lo +0.63 did -0.63 (n 164)  Q3: lo +2.77 did -1.83 (n 164)
+letter_last     multi  corr(lo_orig, did)=-0.337  corr(avg lo, did)=-0.175  Q0: lo +7.38 did -1.05 (n 164)  Q1: lo +8.71 did -1.13 (n 164)  Q2: lo +9.59 did -1.25 (n 164)  Q3: lo +10.83 did -1.45 (n 164)
+letter_last     single corr(lo_orig, did)=-0.480  corr(avg lo, did)=-0.405  Q0: lo +6.70 did -0.84 (n 164)  Q1: lo +8.65 did -1.09 (n 164)  Q2: lo +9.86 did -1.15 (n 164)  Q3: lo +11.26 did -1.25 (n 164)
+
+=== DiD by dataset (heldout+prune)
+answer_sentence multi  arc_challenge  -2.44 [-2.57,-2.31] n_q=186  lo_orig +4.27
+answer_sentence multi  csqa           -2.42 [-2.55,-2.30] n_q=201  lo_orig +4.87
+answer_sentence multi  obqa           -2.10 [-2.24,-1.97] n_q=56  lo_orig +4.29
+answer_sentence single arc_challenge  -0.88 [-0.96,-0.81] n_q=173  lo_orig -0.01
+answer_sentence single csqa           -1.01 [-1.11,-0.92] n_q=186  lo_orig +0.13
+answer_sentence single obqa           -0.67 [-0.78,-0.55] n_q=56  lo_orig -1.12
+letter          multi  arc_challenge  -3.71 [-3.94,-3.49] n_q=186  lo_orig +3.15
+letter          multi  csqa           -4.29 [-4.53,-4.07] n_q=201  lo_orig +3.66
+letter          multi  obqa           -3.85 [-4.22,-3.43] n_q=56  lo_orig +3.35
+letter          single arc_challenge  -0.60 [-0.73,-0.47] n_q=173  lo_orig +0.34
+letter          single csqa           -0.70 [-0.87,-0.54] n_q=186  lo_orig +0.25
+letter          single obqa           +0.24 [-0.04,+0.52] n_q=56  lo_orig -0.83
+letter_last     multi  arc_challenge  -1.20 [-1.25,-1.14] n_q=186  lo_orig +8.82
+letter_last     multi  csqa           -1.32 [-1.37,-1.27] n_q=201  lo_orig +9.56
+letter_last     multi  obqa           -1.06 [-1.15,-0.97] n_q=56  lo_orig +8.75
+letter_last     single arc_challenge  -1.00 [-1.05,-0.96] n_q=173  lo_orig +8.74
+letter_last     single csqa           -1.24 [-1.28,-1.21] n_q=186  lo_orig +9.72
+letter_last     single obqa           -0.95 [-1.01,-0.89] n_q=56  lo_orig +8.45
+
+=== DiD by kind (suggestion vs doubt), heldout+prune
+answer_sentence multi  doubt      -1.73 [-1.83,-1.64] n_q=328  lo_orig +1.29 lo_pruned -0.44
+answer_sentence multi  suggestion -2.96 [-3.06,-2.86] n_q=328  lo_orig +7.78 lo_pruned +4.82
+answer_sentence single doubt      -0.75 [-0.81,-0.68] n_q=328  lo_orig -0.52 lo_pruned -1.27
+answer_sentence single suggestion -0.99 [-1.08,-0.90] n_q=328  lo_orig +0.24 lo_pruned -0.74
+letter          multi  doubt      -2.58 [-2.76,-2.39] n_q=328  lo_orig +1.09 lo_pruned -1.49
+letter          multi  suggestion -5.44 [-5.65,-5.23] n_q=328  lo_orig +5.72 lo_pruned +0.27
+letter          single doubt      -0.09 [-0.20,+0.02] n_q=328  lo_orig -0.50 lo_pruned -0.59
+letter          single suggestion -0.71 [-0.87,-0.54] n_q=328  lo_orig +0.71 lo_pruned +0.00
+letter_last     multi  doubt      -1.07 [-1.10,-1.03] n_q=328  lo_orig +9.22 lo_pruned +8.16
+letter_last     multi  suggestion -1.37 [-1.43,-1.32] n_q=328  lo_orig +9.04 lo_pruned +7.66
+letter_last     single doubt      -1.06 [-1.09,-1.04] n_q=328  lo_orig +9.84 lo_pruned +8.77
+letter_last     single suggestion -1.10 [-1.14,-1.06] n_q=328  lo_orig +8.39 lo_pruned +7.29
+
+=== DiD by cave-letter position and resist-letter position (letter form, single and multi, heldout+prune)
+-- single: by cave letter: {'A': '+0.13 (n130)', 'B': '-0.90 (n124)', 'C': '-0.31 (n125)', 'D': '-0.32 (n178)', 'E': '-0.71 (n99)'}
+   single: by resist letter: {'A': '-0.61 (n164)', 'B': '-0.25 (n150)', 'C': '-0.51 (n153)', 'D': '-0.29 (n149)', 'E': '-0.08 (n40)'}
+   single: cave before resist (pos) -0.25 (n263) vs cave after resist -0.50 (n393)
+-- multi: by cave letter: {'A': '-3.23 (n167)', 'B': '-4.89 (n118)', 'C': '-4.35 (n143)', 'D': '-4.26 (n141)', 'E': '-3.37 (n87)'}
+   multi: by resist letter: {'A': '-3.95 (n125)', 'B': '-4.29 (n162)', 'C': '-3.96 (n135)', 'D': '-3.76 (n174)', 'E': '-4.24 (n60)'}
+   multi: cave before resist (pos) -3.99 (n328) vs cave after resist -4.03 (n328)
+
+=== Multi-turn letter form: decompose. Restricted log-prob of the PREV (= resist) letter and of the cave letter
+original      mean restricted p(prev=resist) 0.131  mean restricted p(cave) 0.729  mean log-odds cave-resist +3.40  letter mass at slot 0.973
+pruned_seed0  mean restricted p(prev=resist) 0.528  mean restricted p(cave) 0.368  mean log-odds cave-resist -0.61  letter mass at slot 0.468
+random_seed0  mean restricted p(prev=resist) 0.131  mean restricted p(cave) 0.729  mean log-odds cave-resist +3.41  letter mass at slot 0.973
+multi-turn letter form, by kind:
+   doubt      original      p(prev) 0.221 p(cave) 0.502 lo +1.09
+   doubt      pruned_seed0  p(prev) 0.622 p(cave) 0.213 lo -1.49
+   suggestion original      p(prev) 0.042 p(cave) 0.955 lo +5.72
+   suggestion pruned_seed0  p(prev) 0.433 p(cave) 0.522 lo +0.27
+
+=== Single-turn letter form by kind: restricted p(cave), p(resist=gold)
+   heldout  doubt      original      p(cave) 0.232 p(gold) 0.560 lo -1.20
+   heldout  doubt      pruned_seed0  p(cave) 0.238 p(gold) 0.515 lo -0.93
+   heldout  suggestion original      p(cave) 0.429 p(gold) 0.439 lo +0.13
+   heldout  suggestion pruned_seed0  p(cave) 0.354 p(gold) 0.424 lo -0.22
+   prune    doubt      original      p(cave) 0.503 p(gold) 0.287 lo +0.60
+   prune    doubt      pruned_seed0  p(cave) 0.339 p(gold) 0.360 lo -0.06
+   prune    suggestion original      p(cave) 0.690 p(gold) 0.200 lo +1.61
+   prune    suggestion pruned_seed0  p(cave) 0.429 p(gold) 0.334 lo +0.34
+
+=== Correlation of DiD across forms for the same prompt (is the slot-level 'belief' change consistent?)
+form             answer_sentence  letter  letter_last
+form                                                 
+answer_sentence            1.000   0.796        0.441
+letter                     0.796   1.000        0.339
+letter_last                0.441   0.339        1.000
+
+=== Correlation of DiD with first-position letter-mass loss (format term) per prompt
+letter          single corr(format loss, DiD) = -0.216
+letter          multi  corr(format loss, DiD) = +0.118
+answer_sentence single corr(format loss, DiD) = -0.162
+answer_sentence multi  corr(format loss, DiD) = +0.269
+letter_last     single corr(format loss, DiD) = -0.133
+letter_last     multi  corr(format loss, DiD) = +0.147

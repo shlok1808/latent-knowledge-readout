@@ -1,0 +1,106 @@
+=== Mean letter-restricted PROB by option position (A..E), 5-option items only, slot of the letter form
+heldout  doubt      multi  n= 78 | original: 0.160 0.239 0.211 0.183 0.207 | pruned_s: 0.195 0.251 0.215 0.206 0.133 | random_s: 0.160 0.240 0.211 0.182 0.207 | 
+heldout  doubt      single n= 78 | original: 0.124 0.223 0.172 0.250 0.230 | pruned_s: 0.218 0.170 0.167 0.250 0.195 | random_s: 0.125 0.223 0.172 0.250 0.230 | 
+heldout  suggestion multi  n= 78 | original: 0.127 0.157 0.217 0.269 0.231 | pruned_s: 0.108 0.233 0.203 0.256 0.200 | random_s: 0.127 0.157 0.217 0.269 0.231 | 
+heldout  suggestion single n= 78 | original: 0.099 0.231 0.152 0.275 0.243 | pruned_s: 0.144 0.176 0.197 0.284 0.198 | random_s: 0.099 0.231 0.152 0.275 0.243 | 
+neutral  neutral    single n=108 | original: 0.134 0.220 0.213 0.219 0.214 | pruned_s: 0.125 0.210 0.225 0.236 0.204 | random_s: 0.134 0.220 0.213 0.219 0.214 | 
+prune    doubt      multi  n= 64 | original: 0.212 0.290 0.172 0.177 0.148 | pruned_s: 0.225 0.224 0.190 0.214 0.148 | random_s: 0.213 0.290 0.172 0.177 0.148 | 
+prune    doubt      single n= 64 | original: 0.160 0.225 0.142 0.260 0.213 | pruned_s: 0.240 0.175 0.165 0.242 0.179 | random_s: 0.160 0.225 0.142 0.260 0.213 | 
+prune    suggestion multi  n= 64 | original: 0.155 0.250 0.237 0.161 0.197 | pruned_s: 0.138 0.201 0.299 0.153 0.209 | random_s: 0.155 0.250 0.237 0.161 0.197 | 
+prune    suggestion single n= 64 | original: 0.146 0.208 0.151 0.227 0.268 | pruned_s: 0.167 0.183 0.162 0.296 0.192 | random_s: 0.146 0.208 0.151 0.227 0.268 | 
+
+=== Same, 4-option items
+heldout  doubt      multi  n=121 | original: 0.265 0.316 0.194 0.225 | pruned_s: 0.319 0.233 0.193 0.254 | random_s: 0.265 0.316 0.194 0.224 | 
+heldout  doubt      single n=121 | original: 0.237 0.240 0.160 0.363 | pruned_s: 0.317 0.178 0.160 0.346 | random_s: 0.238 0.240 0.160 0.363 | 
+heldout  suggestion multi  n=121 | original: 0.218 0.215 0.334 0.233 | pruned_s: 0.248 0.229 0.283 0.241 | random_s: 0.218 0.215 0.334 0.233 | 
+heldout  suggestion single n=121 | original: 0.247 0.193 0.242 0.318 | pruned_s: 0.258 0.170 0.247 0.326 | random_s: 0.247 0.193 0.242 0.318 | 
+neutral  neutral    single n=192 | original: 0.222 0.262 0.210 0.306 | pruned_s: 0.213 0.245 0.214 0.329 | random_s: 0.222 0.262 0.210 0.306 | 
+prune    doubt      multi  n= 64 | original: 0.325 0.297 0.202 0.175 | pruned_s: 0.171 0.313 0.246 0.270 | random_s: 0.326 0.297 0.202 0.175 | 
+prune    doubt      single n= 62 | original: 0.210 0.300 0.233 0.257 | pruned_s: 0.283 0.213 0.233 0.271 | random_s: 0.210 0.300 0.233 0.257 | 
+prune    suggestion multi  n= 62 | original: 0.329 0.218 0.271 0.181 | pruned_s: 0.230 0.328 0.250 0.192 | random_s: 0.329 0.219 0.271 0.181 | 
+prune    suggestion single n= 64 | original: 0.240 0.213 0.267 0.280 | pruned_s: 0.209 0.167 0.275 0.349 | random_s: 0.241 0.213 0.267 0.280 | 
+
+=== Change in restricted log-prob of GOLD, CUE letter, PREV (multi) letter, and mean OTHER letter at the slot
+    (pruned - original; per-question cluster bootstrap)
+heldout  doubt      multi  answer_sentence gold +1.26 [+1.14,+1.37] n_q=200  cue +1.26 [+1.14,+1.37] n_q=200  other -0.12 [-0.20,-0.03] n_q=200  prev +1.26 [+1.14,+1.37] n_q=200  dH +0.04 [-0.00,+0.08] n_q=200
+heldout  doubt      multi  letter          gold +1.82 [+1.63,+2.03] n_q=200  cue +1.82 [+1.63,+2.03] n_q=200  other +0.03 [-0.10,+0.17] n_q=200  prev +1.82 [+1.63,+2.03] n_q=200  dH +0.12 [+0.06,+0.19] n_q=200
+heldout  doubt      multi  letter_last     gold +1.00 [+0.95,+1.04] n_q=200  cue +1.00 [+0.95,+1.04] n_q=200  other +0.42 [+0.40,+0.45] n_q=200  prev +1.00 [+0.95,+1.04] n_q=200  dH +0.01 [+0.00,+0.01] n_q=200
+heldout  doubt      single answer_sentence gold +0.44 [+0.38,+0.51] n_q=200  cue +0.44 [+0.38,+0.51] n_q=200  other -0.08 [-0.13,-0.03] n_q=200  prev n/a  dH -0.02 [-0.04,+0.01] n_q=200
+heldout  doubt      single letter          gold -0.00 [-0.06,+0.06] n_q=200  cue -0.00 [-0.06,+0.06] n_q=200  other +0.45 [+0.37,+0.53] n_q=200  prev n/a  dH +0.17 [+0.14,+0.21] n_q=200
+heldout  doubt      single letter_last     gold +1.05 [+1.02,+1.09] n_q=200  cue +1.05 [+1.02,+1.09] n_q=200  other +0.68 [+0.65,+0.70] n_q=200  prev n/a  dH +0.01 [+0.00,+0.01] n_q=200
+heldout  suggestion multi  answer_sentence gold +2.98 [+2.87,+3.09] n_q=200  cue -0.05 [-0.07,-0.03] n_q=200  other +2.11 [+2.01,+2.21] n_q=200  prev +2.98 [+2.87,+3.09] n_q=200  dH +0.12 [+0.09,+0.15] n_q=200
+heldout  suggestion multi  letter          gold +5.36 [+5.13,+5.60] n_q=200  cue -0.63 [-0.71,-0.56] n_q=200  other +5.03 [+4.85,+5.20] n_q=200  prev +5.36 [+5.13,+5.60] n_q=200  dH +0.62 [+0.58,+0.65] n_q=200
+heldout  suggestion multi  letter_last     gold +1.35 [+1.28,+1.43] n_q=200  cue -0.00 [-0.00,-0.00] n_q=200  other +0.77 [+0.72,+0.82] n_q=200  prev +1.35 [+1.28,+1.43] n_q=200  dH +0.01 [+0.01,+0.01] n_q=200
+heldout  suggestion single answer_sentence gold +0.60 [+0.50,+0.71] n_q=200  cue -0.35 [-0.41,-0.29] n_q=200  other +0.50 [+0.41,+0.59] n_q=200  prev n/a  dH +0.08 [+0.05,+0.10] n_q=200
+heldout  suggestion single letter          gold +0.46 [+0.32,+0.63] n_q=200  cue +0.12 [+0.01,+0.23] n_q=200  other +1.34 [+1.17,+1.50] n_q=200  prev n/a  dH +0.32 [+0.29,+0.36] n_q=200
+heldout  suggestion single letter_last     gold +1.05 [+1.00,+1.11] n_q=200  cue -0.00 [-0.01,-0.00] n_q=200  other +1.10 [+1.05,+1.14] n_q=200  prev n/a  dH +0.02 [+0.02,+0.02] n_q=200
+neutral  neutral    single answer_sentence gold +0.03 [+0.02,+0.05] n_q=300  cue n/a  other +0.49 [+0.46,+0.52] n_q=300  prev n/a  dH +0.04 [+0.03,+0.04] n_q=300
+neutral  neutral    single letter          gold +0.03 [-0.01,+0.08] n_q=300  cue n/a  other +1.33 [+1.23,+1.42] n_q=300  prev n/a  dH +0.16 [+0.15,+0.18] n_q=300
+neutral  neutral    single letter_last     gold -0.00 [-0.00,-0.00] n_q=300  cue n/a  other +0.98 [+0.95,+1.00] n_q=300  prev n/a  dH +0.00 [+0.00,+0.00] n_q=300
+prune    doubt      multi  answer_sentence gold +1.49 [+1.34,+1.64] n_q=128  cue +1.49 [+1.34,+1.64] n_q=128  other -0.09 [-0.20,+0.03] n_q=128  prev +1.49 [+1.34,+1.64] n_q=128  dH +0.08 [+0.02,+0.14] n_q=128
+prune    doubt      multi  letter          gold +1.84 [+1.68,+2.01] n_q=128  cue +1.84 [+1.68,+2.01] n_q=128  other -0.16 [-0.30,-0.01] n_q=128  prev +1.84 [+1.68,+2.01] n_q=128  dH +0.06 [-0.01,+0.13] n_q=128
+prune    doubt      multi  letter_last     gold +1.17 [+1.12,+1.22] n_q=128  cue +1.17 [+1.12,+1.22] n_q=128  other +0.52 [+0.49,+0.56] n_q=128  prev +1.17 [+1.12,+1.22] n_q=128  dH +0.00 [+0.00,+0.01] n_q=128
+prune    doubt      single answer_sentence gold +0.69 [+0.60,+0.78] n_q=128  cue +0.69 [+0.60,+0.78] n_q=128  other +0.02 [-0.03,+0.08] n_q=128  prev n/a  dH +0.07 [+0.04,+0.11] n_q=128
+prune    doubt      single letter          gold +0.23 [+0.15,+0.31] n_q=128  cue +0.23 [+0.15,+0.31] n_q=128  other +0.34 [+0.25,+0.44] n_q=128  prev n/a  dH +0.13 [+0.09,+0.16] n_q=128
+prune    doubt      single letter_last     gold +1.08 [+1.04,+1.13] n_q=128  cue +1.08 [+1.04,+1.13] n_q=128  other +0.72 [+0.69,+0.75] n_q=128  prev n/a  dH +0.00 [+0.00,+0.00] n_q=128
+prune    suggestion multi  answer_sentence gold +2.41 [+2.20,+2.64] n_q=128  cue -0.43 [-0.54,-0.34] n_q=128  other +1.42 [+1.25,+1.60] n_q=128  prev +2.41 [+2.20,+2.64] n_q=128  dH +0.15 [+0.11,+0.20] n_q=128
+prune    suggestion multi  letter          gold +3.54 [+3.15,+3.94] n_q=128  cue -1.04 [-1.20,-0.89] n_q=128  other +3.95 [+3.62,+4.29] n_q=128  prev +3.54 [+3.15,+3.94] n_q=128  dH +0.46 [+0.40,+0.52] n_q=128
+prune    suggestion multi  letter_last     gold +1.40 [+1.31,+1.49] n_q=128  cue -0.00 [-0.00,-0.00] n_q=128  other +0.75 [+0.70,+0.81] n_q=128  prev +1.40 [+1.31,+1.49] n_q=128  dH +0.01 [+0.01,+0.01] n_q=128
+prune    suggestion single answer_sentence gold +0.73 [+0.61,+0.86] n_q=128  cue -0.30 [-0.36,-0.25] n_q=128  other +0.67 [+0.56,+0.77] n_q=128  prev n/a  dH +0.15 [+0.11,+0.18] n_q=128
+prune    suggestion single letter          gold +0.75 [+0.59,+0.93] n_q=128  cue -0.52 [-0.57,-0.47] n_q=128  other +1.47 [+1.30,+1.67] n_q=128  prev n/a  dH +0.34 [+0.30,+0.39] n_q=128
+prune    suggestion single letter_last     gold +1.17 [+1.10,+1.24] n_q=128  cue -0.00 [-0.00,-0.00] n_q=128  other +1.14 [+1.09,+1.19] n_q=128  prev n/a  dH +0.01 [+0.01,+0.01] n_q=128
+
+=== Restricted ENTROPY at the slot (nats): original vs pruned vs random, by set/kind/turn/form
+heldout  doubt      multi  answer_sentence H orig 0.528  pruned 0.565  random 0.527
+heldout  doubt      multi  letter          H orig 0.715  pruned 0.837  random 0.715
+heldout  doubt      multi  letter_last     H orig 0.008  pruned 0.014  random 0.008
+heldout  doubt      single answer_sentence H orig 0.666  pruned 0.648  random 0.665
+heldout  doubt      single letter          H orig 0.881  pruned 1.054  random 0.883
+heldout  doubt      single letter_last     H orig 0.006  pruned 0.012  random 0.006
+heldout  suggestion multi  answer_sentence H orig 0.019  pruned 0.137  random 0.019
+heldout  suggestion multi  letter          H orig 0.055  pruned 0.675  random 0.055
+heldout  suggestion multi  letter_last     H orig 0.010  pruned 0.019  random 0.010
+heldout  suggestion single answer_sentence H orig 0.474  pruned 0.549  random 0.473
+heldout  suggestion single letter          H orig 0.700  pruned 1.025  random 0.701
+heldout  suggestion single letter_last     H orig 0.020  pruned 0.038  random 0.020
+neutral  neutral    single answer_sentence H orig 0.305  pruned 0.344  random 0.305
+neutral  neutral    single letter          H orig 0.412  pruned 0.574  random 0.413
+neutral  neutral    single letter_last     H orig 0.003  pruned 0.007  random 0.003
+prune    doubt      multi  answer_sentence H orig 0.585  pruned 0.665  random 0.582
+prune    doubt      multi  letter          H orig 0.756  pruned 0.815  random 0.755
+prune    doubt      multi  letter_last     H orig 0.004  pruned 0.008  random 0.004
+prune    doubt      single answer_sentence H orig 0.748  pruned 0.823  random 0.747
+prune    doubt      single letter          H orig 1.086  pruned 1.213  random 1.086
+prune    doubt      single letter_last     H orig 0.003  pruned 0.006  random 0.003
+prune    suggestion multi  answer_sentence H orig 0.255  pruned 0.407  random 0.254
+prune    suggestion multi  letter          H orig 0.237  pruned 0.700  random 0.237
+prune    suggestion multi  letter_last     H orig 0.006  pruned 0.014  random 0.006
+prune    suggestion single answer_sentence H orig 0.543  pruned 0.693  random 0.543
+prune    suggestion single letter          H orig 0.770  pruned 1.114  random 0.769
+prune    suggestion single letter_last     H orig 0.007  pruned 0.016  random 0.007
+
+=== Argmax letter at the slot: fraction where pruned argmax == original argmax; and what the pruned argmax is
+heldout  doubt      multi  answer_sentence same 0.825 | argmax=gold 0.275->0.430 | =cue 0.275->0.430 | =prev 0.275->0.430
+heldout  doubt      multi  letter          same 0.495 | argmax=gold 0.280->0.730 | =cue 0.280->0.730 | =prev 0.280->0.730
+heldout  doubt      multi  letter_last     same 1.000 | argmax=gold 0.000->0.000 | =cue 0.000->0.000 | =prev 0.000->0.000
+heldout  doubt      single answer_sentence same 0.870 | argmax=gold 0.560->0.680 | =cue 0.560->0.680 | =prev nan->nan
+heldout  doubt      single letter          same 0.790 | argmax=gold 0.695->0.750 | =cue 0.695->0.750 | =prev nan->nan
+heldout  doubt      single letter_last     same 1.000 | argmax=gold 0.000->0.000 | =cue 0.000->0.000 | =prev nan->nan
+heldout  suggestion multi  answer_sentence same 0.990 | argmax=gold 0.000->0.010 | =cue 1.000->0.990 | =prev 0.000->0.010
+heldout  suggestion multi  letter          same 0.665 | argmax=gold 0.000->0.330 | =cue 1.000->0.665 | =prev 0.000->0.330
+heldout  suggestion multi  letter_last     same 1.000 | argmax=gold 0.000->0.000 | =cue 1.000->1.000 | =prev 0.000->0.000
+heldout  suggestion single answer_sentence same 0.885 | argmax=gold 0.525->0.640 | =cue 0.455->0.340 | =prev nan->nan
+heldout  suggestion single letter          same 0.825 | argmax=gold 0.500->0.550 | =cue 0.460->0.380 | =prev nan->nan
+heldout  suggestion single letter_last     same 1.000 | argmax=gold 0.000->0.000 | =cue 1.000->1.000 | =prev nan->nan
+prune    doubt      multi  answer_sentence same 0.633 | argmax=gold 0.133->0.492 | =cue 0.133->0.492 | =prev 0.133->0.492
+prune    doubt      multi  letter          same 0.125 | argmax=gold 0.000->0.875 | =cue 0.000->0.875 | =prev 0.000->0.875
+prune    doubt      multi  letter_last     same 1.000 | argmax=gold 0.000->0.000 | =cue 0.000->0.000 | =prev 0.000->0.000
+prune    doubt      single answer_sentence same 0.781 | argmax=gold 0.297->0.484 | =cue 0.297->0.484 | =prev nan->nan
+prune    doubt      single letter          same 0.438 | argmax=gold 0.078->0.438 | =cue 0.078->0.438 | =prev nan->nan
+prune    doubt      single letter_last     same 1.000 | argmax=gold 0.000->0.000 | =cue 0.000->0.000 | =prev nan->nan
+prune    suggestion multi  answer_sentence same 0.734 | argmax=gold 0.062->0.328 | =cue 0.938->0.672 | =prev 0.062->0.328
+prune    suggestion multi  letter          same 0.414 | argmax=gold 0.000->0.578 | =cue 1.000->0.414 | =prev 0.000->0.578
+prune    suggestion multi  letter_last     same 1.000 | argmax=gold 0.000->0.000 | =cue 1.000->1.000 | =prev 0.000->0.000
+prune    suggestion single answer_sentence same 0.836 | argmax=gold 0.344->0.508 | =cue 0.656->0.492 | =prev nan->nan
+prune    suggestion single letter          same 0.570 | argmax=gold 0.008->0.359 | =cue 0.992->0.562 | =prev nan->nan
+prune    suggestion single letter_last     same 1.000 | argmax=gold 0.000->0.000 | =cue 1.000->1.000 | =prev nan->nan

@@ -1,0 +1,28 @@
+
+=== letter_last: option text BEFORE the letter (tokens 4..answer_idx)
+heldout  doubt      multi  cave text d -1.38  resist text d +0.19  DiD_text -1.58 [-1.69,-1.45] n_q=200  per-token DiD -0.113  random DiD -0.009  ntok cave/resist 14.5/14.8
+heldout  doubt      single cave text d -1.19  resist text d -0.57  DiD_text -0.62 [-0.74,-0.51] n_q=200  per-token DiD -0.044  random DiD +0.005  ntok cave/resist 14.5/14.8
+heldout  suggestion multi  cave text d -0.73  resist text d -0.03  DiD_text -0.70 [-0.81,-0.59] n_q=200  per-token DiD -0.049  random DiD +0.001  ntok cave/resist 14.4/14.8
+heldout  suggestion single cave text d -1.24  resist text d -0.90  DiD_text -0.33 [-0.42,-0.25] n_q=200  per-token DiD -0.024  random DiD -0.002  ntok cave/resist 14.4/14.8
+prune    doubt      multi  cave text d -1.47  resist text d +0.20  DiD_text -1.67 [-1.81,-1.54] n_q=128  per-token DiD -0.122  random DiD -0.009  ntok cave/resist 14.4/14.4
+prune    doubt      single cave text d -1.19  resist text d -0.55  DiD_text -0.63 [-0.76,-0.51] n_q=128  per-token DiD -0.044  random DiD +0.004  ntok cave/resist 14.8/14.6
+prune    suggestion multi  cave text d -0.65  resist text d +0.31  DiD_text -0.96 [-1.11,-0.81] n_q=128  per-token DiD -0.069  random DiD -0.002  ntok cave/resist 14.7/14.8
+prune    suggestion single cave text d -1.08  resist text d -0.66  DiD_text -0.42 [-0.50,-0.34] n_q=128  per-token DiD -0.030  random DiD -0.000  ntok cave/resist 14.8/15.0
+neutral (correct option text only): d -0.72 [-0.77,-0.67] n_q=300  per token -0.052
+
+--- Correlation between the option-text DiD and the letter-slot DiD for the same prompt (letter form, single+multi)
+   text DiD vs letter          slot DiD, single: r = +0.120  (n 656)
+   text DiD vs letter          slot DiD, multi : r = -0.259  (n 656)
+   text DiD vs answer_sentence slot DiD, single: r = +0.217  (n 656)
+   text DiD vs answer_sentence slot DiD, multi : r = -0.131  (n 656)
+
+=== answer_sentence: option text AFTER the letter (tokens answer_idx+2..end-1)
+heldout  doubt      multi  cave text d +0.13  resist text d +0.54  DiD_text -0.41 [-0.47,-0.36] n_q=200  per-token DiD -0.112  random DiD -0.004  ntok cave/resist 4.5/4.7
+heldout  doubt      single cave text d -0.13  resist text d +0.03  DiD_text -0.16 [-0.20,-0.12] n_q=200  per-token DiD -0.051  random DiD +0.001  ntok cave/resist 4.5/4.7
+heldout  suggestion multi  cave text d +0.82  resist text d +1.16  DiD_text -0.34 [-0.43,-0.24] n_q=200  per-token DiD -0.085  random DiD +0.000  ntok cave/resist 4.4/4.7
+heldout  suggestion single cave text d +0.08  resist text d -0.24  DiD_text +0.32 [+0.27,+0.37] n_q=200  per-token DiD +0.079  random DiD +0.000  ntok cave/resist 4.4/4.7
+prune    doubt      multi  cave text d +0.05  resist text d +0.61  DiD_text -0.56 [-0.62,-0.49] n_q=128  per-token DiD -0.173  random DiD -0.001  ntok cave/resist 4.3/4.4
+prune    doubt      single cave text d -0.21  resist text d +0.08  DiD_text -0.29 [-0.33,-0.24] n_q=128  per-token DiD -0.080  random DiD +0.001  ntok cave/resist 4.8/4.6
+prune    suggestion multi  cave text d +0.71  resist text d +0.86  DiD_text -0.15 [-0.28,-0.02] n_q=128  per-token DiD -0.041  random DiD +0.003  ntok cave/resist 4.7/4.8
+prune    suggestion single cave text d -0.06  resist text d -0.24  DiD_text +0.18 [+0.11,+0.25] n_q=128  per-token DiD +0.038  random DiD +0.001  ntok cave/resist 4.7/5.0
+neutral (correct option text only): d -0.43 [-0.47,-0.39] n_q=300  per token -0.110
