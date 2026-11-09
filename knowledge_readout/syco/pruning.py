@@ -88,8 +88,14 @@ def _model_device(model):
 
 # -------------------------------------------------------------------------------------------------- loss
 
+LOSSES = ("ce", "margin")
+
+
 def is_margin(ex):
-    return ex.get("loss", "ce") == "margin"
+    loss = ex.get("loss", "ce")
+    if loss not in LOSSES:
+        raise ValueError(f"unknown loss {loss!r}; expected one of {LOSSES}")
+    return loss == "margin"
 
 
 def _check_example(ex):
@@ -213,6 +219,8 @@ def batch_margin_loss(model, examples, pad_id=0):
         prompts.append(ex["prompt_ids"]); owner.append((k, 1.0))
         if ex.get("base_prompt_ids"):
             prompts.append(ex["base_prompt_ids"]); owner.append((k, -1.0))
+    for ex in examples:
+        _check_example(ex)
     lp = next_token_logprobs(model, prompts, pad_id=pad_id)
     device = lp.device
     m = torch.zeros(len(examples), dtype=lp.dtype, device=device)
@@ -271,16 +279,23 @@ def protected_mask(s_pres, protect_frac=PROTECT_FRAC):
 
 
 def shortlist(s_prune, s_pres, protect_frac=PROTECT_FRAC, keep_top=4000):
-    """Protect, percentile-rank the remaining candidates within the matrix, keep the top `keep_top`."""
-    if s_prune.shape != s_pres.shape:
-        raise ValueError("s_prune and s_pres must have the same shape")
+    """Protect, percentile-rank the remaining candidates within the matrix, keep the top `keep_top`.
+    s_pres may be a list of tensors (E2: one per preservation subset, e.g. CE and margin examples): then each subset
+    protects its own top `protect_frac` and the union is protected, so neither subset can drown the other."""
+    pres_list = list(s_pres) if isinstance(s_pres, (list, tuple)) else [s_pres]
+    for t in pres_list:
+        if s_prune.shape != t.shape:
+            raise ValueError("s_prune and s_pres must have the same shape")
     if keep_top < 1:
         raise ValueError("keep_top must be >= 1")
     _check_finite("s_prune", s_prune)
-    _check_finite("s_pres", s_pres)
+    for t in pres_list:
+        _check_finite("s_pres", t)
     shape = tuple(s_prune.shape)
     sp = s_prune.reshape(-1).float()
-    prot = protected_mask(s_pres, protect_frac)
+    prot = protected_mask(pres_list[0], protect_frac)
+    for t in pres_list[1:]:
+        prot = prot | protected_mask(t, protect_frac)
     cand = torch.nonzero(~prot, as_tuple=True)[0]            # ascending flat index
     n_cand = cand.numel()
     if n_cand == 0:
@@ -300,7 +315,7 @@ def _acc_dtype(p):
 
 
 def _group_scores(model, named, prune_examples, pres_examples, first_token_variant=False, progress=None,
-                  prune_batch_size=16, pad_id=0):
+                  prune_batch_size=16, pad_id=0, pres_stats=None, pres_split=False):
     """Full fp32 score tensors for the given (name, param) list: S_prune (mean Delta), S_pres (mean |Delta|) and,
     if requested, S_prune_first. Only the params in `named` may require grad (caller's job).
 
@@ -321,7 +336,9 @@ def _group_scores(model, named, prune_examples, pres_examples, first_token_varia
     by_len = sorted(range(len(prune_examples)), key=lambda i: -seq_len(prune_examples[i]))
     acc_dtype = {n: _acc_dtype(p) for n, p in named}
     acc_prune = {n: torch.zeros_like(p, dtype=acc_dtype[n]) for n, p in named}
-    acc_pres = {n: torch.zeros_like(p, dtype=acc_dtype[n]) for n, p in named}
+    pres_types = sorted({"margin" if is_margin(ex) else "ce" for ex in pres_examples}) if pres_split else ["all"]
+    acc_pres = {t: {n: torch.zeros_like(p, dtype=acc_dtype[n]) for n, p in named} for t in pres_types}
+    n_by_type = {t: 0 for t in pres_types}
     acc_first = {n: torch.zeros_like(p, dtype=acc_dtype[n]) for n, p in named} if first_token_variant else None
 
     bs = max(1, int(prune_batch_size))
@@ -334,7 +351,9 @@ def _group_scores(model, named, prune_examples, pres_examples, first_token_varia
         _check_loss(mean_ce, "pruning set", [f"prune[{i}]" for i in idx])
         if first_token_variant:
             _check_loss(first_ce, "pruning set (first token)", [f"prune[{i}]" for i in idx])
-        grads = torch.autograd.grad(mean_ce.sum(), params, retain_graph=first_token_variant)
+        w = torch.tensor([float(prune_examples[i].get("weight", 1.0)) for i in idx], dtype=mean_ce.dtype,
+                         device=mean_ce.device)   # E2-E: useful-updating examples enter with a negative weight
+        grads = torch.autograd.grad((w * mean_ce).sum(), params, retain_graph=first_token_variant)
         for (n, p), g in zip(named, grads):
             acc_prune[n].sub_(p.detach().to(acc_dtype[n]) * g.to(acc_dtype[n]))          # += -w * sum_i dl_i/dw
         del grads
@@ -350,23 +369,37 @@ def _group_scores(model, named, prune_examples, pres_examples, first_token_varia
         loss = batch_margin_loss(model, [ex], pad_id=pad_id)[0] if is_margin(ex) else token_ce(model, ex).mean()
         _check_loss(loss.reshape(1), "preservation set", [f"pres[{i}]"])
         grads = torch.autograd.grad(loss, params)
+        t_key = ("margin" if is_margin(ex) else "ce") if pres_split else "all"
+        n_by_type[t_key] += 1
+        mag = 0.0
         for (n, p), g in zip(named, grads):
-            acc_pres[n].add_((p.detach().to(acc_dtype[n]) * g.to(acc_dtype[n])).abs())   # += |-w * dl/dw|
+            d = (p.detach().to(acc_dtype[n]) * g.to(acc_dtype[n])).abs()
+            acc_pres[t_key][n].add_(d)                                                    # += |-w * dl/dw|
+            if pres_stats is not None:
+                mag += float(d.sum())
+        if pres_stats is not None:  # how much each example type weighs in S_pres (reviewer: CE vs margin scales)
+            t = "margin" if is_margin(ex) else "ce"
+            pres_stats.setdefault(t, [0.0, 0])
+            pres_stats[t][0] += mag
+            pres_stats[t][1] += 1
         del loss, grads
         if progress:
             progress("pres", i + 1, len(pres_examples))
 
-    n_pr, n_ps = len(prune_examples), len(pres_examples)
+    n_pr = len(prune_examples)
     for n in acc_prune:
         acc_prune[n].div_(n_pr)
-        acc_pres[n].div_(n_ps)
+        for t in pres_types:
+            acc_pres[t][n].div_(max(n_by_type[t], 1))
         if first_token_variant:
             acc_first[n].div_(n_pr)
-    return acc_prune, acc_pres, acc_first
+    if not pres_split:
+        return acc_prune, acc_pres["all"], acc_first
+    return acc_prune, {n: [acc_pres[t][n] for t in pres_types] for n in acc_prune}, acc_first
 
 
 def score(model, prune_examples, pres_examples, layers=None, group_size=8, first_token_variant=False,
-          keep_top=4000, protect_frac=PROTECT_FRAC, progress=None, prune_batch_size=16, pad_id=0):
+          keep_top=4000, protect_frac=PROTECT_FRAC, progress=None, prune_batch_size=16, pad_id=0, pres_split=False):
     """B-TAP scores for the eligible matrices of `layers` (default: all), one group of `group_size` layers at a time.
 
     Returns a ScoreResult with per-matrix shortlists. Full score tensors live only for one group. requires_grad
@@ -387,6 +420,7 @@ def score(model, prune_examples, pres_examples, layers=None, group_size=8, first
     if any(not 0 <= l < n_layers for l in layers):
         raise ValueError(f"layers must be in [0, {n_layers})")
 
+    pres_stats = {}
     named_params = list(model.named_parameters())
     saved_flags = [(p, p.requires_grad) for _, p in named_params]
     was_training = model.training
@@ -410,7 +444,8 @@ def score(model, prune_examples, pres_examples, layers=None, group_size=8, first
             for _, p in named:
                 p.requires_grad_(True)
             s_pr, s_ps, s_first = _group_scores(model, named, prune_examples, pres_examples,
-                                                first_token_variant, progress, prune_batch_size, pad_id)
+                                                first_token_variant, progress, prune_batch_size, pad_id,
+                                                pres_stats=pres_stats, pres_split=pres_split)
             for n, p in named:
                 order.append(n)
                 shapes[n] = tuple(p.shape)
@@ -428,15 +463,20 @@ def score(model, prune_examples, pres_examples, layers=None, group_size=8, first
             p.requires_grad_(flag)
         model.train(was_training)
     settings = {"protect_frac": protect_frac, "keep_top": keep_top, "group_size": group_size, "layers": layers,
-                "first_token_variant": first_token_variant,
+                "first_token_variant": first_token_variant, "pres_split": pres_split,
+                "prune_weights": sorted({float(ex.get("weight", 1.0)) for ex in prune_examples}),
                 "accumulator_dtype": str(_acc_dtype(next(model.parameters()))),
                 "prune_batch_size": prune_batch_size, "model_dtype": str(next(model.parameters()).dtype),
-                "gradient_checkpointing": bool(getattr(model, "is_gradient_checkpointing", False))}
+                "gradient_checkpointing": bool(getattr(model, "is_gradient_checkpointing", False)),
+                "pres_magnitude_by_type": {t: {"total_abs_delta": v[0], "example_passes": v[1],
+                                               "mean_per_example_pass": v[0] / max(v[1], 1)}
+                                           for t, v in pres_stats.items()}}
     return ScoreResult(matrices=order, shapes=shapes, main=main, first=first, n_prune=len(prune_examples),
                        n_pres=len(pres_examples), settings=settings)
 
 
 _MERGE_MUST_MATCH = ("protect_frac", "keep_top", "first_token_variant", "accumulator_dtype", "model_dtype")
+# (pres_split and prune_weights are recorded in settings too; runs on one GPU never merge across them)
 
 
 def _matrix_sort_key(name):

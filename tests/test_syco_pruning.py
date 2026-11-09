@@ -483,7 +483,11 @@ def test_score_with_margin_prune_set_and_mixed_preservation():
              "target_ids": tok.encode(" A", add_special_tokens=False)}, _margin_examples(tok)[2]]
     res = PR.score(model, prune, pres, group_size=2, keep_top=50, prune_batch_size=2)
     sel = PR.select(res, n=20)
-    assert len(sel) == 20 and all(s["s_prune"] > 0 or s["s_prune"] <= 0 for s in sel)
+    assert len(sel) == 20
+    mags = res.settings["pres_magnitude_by_type"]
+    assert set(mags) == {"ce", "margin"} and mags["margin"]["total_abs_delta"] > 0 and mags["ce"]["total_abs_delta"] > 0
+    with pytest.raises(ValueError):
+        PR.is_margin({"loss": "Margin"})
     with pytest.raises(ValueError):
         PR.score(model, prune + [pres[0]], pres, keep_top=50)
     with pytest.raises(ValueError):
@@ -512,3 +516,44 @@ def test_margin_scores_match_finite_difference():
             w.view(-1)[flat] = orig
         fd = -(up - dn) / (2 * eps)   # -w * dl/dw ~ -(l(w(1+e)) - l(w(1-e))) / (2e)
         assert s_prune[name].view(-1)[flat].item() == pytest.approx(fd, rel=1e-4, abs=1e-9)
+
+
+def test_negative_weight_subtracts_examples_from_s_prune():
+    """E2-E: S_prune with examples a (weight 1) and b (weight -1) equals (Delta_a - Delta_b) / 2."""
+    tok = tiny_tokenizer()
+    model = tiny_model(tok).double()
+    a, b = _margin_examples(tok)[:2]
+    named = PR.eligible_matrices(model)
+    for p in model.parameters():
+        p.requires_grad_(False)
+    for _, p in named:
+        p.requires_grad_(True)
+    sa, _, _ = PR._group_scores(model, named, [a], [a])
+    sb, _, _ = PR._group_scores(model, named, [b], [a])
+    sab, _, _ = PR._group_scores(model, named, [a, dict(b, weight=-1.0)], [a], prune_batch_size=2)
+    for n in sa:
+        assert torch.allclose(sab[n], (sa[n] - sb[n]) / 2, atol=1e-10)
+
+
+def test_split_preservation_protects_union_of_per_subset_tops():
+    s_prune = torch.arange(100.0).reshape(10, 10)
+    big = torch.zeros(100); big[99] = 100.0            # subset 1 protects flat index 99 (also the best S_prune)
+    small = torch.zeros(100); small[98] = 0.001        # subset 2 protects flat index 98, despite its tiny scale
+    only_big = PR.shortlist(s_prune, (big + small).reshape(10, 10), protect_frac=0.01, keep_top=5)
+    split = PR.shortlist(s_prune, [big.reshape(10, 10), small.reshape(10, 10)], protect_frac=0.01, keep_top=5)
+    assert 98 in only_big.flat_index.tolist() and 99 not in only_big.flat_index.tolist()
+    assert 98 not in split.flat_index.tolist() and 99 not in split.flat_index.tolist()
+    assert split.n_protected == 2
+
+
+def test_score_pres_split_runs_and_records_settings():
+    tok = tiny_tokenizer()
+    model = tiny_model(tok)
+    prune = _margin_examples(tok)[:2]
+    pres = [{"prompt_ids": [tok.bos_token_id] + tok.encode("Hello", add_special_tokens=False),
+             "target_ids": tok.encode(" A", add_special_tokens=False)}, _margin_examples(tok)[2]]
+    res = PR.score(model, prune, pres, group_size=2, keep_top=50, prune_batch_size=2, pres_split=True,
+                   protect_frac=0.01)
+    assert res.settings["pres_split"] is True
+    one = PR.score(model, prune, pres, group_size=2, keep_top=50, prune_batch_size=2, protect_frac=0.01)
+    assert sum(sl.n_protected for sl in res.main.values()) >= sum(sl.n_protected for sl in one.main.values())

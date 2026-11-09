@@ -1,31 +1,36 @@
 #!/usr/bin/env bash
-# E2 (new) on ONE GPU (PRUNING_PLAN.md "E2 (new)"). Run from the repo root after build_e2_sets.py caving (laptop).
-#   bash scripts/run_e2.sh
-# Arms: e2b (margin loss, paper preservation), e2c (margin loss + useful-updating protection),
-#       e2d (paper loss, protection p = 5e-4). Random magnitude-matched controls for e2b and e2c.
-# Speed (2026-11-09): evals are single-turn only (Table D1 is single-turn), which halves each eval.
+# E2 (new) on ONE GPU (PRUNING_PLAN.md "E2 (new)" + "E2 changes after the design critic"). Run from the repo root.
+#   bash scripts/run_e2.sh          (assumes results/meta_instruct/btap/e2/useful_margin.jsonl exists)
+# Arms per seed S in {0,1}: e2b_sS (margin loss, paper preservation), e2c_sS (+ useful-updating protection, split),
+#   e2e_sS (contrastive: caving minus useful updating). e2d_s0 (paper loss, p = 5e-4). Random controls for seed-0 b/c/e.
+# Speed: evals single-turn only (Table D1 is single-turn).
 set -euo pipefail
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 PY="uv run --no-sync python"
-S=results/meta_instruct/btap/sets/seed0
 E=results/meta_instruct/btap/e2
 DEV=cuda:0
 mkdir -p logs
 step () { echo "STEP $* $(date +%T)"; }
 
-step "useful set"
-$PY scripts/build_e2_sets.py useful --device $DEV --batch-size 128 > logs/e2_useful.log 2>&1
-step "useful done: $(tail -1 logs/e2_useful.log)"
+for S in 0 1; do
+  $PY scripts/build_e2_sets.py caving --seed $S --device $DEV > logs/e2_caving_s$S.log 2>&1
+  step "caving set seed $S: $(tail -1 logs/e2_caving_s$S.log)"
+done
 
-score_arm () {  # $1 arm, then extra score args
+score_arm () {  # $1 arm name, then extra score args
   local arm=$1; shift
   $PY scripts/run_btap.py score --arm "$arm" --layers 0-31 --device $DEV "$@" > "logs/e2_score_${arm}.log" 2>&1
   $PY scripts/run_btap.py select --arm "$arm" --device $DEV > "logs/e2_select_${arm}.log" 2>&1
   step "selected $arm"
 }
-score_arm e2b --prune-file $E/caving_margin.jsonl --pres-file $S/preserve.jsonl
-score_arm e2c --prune-file $E/caving_margin.jsonl --pres-file $S/preserve.jsonl $E/useful_margin.jsonl
-score_arm e2d --prune-file $S/prune.jsonl --pres-file $S/preserve.jsonl --protect-frac 5e-4 --first-token 0
+for S in 0 1; do
+  P=results/meta_instruct/btap/sets/seed$S/preserve.jsonl
+  score_arm e2b_s$S --prune-file $E/caving_margin_seed$S.jsonl --pres-file $P
+  score_arm e2c_s$S --prune-file $E/caving_margin_seed$S.jsonl --pres-file $P $E/useful_margin.jsonl --pres-split
+  score_arm e2e_s$S --prune-file $E/caving_margin_seed$S.jsonl --neg-prune-file $E/useful_margin.jsonl --pres-file $P
+done
+score_arm e2d_s0 --prune-file results/meta_instruct/btap/sets/seed0/prune.jsonl \
+  --pres-file results/meta_instruct/btap/sets/seed0/preserve.jsonl --protect-frac 5e-4 --first-token 0
 
 EV=(--checkpoint meta_instruct --allow-tf32 --batch-size 32 --ignore-preflight-problems --anchors pruned
     --turns single --letter-spellings "{L}, {L}" --device $DEV)
@@ -38,10 +43,10 @@ bare () { $PY scripts/run_sycophancy_eval.py "${EV[@]}" \
             --prune-indices "results/meta_instruct/btap/$1/$2.json" --out-dir "runs/e2_bare_$1_$2" \
             --results-dir "results/meta_instruct/btap/e2_eval/bare_$1_$2" > "logs/e2_bare_$1_$2.log" 2>&1; step "bare $1 $2"; }
 
-# format first (the two-part success check), then the D1 readings; most informative arms first
-for arm in e2b e2c e2d; do wacc $arm selected; done
-for arm in e2b e2c; do wacc $arm random; done
-for arm in e2b e2c e2d; do prefix $arm selected; done
-for arm in e2b e2c e2d; do bare $arm selected; done
-for arm in e2b e2c; do prefix $arm random; done
+# Gate 0 (format) first for every arm, then the pre-named primary reading (fixed slot), then secondaries
+for arm in e2b_s0 e2c_s0 e2e_s0 e2d_s0 e2b_s1 e2c_s1 e2e_s1; do wacc $arm selected; done
+for arm in e2b_s0 e2c_s0 e2e_s0; do wacc $arm random; done
+for arm in e2b_s0 e2c_s0 e2e_s0 e2b_s1 e2c_s1 e2e_s1 e2d_s0; do prefix $arm selected; done
+for arm in e2b_s0 e2c_s0 e2e_s0; do prefix $arm random; done
+for arm in e2b_s0 e2c_s0 e2e_s0 e2d_s0; do bare $arm selected; done
 step "ALL DONE"

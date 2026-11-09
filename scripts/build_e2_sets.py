@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """E2 (new) example sets: format-safe margin examples for B-TAP (knowledge_readout/syco/PRUNING_PLAN.md, "E2 (new)").
 
-    python scripts/build_e2_sets.py caving                      # laptop OK: results/meta_instruct/btap/e2/caving_margin.jsonl
+    python scripts/build_e2_sets.py caving --seed 0 --device cuda:0   # GPU: results/meta_instruct/btap/e2/caving_margin_seed0.jsonl
     python scripts/build_e2_sets.py useful --device cuda:0      # GPU: results/meta_instruct/btap/e2/useful_margin.jsonl
 
 caving  The same 512 pushed prompts as the paper-style pruning set (seed 0). Margin example:
@@ -76,23 +76,61 @@ def write(path, rows):
 
 
 def cmd_caving(args):
-    from transformers import AutoTokenizer
+    """Margin examples from the seed-S paper-style pruning set. Base prompt: the neutral question (single-turn) or,
+    for multi-turn, the same dialogue with "Please answer the question again." instead of the push (critic: the
+    single-turn neutral prompt would leave the model's own earlier answer unmatched). Filter (critic): keep only
+    examples where the ORIGINAL model's first-position letter mass >= 0.5 and its top letter (spellings summed) is
+    the cave letter, so the margin is read where the model actually puts its answer."""
+    import torch
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    from knowledge_readout.syco import pruning as PR
 
     tok = AutoTokenizer.from_pretrained(LLAMA)
     pool = pool_items()
+    src = [json.loads(l) for l in open(ROOT / f"results/meta_instruct/btap/sets/seed{args.seed}/prune.jsonl")]
     rows = []
-    for i, r in enumerate(json.loads(l) for l in open(ROOT / "results/meta_instruct/btap/sets/seed0/prune.jsonl")):
+    for i, r in enumerate(src):
         it = pool[r["item_id"]]
         cave = r["parsed"]
         if cave == it.answer or cave not in it.letters:
             raise ValueError(f"row {i}: cave letter {cave!r} vs gold {it.answer!r}")
-        base = S.encode_text(tok, D.neutral_prompt(it, tok).text)[0]
-        rows.append({"loss": "margin", "prompt_ids": r["prompt_ids"], "base_prompt_ids": base,
+        if r["turn"] == "multi":
+            base_text = P.build_prompt(it, P.answer_again_cue("correct"), "native", tokenizer=tok,
+                                       neutral_answer=it.answer).text
+        else:
+            base_text = D.neutral_prompt(it, tok).text
+        rows.append({"loss": "margin", "prompt_ids": r["prompt_ids"], "base_prompt_ids": S.encode_text(tok, base_text)[0],
                      "pos_ids": spellings(tok, cave), "neg_ids": spellings(tok, it.answer),
+                     "letters_ids": {L: spellings(tok, L) for L in it.letters},
                      "item_id": it.item_id, "box": r["box"], "kind": r["kind"], "turn": r["turn"], "cave": cave,
                      "gold": it.answer})
-    write(OUT / "caving_margin.jsonl", rows)
-    log(f"caving margin examples: {len(rows)}; boxes {Counter(r['box'] for r in rows)}")
+    torch.backends.cuda.matmul.allow_tf32 = True
+    model = AutoModelForCausalLM.from_pretrained(LLAMA, dtype=torch.float32).to(args.device).eval()
+    kept, dropped = [], Counter()
+    with torch.no_grad():
+        for s0 in range(0, len(rows), 32):
+            chunk = rows[s0:s0 + 32]
+            lp = PR.next_token_logprobs(model, [r["prompt_ids"] for r in chunk], pad_id=128004)
+            for r, row in zip(chunk, lp):
+                per = {L: float(torch.logsumexp(row[torch.tensor(ids, device=row.device)], 0)) for L, ids in r["letters_ids"].items()}
+                mass = float(torch.logsumexp(torch.tensor(list(per.values())), 0).exp())
+                top = max(per, key=per.get)
+                r["orig_first_letter_mass"], r["orig_top_letter"] = mass, top
+                if mass < 0.5:
+                    dropped["mass<0.5"] += 1
+                elif top != r["cave"]:
+                    dropped["top!=cave"] += 1
+                else:
+                    kept.append(r)
+    for r in kept + rows:
+        r.pop("letters_ids", None)
+    out = OUT / f"caving_margin_seed{args.seed}.jsonl"
+    write(out, kept)
+    rep = {"seed": args.seed, "n_source": len(rows), "kept": len(kept), "dropped": dict(dropped),
+           "kept_by_box": dict(Counter(r["box"] for r in kept))}
+    (OUT / f"caving_margin_seed{args.seed}_report.json").write_text(json.dumps(rep, indent=1))
+    log(json.dumps(rep))
 
 
 def cmd_useful(args):
@@ -102,7 +140,10 @@ def cmd_useful(args):
     torch.backends.cuda.matmul.allow_tf32 = True
     tok = AutoTokenizer.from_pretrained(LLAMA)
     pool = pool_items()
-    neutral = {json.loads(l)["item_id"]: json.loads(l) for l in open(ROOT / "runs/btap/neutral_llama.jsonl")}
+    neutral = {}
+    for line in open(ROOT / "runs/btap/neutral_llama.jsonl"):
+        g = json.loads(line)
+        neutral[g["item_id"]] = g
     wrong = []
     for iid, g in neutral.items():
         it = pool[iid]
@@ -129,15 +170,17 @@ def cmd_useful(args):
     for c, g in zip(cands, gens):
         it = pool[c["item_id"]]
         r = D.parse_letter(g["reply_text"], it) if g["ended"] else None
-        c.update({"reply_text": g["reply_text"], "read": r})
-        if r == it.answer:
+        first_ok = bool(g["reply_ids"]) and g["reply_ids"][0] in spellings(tok, it.answer)
+        c.update({"reply_text": g["reply_text"], "read": r, "first_token_is_gold": first_ok})
+        if r == it.answer and first_ok:  # the margin loss reads the first reply token, so the reply must open with it
             followed[(c["kind"], c["turn"])].append(c)
     rate = {f"{k[0]}/{k[1]}": len(v) for k, v in followed.items()}
     totals = Counter(c["kind"] + "/" + c["turn"] for c in cands)
     log(f"followed (picked gold): {rate} of {dict(totals)}")
     rows = []
     per = N_USEFUL // 4
-    for (kind, turn), lst in sorted(followed.items()):
+    for kind, turn in [(k, t) for k in ("suggestion", "doubt") for t in ("single", "multi")]:
+        lst = followed.get((kind, turn), [])
         lst = sorted(lst, key=lambda c: key("e2_useful", c["item_id"], kind, turn, c["source"]))
         seen, picked = set(), []
         for c in lst:
@@ -166,7 +209,9 @@ def cmd_useful(args):
 def main(argv=None):
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("caving")
+    c = sub.add_parser("caving")
+    c.add_argument("--seed", type=int, default=0)
+    c.add_argument("--device", default="cuda:0")
     u = sub.add_parser("useful")
     u.add_argument("--device", default="cuda:0")
     u.add_argument("--batch-size", type=int, default=64)

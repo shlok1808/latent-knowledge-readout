@@ -79,6 +79,11 @@ def cmd_score(args):
 
     d = SETS / f"seed{args.seed}"
     prune = load_examples(args.prune_file or [d / "prune.jsonl"])
+    if args.neg_prune_file:  # E2-E: these examples are SUBTRACTED, scaled so both groups weigh the same in total
+        neg = load_examples(args.neg_prune_file)
+        w = -len(prune) / len(neg)
+        prune += [dict(ex, weight=w) for ex in neg]
+        log(f"contrastive pruning set: {len(prune) - len(neg)} positive + {len(neg)} negative (weight {w:.3f})")
     pres = load_examples(args.pres_file or [d / "preserve.jsonl"])
     log(f"seed {args.seed}: {len(prune)} pruning, {len(pres)} preservation examples; layers {args.layers}")
     if len(prune) != 512 or len(pres) != 512:
@@ -100,7 +105,7 @@ def cmd_score(args):
         first = False
     result = PR.score(model, prune, pres, layers=parse_layers(args.layers), group_size=args.group_size,
                       first_token_variant=first, prune_batch_size=args.prune_batch_size, pad_id=pad_id,
-                      progress=progress, protect_frac=args.protect_frac)
+                      progress=progress, protect_frac=args.protect_frac, pres_split=args.pres_split)
     result.settings.update({"arm": arm_name(args), "prune_files": [str(x) for x in (args.prune_file or [])],
                             "pres_files": [str(x) for x in (args.pres_file or [])]})
     out = OUT_RUNS / arm_name(args) / f"score_L{args.layers.replace(',', '+')}.pt"
@@ -206,6 +211,10 @@ def main(argv=None):
     s.add_argument("--prune-file", type=Path, nargs="+", default=None)
     s.add_argument("--pres-file", type=Path, nargs="+", default=None)
     s.add_argument("--protect-frac", type=float, default=PR.PROTECT_FRAC)
+    s.add_argument("--neg-prune-file", type=Path, nargs="+", default=None,
+                   help="E2-E: examples subtracted from the pruning score (weight -n_pos/n_neg)")
+    s.add_argument("--pres-split", action="store_true",
+                   help="protect the top p of EACH preservation subset (CE / margin) and take the union")
     s.add_argument("--layers", default="0-31")
     s.add_argument("--device", default="cuda:0")
     s.add_argument("--group-size", type=int, default=8)
