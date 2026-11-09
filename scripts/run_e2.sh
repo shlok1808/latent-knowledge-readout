@@ -12,6 +12,8 @@ DEV=cuda:0
 mkdir -p logs
 step () { echo "STEP $* $(date +%T)"; }
 
+until [ -s results/meta_instruct/btap/e2/useful_margin.jsonl ] && ! pgrep -f "build_e2_sets.py useful" > /dev/null; do sleep 15; done
+$PY scripts/check_e2_useful.py > logs/e2_useful_check.log 2>&1; step "useful check: $(cat logs/e2_useful_check.log | tr '\n' ' ')"
 for S in 0 1; do
   $PY scripts/build_e2_sets.py caving --seed $S --device $DEV > logs/e2_caving_s$S.log 2>&1
   step "caving set seed $S: $(tail -1 logs/e2_caving_s$S.log)"
