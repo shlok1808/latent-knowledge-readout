@@ -1,123 +1,99 @@
-# latent-knowledge-readout: project context
+# sycophancy-shared-trace: Shlok's personal project
 
-This file is tracked in git (private repo), so Lambda sessions get it. Last updated 2026-10-28.
+Created 2026-11-10. This is Shlok's own side project, separate from the advisor work. It continues the
+sycophancy / useful-updating line that Dr. Lin decided not to pursue on 2026-11-09. The advisor project
+(know-do gap) lives in `~/latent-knowledge-readout` on its own branches. Keep the two apart.
 
 ## Start here in a new session
-1. Read this file and the ledger at the top of `RESEARCH_LOG.md`.
-2. For experiment, result or paper work, load the `research-rules` skill (research plugin) and follow it. For how the laptop / Lambda / git / HF setup works, read the plugin's `SETUP.md`, which the skill links to. Laptop copy: `~/claude-mods/research/SETUP.md`.
-3. On the laptop, also read `research/research_notes/Knowledge action divergence internals round 2/RESUME.md` and the user's notes on the report page (section "Report page and notes" below). They are the agenda for discussion. `research/` is laptop-only (git-excluded, 255 MB). On a Lambda instance, this file and `RESEARCH_LOG.md` are the whole context.
-4. Ask the user what they want to do. Don't launch big runs until they say go.
+1. Read this file, then the ledger at the top of `RESEARCH_LOG.md`.
+2. For experiment, result or paper work, load the `research-rules` skill (research plugin) and follow it.
+   Machinery (laptop / Lambda / git / HF): `~/claude-mods/research/SETUP.md`.
+3. The full record of what was run is `results/meta_instruct/EXPERIMENT_NOTES.md` (sections 5f-5h matter most).
+4. Ask Shlok what he wants to do. Don't launch GPU runs until he says go.
 
-## Current state (updated 2026-11-04) — READ THIS FIRST, it supersedes older sections where they differ
-**Active project: replicate Orgad et al. 2610.28325 (sycophancy as in-context updating), then extend it across Llama-3.1-8B training stages.**
-- What they did (open models only): Llama-3.1-8B-Instruct and Qwen2.5-7B-Instruct. Neutral pass on CSQA/ARC-Challenge -> 512 caving examples (the PRUNING set, not held out) -> B-TAP scores weights, zero the top 1,000 (protecting normal-QA weights) -> test on held-out questions + all of OBQA: caving drops, general skills stay, AND listening to reliable sources drops too (Table D1, before vs after). Conclusion: sycophancy and useful updating share weights.
-- What we do: no training of our own. Checkpoints: meta-llama/Llama-3.1-8B (base), allenai/Llama-3.1-Tulu-3-8B-SFT, -DPO, allenai/Llama-3.1-Tulu-3-8B (final RL), meta-llama/Llama-3.1-8B-Instruct (Orgad's model, the sanity gate). Meta/Qwen never released their intermediate stages; Tulu is AllenAI's open post-training of the same base (general post-training, not anti-sycophancy). Tulu also has 70B stages (for Dr. Lin's "larger models").
-- **Gate 1 PASSED 2026-11-05** (lab fork #22): bare-letter reading ("A"/" A" only) gives 8/8 within 20% of D1 (user + 12 text); results/meta_instruct/EXPERIMENT_NOTES.md 5e. Replication gates read bare letters; our own findings must hold under both bare letters and all spellings. Next: build B-TAP -> Gate 2. Follow-ups: script grades 12-text as primary (fork #20); scorer saves per-spelling log-probs; ask Orgad + Dr. Lin about the reading rule.
-- **Gate 2 RUN 2026-11-05, NOT passed** (details results/meta_instruct/EXPERIMENT_NOTES.md 5f; decisions taken without Shlok listed there for discussion). B-TAP code: knowledge_readout/syco/pruning_data.py, pruning.py, scripts/build_pruning_sets.py, run_btap.py, run_gate2.sh, check_written_*.py. Bare-letter gate 4/8; all spellings 7/8 (seeds 0-2: 7, 8, 7); pruning breaks the one-letter answer format, confounding first-token readings; fixed-slot prefix reading: uniform ~25% drop in all 8 cells, random null; but full written replies disagree: harmful assertion caving -6 to -10 pp, useful updating -2 to -4 pp (not significant for sources), doubt flips go UP. Raw rows on the laptop in runs/ (allspell_*, prefix_*, sycophancy_eval_meta_instruct_pruned_*, btap/); logs in logs/lambda_2026-11-05/. Next: discuss with Shlok which reading counts and why the format breaks (ask Orgad: target y, reading, did their pruned model keep the format). Bet #26 open. Repo rename/cleanup requested by Shlok AFTER this experiment (not done yet).
-- Order CHANGED 2026-11-04 (lab fork #9): IT first. Gate 1 → build B-TAP → Gate 2, all on Meta Instruct → then base/Tulu (Step 1, then Step 2). Base letter-mass preflight is a separate side check. REVISIT before the base/Tulu setup (Shlok asked). Base letter check (2026-11-04): base puts ~2% probability on letters in the plain format (top tokens ' Please'/' What'), so the format must change for base: D3/D4 choices for the stages (text tool, 12-source pool, plain format) were made quickly and are only provisional; re-decide them then. The old order is below for reference.
-- Old order (agreed 2026-11-04 earlier):
-  1. Gate 1: Meta Instruct, no pruning, match D1 "Original" column. Rules fixed before running: only paper-unspecified settings may change; match = within 20% on all 8 cells; at most ~3 setup changes, then report the gap. Gate command: metrics.check_anchors(cells, "meta_instruct", "native"), primary column = 12 text sources.
-  2. Step 1: same measurement on base / SFT / DPO / final. Do caving and useful updating rise together? Does base already cave (Perez et al. 2022 suggests maybe; 2610.37788 says capitulation appears only after post-training)? Also tells us if each stage caves enough to build a pruning set.
-  3. Build pruning: B-TAP from 2604.09544 (CODE IS PUBLIC: https://github.com/orgadhadas/harm_pruning, linked in 2604.09544 v3 App. A.3; Shlok shared it 2026-11-03. Earlier notes said no code; method in 2610.28325 App. C.1/C.3: score = -w*dL/dw over the caving set, protect top 0.005% per matrix by preservation score, zero top 1,000; random magnitude-matched control). Email Orgad only for the split and the tool format.
-  4. Gate 2: prune Meta Instruct, match D1 "Pruned" column.
-  5. Step 2 (our new part): prune at each stage. When does shared support appear? Same weights across stages (overlap)? Does the cost to useful updating grow with training? Lead: 2604.09544 summaries say the harm mechanism separates more in aligned models (unverified, papers/2604.09544.md).
-- Scoop context: behaviour-only "sycophancy rises with post-training" is taken (2610.37788; heads across Tulu stages in 2610.22937). The open part is useful updating moving with it + shared mechanism per stage.
-- Code: knowledge_readout/syco/ (items, prompts, scorer, metrics, preflight), configs/syco_*.json, 211 tests. Contract: knowledge_readout/syco/CONTRACT.md. Exact paper text: papers/2610.28325_templates.md (the template table is C3 in v1). Built and reviewed in 6 rounds (PR #3). Nothing run on a real model.
-- Open decisions (paper unspecified; defaults in code, Shlok must confirm, one at a time): (1) answer reading: default = single most likely letter-variant token (greedy restricted to letters, ties by lowest token id) vs letter_argmax; (2) item splits: full CSQA validation, ARC-Challenge test, OBQA test; (3) reliable source = 12 text sources primary, with tool secondary; (4) tool cell = our text wrapper (paper used a native tool call); (5) wrong-option seed fixed; (6) no system prompt.
-- Not done: lab-mod bet gate for run_checkpoint (old CLI gate is gone) and sealed predictions before the first run; preflight on Lambda (letter tokens, BOS for Tulu templates, top-token histogram); .claude/settings.json is no longer in git, so Lambda needs it copied (scripts/lambda_up.sh).
-- Repo: package renamed failure_probes -> knowledge_readout; old TextCraft code on archive/textcraft-pipeline-final; branch cleanup done on GitHub except possibly 3 branches the user is deleting by hand.
-- Measurement in plain words: flip rate = did the answer change the way the claim pushed; log-odds shift = how much belief in the pushed answer moved (ln(p/(1-p)) after minus before), catches moves without a flip. Harmful (initially right) and useful (initially wrong) are never pooled.
+## How this folder relates to the old one
+- Same git repo (github.com/shlok1808/latent-knowledge-readout, private), checked out here as a **git worktree**
+  on branch `personal/shared-trace`, cut from `sycophancy-eval-id8yhs` at 8242f54 (all Gate 1, Gate 2, E2, E3 work).
+- Never merge this branch into `main` or the advisor branches without asking. The branch is local only until
+  Shlok OKs the first push. Lambda needs it pushed: `scripts/lambda_up.sh <ip> personal/shared-trace`.
+- Raw rows and logs are NOT copied (2.6 GB, git-ignored). They stay in `~/latent-knowledge-readout/runs/` and
+  `~/latent-knowledge-readout/logs/`. Read them from there; new runs go to this folder's `runs/`.
+- `research/lin_deck_2026-11-09/` is a local copy of the 9 Nov deck (slides.md, speaker_notes.md, figures). Git-ignored.
+- `LAB_NOTEBOOK.md` is a local copy of the lab notebook up to 2026-11-10 (git-ignored).
 
-## Older state (2026-10-26) — background only
-- **Old project is archived and OFF LIMITS.** The old multi-step probe-transfer project's local data (runs/, logs/, wandb/, writeup/, mstep/, scripts/, .lambda_* files) was moved to `~/Archive/agent-failure-probes-old-project/` on 26 Oct, and its code lives on git branch `archive/stage-transfer-v1`. Do not read, search, run or cite either unless the user explicitly asks in this chat. `.claude/settings.local.json` denies access to that folder and branch.
-- **Project folder (26 Oct):** research files live in `~/latent-knowledge-readout/research/` (laptop-only, git-ignored, never commit): `reports/` (4 deep-research reports + run design), `research_notes/<run>/` (readings, checks, ideas, RESUME per run), `lin_meeting_2026-10-23/` (Colloquium deck, figures, speaker notes), `papers_master.csv` (806-paper scan), `mods/`. Old copies remain in `~/colm-guide/gapscan/` until the user decides to delete them. Reports are NOT auto-loaded: open the one you need from `research/reports/`.
-- **Four pressure conditions, not just pushback:** 1 tempting wrong option, 2 user pushback, 3 no single answer, 4 forced to answer on hard/impossible questions. Start with 1+2.
-- **Order changed:** Stage A (diagnose fates) first. Stage B (fix comparison vs DPO/CCA) moved to the END because DPO at 9-27B is expensive; prefer public checkpoints (base vs instruct, OLMo SFT/DPO stages) over training our own.
-- **Datasets are NOT decided.** Lab fork #1 ("templated pushback for mechanism work + TriviaQA for behavior") is a DRAFT only; the user wants a proper dataset discussion first.
-- **Measurement goes small to big:** single probe directions → whole subspace → token/layer paths; move up only if the smaller level can't answer.
-- **First experiments (ranked by importance; the output screen can run first because it's nearly free):** (1) copy vs correctness, (2) plant fake fates to validate tools, (3) output-score screen of flip rate vs prior confidence per pressure.
-- **Next steps:** (1) update plan + deck (Stage B last, 4 pressures); (2) meet Dr. Lin (compute/70B, which pressures first, scoop speed); (3) dataset discussion; (4) pilot when the user says go; (5) plant fake fates.
-- **Nikhil Prakash's binding papers (read 26 Oct):** page https://claude.ai/artifact/AjWxdmdGp1pxm5MeVqjGsf; readings in `~/latent-knowledge-readout/research/research_notes/Nikhil Prakash binding papers/reading/`. Key uses: same-length aligned pairs for patching; patch one variable at a time and pointer+address together before calling bypass; probe/patch beyond the answer token; CCA as a Stage B baseline with a no-mask control; fine-tuning strengthens old routes (prior, not proof).
-- **Reports:** group geometry `~/latent-knowledge-readout/research/reports/Group geometry methods for fates.md` (21+3 papers, re-ranked ideas in section 5, pass-2 papers in section 8).
-- **Setup (28 Oct):** experiments run as Scribe notebooks on Lambda through a Desktop SSH session. Git is the source of truth (see SETUP.md). Ledger: `RESEARCH_LOG.md`. Paper notes: `papers/<arxiv-id>.md`.
+## The question
+Orgad et al. 2610.28325 showed on Llama-3.1-8B-Instruct that pruning the weights behind sycophancy (B-TAP) also cuts
+useful updating (following a reliable source that is right). So caving and useful listening share weights.
 
-## Progress tracker (added 2026-11-04)
-- Flowchart page the user keeps in the sidebar: https://claude.ai/artifact/BaYq7D9CYNfbTy1fEuy1wn. Steps live in its db (collection `steps`, fields phase/order/status todo|now|done/title/plain/note; doc `meta/next` = {text, updated}). Update it with ArtifactData whenever a step changes, and always rewrite `meta/next` in plain words.
+Shlok's idea, the "shared trace across training stages": when does that shared support appear? Prune at each
+post-training stage of the same base model and ask:
+1. Do caving and useful updating rise together through training?
+2. When does the shared trace appear (SFT, DPO, RL)?
+3. Are the same weights picked at each stage (overlap)?
+4. Can we cut caving without cutting useful listening (separate them)?
 
-## What this project is
-Studying what happens to correctness-relevant information inside a language model at the moment it acts against it. Goal: actionable interpretability for safety. Findings should point to a fix (training, inference, monitoring, architecture), not only a description.
-Repo: github.com/shlok1808/latent-knowledge-readout (this folder). The old multi-step probe-transfer project is archived on branch `archive/stage-transfer-v1` (tags `stage-transfer-v1`, `main-before-clean`).
+Checkpoints (no training of our own): `meta-llama/Llama-3.1-8B` (base), `allenai/Llama-3.1-Tulu-3-8B-SFT`, `-DPO`,
+`allenai/Llama-3.1-Tulu-3-8B` (final RL), `meta-llama/Llama-3.1-8B-Instruct` (Orgad's model, the sanity gate).
+Tulu also has 70B stages.
 
-## Working frame (decided)
-- Question first, method second. Don't pick a tool (probes, manifolds, SAEs) before the question is fixed. Earlier work leaned toward probes because the literature does; treat that as a bias.
-- Three directions, method-neutral:
-  1. Bypass vs override: does correctness-relevant information fail to affect the action, get overridden, get transformed, or become inaccessible?
-  2. Where shared geometry breaks: does the representation-behavior relationship change when the model acts against its apparent knowledge? A manifold is one idea, not an assumption.
-  3. Jump vs drift (light): in multi-step tasks, gradual or abrupt? Keep it separate from single-turn unless evidence connects them.
-- Vocabulary: "decodable by a probe" is not "the model knows".
-- Keep causal controllability (patching changes behavior) separate from endogenous mediation (the model naturally routes through it).
+## Dr. Lin's objection (2026-11-09), which any pitch has to answer
+- Caving and useful updating are "fundamentally coupled", both forms of context-following.
+- Separating them "may not be feasible or clearly motivated".
+- Whether a model should follow the user depends on correctness, so the problem is open-ended.
+- Possible answer (sealed lab envelope #35, Claude's proposal; Shlok's take not given yet, so it is still sealed).
 
-## Advisor constraints (Dr. Lin)
-- Larger models (not only 7-8B), factual or consequence-bearing tasks, single-turn first.
-- Define "long horizon" before using it.
-- She pointed to Cammarata, "Neural Networks Are Already Clean" (Goodfire, published 15 Oct 2026). The user likes it as an angle, but the user said: keep it on the known-relevant list only, no research focus, and it must not steer searches. The round 2 run did not find it.
+## Where things stand (2026-11-10)
+- **Gate 1 PASSED** (2026-11-05): unpruned Meta Instruct matches the paper's Table D1 "Original" in 8/8 cells within 20%
+  (user + 12 text sources) under bare-letter reading ("A"/" A" only). All-spellings reading: 6/8. Rule: our own
+  findings must hold under both readings. EXPERIMENT_NOTES 5e.
+- **Gate 2 NOT passed** (2026-11-05): B-TAP as written gets 4/8 (bare letters), 7/8 (all spellings). Pruning breaks the
+  one-letter answer format ("The correct answer is (C) ...") because every caving target was a bare letter;
+  the paper doesn't report this. Random control: no change. EXPERIMENT_NOTES 5f, 5g.
+- **Format fix** (2026-11-09): the paper's method + 10x more protection (p = 5e-4, 0.05% per matrix) keeps the
+  format (replies opening with "(" 93% vs original 96%, paper-style 74%) but costs 3.3-4.6 pp written accuracy
+  (pre-set limit was 3 pp). Under it, user-claim log-odds ratios pruned/original: 0.84 wrong claims, 0.83 right
+  claims; random 1.00. Exact D1 Pruned numbers: 2/8. EXPERIMENT_NOTES 5h.
+- **Separation:** in no pruning arm do harmful and useful updating come apart for the same speaker (difference
+  -0.06 to -0.01). The "subtract useful updating" arm spares reliable sources, but only because its objective was
+  built with the speaker split (caving = user wordings, subtracted set = 12 text sources). That is not evidence
+  about correctness-based separation.
+- **The decisive test is still missing:** a within-speaker contrastive arm (user caving MINUS user correct
+  assertions), plus a check that eval wording doesn't overlap pruning wording ("I believe the answer is {option}" is
+  pruning wording 1).
+- Training stages: not started. Base Llama puts ~2% of its probability on answer letters in the plain format
+  (it continues the dialogue), so base needs a different format (few-shot or an answer prefix) first.
+  `results/base/letter_check.json`.
+- Open in the lab tool: bet #26 (Gate 2) needs settling together; envelope #35 needs Shlok's take.
 
-## Where things are
-- Round 2 report (fast pass, fact-checked headline numbers): `~/latent-knowledge-readout/research/reports/Knowledge action divergence internals round 2.md`
-- Round 2 notes, sweeps, deep reads, watcher flags, usage log, checkpoint, RESUME: `~/latent-knowledge-readout/research/research_notes/Knowledge action divergence internals round 2/`
-- Run design (v2 + watcher + usage rule): `~/latent-knowledge-readout/research/reports/Run design.md`
-- Round 1 report: `~/latent-knowledge-readout/research/reports/Knowledge action divergence internals.md`; artifact https://claude.ai/artifact/YFfm74y97wSwTYJommvhaB
-- Research Notebook (tasks + notes; read with the ArtifactData tool, collections `notes`, `tasks`): https://claude.ai/artifact/WvXjUcMwbjsgUbQxUR5Fti. Key notes: `next-run-spec` (with a 2026-10-22 amendment), `known-relevant-papers` (v5), `scan-misses-2026-10-20`.
-- Old handoff note: `~/latent-knowledge-readout/research/NEXT_CHAT_HANDOFF.md` (older than this file).
-- Paper database from the first scan: `~/latent-knowledge-readout/research/papers_master.csv` (806 papers; old closeness ratings are unreliable; it lacks 2604.19117, 2610.21708, 2605.05115).
-- The user's own thoughts doc (AlphaXiv chat): `~/Downloads/research doc ~ dr lin.pdf`. Its papers were all already in the scan or the notes. Check it against the field; it does not steer searches.
+## Candidate next steps (Shlok decides, one at a time)
+1. Answer Lin's objection with data already on disk (no GPU). See envelope #35.
+2. Within-speaker contrastive pruning arm (one H100, about 2 h). The real separation test.
+3. Training stages: fix the base format, then Step 1 (behaviour per stage), then Step 2 (prune per stage).
 
-## Dr. Lin meeting deck (23 Oct 2026)
-- Colloquium source, figures (`figures/gen_figs.py`, `gen_story_figs.py`), speaker notes, PDF, PPTX: `~/latent-knowledge-readout/research/lin_meeting_2026-10-23/`. Copies are in `~/Downloads/`.
-- Viewable copy: https://claude.ai/artifact/4bWqg7cKMYqYUXhRwUFsuw
-- **26 Oct weekly deck** (8 main + 10 backup, Helvetica Neue to avoid grainy Type 3 fonts, new figs in `figures/gen_weekly_figs.py`) now sits at the top of that folder; the 23 Oct originals are in `23oct_original/`. Also on private branch `slides-weekly`.
-- Plan agreed with the user: Stage A (six fate checks) + Stage B (fix and recheck); four pressure conditions on shared facts (start with 1 competing answer + 2 user pushback); models 9B-27B, 70B only if Dr. Lin has compute.
-- Cloud-session handoff: Notebook note `handoff-2026-10-23`.
+## Related work to check before claiming anything new
+- 2610.22937: sycophancy heads traced across Tulu-3-8B / OLMo-2-7B stages (closest; multiple choice, ≤8B).
+- 2610.37788: behavioural, across training stages; capitulation appears only after post-training.
+- 2611.07071 (Goodfire, mechanistic shaping): reliance vs encoding; never tests useful updating. Note: `papers/2611.07071.md`.
+- 2604.09544: B-TAP origin; code at github.com/orgadhadas/harm_pruning (no license file).
+- Paper notes in `papers/`. B-TAP in plain words: `papers/btap_explained.md`.
 
-## Group geometry run (25 Oct 2026)
-- Report: `~/latent-knowledge-readout/research/reports/Group geometry methods for fates.md`. Run folder with readings, checks, ideas and `RESUME.md`: `~/latent-knowledge-readout/research/research_notes/Group geometry methods for fates/`.
-- Paused to save usage. Report discussed before the reset. At ~4 pm: the second research dive: read 2608.01835 and 2607.20146 (already fetched), and run the skeptic on the architecture-lens ideas. Details in that RESUME.md.
+## Code map
+- `knowledge_readout/syco/`: items, prompts (Table C3 templates), scorer, metrics, preflight, pruning (B-TAP,
+  margin loss), pruning_data, reply_probe. Contract: `CONTRACT.md`. Plan and pre-registered rules: `PRUNING_PLAN.md`.
+- `scripts/`: `run_sycophancy_eval.py` (main eval), `run_btap.py`, `run_gate2.sh`, `run_e2.sh`, `run_e2_evals.sh`,
+  `analyze_e2.py`, `run_e3.py`, checks.
+- Configs: `configs/syco_checkpoints.json`, `configs/syco_templates.json`. Tests: `pytest -q` in `.venv`
+  (if uv rebuilt it, `uv sync --extra dev` first).
+- Measurement in plain words: flip rate = did the answer change the way the claim pushed; log-odds shift = how much
+  belief in the pushed answer moved. Harmful (initially right) and useful (initially wrong) are never pooled.
 
-## Report page and notes
-- Simple-language report page with figures, analogy dropdowns and highlight-to-note: https://claude.ai/artifact/3LFFZqyEQNx6Vqw3ysFgHa (source: the scratchpad file `knowing-without-doing.html`; republish to the same URL by passing `url`).
-- The user highlights text and adds notes or questions while reading. Read them with ArtifactData: `action: list`, `url` above, `collection: notes`. Fields: quote, section, kind (note | question), text, createdAt, author. Treat them as the discussion agenda.
-
-## Round 2 findings (short)
-- The correct signal usually survives; what breaks is routing to the action. Six fates: readout/threshold failure, bypass, not routed, override, transformed, erased (rare; the one erasure claim, 2607.00415, has a below-chance probe, so it is more likely a flip).
-- First control: the logit margin. At 8B a probe beats it by only +0.008 AUC (2609.04582).
-- Masking: after an RLHF refresh in Llama 70B, sycophancy fell from 39% to 3.5%, but the heads' ablation effect grew from +10.5 to +27 pp (2604.19117, one checkpoint pair).
-- Training against weak detectors teaches evasion (GRPO over 85% vs DPO under 25%, 2505.13787).
-- No paper shows endogenous mediation; the one 72B test is null. Read 2505.11770 before claiming this gap.
-- Biggest scoop risk: 2610.21708 (15 Oct 2026). "Decodability is not use" is crowded in ICLR 2027 submissions.
-- Ideas, ranked: (1) per-item fate test on factual sycophancy at 9B-72B (recommended, Gemma-2-9B on 400 TriviaQA pairs from 2604.19117, then Qwen2.5-32B); (2) the same protocol on unanswerable questions (2608.29109, Qwen3-14B); (3) does anti-sycophancy training remove or mask the circuit (high scoop risk); (4) per-item knows-vs-acts angle (direction 2, KAPPA setup, cheap kill test); (5) later: smooth state vs threshold in multi-step tasks.
-
-## What is NOT done (from the full design)
-Sweeps never met their stopping rule; recall was 22 of 31 known-relevant papers (misses were mostly OpenReview-only workshop papers). Not done: the 806-paper re-score, citation chasing both ways, full reads of abstract-only Core papers (unread: Err Knowingly 2508.18760, Orgad et al., Inside-Out 2503.15299, Senses Wide Shut), a full fact-check, and an abstract skim of 141 title-only OpenReview rows in sweep C. Before claiming novelty to Dr. Lin, do the citation chasing and full reads.
-
-## Lessons from runs
-- Round 1 missed KAPPA (2509.23782) by trusting old ratings and one vocabulary. Round 2 missed papers the same way. Use synonym families, cover OpenReview, test recall against the known list.
-- A grep recall check over-counts. Check matches by eye (the watcher caught 24 to 22).
-- Search tools fail under load: the session WebSearch budget (200), the arXiv API (cert/429), OpenAlex daily quota (a key needs an account in the user's name), Semantic Scholar 429. Fall back to WebFetch or curl on arxiv.org/search and to OpenReview's public API. NeurIPS 2026 main-track submissions are not public.
-- Usage: 4 parallel Opus sweeps used about 58% of a 5-hour Pro window in roughly 30 minutes. A full design run needs several windows. The user wants big runs in about 30-40 minutes, main work first.
-- The user approved Chrome for OpenReview (read-only, no sign-in), and PDF downloads from paper hosts only, each into its own folder under the run folder's `downloads/`.
-- Keep one watcher agent continued across phases; it catches real errors.
-
-## User preferences
-- Student new to interpretability, reads between midterms: short, plain answers, summary first, details on request. Simple analogies in dropdowns for hard topics. Do NOT end replies with "explain it in one sentence" quiz questions.
-- Never delete, force-push or publish without asking. Pushes only as the `research-rules` wrap-up allows, otherwise ask. If an answer card is missing, ask again in plain text.
-
-## Repo rules
-- Git holds the pipeline (`knowledge_readout/syco/` Orgad replication, `knowledge_readout/common.py`, `tests/`, `configs/syco_*.json`; the old TextCraft pipeline was removed 2026-11-03, preserved on branch `archive/textcraft-pipeline-final`) plus the research record: `CLAUDE.md`, `RESEARCH_LOG.md`, `notebooks/`, `results/`, `figures/`, `papers/`, and `scripts/` (`bootstrap.sh`, `lambda_up.sh`). Local data (`runs/`, `logs/`, `wandb/`) and `research/` stay out of git.
-- Run tests with `pytest -q` in the `.venv` before committing pipeline code. If uv rebuilt the venv, run `uv sync --extra dev` first, since pytest is an extra.
-
-## Lab mod (added 2026-10-23)
-- The `lab` plugin (`~/claude-mods/lab`) runs here. NOTE (2026-11-03): the `failure-probes` CLI was removed with the old pipeline, so the gate below has no command to guard; the syco runs (`knowledge_readout.syco.scorer.run_checkpoint`) need a new gate. Old text: `failure-probes collect` and `analyze` are gated until Shlok has committed a bet; `prepare`, `extract` and `audit` are not. An open bet covers runs until it is settled, so one long collect needs one bet.
-- First bet: the per-item fate test (idea 1 above). Before its first collect, seal a prediction of the fate split (readout failure / bypass / not routed / override / transformed / erased) with numbers, then ask for Shlok's.
-- Real design choices for the fate test (model and size, item set, controls such as the logit margin) go through `/decide`: seal your proposal, get Shlok's, merge.
-- Notebook: `LAB_NOTEBOOK.md` in this folder, local-only (git-ignored). `/lin` drafts Dr. Lin updates from it, `/kill` audits a result, `/park` holds tangents.
-- Not yet tested whether the lab mod runs in Lambda SSH sessions (as of 28 Oct).
+## Working rules
+- Lab mode: seal Claude's proposal or bet before Shlok gives his; one question at a time; short replies; park tangents.
+  This is Shlok's project: don't present Claude's ideas as his.
+- Plain names in chat ("the format fix", "the contrastive arm"), not codes like E2-D.
+- Launch and terminate Lambda GPUs yourself (key in `~/.kyc-secrets`, never print it); always terminate.
+  Speed-check batch / memory before every GPU run.
+- Never delete, force-push or publish without asking.
+- The old multi-step probe project (`~/Archive/agent-failure-probes-old-project/`, branch `archive/stage-transfer-v1`)
+  is off limits unless Shlok asks.
+- Slides: Colloquium.
